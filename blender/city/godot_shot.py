@@ -1,6 +1,9 @@
 """Render the city GLB inside the Godot port, with the game's clay shader and lighting.
 
-    python blender/city/godot_shot.py [out.png]
+    python blender/city/godot_shot.py [out.png] [--closeups]
+
+--closeups renders the street-level views process.py picks for judging the house kits (a porch-front
+row, a Greenmount storefront, a detached house, a stoop row) instead of the overview set.
 
 The GLB is read at runtime (city_shot.gd), so nothing is imported into the Godot project. Uses the
 port's shared Godot lock and binary from godot/tools/godot_preview.py. The cameras are the ones
@@ -22,9 +25,12 @@ SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "city_shot.gd"
 
 
 def main():
-    out = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else os.path.join(C.ROOT, ".work", "previews", C.AREA + "_godot.png"))
+    a = [x for x in sys.argv[1:] if x != "--closeups"]
+    which = "closeups" if "--closeups" in sys.argv else "views"
+    default = C.AREA + ("_godot_closeups.png" if which == "closeups" else "_godot.png")
+    out = os.path.abspath(a[0] if a else os.path.join(C.ROOT, ".work", "previews", default))
     os.makedirs(os.path.dirname(out), exist_ok=True)
-    views = json.load(open(C.GEOM_JSON))["views"]
+    views = json.load(open(C.GEOM_JSON))[which]
     arg = ";".join("|".join([",".join(f"{c:.2f}" for c in v["eye"]), ",".join(f"{c:.2f}" for c in v["look"]), str(v["fov"])])
                    for v in views[:4])
     fwd = lambda p: p.replace("\\", "/")

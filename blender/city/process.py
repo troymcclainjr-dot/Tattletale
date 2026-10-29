@@ -31,6 +31,7 @@ from shapely.ops import polygonize, unary_union
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import config as C
+import kits
 
 T0 = time.time()
 
@@ -60,7 +61,13 @@ MATS = {
     "context_ground": ("clay", "#7d7a70", 0.95), "brick": ("clay", "#9a5a44", 0.9), "siding": ("clay", "#c8b89a", 0.86),
     "stone": ("clay", "#b0a890", 0.9), "roof": ("clay", "#5a5a62", 0.9), "porch_roof": ("clay", "#6a5846", 0.86),
     "context_bldg": ("clay", "#9a9aa0", 0.9), "bark": ("clay", "#5a3a24", 0.9), "leaves": ("clay", "#5f7d36", 0.95),
+    "siding_white": ("clay", "#e6e2d6", 0.86), "siding_gray": ("clay", "#a8aca8", 0.86),
+    "siding_yellow": ("clay", "#d8c890", 0.86), "siding_green": ("clay", "#9aa88a", 0.86),
 }
+MATS.update(kits.KIT_MATS)
+SIDINGS = ["siding", "siding_white", "siding_gray", "siding_yellow", "siding_green"]
+CIVIC = {"church", "chapel", "cathedral", "school", "kindergarten", "commercial", "retail", "civic", "public",
+         "office", "industrial", "warehouse"}
 MAT_ID = {k: i for i, k in enumerate(MATS)}
 MAT_NAMES = list(MATS)
 ZONE_MAT = {"road": "asphalt", "lot": "asphalt", "alley": "alley", "grass": "grass", "sidewalk": "sidewalk"}
@@ -145,13 +152,16 @@ class MB:
     """Collects triangles (k, 3, 3) in local meters + absolute elevation, with a material per triangle."""
 
     def __init__(s, name, smooth=False, props=None):
-        s.name, s.smooth, s.props, s.tris, s.mats = name, smooth, props or {}, [], []
+        s.name, s.smooth, s.props, s.tris, s.mats, s.smooths = name, smooth, props or {}, [], [], []
 
-    def add(s, tri, mat):
+    def add(s, tri, mat, smooth=None):
+        """smooth: shade these triangles smooth (None = the object's default). Kit parts are smooth,
+        so their chamfers read as soft clay; walls and roofs stay flat."""
         tri = np.asarray(tri, np.float64)
         if len(tri):
             s.tris.append(tri)
             s.mats.append(np.full(len(tri), MAT_ID[mat], np.int32))
+            s.smooths.append(np.full(len(tri), s.smooth if smooth is None else smooth, bool))
 
     def quads(s, p, q, bp, bq, tp, tq, mat):
         """Vertical quads p->q from bottom b to top t; they face the right side of p->q."""
@@ -165,17 +175,25 @@ class MB:
     def build(s, y0):
         T = np.concatenate(s.tris)
         M = np.concatenate(s.mats)
+        S = np.concatenate(s.smooths)
         V = T.reshape(-1, 3).copy()
         V[:, 2] -= y0
-        uniq, inv = np.unique(np.round(V, 3), axis=0, return_inverse=True)
+        # smooth and flat triangles never share a vertex, so a soft part can't round off a wall corner
+        key = np.column_stack([np.round(V, 3), np.repeat(S, 3)])
+        uniq, inv = np.unique(key, axis=0, return_inverse=True)
         F = inv.reshape(-1)[:len(V)].reshape(-1, 3)
         ok = (F[:, 0] != F[:, 1]) & (F[:, 1] != F[:, 2]) & (F[:, 0] != F[:, 2])
-        F, M = F[ok], M[ok]
+        F, M, S = F[ok], M[ok], S[ok]
         used = sorted(set(M.tolist()))
         local = np.searchsorted(np.array(used), M)
-        return {"name": s.name, "smooth": s.smooth, "props": s.props,
-                "verts": np.round(uniq, 3).ravel().tolist(), "faces": F.ravel().tolist(),
-                "mats": local.tolist(), "matnames": [MAT_NAMES[i] for i in used]}
+        out = {"name": s.name, "smooth": s.smooth, "props": s.props,
+               "verts": np.round(uniq[:, :3], 3).ravel().tolist(), "faces": F.ravel().tolist(),
+               "mats": local.tolist(), "matnames": [MAT_NAMES[i] for i in used]}
+        if S.any() and not S.all():
+            out["smooth_faces"] = S.astype(int).tolist()
+        else:
+            out["smooth"] = bool(S.all())
+        return out
 
 
 def ccw(tri):
@@ -299,6 +317,19 @@ def roof_pieces(roof, geom, c, n, perp):
     ax = perp if roof["kind"] == "gable_t" else n          # gable_t: ridge runs along the depth
     return [(geom.intersection(strip(c, ax, u0 - 500, u0)), lambda xy: a + k * (u0 - proj(xy, ax))),
             (geom.intersection(strip(c, ax, u0, u0 + 500)), lambda xy: a + k * (proj(xy, ax) - u0))]
+
+
+def roof_fn(roof, c, n, perp):
+    """The main roof as one function of xy (both halves of a gable), for placing parts on it."""
+    proj = lambda xy, ax: (xy[:, 0] - c[0]) * ax[0] + (xy[:, 1] - c[1]) * ax[1]
+    if roof["kind"] == "flat":
+        return lambda xy, a=roof["a"]: np.full(len(xy), a)
+    if roof["kind"] == "plane":
+        a, kb, kc = roof["coef"]
+        return lambda xy: a + kb * proj(xy, n) + kc * proj(xy, perp)
+    a, k = roof["coef"]
+    ax = perp if roof["kind"] == "gable_t" else n
+    return lambda xy: a + k * np.abs(proj(xy, ax) - roof["u0"])
 
 
 def roof_pitch(roof):
@@ -545,8 +576,12 @@ def main():
             top = float(np.percentile(z, 75)) if len(sel) >= 10 else fallback
             if len(sel) < 10:
                 b["flags"].append("no_lidar")
-            b["pieces"] = [("main", poly, (lambda v: lambda xy: np.full(len(xy), v))(top))]
-            b.update(main=top, eave=top, roof="flat", roof_fit=0.0, pitch=0.0, porch=0.0, rear=0.0, n=None)
+            flat_top = (lambda v: lambda xy: np.full(len(xy), v))(top)
+            b["pieces"] = [("main", poly, flat_top)]
+            n_ = depth_axis(poly, c) if b["zone"] != "context" else None
+            sr_ = (np.array(poly.exterior.coords) - c) @ n_ if n_ is not None else np.zeros(1)
+            b.update(main=top, eave=top, roof="flat", roof_fit=0.0, pitch=0.0, porch=0.0, rear=0.0, n=n_,
+                     s0=float(sr_.min()), s1=float(sr_.max()), roof_at=flat_top)
             continue
         n = depth_axis(poly, c)
         s = (RX[sel] - c[0]) * n[0] + (RY[sel] - c[1]) * n[1]
@@ -610,21 +645,57 @@ def main():
                            lambda xy, v=rear_top: np.full(len(xy), v)))
         b["pieces"] = pieces
         b.update(main=float(vz.max()), eave=float(vz.min()), roof=roof["kind"], roof_fit=roof["inliers"],
-                 pitch=roof_pitch(roof), porch=d_f, rear=d_r, n=n, porch_top=porch_top, rear_top=rear_top)
+                 pitch=roof_pitch(roof), porch=d_f, rear=d_r, n=n, porch_top=porch_top, rear_top=rear_top,
+                 s0=s0, s1=s1, roof_at=roof_fn(roof, c, n, perp))
     for b in bld:
         for fl in b["flags"]:
             flags_count[fl] = flags_count.get(fl, 0) + 1
     log(f"heights done; flags {flags_count}")
 
+    # ---- archetypes, looks and door sides for the site buildings
+    fp_tree = shapely.STRtree([b["poly"] for b in bld])
+
+    def exposed(pt):
+        return len(fp_tree.query(Point(pt), predicate="intersects")) == 0
+
+    for b in site_b:
+        t = b["tags"]
+        kind, fa, h = t.get("building"), b["poly"].area, b["main"] - b["ground"]
+        if fa < 45 and h < 4.6:
+            arch = "garage"
+        elif kind in CIVIC or fa > 700 or t.get("amenity"):
+            arch = "civic"
+        elif b["attached"]:
+            near = cw[int(road_tree.nearest(b["poly"].centroid))][3]
+            on_greenmount = "Greenmount Avenue" in (t.get("addr:street"), near)
+            arch = "storefront" if on_greenmount and b["porch"] == 0 else "row_porch" if b["porch"] > 0 else "row"
+        else:
+            arch = "detached_porch" if b["porch"] > 0 else "detached"
+        st = kits.style(b, f"row{b['row']}")
+        if arch == "civic":
+            st["wall"] = "stone"
+        elif arch == "garage":
+            st["wall"] = "brick" if b["attached"] else "siding"
+        elif arch.startswith("detached"):
+            st["wall"] = SIDINGS[int(st["rng"].integers(len(SIDINGS)))]
+            if b["roof"].startswith("gable"):
+                st["roof"] = "roof_tar"
+        b["arch"], b["style"] = arch, st
+    for ms in members.values():          # doors alternate along a row, so neighbors mirror each other
+        if len(ms) > 1 and ms[0]["n"] is not None:
+            ax = np.array([-ms[0]["n"][1], ms[0]["n"][0]])
+            for k, b in enumerate(sorted(ms, key=lambda b: np.array(b["poly"].centroid.coords[0]) @ ax)):
+                b["door_left"] = k % 2 == 0
+    arch_count = {}
+    for b in site_b:
+        arch_count[b["arch"]] = arch_count.get(b["arch"], 0) + 1
+    log(f"archetypes {arch_count}")
+
     # ---- building meshes
-    def wall_mat(b):
-        kind = b["tags"].get("building")
-        if kind in ("church", "chapel", "cathedral", "school", "kindergarten", "commercial", "retail", "civic",
-                    "public", "office", "industrial", "warehouse", "garage", "garages", "shed"):
-            return "stone"
-        if b["tags"].get("amenity") or b["tags"].get("shop"):
-            return "stone"
-        return "brick" if b["attached"] or kind == "apartments" else "siding"
+    def open_porch(b):
+        return b.get("arch") in ("row_porch", "detached_porch") and b["porch"] > 0.8
+
+    kit_ctx = {"H": H, "exposed": exposed}
 
     def prism(mb, geom, base, topfn, wmat, rmat):
         for part in polys_of(geom):
@@ -647,9 +718,14 @@ def main():
                              "addresses": "; ".join(f"{b['tags'].get('addr:housenumber', '')} {b['tags'].get('addr:street', '')}".strip() for b in ms)})
         for b in ms:
             b["object"] = name
-            wm = wall_mat(b)
+            st = b["style"]
             for kind, geom, fn in b["pieces"]:
-                prism(mb, geom, b["base"] - 0.3, fn, wm, "porch_roof" if kind == "porch" else "roof")
+                if kind == "porch" and open_porch(b):
+                    continue                     # the kit builds it open: deck, posts, railing, roof
+                prism(mb, geom, b["base"] - 0.3, fn, st["wall"], "porch_roof" if kind == "porch" else st["roof"])
+            P = kits.Parts()
+            kits.build(P, b, kit_ctx)
+            P.emit(mb)
         objects.append(mb)
     ctx = MB("Context_Buildings")
     for b in bld:
@@ -661,6 +737,8 @@ def main():
 
     # ---- ground zones (site)
     blds_all = unary_union([b["poly"] for b in bld])
+    # the ground runs on under open porches (their decks stand on it), so cut only the closed pieces
+    cut = unary_union([g for b in bld for kind, g, fn in b["pieces"] if not (kind == "porch" and open_porch(b))])
     roads = unary_union([l.buffer(w / 2, quad_segs=4) for l, w, sw, _ in cw]).intersection(site)
     walks = unary_union([l.buffer(w / 2 + sw, quad_segs=4) for l, w, sw, _ in cw]
                         + [l.buffer(0.9, quad_segs=2) for l in paths])
@@ -668,11 +746,11 @@ def main():
     alleys = unary_union([l.buffer(w / 2, cap_style="flat", quad_segs=2) for l, w in svc])
     alleys = alleys.difference(roads).difference(walks).difference(blds_all).intersection(site)
     lot = unary_union(lots).difference(unary_union([roads, walks, alleys, blds_all])).intersection(site) if lots else Polygon()
-    grass = site.difference(unary_union([roads, walks, alleys, lot, blds_all]))
+    grass = site.difference(unary_union([roads, walks, alleys, lot, cut]))
     zones = {"road": roads, "sidewalk": walks, "alley": alleys, "lot": lot, "grass": grass}
     gmb, curbs = MB("Ground", smooth=True), MB("Curbs")
     zone_area = {}
-    against_wall = blds_all.buffer(0.05)    # skirts along a building wall are hidden inside it; skip them
+    against_wall = cut.buffer(0.05)         # skirts along a building wall are hidden inside it; skip them
     shapely.prepare(against_wall)
     for zname, geom in zones.items():
         geom = shapely.set_precision(geom, 0.001)     # snap to mm: drops near-degenerate slivers
@@ -789,10 +867,30 @@ def main():
         {"name": "old_york", "eye": [70, gy(70, 150, 45), 150], "look": [0, gy(0, 0, 0), 0], "fov": 50},
     ]
 
+    # close-ups for judging the kits: stand across the street from a typical house of each kind
+    def facing(b, back=12.0, side=5.0, up=1.8, fov=50):
+        c = np.array(b["poly"].centroid.coords[0])
+        n, perp = b["n"], np.array([-b["n"][1], b["n"][0]])
+        f = c + n * b["s1"]
+        eye, look = f + n * back + perp * side, f - perp * side * 0.3
+        return {"name": b["arch"], "fov": fov,
+                "eye": [round(eye[0], 2), gy(eye[0], -eye[1], up), round(-eye[1], 2)],
+                "look": [round(look[0], 2), gy(look[0], -look[1], 3.2), round(-look[1], 2)]}
+
+    acx, acy = area.centroid.x, area.centroid.y
+    by_dist = sorted((b for b in site_b if b["n"] is not None and b["zone"] == "core"),
+                     key=lambda b: b["poly"].centroid.distance(Point(acx, acy)))
+    closeups = []
+    for arch in ("row_porch", "storefront", "detached_porch", "row"):
+        pool = [b for b in by_dist if b["arch"] == arch and b["main"] - b["ground"] > 6.0
+                and (arch not in ("row_porch", "row") or len(members[b["row"]]) >= 4)]
+        if pool:
+            closeups.append(facing(pool[0]))
+
     # ---- write everything
     os.makedirs(C.BUILD, exist_ok=True)
     os.makedirs(C.DATA, exist_ok=True)
-    out = {"area": C.AREA, "origin_lonlat": o_ll, "origin_elevation_m": y0, "views": views,
+    out = {"area": C.AREA, "origin_lonlat": o_ll, "origin_elevation_m": y0, "views": views, "closeups": closeups,
            "materials": {k: list(v) for k, v in MATS.items()},
            "objects": [o.build(y0) for o in objects if o.tris]}
     with open(C.GEOM_JSON, "w") as f:
@@ -806,6 +904,7 @@ def main():
         c = b["poly"].centroid
         props = {
             "osm_id": b["id"], "zone": b["zone"], "object": b.get("object"), "row_size": len(members[b["row"]]),
+            "archetype": b.get("arch"), "door_left": b.get("door_left"),
             "address": f"{t.get('addr:housenumber', '')} {t.get('addr:street', '')}".strip() or None,
             "building": t.get("building"), "name": t.get("name"), "attached": b["attached"],
             "game_x": round(c.x, 2), "game_z": round(-c.y, 2), "ground_y": round(b["ground"] - y0, 2),
@@ -833,7 +932,7 @@ def main():
         "row_objects": sum(o.name.startswith(("Row_", "Bldg_")) for o in objects), "osm_lidar_shift_m": [sx, sy], "overlap_before_after": [round(iou0, 3), round(best[2], 3)],
         "site_height_m": {"p10": round(float(np.percentile(hts, 10)), 2), "median": round(float(np.median(hts)), 2),
                           "p90": round(float(np.percentile(hts, 90)), 2), "max": round(float(hts.max()), 2)},
-        "site_with_porch": int(porch.sum()), "flags": flags_count, "trees": len(trees), "triangles": tris,
+        "site_with_porch": int(porch.sum()), "archetypes": arch_count, "flags": flags_count, "trees": len(trees), "triangles": tris,
         "zone_m2": zone_area, "lidar_classes": hist, "origin_elevation_m": round(y0, 2),
     }
     with open(C.REPORT_JSON, "w") as f:
