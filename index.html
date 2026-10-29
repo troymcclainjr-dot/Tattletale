@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tattletale 2-Pack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Courier+Prime:wght@400;700&family=Barlow+Condensed:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="css/style.css">
+<style>[hidden]{display:none!important}</style>
+</head>
+<body>
+<div id="stage"><canvas id="cv" tabindex="0" aria-label="Tattletale 2-Pack game view"></canvas></div>
+
+<div class="hud" id="markers"></div>
+<div class="hud" id="bino" hidden><svg id="binosvg"><defs><mask id="binomask"><rect id="binorect" x="0" y="0" fill="#fff"/><circle id="bc1" fill="#000"/><circle id="bc2" fill="#000"/></mask></defs><rect id="binoshade" x="0" y="0" fill="rgba(4,6,12,.93)" mask="url(#binomask)"/></svg></div>
+<svg id="reticle" viewBox="0 0 84 84" hidden><circle class="bg" cx="42" cy="42" r="34"/><circle class="fg" id="ring" cx="42" cy="42" r="34" stroke-dasharray="213.6" stroke-dashoffset="213.6"/><line x1="42" y1="2" x2="42" y2="16" stroke="#f6f1e3" stroke-width="2"/><line x1="42" y1="68" x2="42" y2="82" stroke="#f6f1e3" stroke-width="2"/><line x1="2" y1="42" x2="16" y2="42" stroke="#f6f1e3" stroke-width="2"/><line x1="68" y1="42" x2="82" y2="42" stroke="#f6f1e3" stroke-width="2"/></svg>
+<div class="hud" id="binolabel" hidden></div>
+<div class="hud" id="binotop" hidden>BINOCULARS · MOUSE TO AIM · WHEEL TO ZOOM</div>
+
+<div class="hud" id="plate" hidden>
+  <div class="brand">TATTLETALE 2-PACK</div>
+  <div class="score"><small>SNITCH POINTS</small><span id="score">0</span></div>
+  <div class="rank" id="rank">Hall Monitor</div>
+  <div id="strikes">GOT AWAY <i></i><i></i><i></i></div>
+  <div id="still"></div>
+  <div id="stagelbl"></div>
+  <div id="told"></div>
+</div>
+<div class="hud" id="cases" hidden></div>
+<div class="hud" id="prompt" hidden></div>
+<div class="hud" id="lock" hidden role="dialog" aria-live="polite"><div class="lk-eye" id="lkeye"></div><div class="lk-t" id="lkt"></div><div id="lkbody"></div><div class="lk-msg" id="lkmsg"></div></div>
+<canvas class="hud" id="mini" hidden aria-label="Map of the block"></canvas>
+<div class="hud" id="subs" hidden></div>
+<div class="hud" id="toast" hidden></div>
+<div class="hud" id="keys" hidden><kbd>WASD</kbd> walk · <kbd>Shift</kbd> run · drag or <kbd>←</kbd><kbd>→</kbd> look<br><kbd>Right mouse</kbd>/<kbd>Space</kbd> spy · <kbd>E</kbd> use · <kbd>M</kbd> music · <kbd>P</kbd> pause</div>
+
+<div id="livecam" hidden><div class="lbl" id="lclbl">LIVE</div><div class="big" id="lcbig">0:00</div><div class="what" id="lcwhat"></div></div>
+<div id="pzpen" hidden></div>
+<section id="puzzle" hidden aria-live="polite">
+  <header><div class="eyebrow" id="pzeye">PAYPHONE</div><h2 id="pztitle"></h2><p id="pzsub"></p></header>
+  <div id="pz"></div>
+  <footer><span>Every second counts. The crime is still happening.</span><button id="hang">Hang up</button></footer>
+</section>
+
+<div class="screen" id="title">
+  <div class="card">
+    <h1 class="logo">Tattletale 2-Pack<span>Snitch Season · playable prototype</span></h1>
+    <div class="form">
+      <div class="hd"><span>PRECINCT 9 · INCIDENT REPORT</span><span>FORM 911-B</span></div>
+      <p>Crime is breaking out all over the block, and every crime gets reported its own way. Follow a trail of cash. Tail the mailman. Blow your whistle on the beat. Tell Timmy's mama. Your case file always says what to do next, and the timer never stops.</p>
+      <dl>
+        <dt><kbd>W A S D</kbd></dt><dd>Walk (hold <kbd>Shift</kbd> to run)</dd>
+        <dt>Drag / <kbd>← →</kbd></dt><dd>Turn the camera</dd>
+        <dt>Hold <kbd>Right mouse</kbd> or <kbd>Space</kbd></dt><dd>Binoculars. Keep the suspect in the circle.</dd>
+        <dt><kbd>E</kbd></dt><dd>Do it: buy, knock, measure, mail, whistle, call</dd>
+        <dt><kbd>M</kbd> · <kbd>P</kbd></dt><dd>Music on/off · Pause</dd>
+      </dl>
+      <p>3 crimes get away and your shift is over.</p>
+    </div>
+    <p class="note" id="nokey">This prototype needs a keyboard and mouse.</p>
+    <div class="btnrow"><button class="go" id="start">Start snitchin'</button><button class="go alt" id="cont" hidden>Continue: Stage 2</button></div>
+  </div>
+</div>
+
+<div class="screen" id="over" hidden>
+  <div class="card">
+    <h1 class="logo"><span id="overtitle" style="display:inline;font-size:1em;color:inherit;letter-spacing:0;margin:0">Shift over</span><span id="overline"></span></h1>
+    <div class="stats">
+      <div><b id="o1">0</b><span>Snitch points</span></div>
+      <div><b id="o2">0</b><span>Busted</span></div>
+      <div><b id="o3">0</b><span>Still there</span></div>
+      <div><b id="o4">0:00</b><span>Time on the block</span></div>
+    </div>
+    <div class="btnrow"><button class="go" id="again">Snitch again</button><button class="go alt" id="again2" hidden>Replay Stage 2</button></div>
+  </div>
+</div>
+<div id="stagecard" hidden><div><b id="sctitle"></b><span id="scsub"></span></div></div>
+<section id="mv" hidden aria-label="Music video">
+  <header><div><b>Tattletale 2-Pack · "Still There"</b><span>Stage 1 clear. Roll the video.</span></div><button id="mvskip">Skip to Stage 2</button></header>
+  <video id="mvv" playsinline controls preload="none"><source src="media/still_there.mp4" type="video/mp4"></video>
+  <div id="mvmsg"></div>
+  <button id="mvplay" hidden>Play the video</button>
+</section>
+<div id="pause" hidden><div>PAUSED<small>Press P to keep snitchin'</small></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/world.js"></script>
+<script src="js/characters.js"></script>
+<script src="js/movement.js"></script>
+<script src="js/state.js"></script>
+<script src="js/crimes-core.js"></script>
+<script src="js/crimes-stage1.js"></script>
+<script src="js/crimes-stage2.js"></script>
+<script src="js/minigames.js"></script>
+<script src="js/copcar.js"></script>
+<script src="js/player.js"></script>
+<script src="js/animate.js"></script>
+<script src="js/interact.js"></script>
+<script src="js/puzzles.js"></script>
+<script src="js/hud.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
