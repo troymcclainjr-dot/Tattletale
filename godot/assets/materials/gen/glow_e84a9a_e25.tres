@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://41kwatnqblog"]
+
+[resource]
+resource_name = "glow_e84a9a_e25"
+albedo_color = Color(0.9098039, 0.2901961, 0.6039216, 1)
+roughness = 0.4
+emission_enabled = true
+emission = Color(0.9098039, 0.2901961, 0.6039216, 1)
+emission_energy_multiplier = 2.5

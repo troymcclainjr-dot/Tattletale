@@ -1,0 +1,21 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://11b4tx12l573"]
+
+[ext_resource type="Shader" uid="uid://ucipatddbwth" path="res://assets/materials/clay.gdshader" id="1_lht1v"]
+[ext_resource type="Texture2D" uid="uid://bk84etmotg3pa" path="res://assets/materials/clay_mottle.png" id="2_nudfu"]
+[ext_resource type="Texture2D" uid="uid://bqrt1xk1vuejk" path="res://assets/materials/clay_normal.png" id="3_0twbb"]
+
+[resource]
+resource_name = "metal_f2c230_r32"
+render_priority = 0
+shader = ExtResource("1_lht1v")
+shader_parameter/albedo = Color(0.9490196, 0.7607843, 0.1882353, 1)
+shader_parameter/roughness = 0.32
+shader_parameter/metallic = 0.85
+shader_parameter/print_amount = 0.35
+shader_parameter/mottle_amount = 0.3
+shader_parameter/print_scale = null
+shader_parameter/normal_depth = null
+shader_parameter/sheen = 0.08
+shader_parameter/sss = null
+shader_parameter/clay_normal = ExtResource("3_0twbb")
+shader_parameter/clay_mottle = ExtResource("2_nudfu")

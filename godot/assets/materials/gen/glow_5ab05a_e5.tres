@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://cpsfo611q8vda"]
+
+[resource]
+resource_name = "glow_5ab05a_e5"
+albedo_color = Color(0.3529412, 0.6901961, 0.3529412, 1)
+roughness = 0.4
+emission_enabled = true
+emission = Color(0.3529412, 0.6901961, 0.3529412, 1)
+emission_energy_multiplier = 0.5

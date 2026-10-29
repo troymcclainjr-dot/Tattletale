@@ -1,0 +1,8 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://de8osxhwcn22m"]
+
+[resource]
+resource_name = "glow_ffe6b0_e10"
+albedo_color = Color(1, 0.9019608, 0.6901961, 1)
+roughness = 0.4
+emission_enabled = true
+emission = Color(1, 0.9019608, 0.6901961, 1)

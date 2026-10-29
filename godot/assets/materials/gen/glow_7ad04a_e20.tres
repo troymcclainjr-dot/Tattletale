@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://faufh00clfaa"]
+
+[resource]
+resource_name = "glow_7ad04a_e20"
+albedo_color = Color(0.47843137, 0.8156863, 0.2901961, 1)
+roughness = 0.4
+emission_enabled = true
+emission = Color(0.47843137, 0.8156863, 0.2901961, 1)
+emission_energy_multiplier = 2.0

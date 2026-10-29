@@ -1,0 +1,8 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://dcll73plsnms6"]
+
+[resource]
+resource_name = "glass_dde6ee_a30"
+transparency = 1
+cull_mode = 2
+albedo_color = Color(0.8666667, 0.9019608, 0.93333334, 0.3)
+roughness = 0.35

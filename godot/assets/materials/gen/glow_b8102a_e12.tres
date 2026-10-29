@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://cjqfjgswws8ow"]
+
+[resource]
+resource_name = "glow_b8102a_e12"
+albedo_color = Color(0.72156864, 0.0627451, 0.16470589, 1)
+roughness = 0.4
+emission_enabled = true
+emission = Color(0.72156864, 0.0627451, 0.16470589, 1)
+emission_energy_multiplier = 1.2

@@ -1,0 +1,21 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://fexsskb2qg3d"]
+
+[ext_resource type="Shader" uid="uid://ucipatddbwth" path="res://assets/materials/clay.gdshader" id="1_1nhli"]
+[ext_resource type="Texture2D" uid="uid://bk84etmotg3pa" path="res://assets/materials/clay_mottle.png" id="2_f534f"]
+[ext_resource type="Texture2D" uid="uid://bqrt1xk1vuejk" path="res://assets/materials/clay_normal.png" id="3_7hp77"]
+
+[resource]
+resource_name = "clay_a49d8a_r86"
+render_priority = 0
+shader = ExtResource("1_1nhli")
+shader_parameter/albedo = Color(0.6431373, 0.6156863, 0.5411765, 1)
+shader_parameter/roughness = 0.86
+shader_parameter/metallic = null
+shader_parameter/print_amount = null
+shader_parameter/mottle_amount = null
+shader_parameter/print_scale = null
+shader_parameter/normal_depth = null
+shader_parameter/sheen = null
+shader_parameter/sss = null
+shader_parameter/clay_normal = ExtResource("3_7hp77")
+shader_parameter/clay_mottle = ExtResource("2_f534f")
