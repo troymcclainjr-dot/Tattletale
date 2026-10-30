@@ -9,6 +9,29 @@ node_modules/
 godot/.godot/
 godot/*.translation
 blender/**/__pycache__/
+godot/tools/**/__pycache__/
 *.blend1
 # .blend files are rebuilt by the blender/assets/*.py scripts
 blender/blend/
+
+# Local analysis, captures and machine-specific launch shortcuts.
+/graphify-out/
+/Play Pen Lucy.lnk
+/artifacts/*
+!/artifacts/pen-lucy-dense/
+/artifacts/pen-lucy-dense/*
+!/artifacts/pen-lucy-dense/acceptance.md
+!/artifacts/pen-lucy-dense/geometry-audit.json
+!/artifacts/pen-lucy-dense/world-report.json
+!/artifacts/pen-lucy-dense/performance/
+/artifacts/pen-lucy-dense/performance/*
+!/artifacts/pen-lucy-dense/performance/start/
+!/artifacts/pen-lucy-dense/performance/north/
+/artifacts/pen-lucy-dense/performance/start/*
+/artifacts/pen-lucy-dense/performance/north/*
+!/artifacts/pen-lucy-dense/performance/start/metrics.json
+!/artifacts/pen-lucy-dense/performance/north/metrics.json
+!/artifacts/pen-lucy-dense/traffic/
+/artifacts/pen-lucy-dense/traffic/*
+!/artifacts/pen-lucy-dense/traffic/network-smoke.json
+!/artifacts/pen-lucy-dense/traffic/network-near-smoke.json

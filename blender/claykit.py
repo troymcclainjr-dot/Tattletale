@@ -1,4 +1,4 @@
-"""claykit - shared helpers for building Tattletale's clay assets in Blender 5.2.
+"""claykit - shared helpers for building Tattletale's assets in Blender 5.2.
 
 Every asset script does:
 
@@ -21,13 +21,13 @@ Rotations: rot=(rx, ry, rz) is a three.js Euler XYZ in radians, converted for yo
 Sizes: box(w, h, d) is width (x), height (y), depth (z) like THREE.BoxGeometry.
 
 MATERIALS. Name encodes the look; Godot rebuilds every material from its name:
-    clay_RRGGBB_rNN   matte plasticine (NN = roughness*100). The default.
-    gloss_RRGGBB_rNN  smooth/varnished clay: car paint, glass windows, plastic.
+    clay_RRGGBB_rNN   matte surface (NN = roughness*100). Legacy name.
+    gloss_RRGGBB_rNN  smooth/varnished surface: car paint, glass windows, plastic.
     metal_RRGGBB_rNN  metal look (aluminium walker, chain, poles if you like).
     glow_RRGGBB_eNN   emissive (NN = strength*10): lamps, ember, light bars.
     glass_RRGGBB_aNN  transparent (NN = opacity*100): fence mesh, pipe glass.
 Use ck.mat(...) or the shortcuts ck.clay("#8a4a3a"), ck.gloss(...), ck.glow(...).
-Never use image textures: the clay surface detail is added in Godot from the name.
+Materials use clean base colors and surface roughness; do not add global clay/noise effects.
 """
 import bpy, bmesh, math, os, random
 from mathutils import Vector, Matrix, Euler, noise
@@ -36,8 +36,6 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), 
 MODELS = os.path.join(ROOT, "godot", "assets", "models")
 BLENDS = os.path.join(ROOT, "blender", "blend")
 PREVIEWS = os.path.join(ROOT, ".work", "previews")
-CLAY_NORMAL = os.path.join(ROOT, "godot", "assets", "materials", "clay_normal.png")
-CLAY_MOTTLE = os.path.join(ROOT, "godot", "assets", "materials", "clay_mottle.png")
 FONTS = {
     "impact": r"C:\Windows\Fonts\impact.ttf",      # signs, graffiti (JS: Impact / Bungee)
     "black": r"C:\Windows\Fonts\ariblk.ttf",       # chunky lettering (Arial Black)
@@ -531,49 +529,6 @@ def _engine(sc):
     return "BLENDER_WORKBENCH"
 
 
-def _preview_materials():
-    """Add the same triplanar thumbprint normal + mottle Godot uses, so renders match the game.
-    Only call after export()."""
-    nimg = bpy.data.images.load(CLAY_NORMAL, check_existing=True) if os.path.exists(CLAY_NORMAL) else None
-    mimg = bpy.data.images.load(CLAY_MOTTLE, check_existing=True) if os.path.exists(CLAY_MOTTLE) else None
-    if nimg:
-        nimg.colorspace_settings.name = "Non-Color"
-    for m in bpy.data.materials:
-        if not m.use_nodes or not (m.name.startswith("clay_") or m.name.startswith("gloss_")):
-            continue
-        nt = m.node_tree
-        bsdf = next((n for n in nt.nodes if n.type == "BSDF_PRINCIPLED"), None)
-        if not bsdf or bsdf.inputs["Normal"].is_linked:
-            continue
-        tc = nt.nodes.new("ShaderNodeTexCoord")
-        mp = nt.nodes.new("ShaderNodeMapping")
-        mp.inputs["Scale"].default_value = (2.2, 2.2, 2.2)
-        nt.links.new(tc.outputs["Object"], mp.inputs["Vector"])
-        if nimg:
-            it = nt.nodes.new("ShaderNodeTexImage")
-            it.image = nimg
-            it.projection = "BOX"
-            it.projection_blend = 0.25
-            nm = nt.nodes.new("ShaderNodeNormalMap")
-            nm.inputs["Strength"].default_value = 0.55 if m.name.startswith("clay_") else 0.18
-            nt.links.new(mp.outputs["Vector"], it.inputs["Vector"])
-            nt.links.new(it.outputs["Color"], nm.inputs["Color"])
-            nt.links.new(nm.outputs["Normal"], bsdf.inputs["Normal"])
-        if mimg and m.name.startswith("clay_"):
-            mt = nt.nodes.new("ShaderNodeTexImage")
-            mt.image = mimg
-            mt.projection = "BOX"
-            mt.projection_blend = 0.25
-            mx = nt.nodes.new("ShaderNodeMix")
-            mx.data_type = "RGBA"
-            mx.blend_type = "MULTIPLY"
-            mx.inputs["Factor"].default_value = 1.0
-            mx.inputs["A"].default_value = bsdf.inputs["Base Color"].default_value
-            nt.links.new(mp.outputs["Vector"], mt.inputs["Vector"])
-            nt.links.new(mt.outputs["Color"], mx.inputs["B"])
-            nt.links.new(mx.outputs["Result"], bsdf.inputs["Base Color"])
-
-
 def _bounds(objs=None):
     bpy.context.view_layer.update()
     pts = []
@@ -612,7 +567,6 @@ def preview(asset_id, views=None, size=(900, 700), focus=None, ground=True, samp
     # safe to call preview() several times: drop the previous call's stage first
     for o in [o for o in sc.objects if o.name.split(".")[0] in ("_ground", "_pv_sun", "_pv_cam")]:
         bpy.data.objects.remove(o, do_unlink=True)
-    _preview_materials()
     _engine(sc)
     try:
         sc.eevee.taa_render_samples = samples

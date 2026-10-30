@@ -12,30 +12,22 @@ shared helpers in `claykit.py`. The scripts are the source of truth. Each run wr
 python godot/tools/godot_preview.py res://assets/models/<id>.glb .work/previews/<id>_godot.png
 ```
 
-The second command renders the model inside Godot with the game's real clay shader and lighting.
+The second command renders the model inside Godot with the game's shared surface shader and lighting.
 That render is the one that counts.
 
-## Art direction: hand-made clay, improved
+## Art direction: clean stylized surfaces
 
-The web prototype built everything from raw three.js primitives. The port keeps every asset's
-**identity, colors, size, position and function** and makes it look like a real stop-motion
-set built by hand:
+Keep each asset's identity, palette, scale, position and function. Use clean base colors
+and material-appropriate roughness. Do not add blanket grain, thumbprint bumps, mottling,
+plasticine sheen, or random deformation to make assets look like clay. The legacy `clay_`
+material names remain for compatibility; they now render as clean surfaces.
 
-- **Plasticine, not plastic.** Soft rounded edges everywhere (bevel boxes, never knife edges),
-  gentle lumps (`ck.lumpy`), slight hand-made wobble on long straight things (`ck.wobble`).
-  Nothing perfectly straight, symmetric or mechanically repeated. Vary copies a little.
-- **Chunky and readable.** The camera sits about 5.6 m behind 2-Pack, so detail has to read
-  at that distance. Prefer a few bold, well-shaped forms over lots of fine fiddly bits. Add the
-  details a model maker would sculpt: frames, sills, rims, seams, caps, bolts, handles, soles,
-  creases, pressed lines, chips.
-- **Same palette.** Use the JS hex colors (`ck.PAL` has them by name). Add new colors only for
-  new details, and keep them in the same muted, slightly warm family.
-- **Matte by default.** Roughness 0.8 to 0.95 for clay. Use `gloss_` only where it would
-  really be glossy: windows, car paint, lemonade, sunglasses, varnished wood.
-- **Lettering is sculpted.** Signs, graffiti and tattoos are raised clay letters (`ck.text`),
-  in the JS wording exactly. Never change wording (house rule).
-- **Budget.** Props 500 to 8k triangles, buildings up to about 40k each, characters about 10k to 25k.
-  Join static parts into a few meshes (`ck.join`) so Godot doesn't get thousands of nodes.
+Use readable silhouettes and purposeful details such as frames, sills, seams, handles
+and lettering. Preserve the owners' exact wording. Existing modeled shapes remain;
+this material correction does not rebuild character or building geometry.
+
+Budget: props 500-8k triangles, buildings up to about 40k, characters about 10k-25k.
+Join static parts into a few meshes to keep node counts manageable.
 
 ## Conventions (Godot depends on these)
 

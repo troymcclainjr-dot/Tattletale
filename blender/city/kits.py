@@ -13,8 +13,10 @@ import zlib
 
 import numpy as np
 import shapely
-from shapely.geometry import Point
+from shapely.geometry import Point, Polygon
 from shapely.geometry.polygon import orient
+
+BUILD_STATS = {"porches": 0, "stair_rail_terminal_posts": 0, "rear_doors": 0, "businesses": 0, "road_parts_rejected": 0, "max_stair_riser_m": 0.0, "min_stair_tread_m": 0.30}
 
 # material id -> (kind, hex, roughness), merged into process.py's MATS
 KIT_MATS = {
@@ -112,12 +114,23 @@ def boxes(c, size, a, r, back, axis):
 class Parts:
     """Boxes collected for one mesh, emitted per material in one vectorized call."""
 
-    def __init__(s):
+    def __init__(s, forbidden=None):
         s.items = {}
+        s.forbidden = forbidden
+        s.section = "facade"
+        s.rejected_sections = {}
 
     def box(s, c, size, a, mat, r=0.0, back=True, axis="a"):
         if min(size) <= 1e-3:
             return
+        if s.forbidden is not None:
+            aa = np.asarray(a); bb = np.array([aa[1], -aa[0]])
+            footprint = Polygon([np.asarray(c[:2]) + aa * u * size[0] / 2 + bb * v * size[1] / 2
+                                 for u, v in ((-1,-1),(1,-1),(1,1),(-1,1))])
+            if footprint.intersects(s.forbidden):
+                BUILD_STATS["road_parts_rejected"] += 1
+                s.rejected_sections[s.section] = s.rejected_sections.get(s.section, 0) + 1
+                return
         s.items.setdefault(mat, []).append((c, size, a, r, back, axis))
 
     def emit(s, mb):
@@ -193,9 +206,11 @@ def steps(P, W, u, top, ground, v0, mat, width=1.25, max_run=1.8):
     rise_total = top - ground
     if rise_total < 0.12:
         return
-    n = int(np.clip(round(rise_total / 0.19), 1, 8))
-    run = min(0.3, max_run / n)
+    n = max(1, int(np.ceil(rise_total / 0.18)))
+    run = max(0.28, min(0.30, max_run / n))
     rise = rise_total / n
+    BUILD_STATS["max_stair_riser_m"] = max(BUILD_STATS["max_stair_riser_m"], float(rise))
+    BUILD_STATS["min_stair_tread_m"] = min(BUILD_STATS["min_stair_tread_m"], float(run))
     for i in range(1, n):
         W.box(P, u - width / 2, u + width / 2, v0 + (i - 1) * run, v0 + i * run, ground - 0.3, top - i * rise, mat, r=0.03)
 
@@ -204,6 +219,7 @@ def porch(P, W, d, floor0, top, g_front, st, door_u):
     """An open front porch across the whole front: deck on a solid base, posts, railing with
     a gap at the steps, a roof slab with a fascia, and steps down to the walk."""
     L, t = W.L, st["trim"]
+    BUILD_STATS["porches"] += 1
     W.box(P, 0.03, L - 0.03, 0.0, d - 0.02, g_front - 0.6, floor0, "porch_floor", r=0.04)
     posts = np.linspace(0.16, L - 0.16, max(2, int(L / 2.4) + 1))
     for u in posts:
@@ -215,6 +231,14 @@ def porch(P, W, d, floor0, top, g_front, st, door_u):
         for a0, a1 in ((u0 + 0.1, min(u1 - 0.1, gap[0])), (max(u0 + 0.1, gap[1]), u1 - 0.1)):
             if a1 - a0 < 0.25:
                 continue
+            # Cutting the rail for the stair opening must leave a supported end.
+            # Newels sit outside the opening, preserving its full clear width.
+            if abs(a1 - gap[0]) < 1e-6:
+                W.box(P, a1 - 0.13, a1, d - 0.30, d - 0.16, floor0, floor0 + 1.0, t, r=0.02, axis="z")
+                BUILD_STATS["stair_rail_terminal_posts"] += 1
+            if abs(a0 - gap[1]) < 1e-6:
+                W.box(P, a0, a0 + 0.13, d - 0.30, d - 0.16, floor0, floor0 + 1.0, t, r=0.02, axis="z")
+                BUILD_STATS["stair_rail_terminal_posts"] += 1
             W.box(P, a0, a1, d - 0.28, d - 0.18, floor0 + 0.82, floor0 + 0.93, t, r=0.025)
             W.box(P, a0, a1, d - 0.27, d - 0.19, floor0 + 0.1, floor0 + 0.18, t)
             nb = max(1, int((a1 - a0) / 0.6))
@@ -222,11 +246,11 @@ def porch(P, W, d, floor0, top, g_front, st, door_u):
                 uu = a0 + (k + 0.5) * (a1 - a0) / nb
                 W.box(P, uu - 0.035, uu + 0.035, d - 0.26, d - 0.2, floor0 + 0.18, floor0 + 0.82, t)
     for u in (0.08, L - 0.08):                                                     # side rails
-        W.box(P, u - 0.05, u + 0.05, 0.2, d - 0.3, floor0 + 0.82, floor0 + 0.93, t, r=0.025)
+        W.box(P, u - 0.05, u + 0.05, 0.0, d - 0.3, floor0 + 0.82, floor0 + 0.93, t, r=0.025)
     steps(P, W, door_u, floor0, g_front, d, "porch_floor")
 
 
-def storefront(P, W, z0, st, door_u):
+def storefront(P, W, z0, st, door_u, business=None):
     """Ground floor shop: knee wall, display glass with mullions, door, sign band, maybe an awning."""
     L, t = W.L, st["trim"]
     W.box(P, 0.12, L - 0.12, 0, 0.07, z0 - 0.2, z0 + 0.5, st["base"], r=0.03)
@@ -240,13 +264,33 @@ def storefront(P, W, z0, st, door_u):
             W.box(P, u - 0.04, u + 0.04, 0.05, 0.1, z0 + 0.58, z0 + 2.92, t)
     door(P, W, door_u, z0, st)
     W.box(P, 0.08, L - 0.08, 0, 0.14, z0 + 3.1, z0 + 3.8, st["sign"], r=0.04)
+    # Commercial ground floor is generated instead of residential windows.
+    kind = (business or {}).get("type", "market")
+    if kind == "barber":
+        for k in range(8):
+            W.box(P, L - 0.27, L - 0.08, 0.18, 0.37, z0 + 0.8 + k * 0.17, z0 + 0.96 + k * 0.17,
+                  ["trim_red", "trim_white", "door_blue"][k % 3], r=0.025, axis="z")
+    elif kind == "laundromat":
+        for u in np.arange(1.7, L - 0.6, 1.05):
+            if abs(u - door_u) < 1.0: continue
+            W.box(P, u - 0.38, u + 0.38, 0.08, 0.12, z0 + 0.63, z0 + 1.48, "trim_white")
+            W.box(P, u - 0.24, u + 0.24, 0.12, 0.14, z0 + 0.84, z0 + 1.32, "glass", r=0.10, axis="z")
+    elif kind == "liquor":
+        for u in np.arange(0.55, L - 0.4, 0.24):
+            if abs(u - door_u) < 0.72: continue
+            W.box(P, u - 0.016, u + 0.016, 0.09, 0.13, z0 + 0.65, z0 + 2.88, "door_black")
+    elif kind == "takeout":
+        u = L - 0.65 if door_u < L / 2 else 0.65
+        W.box(P, u - 0.37, u + 0.37, 0.10, 0.14, z0 + 0.9, z0 + 1.9, "trim_cream")
+        for k in range(5):
+            W.box(P, u - 0.28, u + 0.28, 0.14, 0.15, z0 + 1.05 + k * 0.14, z0 + 1.08 + k * 0.14, "trim_red")
     if st["awning"]:
         for k, (v0, v1) in enumerate(((0, 0.45), (0.42, 0.87), (0.84, 1.3))):
             W.box(P, 0.15, L - 0.15, v0, v1, z0 + 3.05 - 0.16 * k - 0.08, z0 + 3.05 - 0.16 * k, st["awning"], r=0.025)
         W.box(P, 0.15, L - 0.15, 1.24, 1.32, z0 + 2.35, z0 + 2.75, st["awning"], r=0.02)
 
 
-def windows_grid(P, W, floor0, floors, fh, st, eave, ground, ww=0.95):
+def windows_grid(P, W, floor0, floors, fh, st, eave, ground, ww=0.95, door_u=None):
     """Plain windows on a side or back wall, on the same floor levels as the front."""
     n = int((W.L - 0.6) / 2.6)
     if n < 1:
@@ -257,7 +301,9 @@ def windows_grid(P, W, floor0, floors, fh, st, eave, ground, ww=0.95):
         if zs + wh > eave - 0.35 or wh < 0.8 or zs < ground + 0.4:
             continue
         for k in range(n):
-            window(P, W, (k + 0.5) * W.L / n, zs, ww, wh, st, simple=True)
+            u = (k + 0.5) * W.L / n
+            if f == 0 and door_u is not None and abs(u - door_u) < 0.7 + ww / 2: continue
+            window(P, W, u, zs, ww, wh, st, simple=True)
 
 
 # ------------------------------------------------------------------ houses
@@ -284,7 +330,8 @@ def style(b, row_seed):
 def _main_poly(b):
     parts = [g for kind, geom, fn in b["pieces"] if kind == "main" for g in shapely.get_parts(geom)
              if g.geom_type == "Polygon" and g.area > 1.0]
-    return max(parts, key=lambda g: g.area) if parts else None
+    merged = [g for g in shapely.get_parts(shapely.union_all(parts).simplify(0.025, preserve_topology=True)) if g.geom_type == "Polygon"]
+    return max(merged, key=lambda g: g.area) if merged else None
 
 
 def _edges(poly):
@@ -292,10 +339,60 @@ def _edges(poly):
     return [(r[i], r[i + 1]) for i in range(len(r) - 1)]
 
 
+def rear_entry(P, b, ctx, ground, floor0, n, roof_at):
+    """Independent rear service entry; a low front eave must not skip it."""
+    closed = shapely.union_all([geom for kind, geom, fn in b["pieces"] if kind != "porch"]).simplify(0.025, preserve_topology=True)
+    center = np.array(closed.centroid.coords[0])
+    candidates = []
+    reasons = {"narrow_rear_wall": 0, "neighbor_obstructs_rear_wall": 0, "insufficient_rear_headroom": 0}
+    for poly in shapely.get_parts(closed):
+        if poly.geom_type != "Polygon": continue
+        for p0, p1 in _edges(poly):
+            w = Wall(p0, p1)
+            facing = float(w.b @ n)
+            if facing > 0.20: continue
+            if w.L < 1.45:
+                reasons["narrow_rear_wall"] += 1; continue
+            positions = [w.L / 2] if facing < -0.65 else [0.75, w.L - 0.75, *[w.L * f for f in (0.25, 0.35, 0.45, 0.55, 0.65, 0.75)]]
+            for u in positions:
+                if u < 0.7 or u > w.L - 0.7: continue
+                if facing > -0.65 and (w.at(u) - center) @ n > -0.5: continue
+                if not all(ctx["exposed"](w.at(u + side, gap)) for side in (-0.58, 0.0, 0.58) for gap in (0.25, 0.85)):
+                    reasons["neighbor_obstructs_rear_wall"] += 1; continue
+                inside = Point(w.at(u, -0.04))
+                covering = [(geom, fn) for kind, geom, fn in b["pieces"] if kind != "porch" and geom.buffer(0.03).covers(inside)]
+                corners = np.array([w.at(u - 0.62), w.at(u + 0.62)])
+                top = min((float(fn(corners).min()) for geom, fn in covering), default=float(roof_at(corners).min()))
+                g = ground(w.at(u, 0.8))
+                threshold = g + 0.15
+                if top - threshold < 2.12:
+                    reasons["insufficient_rear_headroom"] += 1; continue
+                candidates.append((facing < -0.65, w.L, w, u, g, top, threshold))
+    if not candidates:
+        b["rear_door_status"] = next((key for key in ("insufficient_rear_headroom", "neighbor_obstructs_rear_wall", "narrow_rear_wall") if reasons[key]), "no_rear_facing_wall")
+        b["rear_door_reasons"] = reasons
+        return None
+    _, _, w, u, g, top, threshold = max(candidates, key=lambda q: (q[0], q[1]))
+    previous_section = P.section; P.section = "rear_entry"
+    prior_rejected = P.rejected_sections.get("rear_entry", 0)
+    door(P, w, u, threshold, b["style"], top=top - 0.12)
+    w.box(P, u - 0.65, u + 0.65, 0, 0.45, g - 0.2, threshold, "porch_floor")
+    steps(P, w, u, threshold, g, 0.45, "porch_floor")
+    P.section = previous_section
+    if P.rejected_sections.get("rear_entry", 0) > prior_rejected:
+        b["rear_door_status"] = "carriageway_clearance_rejected_entry_part"
+        return None
+    b["rear_door"] = {"xyz": [*w.at(u, 0.20), threshold], "normal_xy": w.b.tolist(), "wall_u": u}
+    b["rear_door_status"] = "built"
+    BUILD_STATS["rear_doors"] += 1
+    return w
+
+
 def build(P, b, ctx):
     """Add the archetype's parts for one site building to P. ctx: H(x, y) ground sampler and
     exposed(xy) -> True when no footprint covers that point. b["roof_at"](xy) -> main roof z."""
     arch = b["arch"]
+    b["rear_door_status"] = "main_front_geometry_unavailable"
     if arch == "garage":
         return
     main = _main_poly(b)
@@ -309,6 +406,7 @@ def build(P, b, ctx):
     def ground(pt):
         return float(ctx["H"](np.array([pt[0]]), np.array([pt[1]]))[0])
 
+    rear_wall = rear_entry(P, b, ctx, ground, ground(c) + 0.15, n, roof_at)
     cand = []
     for p0, p1 in _edges(main):
         d = p1 - p0
@@ -319,6 +417,14 @@ def build(P, b, ctx):
         mid = (p0 + p1) / 2
         cand.append((float(out @ n), float((mid - c) @ n), L, p0, p1))
     front = max((e for e in cand if e[0] > 0.85), key=lambda e: (round(e[1], 1), e[2]), default=None)
+    selected_edge = b.get("business", {}).get("front_edge")
+    if selected_edge:
+        # Use precisely the wall whose width, height, ground and pedestrian
+        # clearance passed commercial selection. A small projecting bay can
+        # otherwise win the independent residential front-wall heuristic.
+        selected_wall = Wall(selected_edge[0], selected_edge[1])
+        front = (float(selected_wall.b @ n), float((selected_wall.at(selected_wall.L / 2) - c) @ n),
+                 selected_wall.L, np.asarray(selected_edge[0]), np.asarray(selected_edge[1]))
     if front is None:
         return
     W = Wall(front[3], front[4])
@@ -343,7 +449,12 @@ def build(P, b, ctx):
     # ---- front
     if L >= 3.0:
         if shop and clear >= 4.2:
-            storefront(P, W, floor0, st, door_u if L >= 6 else L / 2)
+            shop_u = door_u if L >= 6 else L / 2
+            storefront(P, W, floor0, st, shop_u, b.get("business"))
+            if b.get("business"):
+                b["business"].update(sign_xyz=[*W.at(L / 2, 0.18), floor0 + 3.45], sign_width=L - 0.32,
+                                     door_xyz=[*W.at(shop_u, 0.35), floor0], normal_xy=W.b.tolist())
+                BUILD_STATS["businesses"] += 1
         else:
             door(P, W, door_u, floor0, st, top=eave - 0.15)
             span = (door_u + 0.75, L - 0.3) if door_left else (0.3, door_u - 0.75)
@@ -368,7 +479,27 @@ def build(P, b, ctx):
         if b["arch"] in ("row_porch", "detached_porch") and b["porch"] > 0.8:
             top = float(np.clip(b["porch_top"], floor0 + 2.4, eave - 0.4))
             g_front = ground(W.at(L / 2, b["porch"] + 0.7))
-            porch(P, W, b["porch"], floor0, top, min(g_front, floor0 - 0.1), st, door_u)
+            porch_depth = b["porch"]
+            stair_ground = min(g_front, floor0 - 0.1)
+            stair_n = max(1, int(np.ceil((floor0 - stair_ground) / 0.18)))
+            run = max(0.28, min(0.30, 1.8 / stair_n))
+            if P.forbidden is not None:
+                while porch_depth > 0.9:
+                    flight = Polygon([W.at(door_u + u, v) for u, v in
+                                      ((-0.7, porch_depth), (0.7, porch_depth), (0.7, porch_depth + stair_n * run), (-0.7, porch_depth + stair_n * run))])
+                    if not flight.intersects(P.forbidden): break
+                    porch_depth -= 0.1
+            P.section = "porch_and_stairs"
+            before_rejected = P.rejected_sections.get(P.section, 0)
+            porch(P, W, porch_depth, floor0, top, stair_ground, st, door_u)
+            porch_rejected = P.rejected_sections.get(P.section, 0) - before_rejected
+            P.section = "facade"
+            stair_n = max(1, int(np.ceil((floor0 - stair_ground) / 0.18)))
+            stair_run = max(0.28, min(0.30, 1.8 / stair_n))
+            b["porch_stair"] = {"landing_xyz": [*W.at(door_u, porch_depth - 0.45), floor0],
+                                "approach_xyz": [*W.at(door_u, porch_depth + stair_n * stair_run + 0.6), g_front],
+                                "normal_xy": W.b.tolist(), "riser": (floor0 - stair_ground) / stair_n, "tread": stair_run,
+                                "geometry_complete": porch_rejected == 0, "rejected_parts": porch_rejected}
         elif not shop:                                                               # marble stoop
             g_front = ground(W.at(door_u, 1.2))
             W.box(P, door_u - 0.7, door_u + 0.7, 0, 0.45, g_front - 0.3, floor0, "marble", r=0.035)
@@ -382,7 +513,13 @@ def build(P, b, ctx):
         if not ctx["exposed"](W2.at(W2.L / 2, 0.4)):
             continue
         e2 = float(roof_at(np.array([W2.at(0.05), W2.at(W2.L - 0.05)])).min())
-        windows_grid(P, W2, floor0, floors, fh, st, e2, ground(W2.at(W2.L / 2, 0.4)))
+        rear_u = None
+        if rear_wall is not None:
+            entry_xy = np.asarray(b["rear_door"]["xyz"][:2]) - rear_wall.b * 0.20
+            along = float((entry_xy - W2.p0) @ W2.a)
+            if 0 <= along <= W2.L and abs(float((entry_xy - W2.p0) @ W2.b)) < 0.08:
+                rear_u = along
+        windows_grid(P, W2, floor0, floors, fh, st, e2, ground(W2.at(W2.L / 2, 0.4)), door_u=rear_u)
 
     # ---- chimney toward the back, near a party wall
     if st["chimney"] and b["arch"] in ("row_porch", "row", "detached", "detached_porch"):

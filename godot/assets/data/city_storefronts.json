@@ -1,0 +1,101 @@
+{
+  "source": "Derived from blender/city/data/pen_lucy_buildings.geojson storefront classification; names and businesses are fictional.",
+  "fronts": [
+    {
+      "source": "Row_283",
+      "center": [
+        -140.89,
+        -8.23,
+        40.14
+      ]
+    },
+    {
+      "source": "Row_160",
+      "center": [
+        -143.67,
+        -3.0,
+        -141.77
+      ]
+    },
+    {
+      "source": "Row_160",
+      "center": [
+        -141.64,
+        -2.85,
+        -137.73
+      ]
+    },
+    {
+      "source": "Row_120",
+      "center": [
+        -145.11,
+        -2.04,
+        -161.64
+      ]
+    },
+    {
+      "source": "Row_159",
+      "center": [
+        -143.95,
+        -3.53,
+        -115.23
+      ]
+    },
+    {
+      "source": "Row_158",
+      "center": [
+        -196.27,
+        -2.94,
+        -135.42
+      ]
+    },
+    {
+      "source": "Row_158",
+      "center": [
+        -181.56,
+        -3.63,
+        -133.27
+      ]
+    },
+    {
+      "source": "Row_208",
+      "center": [
+        -182.65,
+        -6.34,
+        -52.13
+      ]
+    },
+    {
+      "source": "Row_071",
+      "center": [
+        -194.25,
+        -0.57,
+        -213.07
+      ]
+    },
+    {
+      "source": "Row_071",
+      "center": [
+        -187.7,
+        -0.65,
+        -212.44
+      ]
+    },
+    {
+      "source": "Row_071",
+      "center": [
+        -181.01,
+        -0.83,
+        -212.59
+      ]
+    },
+    {
+      "source": "Row_252",
+      "center": [
+        -204.97,
+        -7.5,
+        -17.58
+      ]
+    }
+  ]
+}

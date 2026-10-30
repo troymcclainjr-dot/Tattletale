@@ -1,4 +1,4 @@
-// engine.js - Shared helpers, the renderer, lights, the clay look, text signs.
+// engine.js - Shared helpers, the renderer, lights, surface materials, text signs.
 "use strict";
 const TAU=Math.PI*2;
 const $=s=>document.querySelector(s);
@@ -28,12 +28,9 @@ Object.assign(sun.shadow.camera,{left:-26,right:26,top:26,bottom:-26,near:1,far:
 sun.shadow.bias=-0.0006;
 scene.add(sun);scene.add(sun.target);
 
-// clay: thumbprinted bump map shared by everything
-const BUMP=(()=>{const c=document.createElement("canvas");c.width=c.height=256;const g=c.getContext("2d");g.fillStyle="#808080";g.fillRect(0,0,256,256);
-  for(let i=0;i<1100;i++){const v=100+Math.random()*60|0;g.fillStyle=`rgba(${v},${v},${v},.22)`;g.beginPath();g.ellipse(Math.random()*256,Math.random()*256,2+Math.random()*10,1.5+Math.random()*5,Math.random()*3,0,TAU);g.fill();}
-  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(3,3);return t;})();
+// Clean color materials; legacy clay() name retained for existing callers.
 const MATS={};
-function clay(hex,rough=0.86){const k=hex+"|"+rough;if(!MATS[k])MATS[k]=new THREE.MeshStandardMaterial({color:hex,roughness:rough,metalness:0,bumpMap:BUMP,bumpScale:0.012});return MATS[k];}
+function clay(hex,rough=0.86){const k=hex+"|"+rough;if(!MATS[k])MATS[k]=new THREE.MeshStandardMaterial({color:hex,roughness:rough,metalness:0});return MATS[k];}
 function glow(hex,i=1.5){return new THREE.MeshStandardMaterial({color:hex,emissive:hex,emissiveIntensity:i,roughness:.4});}
 const box=(w,h,d)=>new THREE.BoxGeometry(w,h,d);
 const sph=(r,w=16,h=12,ts=0,tl=Math.PI)=>new THREE.SphereGeometry(r,w,h,0,TAU,ts,tl);

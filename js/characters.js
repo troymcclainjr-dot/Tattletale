@@ -73,7 +73,7 @@ function make2Pack(){
   return tp;
 }
 function stripesMat(a,b){const c=document.createElement("canvas");c.width=c.height=64;const g=c.getContext("2d");for(let k=0;k<8;k++){g.fillStyle=k%2?a:b;g.fillRect(0,k*8,64,8);}
-  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1,2);return new THREE.MeshStandardMaterial({map:t,roughness:.9,bumpMap:BUMP,bumpScale:.012});}
+  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1,2);return new THREE.MeshStandardMaterial({map:t,roughness:.9});}
 function makeRicky(){
   const sm=stripesMat("#141414","#f4f0e6");
   const r=makePerson({h:1.76,skin:"#e8b48a",topMat:sm,sleeveMat:sm,pants:"#1a1a1e",shoes:"#0a0a0c",hair:"#141010",style:"short"});

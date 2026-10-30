@@ -1970,7 +1970,6 @@ POSES = {
 
 def _scene_preview_setup():
     sc = bpy.context.scene
-    ck._preview_materials()
     ck._engine(sc)
     try:
         sc.eevee.taa_render_samples = 24

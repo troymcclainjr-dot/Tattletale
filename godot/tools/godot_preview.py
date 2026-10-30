@@ -7,11 +7,28 @@ Imports any new/changed assets first. Several agents share this Godot project, s
 Godot runs go through one lock (.work/godot.lock, a directory). Also usable as
     python godot/tools/godot_preview.py --import-only
 """
-import os, subprocess, sys, time
+import os, shutil, subprocess, sys, time
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 GODOT_DIR = os.path.join(ROOT, "godot")
-GODOT = r"C:\files\Godot\Godot_v4.7.2-stable_win64_console.exe"
+def find_godot():
+    configured = os.environ.get("GODOT_EXE")
+    if configured:
+        found = shutil.which(configured)
+        if found:
+            return found
+        raise SystemExit("GODOT_EXE does not point to a usable Godot executable")
+    for name in ("godot", "godot4"):
+        found = shutil.which(name)
+        if found:
+            return found
+    local = r"C:\files\Godot\Godot_v4.7.2-stable_win64_console.exe"
+    if os.path.isfile(local):
+        return local
+    raise SystemExit("Install Godot 4.7+ on PATH, or set GODOT_EXE to its executable")
+
+
+GODOT = find_godot()
 LOCK = os.path.join(ROOT, ".work", "godot.lock")
 STALE = 15 * 60
 

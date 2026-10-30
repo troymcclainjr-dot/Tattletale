@@ -220,6 +220,80 @@ func start_stage(n: int, keep: bool) -> void:
 	Game.start_stage(n, keep)
 
 
+## Scene transitions must discard callbacks and body references to the departing block.
+func open_neighborhood() -> void:
+	_change_level.call_deferred("res://scenes/city/pen_lucy.tscn")
+
+
+func open_original_block() -> void:
+	_change_level.call_deferred("res://scenes/main.tscn")
+
+
+func _change_level(path: String) -> void:
+	if not ResourceLoader.exists(path):
+		Hud.toast("This neighborhood could not be loaded.")
+		return
+	built = false
+	manual = false
+	drag = false
+	K.clear()
+	LATER.clear()
+	for b in bodies:
+		b.pos = Callable()
+		b.on = Callable()
+	bodies.clear()
+	if car_body:
+		car_body.pos = Callable()
+		car_body.on = Callable()
+	car_body = null
+	player_body = null
+	if car:
+		car.on_arrive = null
+	car = null
+	for c in C.values():
+		c.steps.clear()
+	C.clear()
+	W.clear()
+	W_.clear()
+	SOLIDS.clear()
+	OCCLUDERS.clear()
+	talkers.clear()
+	tp = null
+	ricky = null
+	granny = null
+	gary = null
+	timmy = null
+	mailman = null
+	dan = null
+	steve = null
+	smoke = null
+	world_root = null
+	cam = null
+	cam_attr = null
+	cam_override = null
+	cam_pos = Vector3.ZERO
+	cam_look = Vector3.ZERO
+	cam_yaw = PI / 2
+	cam_pitch = 0.32
+	bino_yaw = 0.0
+	bino_pitch = 0.0
+	bino_fov = 16.0
+	bino_label = ""
+	clock = 0.0
+	var music_on := S.music_on
+	S = GameState.new()
+	S.music_on = music_on
+	P = PlayerState.new()
+	Crimes.define_all()
+	Hud.reset_for_scene_change()
+	Audio.set_paused(false)
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	get_tree().paused = false
+	var result := get_tree().change_scene_to_file(path)
+	if result != OK:
+		push_error("Could not open level %s: %s" % [path, error_string(result)])
+
+
 ## The payphone puzzle was solved: operator line, dispatch, close (JS solved()).
 func puzzle_solved() -> void:
 	Puzzles.solved()

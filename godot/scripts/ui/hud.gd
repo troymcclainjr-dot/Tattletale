@@ -211,6 +211,30 @@ func hide_screens() -> void:
 	_screens.hide_screens()
 
 
+## Discard transient UI and callbacks when leaving a world, including an active puzzle.
+func reset_for_scene_change() -> void:
+	hide_screens()
+	_screens.pause.hide()
+	_screens.stagecard.hide()
+	puzzle_hide()
+	show_hud(false)
+	bino(false)
+	clear_subs()
+	_sub_t = 0.0
+	_toast_t = 0.0
+	_pen_t = 0.0
+	_subs.hide()
+	_toast.hide()
+	_pzpen.hide()
+	for pop_item in _pops:
+		pop_item[0].queue_free()
+	_pops.clear()
+	for marker in _marks.values():
+		marker.queue_free()
+	_marks.clear()
+	_told_key = "~"
+
+
 func show_pause(on: bool) -> void:
 	_screens.show_pause(on)
 

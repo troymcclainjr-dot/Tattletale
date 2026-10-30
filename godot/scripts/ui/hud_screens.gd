@@ -179,6 +179,10 @@ func _build_screen(is_over: bool) -> Control:
 		row.add_child(_start)
 		_cont = _go_button("Continue: Stage 2", true, func(): St.call_g("start_stage", [2, false]))
 		row.add_child(_cont)
+		var city_row := T.hbox(12)
+		card_.add_child(city_row)
+		city_row.add_child(_go_button("Explore Pen Lucy", true, func(): St.call_g("open_neighborhood")))
+		card_.add_child(T.label("Baltimore neighborhood · meet the neighbors and solve local cases", T.ls(T.body(500), 14, T.PAPER)))
 	return scr
 
 

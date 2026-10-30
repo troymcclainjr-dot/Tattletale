@@ -1,0 +1,58 @@
+{
+  "building_triangles_checked": 1154593,
+  "road_intrusions": [],
+  "sidewalk_meshes": [
+    "Ground"
+  ],
+  "sidewalk_top_triangles": 99684,
+  "sidewalk_area_over_15deg_percent": 0.0,
+  "sidewalk_area_crossfall_over_5percent": 0.0,
+  "sidewalk_slope_p95_deg": 2.7190519906466046,
+  "sidewalk_max_slope_deg_area_over_02m2": 3.0778778234623143,
+  "sidewalk_max_crossfall_area_over_02m2": 0.04870799299518523,
+  "businesses": 18,
+  "parks": 7,
+  "rear_door_samples": 889,
+  "porch_stair_samples": 659,
+  "paved_surface_audit": {
+    "road": {
+      "triangles": 129994,
+      "area_m2": 59027.48354327773,
+      "max_slope_deg_area_over_02m2": 3.3493674150340405,
+      "slope_p95_deg": 2.6801861647616865,
+      "area_over_4deg_m2": 0.0,
+      "area_over_10deg_m2": 0.0,
+      "max_crossfall_area_over_02m2": 0.0500661378411392
+    },
+    "sidewalk": {
+      "triangles": 99689,
+      "area_m2": 26912.424332424533,
+      "max_slope_deg_area_over_02m2": 3.0778778234623143,
+      "slope_p95_deg": 2.7190519906466046,
+      "area_over_4deg_m2": 0.0,
+      "area_over_10deg_m2": 0.0,
+      "max_crossfall_area_over_02m2": 0.04870799299518523
+    },
+    "alley": {
+      "triangles": 317147,
+      "area_m2": 105777.50437524941,
+      "max_slope_deg_area_over_02m2": 3.6116737361701996,
+      "slope_p95_deg": 2.740752602343526,
+      "area_over_4deg_m2": 0.0,
+      "area_over_10deg_m2": 0.0,
+      "max_crossfall_area_over_02m2": 0.050065790222801304
+    },
+    "lot": {
+      "triangles": 3430,
+      "area_m2": 1196.4873516238863,
+      "max_slope_deg_area_over_02m2": 2.8893321728853554,
+      "slope_p95_deg": 2.64565237100175,
+      "area_over_4deg_m2": 0.0,
+      "area_over_10deg_m2": 0.0,
+      "max_crossfall_area_over_02m2": 0.03564186382665835
+    }
+  },
+  "paved_max_slope_limit_deg": 4.0,
+  "worst_paved_triangles": [],
+  "worst_sidewalk_triangles": []
+}

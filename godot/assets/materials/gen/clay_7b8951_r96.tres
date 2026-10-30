@@ -1,0 +1,11 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://4colrbd22sgx"]
+
+[ext_resource type="Shader" uid="uid://ucipatddbwth" path="res://assets/materials/clay.gdshader" id="1_ati08"]
+
+[resource]
+resource_name = "clay_7b8951_r96"
+render_priority = 0
+shader = ExtResource("1_ati08")
+shader_parameter/albedo = Color(0.48235294, 0.5372549, 0.31764707, 1)
+shader_parameter/roughness = 0.96
+shader_parameter/metallic = null

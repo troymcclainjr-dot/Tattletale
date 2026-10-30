@@ -7,8 +7,6 @@ class_name ClayLib
 
 const GEN_DIR := "res://assets/materials/gen"
 const SHADER := preload("res://assets/materials/clay.gdshader")
-const NORMAL_TEX := preload("res://assets/materials/clay_normal.png")
-const MOTTLE_TEX := preload("res://assets/materials/clay_mottle.png")
 
 static var _cache := {}
 
@@ -55,17 +53,8 @@ static func build(mat_name: String) -> Material:
 			sm.resource_name = mat_name
 			sm.set_shader_parameter("albedo", col)
 			sm.set_shader_parameter("roughness", clampf(num / 100.0, 0.0, 1.0))
-			sm.set_shader_parameter("clay_normal", NORMAL_TEX)
-			sm.set_shader_parameter("clay_mottle", MOTTLE_TEX)
-			if kind == "gloss":
-				sm.set_shader_parameter("print_amount", 0.3)
-				sm.set_shader_parameter("mottle_amount", 0.35)
-				sm.set_shader_parameter("sheen", 0.12)
-			elif kind == "metal":
+			if kind == "metal":
 				sm.set_shader_parameter("metallic", 0.85)
-				sm.set_shader_parameter("print_amount", 0.35)
-				sm.set_shader_parameter("mottle_amount", 0.3)
-				sm.set_shader_parameter("sheen", 0.08)
 			return sm
 		"glow":
 			var gm := StandardMaterial3D.new()

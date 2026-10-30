@@ -27,11 +27,14 @@ from scipy import ndimage
 from scipy.spatial import cKDTree
 from shapely.geometry import LineString, Point, Polygon, mapping
 from shapely.geometry.polygon import orient
-from shapely.ops import polygonize, unary_union
+from shapely.ops import polygonize, unary_union, nearest_points
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import config as C
 import kits
+import runtime
+import vegetation
+import street_geometry
 
 T0 = time.time()
 
@@ -65,6 +68,7 @@ MATS = {
     "siding_yellow": ("clay", "#d8c890", 0.86), "siding_green": ("clay", "#9aa88a", 0.86),
 }
 MATS.update(kits.KIT_MATS)
+MATS.update(vegetation.MATERIALS)
 SIDINGS = ["siding", "siding_white", "siding_gray", "siding_yellow", "siding_green"]
 CIVIC = {"church", "chapel", "cathedral", "school", "kindergarten", "commercial", "retail", "civic", "public",
          "office", "industrial", "warehouse"}
@@ -179,7 +183,8 @@ class MB:
         V = T.reshape(-1, 3).copy()
         V[:, 2] -= y0
         # smooth and flat triangles never share a vertex, so a soft part can't round off a wall corner
-        key = np.column_stack([np.round(V, 3), np.repeat(S, 3)])
+        precision = 6 if s.name in ("Ground", "Curbs", "Ground_Context") else 3
+        key = np.column_stack([np.round(V, precision), np.repeat(S, 3)])
         uniq, inv = np.unique(key, axis=0, return_inverse=True)
         F = inv.reshape(-1)[:len(V)].reshape(-1, 3)
         ok = (F[:, 0] != F[:, 1]) & (F[:, 1] != F[:, 2]) & (F[:, 0] != F[:, 2])
@@ -187,7 +192,7 @@ class MB:
         used = sorted(set(M.tolist()))
         local = np.searchsorted(np.array(used), M)
         out = {"name": s.name, "smooth": s.smooth, "props": s.props,
-               "verts": np.round(uniq[:, :3], 3).ravel().tolist(), "faces": F.ravel().tolist(),
+               "verts": np.round(uniq[:, :3], precision).ravel().tolist(), "faces": F.ravel().tolist(),
                "mats": local.tolist(), "matnames": [MAT_NAMES[i] for i in used]}
         if S.any() and not S.all():
             out["smooth_faces"] = S.astype(int).tolist()
@@ -252,13 +257,57 @@ def dice(geom, cell):
     return (np.concatenate(full) if full else np.zeros((0, 2))), part
 
 
-def ground_tris(geom, cell):
+def ground_tris(geom, cell, field_aligned=False):
     corners, part = dice(geom, cell)
     x, y = corners[:, 0], corners[:, 1]
     v0, v1 = np.column_stack([x, y]), np.column_stack([x + cell, y])
     v2, v3 = np.column_stack([x + cell, y + cell]), np.column_stack([x, y + cell])
     sq = np.concatenate([np.stack([v0, v1, v2], 1), np.stack([v0, v2, v3], 1)]) if len(x) else np.zeros((0, 3, 2))
+    if field_aligned and part:
+        # Each piece belongs to one grid cell; cut along the same diagonal as
+        # the height sampler before triangulation. Every resulting triangle
+        # lies on one known bounded plane, including narrow boundary slivers.
+        pieces = []
+        for piece in part:
+            cx, cy = piece.centroid.coords[0]
+            qx, qy = math.floor(cx / cell) * cell, math.floor(cy / cell) * cell
+            lower = Polygon([(qx, qy), (qx + cell, qy), (qx + cell, qy + cell)])
+            upper = Polygon([(qx, qy), (qx + cell, qy + cell), (qx, qy + cell)])
+            pieces.extend([piece.intersection(lower), piece.intersection(upper)])
+        part = pieces
     return np.concatenate([sq, triangulate(part)])
+
+
+
+def graded_ground_tris(geom, height):
+    """Exact heightfield facets with larger cells only where fully coplanar.
+
+    A four-metre cell can remain two triangles when all its one-metre field
+    nodes lie on one plane. Curved cells and polygon boundaries retain the
+    exact one-metre field triangulation, so narrow alley/lot pieces cannot
+    invent an uncontrolled gradient between otherwise safe height samples.
+    """
+    corners, partial = dice(geom, 4.0)
+    coarse, fine = np.zeros((0, 2)), np.zeros((0, 2))
+    if len(corners):
+        ox, oy = np.meshgrid(np.arange(5), np.arange(5))
+        offsets = np.column_stack([ox.ravel(), oy.ravel()])
+        sample = corners[:, None, :] + offsets[None, :, :]
+        z = height(sample[..., 0].ravel(), sample[..., 1].ravel()).reshape(len(corners), 25)
+        plane = z[:, :1] + offsets[None, :, 0] * ((z[:, 4] - z[:, 0]) / 4)[:, None] + offsets[None, :, 1] * ((z[:, 20] - z[:, 0]) / 4)[:, None]
+        flat = np.max(np.abs(z - plane), axis=1) < 1e-7
+        coarse = corners[flat]
+        sx, sy = np.meshgrid(np.arange(4), np.arange(4))
+        fine = (corners[~flat, None, :] + np.column_stack([sx.ravel(), sy.ravel()])[None, :, :]).reshape(-1, 2)
+    triangles = []
+    for starts, size in ((coarse, 4.0), (fine, 1.0)):
+        if not len(starts): continue
+        p0 = starts; p1 = starts + (size, 0); p2 = starts + (size, size); p3 = starts + (0, size)
+        triangles.extend([np.stack([p0, p1, p2], axis=1), np.stack([p0, p2, p3], axis=1)])
+    for piece in partial:
+        triangles.append(ground_tris(piece, 1.0, field_aligned=True))
+    output = np.concatenate(triangles) if triangles else np.zeros((0, 3, 2))
+    return output, {"coplanar_4m_cells": len(coarse), "curved_1m_cells": len(fine), "boundary_4m_cells": len(partial), "triangles": len(output)}
 
 
 def polys_of(geom):
@@ -421,6 +470,18 @@ def main():
     log(f"ground grid {nx}x{ny}, {hole.mean() * 100:.0f}% filled from neighbors (under buildings)")
     dtm = dtm[tuple(ndimage.distance_transform_edt(hole, return_distances=False, return_indices=True))]
     dtm = ndimage.uniform_filter(dtm, 3)
+    # Remove meter-scale survey spikes that made adjacent sidewalk triangles
+    # look like tipped slabs. A symmetric filter preserves linear street grades;
+    # bounded residual detail keeps mild unevenness instead of flattening hills.
+    surveyed_dtm = dtm
+    broad_ground = ndimage.gaussian_filter(surveyed_dtm, sigma=2.2)
+    dtm = broad_ground + np.clip(surveyed_dtm - broad_ground, -0.04, 0.04) * 0.35
+    terrain_adjustment = {
+        "smoothing_radius_m": 2.2, "retained_small_detail_m": 0.014,
+        "height_delta_p50_m": round(float(np.median(np.abs(dtm - surveyed_dtm))), 4),
+        "height_delta_p95_m": round(float(np.percentile(np.abs(dtm - surveyed_dtm), 95)), 4),
+    }
+    log("coherent terrain smoothing " + json.dumps(terrain_adjustment))
     grid = {"x0": gx0, "y0": gy0}
 
     def H(px, py):
@@ -531,6 +592,34 @@ def main():
     road_tree = shapely.STRtree(road_lines)
     log(f"{len(cw)} street ways, {len(svc)} service ways, {len(paths)} paths, {len(lots)} parking lots")
 
+    # Streets and all adjoining surfaces share an engineered crown/profile.
+    H = street_geometry.EngineeredHeight(cw, H)
+    bld, road_surface, clearance_audit = street_geometry.repair_footprints(bld, cw)
+    paved_profile_area = unary_union([site, road_surface, *[line.buffer(0.9) for line in paths]])
+    H.build_surface_field(context.bounds, paved_profile_area)
+    H.field_audit["coverage"] = "Entire playable site, plus context road and pedestrian corridors; smooth 20m outer transition"
+    y0 = float(H(0.0, 0.0))
+    site_b = [b for b in bld if b["zone"] != "context"]
+    inverse = Transformer.from_crs(horiz, "EPSG:4326", always_xy=True)
+    def unproject(xy):
+        lon, lat = inverse.transform((xy[:, 0] + AX) / fxy, (xy[:, 1] + AY) / fxy)
+        return np.column_stack([lon, lat])
+    for b in bld:
+        if b.get("road_clearance_repaired"): b["ll"] = shapely.transform(b["poly"], unproject)
+    parks = []
+    for e in els:
+        t = e.get("tags", {})
+        if t.get("leisure") not in ("park", "garden", "playground", "pitch") and t.get("landuse") not in ("recreation_ground", "village_green"): continue
+        if e["type"] != "way" or len(e.get("geometry", [])) < 4: continue
+        ll = way_ll(e)
+        if ll[0] != ll[-1]: continue
+        geom = local(Polygon(ll)).buffer(0).intersection(site)
+        for part in polys_of(geom):
+            if part.area > 20:
+                parks.append({"name": t.get("name", "Neighborhood " + t.get("leisure", "green")), "kind": t.get("leisure", "park"), "poly": part})
+    protected_parks = unary_union([p["poly"] for p in parks])
+    log(f"engineered streets: {H.audit()}; repaired {len(clearance_audit['trimmed'])} road-overlap footprints; protected {len(parks)} parks")
+
     # ---- rows: footprints that touch belong to one row (one Blender object per row)
     union = unary_union([b["poly"].buffer(0.3) for b in site_b])
     comps = sorted(polys_of(union), key=lambda g: (-round(g.centroid.y / 25), g.centroid.x))
@@ -566,12 +655,17 @@ def main():
         per = np.array(shapely.segmentize(poly.exterior, 1.0).coords)
         gz = H(per[:, 0], per[:, 1])
         b["base"], b["ground"] = float(gz.min()), float(np.median(gz))
+        surveyed_gz = H.surveyed_height(per[:, 0], per[:, 1])
+        b["survey_ground"] = float(np.median(surveyed_gz))
+        b["grade_shift"] = b["ground"] - b["survey_ground"]
         shrunk = poly.buffer(-0.35)
         sel = pts_in(shrunk if (not shrunk.is_empty and shrunk.area > 4) else poly)
         b["pts"], b["flags"] = int(len(sel)), []
         lv = levels(t)
         fallback = b["ground"] + (lv * 3.1 + 0.8 if lv else 8.5)
-        z = RZ[sel]
+        surveyed_roof = RZ[sel].astype(np.float64)
+        z = street_geometry.rebase_roof_returns(surveyed_roof, b["survey_ground"], b["ground"])
+        b["roof_relative_height_error"] = float(np.max(np.abs((z - b["ground"]) - (surveyed_roof - b["survey_ground"])))) if len(z) else 0.0
         if b["zone"] == "context" or len(sel) < 10:
             top = float(np.percentile(z, 75)) if len(sel) >= 10 else fallback
             if len(sel) < 10:
@@ -686,6 +780,8 @@ def main():
             ax = np.array([-ms[0]["n"][1], ms[0]["n"][0]])
             for k, b in enumerate(sorted(ms, key=lambda b: np.array(b["poly"].centroid.coords[0]) @ ax)):
                 b["door_left"] = k % 2 == 0
+    rear_headroom_audit = street_geometry.ensure_rear_headroom(site_b, H)
+    business_audit = street_geometry.assign_businesses(site_b, cw, H, exposed)
     arch_count = {}
     for b in site_b:
         arch_count[b["arch"]] = arch_count.get(b["arch"], 0) + 1
@@ -696,6 +792,8 @@ def main():
         return b.get("arch") in ("row_porch", "detached_porch") and b["porch"] > 0.8
 
     kit_ctx = {"H": H, "exposed": exposed}
+    kit_forbidden = road_surface.buffer(0.04)
+    shapely.prepare(kit_forbidden)
 
     def prism(mb, geom, base, topfn, wmat, rmat):
         for part in polys_of(geom):
@@ -723,10 +821,14 @@ def main():
                 if kind == "porch" and open_porch(b):
                     continue                     # the kit builds it open: deck, posts, railing, roof
                 prism(mb, geom, b["base"] - 0.3, fn, st["wall"], "porch_roof" if kind == "porch" else st["roof"])
-            P = kits.Parts()
+            P = kits.Parts(kit_forbidden)
             kits.build(P, b, kit_ctx)
+            b["kit_rejections"] = dict(P.rejected_sections)
             P.emit(mb)
         objects.append(mb)
+    missing_shop_facades = [b["id"] for b in site_b if b.get("business") and "sign_xyz" not in b["business"]]
+    if missing_shop_facades:
+        raise ValueError("Selected commercial wall did not generate its facade: " + ", ".join(missing_shop_facades))
     ctx = MB("Context_Buildings")
     for b in bld:
         if b["zone"] == "context":
@@ -746,7 +848,46 @@ def main():
     alleys = unary_union([l.buffer(w / 2, cap_style="flat", quad_segs=2) for l, w in svc])
     alleys = alleys.difference(roads).difference(walks).difference(blds_all).intersection(site)
     lot = unary_union(lots).difference(unary_union([roads, walks, alleys, blds_all])).intersection(site) if lots else Polygon()
+    open_green = site.difference(unary_union([blds_all.buffer(7.0), roads.buffer(4.0), walks, alleys, lot, protected_parks]))
+    broad_green = sorted((p for p in polys_of(open_green) if p.area >= 600 and not p.buffer(-7).is_empty), key=lambda p: p.area, reverse=True)
+    for index, green in enumerate(broad_green[:3]):
+        parks.append({"name": "Community green " + str(index + 1), "kind": "community_green", "poly": green})
+    protected_parks = unary_union([p["poly"] for p in parks])
+    yards = street_geometry.urban_yards(blds_all, protected_parks, roads, walks, alleys, lot, site)
+    entrances = []
+    for b in site_b:
+        shop = b.get("business", {})
+        if "door_xyz" not in shop: continue
+        door_point = Point(shop["door_xyz"][:2])
+        target = nearest_points(door_point, walks)[1]
+        path = LineString([door_point, target]).buffer(0.85, cap_style="square")
+        if not path.intersects(protected_parks) and path.intersection(blds_all.buffer(-0.15)).area < 0.05:
+            entrances.append(path.difference(unary_union([blds_all, roads, walks])).intersection(site))
+    alleys = unary_union([alleys, yards, *entrances])
     grass = site.difference(unary_union([roads, walks, alleys, lot, cut]))
+    residential = [b for b in site_b if b["arch"] in ("row", "row_porch", "detached", "detached_porch")]
+    rear_omissions = [{"building_id": b["id"], "source_mesh": b.get("object"), "reason": b.get("rear_door_status", "not_processed"),
+                       "address": b["tags"].get("addr:housenumber", "") + " " + b["tags"].get("addr:street", ""),
+                       "eave_above_ground_m": round(b["eave"] - b["ground"], 3)} for b in residential if "rear_door" not in b]
+    stair_omissions = [{"building_id": b["id"], "source_mesh": b.get("object"), "rejected_parts": b["porch_stair"]["rejected_parts"]}
+                      for b in site_b if b.get("porch_stair") and not b["porch_stair"].get("geometry_complete", True)]
+    rejection_sections = {}
+    for b in site_b:
+        for section, count in b.get("kit_rejections", {}).items():
+            rejection_sections[section] = rejection_sections.get(section, 0) + count
+    datum_shifts = np.array([b["grade_shift"] for b in site_b])
+    building_datum_audit = {"method": "Rigidly translate surveyed roof returns by graded-minus-surveyed median footing before profiling",
+                            "buildings": len(site_b), "minimum_shift_m": float(datum_shifts.min()), "maximum_shift_m": float(datum_shifts.max()),
+                            "median_absolute_shift_m": float(np.median(np.abs(datum_shifts))),
+                            "max_roof_relative_height_error_m": max(b["roof_relative_height_error"] for b in site_b)}
+    if building_datum_audit["max_roof_relative_height_error_m"] > 1e-8:
+        raise ValueError("Grading changed a surveyed building's relative roof height")
+    construction_audit = {"building_height_datum": building_datum_audit, "rear_addition_headroom": rear_headroom_audit, "rear_door_coverage": {"residential_footprints": len(residential), "built": len(residential) - len(rear_omissions), "omissions": rear_omissions},
+                          "porch_stair_omissions": stair_omissions, "rejected_kit_sections": rejection_sections,
+                          "street_profiles": H.audit(), "road_clearance": clearance_audit,
+                          "sidewalk_grades": street_geometry.sidewalk_grade_audit(cw, H, walks),
+                          "businesses": business_audit, "hardscape_yards_m2": round(yards.area, 2),
+                          "protected_parks_m2": round(protected_parks.area, 2), "kits": dict(kits.BUILD_STATS)}
     zones = {"road": roads, "sidewalk": walks, "alley": alleys, "lot": lot, "grass": grass}
     gmb, curbs = MB("Ground", smooth=True), MB("Curbs")
     zone_area = {}
@@ -755,7 +896,8 @@ def main():
     for zname, geom in zones.items():
         geom = shapely.set_precision(geom, 0.001)     # snap to mm: drops near-degenerate slivers
         zone_area[zname] = round(geom.area)
-        tri = ground_tris(geom, DICE)
+        tri, mesh_cells = graded_ground_tris(geom, H)
+        construction_audit.setdefault("ground_mesh_cells", {})[zname] = mesh_cells
         if len(tri):
             flat = tri.reshape(-1, 2)
             gmb.add(np.concatenate([tri, (H(flat[:, 0], flat[:, 1]) + LIFT[zname]).reshape(-1, 3, 1)], 2), ZONE_MAT[zname])
@@ -813,38 +955,17 @@ def main():
             d = np.hypot(VX[crown] - px, VY[crown] - py)
             r = np.percentile(d, 80) if len(d) >= 8 else 0.3 * h
             trees.append((px, py, h, float(np.clip(min(r, 0.45 * h), 2.0, 7.0))))
+    # A canopy maximum can overhang the street; it is not evidence of a trunk in pavement.
+    # Keep sidewalk trees, but reject inferred trunk centres inside mapped road surfaces.
+    canopy_candidates = len(trees)
+    trees = [tree for tree in trees if not roads.covers(Point(tree[0], tree[1]))]
+    log(f"excluded {canopy_candidates - len(trees)} canopy peaks over road pavement")
     tmb = MB("Trees", smooth=True)
-    if trees:
-        # icosphere (1 subdivision) for crowns, hexagonal trunk
-        t_ = (1 + 5 ** 0.5) / 2
-        iv = np.array([[-1, t_, 0], [1, t_, 0], [-1, -t_, 0], [1, -t_, 0], [0, -1, t_], [0, 1, t_],
-                       [0, -1, -t_], [0, 1, -t_], [t_, 0, -1], [t_, 0, 1], [-t_, 0, -1], [-t_, 0, 1]], float)
-        fi = [[0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11], [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6],
-              [7, 1, 8], [3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9], [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1]]
-        sub = []
-        for a, b_, c_ in fi:
-            A_, B_, Cc = iv[a], iv[b_], iv[c_]
-            ab, bc, ca = (A_ + B_) / 2, (B_ + Cc) / 2, (Cc + A_) / 2
-            sub += [[A_, ab, ca], [B_, bc, ab], [Cc, ca, bc], [ab, bc, ca]]
-        sph = np.array(sub)
-        sph /= np.linalg.norm(sph, axis=2, keepdims=True)
-        ico = iv[np.array(fi)] / np.linalg.norm(iv[np.array(fi)], axis=2, keepdims=True)   # 20 faces, context ring
-        ang = np.linspace(0, 2 * np.pi, 7)
-        rng = np.random.default_rng(1907)
-        tarr = np.array(trees)
-        in_site = shapely.contains_xy(site, tarr[:, 0], tarr[:, 1])
-        for (px, py, h, r), ins in zip(trees, in_site):
-            g0 = float(H(np.array([px]), np.array([py]))[0])
-            cz = g0 + h - r * 0.85
-            s_ = (sph if ins else ico) * np.array([r, r, r * 0.85]) * rng.uniform(0.92, 1.08, 3)
-            tmb.add(s_ + np.array([px, py, cz]), "leaves")
-            tr = 0.12 + 0.012 * h
-            ring = np.column_stack([px + tr * np.cos(ang), py + tr * np.sin(ang)])
-            p, q = ring[:-1], ring[1:]
-            top = cz - r * 0.5
-            tmb.quads(p, q, np.full(6, g0 - 0.2), np.full(6, g0 - 0.2), np.full(6, top), np.full(6, top), "bark")
+    vegetation_path = os.path.join(C.ROOT, "godot", "assets", "data", "pen_lucy_vegetation.json")
+    vegetation_report = vegetation.build(trees, grass, blds_all, H, y0, tmb, vegetation_path)
+    if tmb.tris:
         objects.append(tmb)
-    log(f"{len(trees)} trees, {tmb.tri_count():,} tris")
+    log(f"vegetation {vegetation_report}; fallback trees {tmb.tri_count():,} tris")
 
     # ---- preview cameras (game coords: x east, y up from the origin's ground, z south), placed on the terrain
     def gy(x, z, above):
@@ -888,6 +1009,9 @@ def main():
             closeups.append(facing(pool[0]))
 
     # ---- write everything
+    runtime_path, runtime_data = runtime.export(cw, bld, area, site, context, zones, H, y0, o_ll, objects, parks=parks, construction_audit=construction_audit)
+    log(f"runtime metadata: {len(runtime_data['landmarks'])} landmarks, "
+        f"{len(runtime_data['dressing'])} props -> {runtime_path}")
     os.makedirs(C.BUILD, exist_ok=True)
     os.makedirs(C.DATA, exist_ok=True)
     out = {"area": C.AREA, "origin_lonlat": o_ll, "origin_elevation_m": y0, "views": views, "closeups": closeups,
@@ -908,6 +1032,7 @@ def main():
             "address": f"{t.get('addr:housenumber', '')} {t.get('addr:street', '')}".strip() or None,
             "building": t.get("building"), "name": t.get("name"), "attached": b["attached"],
             "game_x": round(c.x, 2), "game_z": round(-c.y, 2), "ground_y": round(b["ground"] - y0, 2),
+            "surveyed_ground_elevation_m": round(b["survey_ground"], 4), "grade_shift_m": round(b["grade_shift"], 4),
             "front_azimuth_deg": az, "height_m": round(b["main"] - b["ground"], 2), "eave_m": round(b["eave"] - b["ground"], 2),
             "roof": b["roof"], "roof_pitch_deg": b["pitch"], "roof_fit": round(b["roof_fit"], 2),
             "porch_depth_m": round(b["porch"], 2), "porch_height_m": round(b.get("porch_top", 0) - b["ground"], 2) if b["porch"] else 0,
@@ -934,6 +1059,8 @@ def main():
                           "p90": round(float(np.percentile(hts, 90)), 2), "max": round(float(hts.max()), 2)},
         "site_with_porch": int(porch.sum()), "archetypes": arch_count, "flags": flags_count, "trees": len(trees), "triangles": tris,
         "zone_m2": zone_area, "lidar_classes": hist, "origin_elevation_m": round(y0, 2),
+        "porch_detail": dict(kits.BUILD_STATS), "terrain_smoothing": terrain_adjustment,
+        "vegetation": vegetation_report, "construction_audit": construction_audit,
     }
     with open(C.REPORT_JSON, "w") as f:
         json.dump(report, f, indent=1)

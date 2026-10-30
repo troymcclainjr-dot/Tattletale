@@ -1,8 +1,8 @@
 # Notes for Claude (and anyone else helping on this project)
 
 ## House rules (from the owners — always follow these)
-- **Nobody walks in a different direction from the way they're facing.** Characters and cars turn in place first, then move forward. No sideways or backwards sliding.
-- **No props or people passing through each other.** Walkers wait or detour; cars stop and honk; new props get a collider (`solidC` / `solidB`) or a body (`addBody`).
+- **Nobody walks in a different direction from the way they're facing.** NPCs and cars turn in place first, then move forward. The Pen Lucy player smoothly steers body and forward travel together, preserving speed through directional changes without hard turn-in-place pauses. No sideways or backwards sliding.
+- **No solid props or people passing through each other.** Walkers wait or detour; cars stop and honk; solid props get a collider (`solidC` / `solidB`) or a body (`addBody`). Per the owner's later request, loose trash (including paper, cans and dumped-waste case props) is decorative and deliberately non-blocking.
 - **Keep the owners' wording.** Lyrics and lines from "Still There" are used word for word. New lines are fine, but never "improve" existing ones.
 - **Don't cut the camera between back-to-back lines by the same person** in cutscenes.
 - This game is separate from the owners' claymation movie project (`claymation_movie_maker`). Don't touch those files from here.

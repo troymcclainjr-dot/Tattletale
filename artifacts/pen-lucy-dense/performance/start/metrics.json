@@ -1,0 +1,204 @@
+{
+	"cars": 72,
+	"content_scale_factor": 1.0,
+	"content_scale_mode": 2,
+	"crowd": {
+		"active_cells": 66,
+		"circle_groups": 203,
+		"draw_batches": 192,
+		"far_from_intro_route": 911,
+		"name_labels": 0,
+		"near_updates": 18,
+		"occupied_cells": 134,
+		"park": 160,
+		"park_population": {
+			"Community green 1": 42,
+			"Community green 2": 42,
+			"Community green 3": 41,
+			"Neighborhood pitch": 8,
+			"Neighborhood playground": 27
+		},
+		"porch": 200,
+		"seated": 154,
+		"shared_meshes": 2,
+		"social": 1000,
+		"span_x": 717.105377197266,
+		"span_z": 533.026977539063,
+		"total": 1200,
+		"update_interval": 0.25,
+		"walkers": 128,
+		"walking_updates": 2
+	},
+	"delivered_fps": 149.255363060504,
+	"draw_calls": {
+		"max": 2158.0,
+		"median": 1787.0,
+		"min": 1695.0,
+		"p95": 2094.0
+	},
+	"elapsed_stalled_seconds": 0.0,
+	"fps_cap": 0,
+	"frame_ms": {
+		"max": 29.309,
+		"median": 6.585,
+		"min": 2.264,
+		"p95": 10.32
+	},
+	"maximum_allowed_stall_seconds": 1.0,
+	"median_fps": 151.860288534548,
+	"minimum_distance_m": 22.5,
+	"neighborhood_details": {
+		"active_batches": 57,
+		"active_cells": 40,
+		"active_postal_colliders": 19,
+		"business_cells": 15,
+		"cells": 70,
+		"counts": {
+			"business": 18,
+			"crosswalk_stripe": 93,
+			"mailbox": 24,
+			"postal_drop": 12,
+			"pothole": 24,
+			"road_dot": 975
+		},
+		"crossings": 9,
+		"fictional_businesses": true,
+		"postal_cells": 33,
+		"records": 1146,
+		"setup_ms": 62,
+		"shared_meshes": 3,
+		"span_x": 762.100280761719,
+		"span_z": 574.044036865234
+	},
+	"notes": "Wall-clock frames during actual forward input; active collision, normal chase camera, HUD, NPCs and traffic. Half-second movement windows detect stalls; more than one cumulative stalled second invalidates play. CPU monitor samples are renderer-frame observations. Screenshot writes excluded from timing.",
+	"npc_count": 1215,
+	"npc_simulated_seconds": 15.1333333333337,
+	"optimization_disabled": false,
+	"p95_frame_equivalent_fps": 96.8992248062015,
+	"parked_cars": {
+		"active_colliders": 1,
+		"animated_spinner_cars": 0,
+		"attempts": 118,
+		"draw_batches": 7,
+		"far": 28,
+		"far_radius": 180.0,
+		"hidden": 67,
+		"near": 1,
+		"presence_radius": 55.0,
+		"rejected": {
+			"junction": 20,
+			"tree_trunk": 2
+		},
+		"street_count": 16,
+		"streets": {
+			"Argonne Drive": 7,
+			"Cator Avenue": 7,
+			"Dumbarton Avenue": 9,
+			"East 38th Street": 10,
+			"East 39th Street": 3,
+			"East 41st Street": 8,
+			"Elkader Road": 7,
+			"Ellerslie Avenue": 3,
+			"Frisby Street": 7,
+			"Greenmount Avenue": 9,
+			"Lowndes Avenue": 3,
+			"North Hill Road": 1,
+			"Pen Lucy Avenue": 1,
+			"Rose Hill Terrace": 6,
+			"Wilsby Avenue": 7,
+			"Wyanoke Avenue": 8
+		},
+		"total": 96
+	},
+	"paused_during_sample": false,
+	"physics_cpu_ms": {
+		"max": 6.984,
+		"median": 5.571,
+		"min": 4.666,
+		"p95": 6.984
+	},
+	"physics_fps": 60.5287492893872,
+	"physics_frames": 908,
+	"player_distance_m": 57.0163837075233,
+	"player_end": [
+		-5.55500078201294,
+		0.705159068107605,
+		-45.9290351867676
+	],
+	"player_start": [
+		-6.72599983215332,
+		-0.108433023095131,
+		9.99699974060059
+	],
+	"process_cpu_ms": {
+		"max": 276.297,
+		"median": 11.573,
+		"min": 10.155,
+		"p95": 276.297
+	},
+	"quality": "balanced",
+	"render_scale": 1.0,
+	"rendered_frames": 2239,
+	"requested_resolution": [
+		1920,
+		1080
+	],
+	"resolution": [
+		1920,
+		1080
+	],
+	"route_waypoint_reached": 33,
+	"route_waypoint_start": 0,
+	"sample_seconds": 15.001136,
+	"stalled_half_second_windows": 0,
+	"startup_ms": 12857,
+	"static_memory_bytes": 692485627.0,
+	"streaming": {
+		"background_loads": 0,
+		"cells": 21,
+		"collision_streaming": false,
+		"enabled": true,
+		"failures": 0,
+		"load_radius": 240.0,
+		"loaded_cells": 17,
+		"loaded_detail_triangles": 993731,
+		"near_cells_missing": 0,
+		"pending": false,
+		"proxy_cells": 4,
+		"quality": "balanced",
+		"released_original_meshes": 383,
+		"total_detail_triangles": 1154593,
+		"unload_radius": 330.0,
+		"unloads": 4
+	},
+	"texture_size": [
+		1920.0,
+		1080.0
+	],
+	"traffic_distance_m": 6278.04648906311,
+	"valid_active_play": true,
+	"vegetation": {
+		"bushes": 440.0,
+		"draw_batches": 831,
+		"enabled": true,
+		"loaded_cells": 253,
+		"loaded_plants": 1559,
+		"shared_meshes": 14,
+		"shared_variants": 7.0,
+		"spatial_cells": 347,
+		"trees": 1812.0,
+		"trunk_colliders": 96
+	},
+	"video_memory_bytes": 486716704,
+	"viewport_size": [
+		1920.0,
+		1080.0
+	],
+	"vsync": false,
+	"warmup_frames": 120,
+	"window_size": [
+		1920,
+		1080
+	],
+	"worst_frame_equivalent_fps": 34.1192125285748
+}
