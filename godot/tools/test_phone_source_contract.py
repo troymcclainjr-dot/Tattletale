@@ -29,8 +29,8 @@ class PhoneSourceContract(unittest.TestCase):
     def test_contacts_resolve_existing_authored_people(self):
         data = json.loads((ROOT / "godot/assets/data/pen_lucy_residents.json").read_text(encoding="utf-8"))
         residents = data["residents"]
-        self.assertEqual(len(residents), 20)
-        self.assertEqual(len({p["id"] for p in residents}), 20)
+        self.assertEqual(len(residents), 40)
+        self.assertEqual(len({p["id"] for p in residents}), len(residents))
         for person in residents:
             self.assertTrue(person["name"])
             self.assertTrue(person["street"])

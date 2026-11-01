@@ -23,6 +23,7 @@ var recovery_retry := 0.0
 var recovery_count := 0
 var needs_replan := false
 var _recovery_hold := 0.0
+var local_activity: Dictionary = {"phase": "travelling", "elapsed": 0.0, "home_path": []}
 
 func build_resident(owner_level: Node3D, definition: Dictionary) -> void:
 	routine = definition
@@ -66,6 +67,7 @@ func set_distance_fade(distance: float) -> void:
 		mesh.transparency = fade
 
 func assign_route(points: Array[Vector3], next_activity: String, label: String) -> void:
+	local_activity = {"phase": "travelling", "elapsed": 0.0, "home_path": []}
 	route_points = points.duplicate()
 	route_cursor = 0
 	activity = next_activity
@@ -77,6 +79,14 @@ func assign_route(points: Array[Vector3], next_activity: String, label: String) 
 	recovery_points.clear()
 	recovery_wait = 0.0
 	needs_replan = false
+
+func assign_activity_route(points: Array[Vector3]) -> void:
+	# A local stroll is not a timetable change. Keep identity, activity and label.
+	route_points = points.duplicate()
+	route_cursor = 0
+	route_completed = route_points.is_empty()
+	has_target = false
+	manual_target = true
 
 func begin_recovery(points: Array[Vector3], resume_cursor: int, hold := 0.0) -> void:
 	recovery_points = points.duplicate()
@@ -90,7 +100,7 @@ func begin_recovery(points: Array[Vector3], resume_cursor: int, hold := 0.0) -> 
 	recovery_count += 1
 
 func tick(delta: float) -> void:
-	if has_meta("combat_controlled") or not enabled or not physical:
+	if dead or combat_override or bicycle_override or has_meta("combat_controlled") or has_meta("police_custody_completed") or has_meta("police_custody") or not enabled or not physical:
 		return
 	arrival_fade = maxf(0.0, arrival_fade - delta * 2.5)
 	recovery_retry = maxf(0.0, recovery_retry - delta)
@@ -123,11 +133,17 @@ func tick(delta: float) -> void:
 	# traversable interior, disappearing body, or teleport through a locked door.
 	if _pose_updated and activity == "sleep" and route_completed and not moving:
 		puppet.pose({"nod": 0.22, "lean": 0.035})
+	elif _pose_updated and routine_enabled and route_completed and not moving and _speech_remaining <= 0.0 and level.player != null and global_position.distance_squared_to(level.player.global_position) <= 26.0 * 26.0:
+		# Small settling/checking-surroundings gestures use existing rig channels.
+		var elapsed: float = local_activity.elapsed
+		var arriving := str(local_activity.phase) == "arriving"
+		puppet.pose({"nod": sin(elapsed * 1.6) * (0.10 if arriving else 0.025), "lean": sin(elapsed * 0.8) * 0.018})
 
 func get_status() -> Dictionary:
 	var result: Dictionary = super.get_status()
 	result.merge({"name": display_name, "activity": activity, "destination": destination_label,
 		"physical": physical, "route_cursor": route_cursor, "route_size": route_points.size(),
 		"route_completed": route_completed, "schedule_transitions": schedule_transitions, "fade": _fade,
-		"recovery_count": recovery_count, "recovering": not recovery_points.is_empty(), "needs_replan": needs_replan})
+		"recovery_count": recovery_count, "recovering": not recovery_points.is_empty(), "needs_replan": needs_replan,
+		"local_activity": str(local_activity.phase), "dwell_elapsed": float(local_activity.elapsed)})
 	return result

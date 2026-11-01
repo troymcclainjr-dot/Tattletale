@@ -33,6 +33,16 @@ extends Node3D
 ## report_status_changed carries report_received / responding / on_scene /
 ## resolved / unavailable for every call, phone or incident. Contract:
 ## .work/pacifist-foundation/incidents-contract.md section 4.
+##
+## Every call also has a dispatch stage (city_police_status.gd): received →
+## queued | dispatched → en_route → on_scene → handling (contact, warning,
+## commands, detaining, arrest, force) → resolved | failed | cancelled. This
+## service is its only writer: one structured status per real transition, a
+## bounded timeline, and nothing predicted (no ETA; "en route" only once a unit
+## physically moved). A unit that is blocked, hurt or whose car fails stops
+## counting at once; the call waits for a real replacement (never the same
+## blocked officer again) and closes honestly after bounded retries. Contract:
+## .work/five-priorities-20261101/police-contract.md.
 
 signal incident_changed(summary: Dictionary)
 signal report_status_changed(status: Dictionary)
@@ -40,6 +50,7 @@ signal report_status_changed(status: Dictionary)
 const Tactics := preload("res://scripts/city/city_police_tactics.gd")
 const Custody := preload("res://scripts/city/city_police_custody.gd")
 const Facilities := preload("res://scripts/city/city_law_facilities.gd")
+const Status := preload("res://scripts/city/city_police_status.gd")
 
 const MAX_INCIDENTS := 3
 const MAX_SUSPECTS := 4
@@ -93,6 +104,12 @@ const TRAIL_SPACING := 1.5
 const MAX_TRAIL := 200
 const DISPATCH_RETRIES := 4
 const RETRY_SECONDS := 4.0
+## Units that failed to reach one call (blocked route, failed car) before it
+## closes as unanswered instead of sending yet another.
+const DISPATCH_FAILURE_LIMIT := 3
+## A dispatched unit counts as "en route" only after moving this far.
+const EN_ROUTE_EVIDENCE := 2.0
+const MAX_REFUSALS := 3
 const PATROL_PREFIX := "patrol_officer_"
 const CREW_PREFIX := "patrol_officer_cruiser_"
 const OPEN_STATES := ["at_large", "warned", "held", "down"]
@@ -117,7 +134,11 @@ var counters := {"requests": 0, "violence_reports": 0, "merged": 0, "rejected": 
 	"arrests": 0, "taken_in": 0, "rounds": 0, "hits": 0, "damage_applied": 0, "damage_unavailable": 0,
 	"held_fire": 0, "police_kills": 0, "suspects_dead": 0, "suspects_downed": 0, "officers_lost": 0, "unsticks": 0,
 	"releases": 0, "remounts": 0, "thinks": 0, "incident_reports": 0, "incident_duplicates": 0, "citations": 0,
-	"handoffs": 0}
+	"handoffs": 0, "transitions": 0, "replacements": 0, "cancelled_refs": 0}
+## Bumps on every dispatch-visible change (the phone's refresh key).
+var revision := 0
+## Bumps when restore_state() accepts a checkpoint: this session's timeline is gone.
+var generation := 0
 ## The incident service (city_incidents.gd): resolves its performers by identity
 ## and hears on_police_progress(ref, event, data) for linked calls.
 var incident_handler: Object = null
@@ -128,6 +149,8 @@ var hooks := {"fighters": "none", "damage": "none", "gunfire": "none"}
 var last_message := ""
 var _officers: Dictionary = {}
 var _reports: Array[Dictionary] = []
+var _refusals: Array[Dictionary] = []
+var _refusal_sequence := 0
 var _effects: Array[Dictionary] = []
 var _patrols: Array = []
 var _station := Vector3.INF
@@ -229,28 +252,22 @@ func report_incident(event: Dictionary) -> Dictionary:
 		return again
 	var policy := "warn" if str(event.get("policy", "detain")) == "warn" else "detain"
 	var reporter := str(event.get("reporter_id", ""))
+	var kind := str(event.get("kind", "")).left(32)
 	incident = _incident_near(at)
 	var merged := not incident.is_empty() and str(incident.get("ref", "")).is_empty()
 	if merged:
 		counters.merged = int(counters.merged) + 1
 		incident.ref = ref
 		incident.policy = policy
+		incident.kind = kind
 		incident.phone = bool(incident.phone) or phone
 		incident.updated = _clock
-		incident.last_status = "" # The linked report hears the call's progress from here on.
 	else:
 		if incidents.size() >= MAX_INCIDENTS:
-			counters.rejected = int(counters.rejected) + 1
-			var refused := _reply({}, false, "All officers are already on calls. Try again shortly.")
+			var refused := _refused("All officers are already on calls. Try again shortly.", at, phone, ref)
 			refused["duplicate"] = false
 			return refused
-		_sequence += 1
-		incident = {"id": "incident_%d" % _sequence, "at": at, "source": "report", "phone": phone,
-			"focus": "", "phase": "dispatching", "created": _clock, "updated": _clock, "suspects": {},
-			"units": [], "officers": [], "outcome": "", "retries": 0, "next_retry": 0.0, "arrived": -INF,
-			"search_until": -INF, "secure_until": -INF, "rounds": 0, "message": "", "closing": false, "closed": -INF,
-			"ref": ref, "policy": policy, "reporter": reporter}
-		incidents.append(incident)
+		incident = _new_incident(at, "report", phone, "", ref, policy, reporter, kind)
 	incident.reporter = reporter
 	for value in event.get("suspects", []):
 		var id := str(value)
@@ -264,13 +281,15 @@ func report_incident(event: Dictionary) -> Dictionary:
 			s.policy = policy
 	_discover(incident, at)
 	_dispatch(incident)
-	var text := _dispatch_text(incident) if not merged else _progress_text(incident)
-	incident.message = text
-	last_message = text
-	_status(incident, "report_received", text)
-	if _assigned(incident) > 0:
-		_status(incident, "responding", text)
-	incident_changed.emit(_summary(incident))
+	var text := ""
+	if merged:
+		text = _progress_text(incident)
+		incident.message = text
+		last_message = text
+		_relink(incident, text)
+		incident_changed.emit(_summary(incident))
+	else:
+		text = _intake(incident)
 	var reply := _reply(incident, true, text, merged)
 	reply["duplicate"] = false
 	return reply
@@ -314,10 +333,16 @@ func reset_state() -> void:
 			if str(unit.state) == "driving" and cruisers != null:
 				cruisers.cancel_assist(int(unit.slot), str(unit.tag))
 		if not bool(incident.closing):
+			incident.closing = true
 			incident.outcome = "interrupted"
-			_status(incident, "resolved", "The police response was called off.")
+			incident.phase = "closed"
+			_transition(incident, "cancelled", "The police response was called off.")
+		history.append(_summary(incident))
+	while history.size() > MAX_HISTORY:
+		history.pop_front()
 	incidents.clear()
 	_reports.clear()
+	revision += 1
 	for effect in _effects:
 		if is_instance_valid(effect.node):
 			effect.node.queue_free()
@@ -345,11 +370,52 @@ func restore_state(value) -> Dictionary:
 		return {"ok": false, "restored": 0, "skipped_dead": [], "reason": "police response in progress"}
 	if is_busy():
 		reset_state()
-	return custody.restore_state(value)
+	var result: Dictionary = custody.restore_state(value)
+	if bool(result.get("ok", false)):
+		# The checkpoint replaces this session's timeline: calls that closed in
+		# the abandoned timeline are not shown as if they happened in this one.
+		history.clear()
+		_refusals.clear()
+		generation += 1
+		revision += 1
+	return result
 
 ## Whether a linked incident still has an open police call (incident upkeep).
 func has_open_ref(ref: String) -> bool:
 	return not _incident_for_ref(ref).is_empty()
+
+## The linked incident was closed by its owner (a case settled it) while police
+## were still answering: officers stand down where they are and walk back, a car
+## still driving turns away, and nothing more is reported to that incident.
+func cancel_ref(ref: String, text := "") -> bool:
+	var incident := _incident_for_ref(ref)
+	if incident.is_empty():
+		return false
+	counters.cancelled_refs = int(counters.cancelled_refs) + 1
+	_close(incident, "cancelled", text if not text.is_empty() else "The incident was settled, so officers are standing down.")
+	return true
+
+## What the phone shows: live calls, this session's closed calls and refused
+## phone calls, each with its dispatch stage and bounded timeline.
+func dispatch_view() -> Dictionary:
+	var live: Array = []
+	for incident in incidents:
+		live.append(_summary(incident))
+	return {"generation": generation, "revision": revision, "available": available, "reason": reason,
+		"live": live, "history": history.duplicate(true), "refusals": _refusals.duplicate(true), "minutes": _minutes()}
+
+## One call by police incident id or linked incident ref: live first, then the
+## newest closed one. {} when unknown.
+func call_status(key: String) -> Dictionary:
+	if key.is_empty():
+		return {}
+	for incident in incidents:
+		if str(incident.id) == key or str(incident.get("ref", "")) == key:
+			return _summary(incident)
+	for i in range(history.size() - 1, -1, -1):
+		if str(history[i].get("id", "")) == key or str(history[i].get("ref", "")) == key:
+			return history[i].duplicate(true)
+	return {}
 
 ## Cruiser callback (city_police_cruisers.gd): an assist car's officer just
 ## stepped out of a stopped car at `door`. True when this service takes them.
@@ -386,6 +452,7 @@ func get_status() -> Dictionary:
 		"max_incidents": MAX_INCIDENTS, "busy": is_busy(), "message": last_message,
 		"counters": counters.duplicate(), "hold_reasons": hold_reasons.duplicate(), "outcomes": outcomes.duplicate(),
 		"hooks": hooks.duplicate(), "custody": custody.get_status(), "reports": _reports.size(),
+		"refusals": _refusals.duplicate(true), "revision": revision, "generation": generation,
 		"rays": tactics.rays, "shape_queries": tactics.shape_queries}
 
 # --------------------------------------------------------------- incidents
@@ -401,24 +468,64 @@ func _open(at: Vector3, source: String, focus_id: String) -> Dictionary:
 		_dispatch(incident)
 		return _reply(incident, true, _progress_text(incident), true)
 	if incidents.size() >= MAX_INCIDENTS:
-		counters.rejected = int(counters.rejected) + 1
-		return _reply({}, false, "All officers are already on calls. Try again shortly.")
-	_sequence += 1
-	incident = {"id": "incident_%d" % _sequence, "at": at, "source": source, "phone": source == "phone",
-		"focus": focus_id, "phase": "dispatching", "created": _clock, "updated": _clock, "suspects": {},
-		"units": [], "officers": [], "outcome": "", "retries": 0, "next_retry": 0.0, "arrived": -INF,
-		"search_until": -INF, "secure_until": -INF, "rounds": 0, "message": "", "closing": false, "closed": -INF}
-	incidents.append(incident)
+		return _refused("All officers are already on calls. Try again shortly.", at, source == "phone")
+	incident = _new_incident(at, source, source == "phone", focus_id)
 	_discover(incident, at)
 	_dispatch(incident)
+	var text := _intake(incident)
+	return _reply(incident, true, text, false)
+
+func _new_incident(at: Vector3, source: String, phone: bool, focus_id := "", ref := "", policy := "", reporter := "", kind := "") -> Dictionary:
+	_sequence += 1
+	var now := _minutes()
+	var incident := {"id": "incident_%d" % _sequence, "at": at, "source": source, "phone": phone,
+		"focus": focus_id, "phase": "dispatching", "created": _clock, "updated": _clock, "suspects": {},
+		"units": [], "officers": [], "outcome": "", "retries": 0, "next_retry": 0.0, "arrived": -INF,
+		"search_until": -INF, "secure_until": -INF, "rounds": 0, "message": "", "closing": false, "closed": -INF,
+		"ref": ref, "policy": policy, "reporter": reporter, "kind": kind,
+		# Dispatch state (city_police_status.gd); `excluded` holds officers whose
+		# route to this call failed, `failures` every unit that could not get here.
+		"stage": "received", "handling": "", "stage_key": "", "timeline": [], "street": _street(at),
+		"opened_minutes": now, "updated_minutes": now, "excluded": {}, "failures": 0, "sent": 0, "route_blocked": false}
+	incidents.append(incident)
+	return incident
+
+## A new call's first dispatch step. The caller's reply carries this text, so
+## there is no direct phone notice here; a linked incident hears it (and the
+## caller's phone through it) from the incident relay.
+func _intake(incident: Dictionary) -> String:
 	var text := _dispatch_text(incident)
 	incident.message = text
 	last_message = text
-	_status(incident, "report_received", text)
 	if _assigned(incident) > 0:
-		_status(incident, "responding", text)
+		_transition(incident, "received", text, "", false)
+		_transition(incident, "dispatched", text, "", false)
+	else:
+		_transition(incident, "queued", text, "", false)
 	incident_changed.emit(_summary(incident))
-	return _reply(incident, true, text, false)
+	return text
+
+## A report merged into an open call: the newly linked incident hears where that
+## call stands (received, then its current status) without new timeline steps.
+func _relink(incident: Dictionary, text: String) -> void:
+	incident.last_status = ""
+	_status(incident, "report_received", text)
+	var current := Status.coarse_status(str(incident.get("stage", "received")), str(incident.get("outcome", "")))
+	if current != "report_received":
+		_status(incident, current, text)
+
+## A refused call: nothing is dispatched. A phone caller's refusal stays on the
+## phone (bounded) so "not taken" is never mistaken for "on the way".
+func _refused(text: String, at: Vector3, phone: bool, ref := "") -> Dictionary:
+	counters.rejected = int(counters.rejected) + 1
+	if phone:
+		_refusal_sequence += 1
+		_refusals.append({"id": "refusal_%d" % _refusal_sequence, "stage": "unavailable", "text": text, "ref": ref,
+			"phone": true, "at": at, "street": _street(at), "minutes": _minutes()})
+		while _refusals.size() > MAX_REFUSALS:
+			_refusals.pop_front()
+		revision += 1
+	return _reply({}, false, text)
 
 func _reply(incident: Dictionary, ok: bool, text: String, merged := false) -> Dictionary:
 	last_message = text
@@ -457,16 +564,199 @@ func _incident_for_ref(ref: String) -> Dictionary:
 ## One structured status per transition (phone and incident service). Linked
 ## incidents also hear it through incident_handler.on_police_progress.
 func _status(incident: Dictionary, status: String, text := "") -> void:
-	var key := "%s:%s" % [status, str(incident.get("outcome", ""))]
+	var key := "%s:%s:%s:%s" % [status, str(incident.get("stage", "")), str(incident.get("handling", "")), str(incident.get("outcome", ""))]
 	if str(incident.get("last_status", "")) == key:
 		return
 	incident.last_status = key
 	var payload := {"police_incident_id": str(incident.id), "incident_ref": str(incident.get("ref", "")), "status": status,
 		"outcome": str(incident.get("outcome", "")), "text": text if not text.is_empty() else str(incident.get("message", "")),
 		"phone": bool(incident.get("phone", false)), "policy": str(incident.get("policy", "")),
-		"dispatched": _assigned(incident)}
+		"dispatched": _assigned(incident), "stage": str(incident.get("stage", "")), "handling": str(incident.get("handling", "")),
+		"street": str(incident.get("street", "")), "minutes": _minutes(), "responders": _responders(incident)}
 	report_status_changed.emit(payload)
 	_notify_handler(incident, status, payload)
+
+## One dispatch transition: stage bookkeeping and the bounded timeline, then
+## exactly one structured status (the incident relay for a linked call) and,
+## for an unlinked phone call, one direct phone notice. `direct` false leaves the
+## notice to the caller's reply (intake). `notify` false is a card-only change
+## (en route): no notice of any kind. Nothing live follows a closed call.
+func _transition(incident: Dictionary, stage: String, text: String, handling := "", direct := true, notify := true) -> bool:
+	var outcome := str(incident.get("outcome", ""))
+	if bool(incident.get("closing", false)) and Status.is_live(stage):
+		return false
+	var key := "%s:%s:%s" % [stage, handling, outcome]
+	if str(incident.get("stage_key", "")) == key:
+		return false
+	incident.stage_key = key
+	incident.stage = stage
+	incident.handling = handling
+	incident.updated_minutes = _minutes()
+	_timeline(incident, stage, handling, text)
+	counters.transitions = int(counters.transitions) + 1
+	revision += 1
+	if not notify:
+		incident_changed.emit(_summary(incident))
+		return true
+	if direct:
+		_tell(incident, text, true)
+	elif not text.is_empty():
+		incident.message = text
+		last_message = text
+	_status(incident, Status.coarse_status(stage, outcome), text)
+	return true
+
+func _handling(incident: Dictionary, kind: String, text: String) -> void:
+	_transition(incident, "handling", text, kind)
+
+## Same-stage news (one of several units blocked or lost, a reinforcement):
+## the timeline and one notice, but no stage change.
+func _note(incident: Dictionary, text: String) -> void:
+	if text.is_empty() or bool(incident.get("closing", false)) or str(incident.get("message", "")) == text:
+		return
+	_timeline(incident, str(incident.get("stage", "")), str(incident.get("handling", "")), text)
+	revision += 1
+	_tell(incident, text)
+
+func _timeline(incident: Dictionary, stage: String, handling: String, text: String) -> void:
+	if not incident.get("timeline") is Array:
+		incident.timeline = []
+	var timeline: Array = incident.timeline
+	timeline.append({"stage": stage, "handling": handling, "outcome": str(incident.get("outcome", "")),
+		"text": text.left(120), "minutes": _minutes()})
+	while timeline.size() > Status.MAX_TIMELINE:
+		timeline.remove_at(1) # Keep the first step (when the call came in).
+
+## A unit stopped answering this call (blocked, hurt, its car failed). With
+## others still responding it is news; with none left the call waits again, and
+## only says help is coming once a replacement is actually sent. Out of
+## retries or failed units, the call closes honestly instead.
+func _unit_lost(incident: Dictionary, what: String) -> void:
+	if bool(incident.get("closing", false)):
+		return
+	if _assigned(incident) > 0:
+		_note(incident, what)
+		return
+	if int(incident.get("retries", 0)) >= DISPATCH_RETRIES or int(incident.get("failures", 0)) >= DISPATCH_FAILURE_LIMIT:
+		_timeline(incident, str(incident.get("stage", "")), str(incident.get("handling", "")), what)
+		_close(incident, "unavailable", _unavailable_text(incident))
+		return
+	var text := what + " Dispatch is looking for another officer."
+	if not _transition(incident, "queued", text):
+		_note(incident, text)
+
+func _unavailable_text(incident: Dictionary) -> String:
+	var sent := int(incident.get("sent", 0)) > 0
+	var blocked := bool(incident.get("route_blocked", false))
+	if sent and blocked:
+		return "No officer could get through to the scene, so dispatch closed the call."
+	if sent:
+		return "No other officer could take over, so dispatch closed the call."
+	if blocked:
+		return "No officers could respond: none could get to the scene."
+	return "No officers could respond to your call right now."
+
+## Officers still answering this call: one walking back (route failed, call
+## done) no longer counts as a response.
+func _responding_officers(incident: Dictionary) -> int:
+	var count := 0
+	for id in incident.get("officers", []):
+		var o: Dictionary = _officers.get(id, {})
+		if not o.is_empty() and str(o.state) != "return":
+			count += 1
+	return count
+
+func _responders(incident: Dictionary) -> Dictionary:
+	return {"foot": _responding_officers(incident), "cars": _driving_units(incident)}
+
+## Officers physically handling the scene now (not on the way, not walking back).
+func _present(incident: Dictionary) -> int:
+	var count := 0
+	for id in incident.get("officers", []):
+		var o: Dictionary = _officers.get(id, {})
+		if not o.is_empty() and not str(o.state) in ["respond", "return"]:
+			count += 1
+	return count
+
+## "En route" is evidence, not a promise: an assigned officer or car must have
+## physically moved from where it was dispatched. Card-only (no notice).
+func _check_en_route(incident: Dictionary) -> void:
+	if str(incident.get("stage", "")) != "dispatched":
+		return
+	var moved := false
+	for id in incident.officers:
+		var o: Dictionary = _officers.get(id, {})
+		if o.is_empty() or str(o.state) == "return" or not is_instance_valid(o.actor):
+			continue
+		var origin: Vector3 = o.get("origin", Vector3.INF)
+		moved = moved or (origin.is_finite() and Tactics.flat(o.actor.global_position, origin) >= EN_ROUTE_EVIDENCE)
+	var cruisers = _cruisers()
+	for unit in incident.units:
+		if moved or str(unit.state) != "driving" or cruisers == null:
+			continue
+		var at = cruisers.assist_status(int(unit.slot), str(unit.tag)).get("position", Vector3.INF)
+		var origin: Vector3 = unit.get("origin", Vector3.INF)
+		if not origin.is_finite() and at is Vector3:
+			unit.origin = at
+		elif at is Vector3 and (at as Vector3).is_finite() and Tactics.flat(at, origin) >= EN_ROUTE_EVIDENCE:
+			moved = true
+	if moved:
+		_transition(incident, "en_route", "Officer on the way.", "", true, false)
+
+## The officer's route ran out (blocked, or past its deadline) before reaching
+## the scene: not an arrival and not a search. They walk back the way they
+## came, and this call never sends them down that way again.
+func _route_failed(o: Dictionary, incident: Dictionary) -> void:
+	counters.route_failures = int(counters.route_failures) + 1
+	if not incident.get("excluded") is Dictionary:
+		incident.excluded = {}
+	incident.excluded[str(o.id)] = true
+	incident.failures = int(incident.get("failures", 0)) + 1
+	incident.route_blocked = true
+	incident.next_retry = _clock
+	_finish_officer(o)
+	_unit_lost(incident, "An officer could not get through to the scene.")
+
+static func _car_failure_text(reason: String) -> String:
+	match reason:
+		"no route":
+			return "The police car could not find a route to the scene."
+		"boxed in without reverse clearance":
+			return "The police car was boxed in on the way."
+		"disabled":
+			return "The police car was disabled on the way."
+		"no clear door":
+			return "The police car's officer could not get out safely."
+		"crew lost":
+			return "The police car's officer was hurt."
+	return "The police car could not continue to the scene."
+
+## "Dispatch sent ..." for units added after intake (after a wait or a loss).
+func _sent_text(incident: Dictionary, foot: int, cars: int, replacement: bool) -> String:
+	var parts: Array[String] = []
+	if foot > 0:
+		var nearest := INF
+		for id in incident.officers:
+			var o: Dictionary = _officers.get(id, {})
+			if not o.is_empty() and str(o.state) != "return" and is_instance_valid(o.actor):
+				nearest = minf(nearest, Tactics.flat(o.actor.global_position, Vector3(incident.at)))
+		var who := ("another officer on foot" if replacement else "an officer on foot") if foot == 1 else "%d officers on foot" % foot
+		parts.append(who + (" (about %d m away)" % int(round(nearest)) if foot == 1 and is_finite(nearest) else ""))
+	if cars > 0:
+		parts.append(("another police car" if replacement else "a police car") if cars == 1 else "%d police cars" % cars)
+	return "Dispatch sent %s." % " and ".join(parts)
+
+func _street(at: Vector3) -> String:
+	if level != null and at.is_finite() and level.has_method("_nearest_street"):
+		return str(level.call("_nearest_street", at)).left(64)
+	return ""
+
+## Game minutes (world_time), the clock the phone and incident records use.
+func _minutes() -> float:
+	var clock = level.get("world_time") if level != null else null
+	if clock != null and clock.get("total_minutes") != null:
+		return float(clock.get("total_minutes"))
+	return 540.0 + _clock * 0.5
 
 func _notify_handler(incident: Dictionary, event: String, data: Dictionary) -> void:
 	var ref := str(incident.get("ref", ""))
@@ -590,6 +880,7 @@ func _think_incident(incident: Dictionary, discover: bool) -> void:
 		_discover(incident, Vector3(incident.at))
 	_update_suspects(incident)
 	_retry_dispatch(incident)
+	_check_en_route(incident)
 	for id in (incident.officers as Array).duplicate():
 		if _officers.has(id):
 			_decide(_officers[id], incident)
@@ -663,13 +954,17 @@ func _imminent(s: Dictionary) -> bool:
 	return _clock <= float(s.reported_active_until)
 
 func _evaluate(incident: Dictionary) -> void:
+	if bool(incident.closing):
+		return # Closed mid-think (a unit was lost): nothing more to decide.
 	var open := 0
 	var lost := 0
 	var dead := 0
 	var arrested := 0
 	var cited := 0
 	var engaged := false
-	for s in (incident.suspects as Dictionary).values():
+	var violent := false
+	var suspects: Dictionary = incident.suspects
+	for s in suspects.values():
 		match str(s.state):
 			"at_large", "warned", "held", "down":
 				open += 1
@@ -684,39 +979,63 @@ func _evaluate(incident: Dictionary) -> void:
 	for id in incident.officers:
 		if _officers.has(id) and str(_officers[id].state) in ["engage", "cuff"]:
 			engaged = true
+			var target: Dictionary = suspects.get(str(_officers[id].target), {})
+			violent = violent or (not target.is_empty() and (str(target.get("policy", "detain")) != "warn" or bool(target.get("armed", false))))
 	var age := _clock - float(incident.created)
-	if _assigned(incident) == 0 and int(incident.retries) >= DISPATCH_RETRIES:
-		_close(incident, "unavailable", "No officers could respond to your call right now.")
+	if _assigned(incident) == 0 and (int(incident.retries) >= DISPATCH_RETRIES or int(incident.get("failures", 0)) >= DISPATCH_FAILURE_LIMIT):
+		_close(incident, "unavailable", _unavailable_text(incident))
 		return
 	if age > INCIDENT_LIMIT:
 		_close(incident, "timeout", "Officers could not resolve the call and are standing down.")
 		return
 	if open > 0:
 		incident.phase = "engaging" if engaged else ("on_scene" if is_finite(float(incident.arrived)) else str(incident.phase))
-		if engaged and not bool(incident.get("confronted", false)):
+		# Commands are for violence or a weapon at the scene, never an infraction stop.
+		if violent and is_finite(float(incident.arrived)) and not bool(incident.get("confronted", false)):
 			incident.confronted = true
-			_tell(incident, "Officers are confronting the suspect.")
+			_handling(incident, "commands", "Officers are confronting the suspect.")
 		return
+	var present := _present(incident)
 	if dead == 0 and arrested == 0 and cited == 0:
-		# Nobody (left) to deal with: close only after officers actually searched.
-		if not is_finite(float(incident.arrived)) or _clock < float(incident.search_until):
+		# Nobody (left) to deal with: close only after an officer at the scene
+		# actually searched it (one who had to leave did not finish checking).
+		if not is_finite(float(incident.arrived)) or _clock < float(incident.search_until) or present == 0:
 			return
 		if lost > 0:
 			_close(incident, "suspect_left", "Officers searched, but the suspect had already left.")
 		else:
 			_close(incident, "no_threat", "Officers checked the area. Nobody there needed help.")
 		return
+	# Securing needs an officer at the scene until it is done; a completed arrest
+	# or warning settles the call by itself. With nobody left there (hurt,
+	# disabled), the securing stops and starts over once an officer is back.
+	var covered := present > 0 or arrested > 0 or cited > 0
+	if is_finite(float(incident.secure_until)) and not covered:
+		incident.secure_until = -INF
+		incident.phase = "on_scene"
 	if not is_finite(float(incident.secure_until)):
+		# Officers at the scene secure it; anyone still on the way keeps going. A
+		# suspect who died before an officer got there waits for one to arrive.
+		if not is_finite(float(incident.arrived)) or not covered:
+			return
 		incident.secure_until = _clock + secure_seconds
 		incident.phase = "securing"
 		for id in incident.officers:
-			if _officers.has(id) and str(_officers[id].state) in ["search", "engage", "respond"]:
+			if _officers.has(id) and str(_officers[id].state) in ["search", "engage"]:
 				_secure(_officers[id], incident)
 		return
 	if _clock < float(incident.secure_until):
 		return
 	if dead > 0:
-		_close(incident, "suspect_killed", "Police stopped an armed attacker. The scene is secure.")
+		var by_police := false
+		for s in suspects.values():
+			by_police = by_police or (str(s.state) == "dead" and bool(s.get("killed_by_police", false)))
+		var text := "Police stopped an armed attacker. The scene is secure."
+		if not by_police:
+			# Died by another cause: never credited to (or blamed on) police rounds.
+			text = "Officers secured the scene. The person involved died." if int(incident.rounds) > 0 \
+				else "Officers secured the scene. The person involved died; police did not fire."
+		_close(incident, "suspect_killed", text)
 	elif arrested > 0:
 		_close(incident, "arrested", "The suspect was arrested. The scene is safe.")
 	else:
@@ -730,14 +1049,13 @@ func _close(incident: Dictionary, outcome: String, text: String) -> void:
 	incident.phase = "closed"
 	incident.closed = _clock
 	outcomes[outcome] = int(outcomes.get(outcome, 0)) + 1
-	var abandoned := outcome in ["timeout", "unavailable", "suspect_left"]
+	var abandoned := outcome in ["timeout", "unavailable", "suspect_left", "cancelled"]
 	if abandoned:
 		for s in (incident.suspects as Dictionary).values():
 			if str(s.state) in ["held", "cuffed", "escort"]:
 				custody.release(str(s.id))
 				s.state = "released"
-	_tell(incident, text, true)
-	_status(incident, "unavailable" if outcome == "unavailable" else "resolved", text)
+	_transition(incident, Status.terminal_stage(outcome), text)
 	for id in (incident.officers as Array).duplicate():
 		if _officers.has(id):
 			var o: Dictionary = _officers[id]
@@ -770,10 +1088,16 @@ func _summary(incident: Dictionary) -> Dictionary:
 	for unit in incident.units:
 		units.append({"tag": str(unit.tag), "slot": int(unit.slot), "vehicle_id": str(unit.vehicle_id), "state": str(unit.state),
 			"reason": str(unit.get("reason", ""))})
+	var timeline = incident.get("timeline", [])
 	return {"id": str(incident.id), "phase": str(incident.phase), "outcome": str(incident.outcome), "at": incident.at,
 		"source": str(incident.source), "suspects": suspects, "units": units, "officers": (incident.officers as Array).duplicate(),
 		"message": str(incident.message), "rounds": int(incident.rounds), "age": _clock - float(incident.created),
-		"ref": str(incident.get("ref", "")), "policy": str(incident.get("policy", "")), "reporter": str(incident.get("reporter", ""))}
+		"ref": str(incident.get("ref", "")), "policy": str(incident.get("policy", "")), "reporter": str(incident.get("reporter", "")),
+		"stage": str(incident.get("stage", "")), "handling": str(incident.get("handling", "")), "kind": str(incident.get("kind", "")),
+		"street": str(incident.get("street", "")), "phone": bool(incident.get("phone", false)), "closing": bool(incident.get("closing", false)),
+		"threat": _threat_label(incident), "responders": _responders(incident),
+		"opened_minutes": float(incident.get("opened_minutes", -1.0)), "updated_minutes": float(incident.get("updated_minutes", -1.0)),
+		"timeline": (timeline as Array).duplicate(true) if timeline is Array else []}
 
 func _tell(incident: Dictionary, text: String, structured_status_follows := false) -> void:
 	if text.is_empty() or str(incident.get("message", "")) == text:
@@ -791,22 +1115,25 @@ func _tell(incident: Dictionary, text: String, structured_status_follows := fals
 	incident_changed.emit(_summary(incident))
 
 func _dispatch_text(incident: Dictionary) -> String:
-	var lead := "Dispatch got your call."
+	var lead := "Dispatch got your report." if str(incident.get("source", "")) == "report" else "Dispatch got your call."
 	match _threat_label(incident):
 		"armed":
 			lead = "Armed suspect reported."
 		"violent":
-			lead = "Violence reported."
+			# A detained theft is not described as violence.
+			lead = "Theft reported." if str(incident.get("kind", "")) == "theft" else "Violence reported."
 		"infraction":
 			lead = "Dispatch got your report."
 	var foot := 0
 	var nearest := INF
 	for id in incident.officers:
-		if _officers.has(id):
+		if _officers.has(id) and str(_officers[id].state) != "return":
 			foot += 1
 			nearest = minf(nearest, Tactics.flat(_officers[id].actor.global_position, Vector3(incident.at)))
 	var cars := _driving_units(incident)
 	if foot == 0 and cars == 0:
+		if bool(incident.get("route_blocked", false)):
+			return lead + " No officer can get there yet; dispatch will keep trying."
 		return lead + " No officer is free yet; dispatch will keep trying."
 	var parts: Array[String] = []
 	if foot > 0:
@@ -815,15 +1142,16 @@ func _dispatch_text(incident: Dictionary) -> String:
 		parts.append("a police car" if cars == 1 else "%d police cars" % cars)
 	return "%s Sending %s." % [lead, " and ".join(parts)]
 
+## A repeat or merged report hears where the existing call stands, by stage.
 func _progress_text(incident: Dictionary) -> String:
-	match str(incident.phase):
-		"dispatching":
+	match str(incident.get("stage", "")):
+		"received", "queued":
 			return "Dispatch is still looking for a free officer."
-		"en_route":
+		"dispatched", "en_route":
 			return "Officers are already on the way to this location."
-		"on_scene", "securing":
+		"on_scene":
 			return "Officers are already at this location."
-		"engaging":
+		"handling":
 			return "Officers are dealing with the suspect now."
 	return str(incident.message)
 
@@ -844,7 +1172,7 @@ func _officers_wanted(incident: Dictionary) -> int:
 func _assigned(incident: Dictionary) -> int:
 	if incident.is_empty():
 		return 0
-	return (incident.officers as Array).size() + _driving_units(incident)
+	return _responding_officers(incident) + _driving_units(incident)
 
 func _driving_units(incident: Dictionary) -> int:
 	var count := 0
@@ -872,7 +1200,7 @@ func _goal(incident: Dictionary) -> Vector3:
 func _retry_dispatch(incident: Dictionary) -> void:
 	if _assigned(incident) >= _officers_wanted(incident) or _clock < float(incident.next_retry):
 		return
-	if int(incident.retries) >= DISPATCH_RETRIES:
+	if int(incident.retries) >= DISPATCH_RETRIES or int(incident.get("failures", 0)) >= DISPATCH_FAILURE_LIMIT:
 		return
 	var before := _assigned(incident)
 	_dispatch(incident)
@@ -881,11 +1209,15 @@ func _retry_dispatch(incident: Dictionary) -> void:
 		incident.next_retry = _clock + RETRY_SECONDS
 
 ## Closest real foot patrol first; a cruiser for distant or armed calls; then
-## any other patrol in range. At most MAX_ROUTE_PLANS foot routes per call.
+## any other patrol in range. At most MAX_ROUTE_PLANS foot routes per call. An
+## officer whose route to this call already failed is not sent again.
 func _dispatch(incident: Dictionary) -> void:
 	var needed := mini(_officers_wanted(incident) - _assigned(incident), MAX_OFFICERS - _committed())
 	if needed <= 0:
 		return
+	var foot_before := _responding_officers(incident)
+	var cars_before := _driving_units(incident)
+	var excluded: Dictionary = incident.get("excluded", {}) if incident.get("excluded") is Dictionary else {}
 	var goal := _goal(incident)
 	var cruisers = _cruisers()
 	var car_possible: bool = cruisers != null and bool(cruisers.get("available")) and cruisers.has_method("request_assist")
@@ -896,6 +1228,8 @@ func _dispatch(incident: Dictionary) -> void:
 			break
 		if float(candidate.distance) > CRUISER_PREFERRED_DISTANCE and car_possible:
 			break
+		if excluded.has(str(candidate.actor.actor_id)):
+			continue
 		plans += 1
 		if _send_foot(incident, candidate.actor, goal):
 			needed -= 1
@@ -903,8 +1237,9 @@ func _dispatch(incident: Dictionary) -> void:
 		var tag := "%s:%d" % [incident.id, (incident.units as Array).size() + 1]
 		var result: Dictionary = cruisers.request_assist(goal, tag)
 		if bool(result.get("ok", false)):
+			var claimed: Dictionary = cruisers.assist_status(int(result.slot), tag) if cruisers.has_method("assist_status") else {}
 			incident.units.append({"tag": tag, "slot": int(result.slot), "vehicle_id": str(result.get("vehicle_id", "")),
-				"state": "driving", "claimed": _clock, "reason": ""})
+				"state": "driving", "claimed": _clock, "reason": "", "origin": claimed.get("position", Vector3.INF)})
 			counters.cruiser_dispatches = int(counters.cruiser_dispatches) + 1
 			needed -= 1
 		else:
@@ -912,15 +1247,26 @@ func _dispatch(incident: Dictionary) -> void:
 	for candidate in candidates:
 		if needed <= 0 or plans >= MAX_ROUTE_PLANS or _committed() >= MAX_OFFICERS:
 			break
-		if _officers.has(str(candidate.actor.actor_id)):
+		if _officers.has(str(candidate.actor.actor_id)) or excluded.has(str(candidate.actor.actor_id)):
 			continue
 		plans += 1
 		if _send_foot(incident, candidate.actor, goal):
 			needed -= 1
-	if _assigned(incident) > 0 and str(incident.phase) == "dispatching":
-		incident.phase = "en_route"
-		if not str(incident.get("last_status", "")).is_empty():
-			_status(incident, "responding", _dispatch_text(incident))
+	var foot_added := _responding_officers(incident) - foot_before
+	var cars_added := _driving_units(incident) - cars_before
+	if foot_added + cars_added > 0:
+		var replacement := int(incident.get("sent", 0)) > 0
+		incident.sent = int(incident.get("sent", 0)) + foot_added + cars_added
+		if str(incident.phase) == "dispatching":
+			incident.phase = "en_route"
+		# Intake announces its own first dispatch; later units are news here.
+		if not str(incident.get("stage_key", "")).is_empty():
+			if replacement:
+				counters.replacements = int(counters.replacements) + 1
+			if foot_before + cars_before > 0:
+				_note(incident, "Dispatch sent another officer to help.")
+			else:
+				_transition(incident, "dispatched", _sent_text(incident, foot_added, cars_added, replacement))
 	if _assigned(incident) == 0:
 		incident.next_retry = _clock + RETRY_SECONDS
 
@@ -960,6 +1306,7 @@ func _send_foot(incident: Dictionary, actor, goal: Vector3) -> bool:
 		return false
 	var path := _route(actor.global_position, goal)
 	if path.is_empty():
+		incident.route_blocked = true # A free officer exists but cannot get there.
 		return false
 	if actor.get("combat_override") == true:
 		var combat = _combat()
@@ -987,7 +1334,7 @@ func _adopt(actor, incident: Dictionary, kind: String) -> Dictionary:
 		"trail": [actor.global_position], "trail_overflow": false, "stuck": 0.0, "unstick": 0, "replan_at": 0.0,
 		"home_speed": float(actor.speed), "target": "", "escort": "", "face": Vector3.INF, "aim": -1.0, "cooldown": 0.0,
 		"rounds": 0, "gun": null, "muzzle": null, "timer": 0.0, "search_points": [], "search_index": 0,
-		"hold_reason": "", "escort_until": INF, "spoke_hold": false}
+		"hold_reason": "", "escort_until": INF, "spoke_hold": false, "origin": actor.global_position}
 	_officers[id] = o
 	incident.officers.append(id)
 	return o
@@ -1040,9 +1387,11 @@ func _poll_cruisers(incident: Dictionary) -> void:
 		var status: Dictionary = cruisers.assist_status(int(unit.slot), str(unit.tag)) if cruisers != null else {}
 		var mode := str(status.get("mode", ""))
 		if mode == "dismounted":
-			# Stepped out without being adopted (call already closing): the
-			# cruiser's own crew upkeep walks them back and drives off.
+			# Stepped out without being adopted (call already closing, or the
+			# officer could not take over): the cruiser's own crew upkeep walks
+			# them back and drives off.
 			unit.state = "unadopted"
+			_unit_lost(incident, "An officer is no longer available for this call.")
 			continue
 		if status.is_empty() or mode in ["depart", "abandoned"]:
 			# The car could not get its officer here (blocked, no door, no route).
@@ -1052,6 +1401,8 @@ func _poll_cruisers(incident: Dictionary) -> void:
 			if cruisers != null and not status.is_empty():
 				cruisers.cancel_assist(int(unit.slot), str(unit.tag))
 			incident.next_retry = _clock
+			incident.failures = int(incident.get("failures", 0)) + 1
+			_unit_lost(incident, _car_failure_text(str(unit.reason)))
 
 func _check_officers(incident: Dictionary) -> void:
 	for id in (incident.officers as Array).duplicate():
@@ -1064,17 +1415,15 @@ func _check_officers(incident: Dictionary) -> void:
 		if _usable(actor) and mode == "unknown":
 			continue
 		# Hurt, downed, killed or taken over by combat: no longer ours to move.
+		# Those stay combat's; a body merely disabled or removed is handed back
+		# to normal life rather than left frozen under this service's hold.
+		var returning := str(o.state) == "return"
+		var hurt: bool = mode in ["dead", "downed"] or (is_instance_valid(actor) and actor.get("dead") == true)
 		counters.officers_lost = int(counters.officers_lost) + 1
-		_officers.erase(id)
-		incident.officers.erase(id)
-		_holster(o)
-		if is_instance_valid(actor):
-			for key in ["police_assist", "law_responder"]:
-				if actor.has_meta(key):
-					actor.remove_meta(key)
-		if not bool(incident.closing):
-			_tell(incident, "An officer was hurt. Dispatch is sending help.")
+		_release_officer(o)
+		if not bool(incident.closing) and not returning:
 			incident.next_retry = _clock
+			_unit_lost(incident, "An officer was hurt." if hurt else "An officer is no longer available for this call.")
 
 # --------------------------------------------------------------- officer decisions (4 Hz)
 
@@ -1095,11 +1444,10 @@ func _decide(o: Dictionary, incident: Dictionary) -> void:
 				else:
 					_arrive_scene(o, incident)
 			elif int(o.index) >= (o.path as Array).size() or _clock > float(o.deadline):
-				# A failed route is not an arrival or a search of the scene.
-				counters.route_failures = int(counters.route_failures) + 1
-				_tell(incident, "An officer could not reach the scene. Dispatch is checking another response.")
-				incident.next_retry = _clock
-				_finish_officer(o)
+				if bool(incident.closing):
+					_finish_officer(o)
+				else:
+					_route_failed(o, incident) # Not an arrival or a search of the scene.
 		"search":
 			_perceive(o, incident)
 			if not str(o.target).is_empty():
@@ -1141,9 +1489,13 @@ func _mark_arrived(incident: Dictionary) -> void:
 		incident.arrived = _clock
 		incident.phase = "on_scene"
 		counters.arrivals = int(counters.arrivals) + 1
-		_tell(incident, "An officer has arrived and is checking the area.", true)
-		_status(incident, "on_scene", "An officer has arrived and is checking the area.")
 		incident.search_until = _clock + search_seconds
+		_transition(incident, "on_scene", "An officer has arrived and is checking the area.")
+	elif str(incident.get("stage", "")) in Status.PRE_ARRIVAL:
+		# A replacement reached a scene the first unit had to leave: it searches
+		# afresh rather than inheriting an earlier, unfinished check.
+		incident.search_until = maxf(float(incident.search_until), _clock + search_seconds)
+		_transition(incident, "on_scene", "Another officer has arrived and is checking the area.")
 
 func _search_points(center: Vector3, from: Vector3) -> Array:
 	var result: Array = []
@@ -1331,14 +1683,14 @@ func _stop_for_warning(o: Dictionary, incident: Dictionary, s: Dictionary, dista
 		o.citing = true
 		_mark_arrived(incident)
 		_notify_handler(incident, "contact", {"suspect_id": str(s.id), "officer_id": str(o.id)})
-		_tell(incident, "An officer stopped the person to talk.")
+		_handling(incident, "contact", "An officer stopped the person to talk.")
 		return
 	if _clock - float(s.contact_clock) >= CITE_SECONDS:
 		s.state = "cited"
 		o.citing = false
 		counters.citations = int(counters.citations) + 1
 		_notify_handler(incident, "cited", {"suspect_id": str(s.id), "officer_id": str(o.id)})
-		_tell(incident, "The officer issued a warning.")
+		_handling(incident, "warning", "The officer issued a warning.")
 		_next_target(o, incident)
 
 func _warn(o: Dictionary, s: Dictionary, line: String) -> void:
@@ -1378,7 +1730,7 @@ func _comply(o: Dictionary, incident: Dictionary, s: Dictionary) -> void:
 	s.officer = str(o.id)
 	counters.compliances = int(counters.compliances) + 1
 	held.speak("Okay, okay! I'm not doing anything!", 2.0)
-	_tell(incident, "Officers are detaining a suspect.")
+	_handling(incident, "detaining", "Officers are detaining a suspect.")
 
 func _cuffed(o: Dictionary, incident: Dictionary) -> void:
 	var s: Dictionary = (incident.suspects as Dictionary).get(str(o.target), {})
@@ -1393,7 +1745,7 @@ func _cuffed(o: Dictionary, incident: Dictionary) -> void:
 	custody.set_state(str(s.id), "cuffed")
 	counters.arrests = int(counters.arrests) + 1
 	o.actor.speak("You're under arrest.", 2.0)
-	_tell(incident, "The suspect has been arrested.")
+	_handling(incident, "arrest", "The suspect has been arrested.")
 	_begin_escort(o, s)
 
 func _begin_escort(o: Dictionary, s: Dictionary) -> void:
@@ -1461,6 +1813,11 @@ func _next_target(o: Dictionary, incident: Dictionary) -> void:
 			o.search_points = _search_points(Vector3(s.last_seen), o.actor.global_position)
 			o.search_index = 0
 			return
+	if not is_finite(float(incident.arrived)) and not bool(incident.closing):
+		# Nobody left to confront, but no officer has reached the scene: keep
+		# going there instead of "securing" a spot down the street.
+		_send(o, Vector3(incident.at), JOG_SPEED, "respond")
+		return
 	_secure(o, incident)
 
 ## Close in until `stop` metres away: a straight swept link when clear, else a route.
@@ -1761,13 +2118,14 @@ func _fire(o: Dictionary) -> void:
 			counters.damage_applied = int(counters.damage_applied) + 1
 			if _dead_id(str(s.id)) or body.get("dead") == true:
 				counters.police_kills = int(counters.police_kills) + 1
+				s.killed_by_police = true
 		else:
 			counters.damage_unavailable = int(counters.damage_unavailable) + 1
 	_flash(muzzle)
 	_tracer(muzzle, shot.endpoint)
 	_gunfire_event(muzzle, shot.endpoint, struck)
 	if int(incident.rounds) == 1:
-		_tell(incident, "Police fired at an armed attacker.")
+		_handling(incident, "force", "Police fired at an armed attacker.")
 
 func _hold(o: Dictionary, why: String) -> void:
 	o.hold_reason = why

@@ -116,13 +116,13 @@ func _pacifist_and_bicycle() -> void:
 	check(bool(bicycle.get_status().active), "F mounts the nearby bicycle")
 	if not bool(bicycle.get_status().active):
 		return
-	check(not provider.can_checkpoint(), "mounted bicycle blocks unsafe checkpoint")
 	await key(KEY_P)
 	check(not bool(player.phone.get_status().active), "riding cannot open the phone")
 	var heading: float = bicycle.get("yaw")
 	player.camera_yaw += PI * 0.5
 	await held_key(KEY_W, true)
 	await frames(12)
+	check(not provider.can_checkpoint() and provider.checkpoint_blocker() == "stop the bicycle before saving", "moving bicycle blocks checkpoint until stopped")
 	await held_key(KEY_W, false)
 	check(absf(float(bicycle.get_status().speed)) > 0.05, "W pedals with camera looking sideways")
 	check(absf(angle_difference(heading, float(bicycle.get("yaw")))) < 0.15, "camera orbit does not steer the bicycle")

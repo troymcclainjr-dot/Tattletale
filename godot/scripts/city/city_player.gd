@@ -71,6 +71,20 @@ var _camera_moving_time := 0.0
 var _camera_boom_length := 0.0
 var _camera_aim_blend := 0.0
 var _camera_collision_shape: SphereShape3D
+# A seat change (mounting, getting off, standing up after a crash) moves the
+# camera's subject up to a few metres at once. The look-at point glides over
+# from the old subject instead of cutting, and the boom keeps its length and
+# eases to the new one. Teleports (respawn, checkpoint) still cut. The glide
+# only ever shrinks; a swept sphere keeps it out of walls and cars.
+const CAMERA_GLIDE_RATE := 7.0
+const CAMERA_CUT_DISTANCE := 3.0
+var _camera_glide := Vector3.ZERO
+var _camera_last_target := Vector3.INF
+var _camera_boom_carry := false
+# Thin bodies the camera never treats as obstacles, because their collision is a
+# coarse proxy: the explorer's bicycle keeps an upright hull even lying fallen,
+# so a boom swept against it would jump in front of a few tubes.
+var camera_ignore: Array[RID] = []
 
 signal vehicle_impact(speed: float, source: String)
 var vehicle_hits := 0
@@ -640,13 +654,21 @@ func update_camera(delta := 0.0) -> void:
 	if absf(_camera_aim_blend - aim_target) < 0.001:
 		_camera_aim_blend = aim_target
 	camera.fov = clampf(camera_fov - 10.0 * _camera_aim_blend, 45.0, 95.0)
-	if delta <= 0.0 or not _camera_anchor_valid or global_position.distance_to(_camera_last_player_position) > 3.0:
+	var jumped := global_position.distance_to(_camera_last_player_position) > CAMERA_CUT_DISTANCE
+	if delta <= 0.0 or not _camera_anchor_valid or jumped:
 		_camera_anchor_y = global_position.y
 		_camera_anchor_valid = true
 	else:
 		_camera_anchor_y = lerpf(_camera_anchor_y, global_position.y, 1.0 - exp(-delta * 14.0))
+	if jumped:
+		# Respawns, checkpoints and relocations cut: no glide, no carried boom.
+		_camera_glide = Vector3.ZERO
+		_camera_boom_carry = false
+	elif delta > 0.0:
+		_camera_glide *= exp(-delta * CAMERA_GLIDE_RATE)
 	_camera_last_player_position = global_position
 	if not camera_override.is_empty():
+		_camera_glide = Vector3.ZERO
 		puppet.g.visible = not first_person and not _seated
 		camera.global_position = camera_override.eye
 		camera.look_at(camera_override.target, Vector3.UP)
@@ -658,38 +680,30 @@ func update_camera(delta := 0.0) -> void:
 	var camera_anchor := Vector3(global_position.x, _camera_anchor_y, global_position.z)
 	var target := camera_anchor + Vector3.UP * 1.50
 	if phone != null and phone.active:
+		_camera_glide = Vector3.ZERO
+		_camera_last_target = camera_anchor + Vector3.UP * 1.64
 		puppet.g.hide()
 		camera.fov = phone.photo_fov
 		camera.global_position = camera_anchor + Vector3.UP * 1.64
 		camera.look_at(camera.global_position + forward * cos(camera_pitch) - Vector3.UP * sin(camera_pitch), Vector3.UP)
 		return
 	if first_person:
+		_camera_glide = Vector3.ZERO
+		_camera_last_target = camera_anchor + Vector3.UP * 1.64
 		puppet.g.hide()
 		camera.global_position = camera_anchor + Vector3.UP * 1.64
 		camera.look_at(camera.global_position + forward * cos(camera_pitch) - Vector3.UP * sin(camera_pitch), Vector3.UP)
 	else:
+		var excluded: Array[RID] = [get_rid()]
+		excluded.append_array(camera_ignore)
+		target = _glided_target(target, excluded)
+		_camera_last_target = target
 		var boom_distance := lerpf(5.2, 3.1, _camera_aim_blend)
 		# +Z is character forward, so its right hand is on local -X. Put the
 		# entire shoulder offset inside the swept boom, never after collision.
 		var right := Vector3(-forward.z, 0.0, forward.x)
 		var boom := -forward * cos(camera_pitch) * boom_distance + Vector3.UP * (sin(camera_pitch) * boom_distance + lerpf(0.65, 0.45, _camera_aim_blend)) + right * (0.78 * _camera_aim_blend)
-		var sweep := PhysicsShapeQueryParameters3D.new()
-		sweep.shape = _camera_collision_shape
-		sweep.transform.origin = target
-		sweep.motion = boom
-		sweep.collision_mask = 1 | 2 | 16
-		sweep.exclude = [get_rid()]
-		var fractions := get_world_3d().direct_space_state.cast_motion(sweep)
-		var safe_length := boom.length()
-		if fractions.size() >= 2 and fractions[0] < 1.0:
-			safe_length = maxf(0.05, safe_length * fractions[0] - 0.04)
-		# Contract immediately to stay outside walls, then ease the boom back out
-		# after an obstruction clears. A swept volume protects the near plane.
-		if delta <= 0.0 or _camera_boom_length <= 0.0 or safe_length < _camera_boom_length:
-			_camera_boom_length = safe_length
-		else:
-			_camera_boom_length = lerpf(_camera_boom_length, safe_length, 1.0 - exp(-delta * 6.0))
-		var desired := target + boom.normalized() * _camera_boom_length
+		var desired := target + boom.normalized() * _swept_boom(target, boom, excluded, delta, 6.0)
 		# A wall or porch can push the chase camera inside the character's head.
 		# Hide the local mesh only while compressed; looking away restores it.
 		puppet.g.visible = desired.distance_to(target) >= 1.65
@@ -702,11 +716,65 @@ func update_camera(delta := 0.0) -> void:
 		var view_direction := (-camera.global_basis.z).slerp(aim_direction, _camera_aim_blend).normalized()
 		camera.look_at(camera.global_position + view_direction, Vector3.UP)
 
+## The look-at point, still offset toward the previous subject after a seat
+## change. A sphere swept from the true target clamps the offset to clear space.
+func _glided_target(target: Vector3, exclude: Array[RID]) -> Vector3:
+	if _camera_glide.length_squared() < 0.000004:
+		_camera_glide = Vector3.ZERO
+		return target
+	var sweep := PhysicsShapeQueryParameters3D.new()
+	sweep.shape = _camera_collision_shape
+	sweep.transform.origin = target
+	sweep.motion = _camera_glide
+	sweep.collision_mask = 1 | 2 | 16
+	sweep.exclude = exclude
+	var fractions := get_world_3d().direct_space_state.cast_motion(sweep)
+	if fractions.size() >= 2 and fractions[0] < 1.0:
+		_camera_glide *= fractions[0]
+	return target + _camera_glide
+
+## Boom length for this frame. A swept volume protects the near plane: contract
+## immediately to stay outside walls, then ease back out after an obstruction
+## clears. A length carried over from the previous seat eases to the new boom
+## either way (never past what the sweep found clear) instead of snapping.
+func _swept_boom(target: Vector3, boom: Vector3, exclude: Array[RID], delta: float, rate: float) -> float:
+	var reach := maxf(boom.length(), _camera_boom_length) if _camera_boom_carry else boom.length()
+	var sweep := PhysicsShapeQueryParameters3D.new()
+	sweep.shape = _camera_collision_shape
+	sweep.transform.origin = target
+	sweep.motion = boom.normalized() * reach
+	sweep.collision_mask = 1 | 2 | 16
+	sweep.exclude = exclude
+	var fractions := get_world_3d().direct_space_state.cast_motion(sweep)
+	var safe_length := reach
+	if fractions.size() >= 2 and fractions[0] < 1.0:
+		safe_length = maxf(0.05, reach * fractions[0] - 0.04)
+	var wanted := minf(boom.length(), safe_length)
+	if _camera_boom_carry and _camera_boom_length > 0.0 and safe_length >= _camera_boom_length:
+		if delta > 0.0:
+			_camera_boom_length = lerpf(_camera_boom_length, wanted, 1.0 - exp(-delta * rate))
+		_camera_boom_carry = absf(_camera_boom_length - wanted) > 0.005
+	elif delta <= 0.0 or _camera_boom_length <= 0.0 or safe_length < _camera_boom_length:
+		_camera_boom_carry = false
+		_camera_boom_length = wanted
+	else:
+		_camera_boom_length = lerpf(_camera_boom_length, safe_length, 1.0 - exp(-delta * rate))
+	return _camera_boom_length
+
+## A seat change: glide the look-at point over from where the camera was looking
+## and keep the boom length, unless the subject moved further than a cut.
+func _begin_seat_transition(from: Vector3, to: Vector3) -> void:
+	_camera_glide = Vector3.ZERO
+	_camera_boom_carry = _camera_boom_length > 0.0
+	if from.is_finite() and from.distance_to(to) <= CAMERA_CUT_DISTANCE:
+		_camera_glide = from - to
+
 ## Seat the explorer in `car` (driving decides when). The view swings from the
 ## current walking view to behind the car instead of cutting.
 func enter_vehicle(car: Node3D) -> void:
 	if car == null or _seated:
 		return
+	var previous_target := _camera_last_target
 	_seated = true
 	seated_vehicle = car
 	set_orbiting(false)
@@ -721,12 +789,14 @@ func enter_vehicle(car: Node3D) -> void:
 	collision_mask = 0
 	puppet.g.visible = false
 	vehicle_orbit_yaw = 0.0
-	vehicle_orbit_pitch = CHASE_PITCH
+	# Keep the walking view's tilt instead of snapping it. Riding off eases it back
+	# to the usual chase pitch (the recentering in _update_vehicle_camera).
+	vehicle_orbit_pitch = clampf(camera_pitch, -0.12, 1.0)
 	_vehicle_view_yaw = camera_yaw
 	_vehicle_look_idle = 0.0
 	_vehicle_shake = 0.0
-	_camera_boom_length = 0.0
 	follow_vehicle()
+	_begin_seat_transition(previous_target, car.global_position + Vector3.UP * CHASE_TARGET_HEIGHT)
 	update_camera()
 
 ## Ride at the car origin; driving calls this after every car step.
@@ -742,6 +812,7 @@ func follow_vehicle() -> void:
 func leave_vehicle(at: Vector3, heading: float) -> void:
 	if not _seated:
 		return
+	var previous_target := _camera_last_target
 	_seated = false
 	seated_vehicle = null
 	collision_layer = _seat_layer
@@ -759,12 +830,27 @@ func leave_vehicle(at: Vector3, heading: float) -> void:
 	puppet.g.rotation.y = heading
 	puppet.g.visible = not first_person
 	_camera_anchor_valid = false
-	_camera_boom_length = 0.0
 	_vehicle_shake = 0.0
+	_begin_seat_transition(previous_target, at + Vector3.UP * 1.50)
 	update_camera()
 
 func is_seated() -> bool:
 	return _seated
+
+## A restored ride starts with the chase view straight behind `heading` (no
+## swing from whatever the view was before the checkpoint loaded).
+func reset_vehicle_view(heading: float) -> void:
+	if not _seated:
+		return
+	vehicle_orbit_yaw = 0.0
+	vehicle_orbit_pitch = CHASE_PITCH
+	_vehicle_view_yaw = heading
+	_vehicle_look_idle = 0.0
+	camera_yaw = heading
+	_camera_glide = Vector3.ZERO
+	_camera_boom_carry = false
+	_camera_boom_length = 0.0
+	update_camera()
 
 func vehicle_look(relative: Vector2) -> void:
 	if not _seated:
@@ -813,23 +899,12 @@ func _update_vehicle_camera(delta: float) -> void:
 	puppet.g.visible = false
 	camera.fov = clampf(camera_fov + 7.0 * clampf(car_speed / 24.0, 0.0, 1.0), 45.0, 100.0)
 	var forward := Vector3(sin(_vehicle_view_yaw), 0.0, cos(_vehicle_view_yaw))
-	var target: Vector3 = car.global_position + Vector3.UP * CHASE_TARGET_HEIGHT
+	var excluded: Array[RID] = [get_rid(), (car as CollisionObject3D).get_rid()]
+	excluded.append_array(camera_ignore)
+	var target := _glided_target(car.global_position + Vector3.UP * CHASE_TARGET_HEIGHT, excluded)
+	_camera_last_target = target
 	var boom := -forward * cos(vehicle_orbit_pitch) * chase_distance + Vector3.UP * (sin(vehicle_orbit_pitch) * chase_distance + 0.55)
-	var sweep := PhysicsShapeQueryParameters3D.new()
-	sweep.shape = _camera_collision_shape
-	sweep.transform.origin = target
-	sweep.motion = boom
-	sweep.collision_mask = 1 | 2 | 16
-	sweep.exclude = [get_rid(), (car as CollisionObject3D).get_rid()]
-	var fractions := get_world_3d().direct_space_state.cast_motion(sweep)
-	var safe_length := boom.length()
-	if fractions.size() >= 2 and fractions[0] < 1.0:
-		safe_length = maxf(0.05, safe_length * fractions[0] - 0.04)
-	if delta <= 0.0 or _camera_boom_length <= 0.0 or safe_length < _camera_boom_length:
-		_camera_boom_length = safe_length
-	else:
-		_camera_boom_length = lerpf(_camera_boom_length, safe_length, 1.0 - exp(-delta * 4.0))
-	var eye := target + boom.normalized() * _camera_boom_length
+	var eye := target + boom.normalized() * _swept_boom(target, boom, excluded, delta, 4.0)
 	if _vehicle_shake > 0.0:
 		var phase := _vehicle_shake_phase
 		eye += Vector3(sin(phase * 47.0), sin(phase * 61.0 + 1.3), sin(phase * 53.0 + 2.1)) * 0.06 * _vehicle_shake

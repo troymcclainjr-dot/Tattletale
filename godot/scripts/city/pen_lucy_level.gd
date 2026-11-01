@@ -106,7 +106,8 @@ var _exit_confirmation: ConfirmationDialog
 var _exit_to_menu := false
 ## Enabled only for the bounded benchmark sample; normal play records nothing.
 var profile_physics := false
-var physics_samples: Dictionary = {"clock": [], "combat": [], "residents": [], "npcs": [], "traffic": [], "missions": []}
+var physics_samples: Dictionary = {"clock": [], "combat": [], "residents": [], "npcs": [], "traffic": [], "missions": [],
+	"traffic_cars": [], "bicycle": [], "bicycle_reactions": [], "basketball": [], "police_assistance": [], "incidents": [], "driving": [], "vehicle_presentation": []}
 
 func _ready() -> void:
 	_old_auto_accept_quit = get_tree().auto_accept_quit
@@ -302,6 +303,7 @@ func _ready() -> void:
 		day_night = load("res://scripts/city/city_day_night.gd").new()
 		add_child(day_night)
 		day_night.setup(self)
+	load("res://scripts/city/city_neighborhood_audio.gd").ensure(self)
 	_build_case_marker()
 	_cases_changed()
 	_loading_status.text = "Preparing nearby blocks and distant views…"
@@ -334,9 +336,15 @@ func _ready() -> void:
 	if vegetation != null:
 		_loading_status.text = "Preparing tree cover…"
 		await vegetation.prepare_presence(player.global_position, 55.0, 180.0)
+	# The bicycle must exist before checkpoint preflight/restore. Persistence owns
+	# its restored pose; setting it up again afterwards would erase that pose.
+	bicycle = load("res://scripts/city/city_bicycle.gd").new()
+	add_child(bicycle)
+	bicycle.setup(self)
 	world_save = load("res://scripts/city/city_world_save.gd").new()
 	add_child(world_save)
 	world_save.setup(self)
+	world_save.pending_save_resolved.connect(_on_pending_save_resolved)
 	var restored: Dictionary = world_save.load_state()
 	if not bool(restored.get("ok", false)):
 		progression.begin_new_game()
@@ -347,10 +355,6 @@ func _ready() -> void:
 		streaming.refresh_now()
 		if vegetation != null:
 			await vegetation.prepare_presence(player.global_position, 55.0, 180.0)
-	# Place the bicycle beside the restored explorer, never at an old spawn.
-	bicycle = load("res://scripts/city/city_bicycle.gd").new()
-	add_child(bicycle)
-	bicycle.setup(self)
 	bicycle_reactions = load("res://scripts/city/city_bicycle_reactions.gd").new()
 	add_child(bicycle_reactions)
 	bicycle_reactions.setup(self, bicycle)
@@ -358,6 +362,8 @@ func _ready() -> void:
 	basketball = load("res://scripts/city/city_basketball.gd").new()
 	add_child(basketball)
 	basketball.setup(self, park_courts)
+	if bicycle.active:
+		basketball.suspend(true)
 	bicycle.mounted.connect(func(): basketball.suspend(true))
 	get_tree().auto_accept_quit = false
 	inspector = load("res://scripts/city/city_inspector.gd").new()
@@ -1141,25 +1147,42 @@ func _physics_process(delta: float) -> void:
 	if profile_physics:
 		physics_samples.npcs.append(float(Time.get_ticks_usec() - began) / 1000.0)
 		began = Time.get_ticks_usec()
+	var subsystem_began := Time.get_ticks_usec() if profile_physics else 0
 	if traffic:
 		traffic.tick(delta)
+	if profile_physics:
+		subsystem_began = _record_physics_subsystem("traffic_cars", subsystem_began)
 	if bicycle != null:
 		bicycle.tick(delta)
+	if profile_physics:
+		subsystem_began = _record_physics_subsystem("bicycle", subsystem_began)
 	if bicycle_reactions != null:
 		bicycle_reactions.tick(delta)
+	if profile_physics:
+		subsystem_began = _record_physics_subsystem("bicycle_reactions", subsystem_began)
 	if basketball != null:
 		basketball.tick(delta)
+	if profile_physics:
+		subsystem_began = _record_physics_subsystem("basketball", subsystem_began)
 	if police_assistance != null:
 		police_assistance.tick(delta)
+	if profile_physics:
+		subsystem_began = _record_physics_subsystem("police_assistance", subsystem_began)
 	if incidents != null:
 		incidents.tick(delta)
+	if profile_physics:
+		subsystem_began = _record_physics_subsystem("incidents", subsystem_began)
 	if driving != null:
 		var stamp := PerfCounters.begin() if PerfCounters.enabled else 0
 		driving.tick(delta)
 		if PerfCounters.enabled:
 			PerfCounters.end(PerfCounters.DRIVING_TICK, stamp)
+	if profile_physics:
+		subsystem_began = _record_physics_subsystem("driving", subsystem_began)
 	if vehicle_presentation != null:
 		vehicle_presentation.tick(delta)
+	if profile_physics:
+		_record_physics_subsystem("vehicle_presentation", subsystem_began)
 	if profile_physics:
 		physics_samples.traffic.append(float(Time.get_ticks_usec() - began) / 1000.0)
 		began = Time.get_ticks_usec()
@@ -1167,6 +1190,11 @@ func _physics_process(delta: float) -> void:
 		missions.tick(delta)
 	if profile_physics:
 		physics_samples.missions.append(float(Time.get_ticks_usec() - began) / 1000.0)
+
+func _record_physics_subsystem(key: String, began_usec: int) -> int:
+	var now := Time.get_ticks_usec()
+	physics_samples[key].append(float(now - began_usec) / 1000.0)
+	return now
 
 func _update_ui() -> void:
 	var began := PerfCounters.begin() if PerfCounters.enabled else 0
@@ -1246,15 +1274,12 @@ func _nearest_street(at := Vector3.INF) -> String:
 func save_progress() -> String:
 	if world_save == null or not world_save.enabled:
 		return "Progress saving is unavailable in this session."
-	var result: Error = world_save.save_state()
-	if result == OK:
-		return "Progress saved."
-	if result == ERR_BUSY:
-		var blocker := str(world_save.checkpoint_blocker())
-		return "Cannot save: " + blocker + "." if not blocker.is_empty() else "Stand on solid ground to save."
-	if bool(world_save.get_status().write_blocked):
-		return "Saving is paused to protect an incompatible checkpoint. Use Recover saving in Settings."
-	return "Could not save. Your previous checkpoint is retained."
+	var result: Dictionary = world_save.request_save("manual")
+	return str(result.message)
+
+func _on_pending_save_resolved(result: Dictionary) -> void:
+	if str(result.get("source", "")) == "manual" and ready_to_play:
+		show_notice(str(result.get("message", "Checkpoint request updated.")))
 
 func return_to_original() -> void:
 	_request_exit(true)
@@ -1283,13 +1308,15 @@ func _request_exit(to_menu: bool) -> void:
 		_exit_confirmation.exclusive = true
 		_exit_confirmation.confirmed.connect(func(): _finish_exit(_exit_to_menu))
 		add_child(_exit_confirmation)
-	var reason := "A checkpoint needs solid ground and no active fight." if result == ERR_BUSY else "The checkpoint could not be written."
+	var reason := "Cannot save yet: " + str(world_save.blocked_reason) + "." if result == ERR_BUSY else "The checkpoint could not be written."
 	if bool(world_save.get_status().write_blocked):
 		reason = "Saving is paused because the old checkpoint could not be restored. Use Recover saving in Settings."
 	_exit_confirmation.dialog_text = reason + "\nYour old save files are preserved. Leaving now will discard unsaved progress from this visit."
 	_exit_confirmation.popup_centered(Vector2i(580, 180))
 
 func _finish_exit(to_menu: bool) -> void:
+	if world_save != null:
+		world_save.cancel_pending_save("leaving the neighborhood")
 	if to_menu:
 		G.open_original_block()
 	else:

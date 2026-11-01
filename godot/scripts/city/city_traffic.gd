@@ -350,12 +350,17 @@ func release_reservation(car: Node3D) -> void:
 func _exit_clear(car: Node3D, outgoing: int) -> bool:
 	var points: Array[Vector3] = network.lanes[outgoing].points
 	var direction := (points[1] - points[0]).normalized()
-	for other in vehicles + player_fleet:
+	var right := direction.cross(Vector3.UP)
+	# Keep the live fleet order (including overlaps), without copying either list.
+	return _exit_fleet_clear(vehicles, car, points[0], direction, right) and _exit_fleet_clear(player_fleet, car, points[0], direction, right)
+
+func _exit_fleet_clear(fleet: Array[Node3D], car: Node3D, origin: Vector3, direction: Vector3, right: Vector3) -> bool:
+	for other in fleet:
 		if other == car or not is_instance_valid(other):
 			continue
-		var delta: Vector3 = other.global_position - points[0]
+		var delta: Vector3 = other.global_position - origin
 		var along := delta.dot(direction)
-		if along > -5 and along < 13 and absf(delta.dot(direction.cross(Vector3.UP))) < 2.0:
+		if along > -5 and along < 13 and absf(delta.dot(right)) < 2.0:
 			return false
 	return true
 

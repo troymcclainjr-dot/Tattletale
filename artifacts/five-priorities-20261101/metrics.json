@@ -1,0 +1,842 @@
+{
+  "status": "complete",
+  "tests": [
+    {
+      "name": "city_bicycle_city_session-final",
+      "log": ".work/five-priorities-20261101/city_bicycle_city_session-final.log",
+      "failed_assertion_lines": [],
+      "script_errors": 0,
+      "tail": [
+        "[priorities_session] PASS city-parked-car-crash: bike never penetrates a wall or car during measured rides",
+        "[priorities_session] PASS city-parked-car-crash: validation leaves desktop pointer visible and window offscreen",
+        "[priorities_session] COMPLETE 181 passed; 0 failed"
+      ]
+    },
+    {
+      "name": "city_bicycle_crash-final",
+      "log": ".work/five-priorities-20261101/city_bicycle_crash-final.log",
+      "failed_assertion_lines": [],
+      "script_errors": 0,
+      "tail": [
+        "BIKE_CRASH PASS checkpoint relocation ends the crash at the requested point",
+        "BIKE_CRASH PASS relocation reports its kind",
+        "CITY_BICYCLE_CRASH PASS checks=88 failures=0"
+      ]
+    },
+    {
+      "name": "city_bicycle_curb_matrix-final",
+      "log": ".work/five-priorities-20261101/city_bicycle_curb_matrix-final.log",
+      "failed_assertion_lines": [],
+      "script_errors": 0,
+      "tail": [
+        "BIKE_POST_ESCAPE start=(-8.113417, 0.0, -0.764372) end=(-9.758312, 0.0, 1.539209) x_from_lane=-1.758 yaw_deg=-41.62 speed=3.150 post_distance=2.452 cleared=true no_yaw_frames=0 hull_hits=0",
+        "BIKE_CURB sidewalk +0.15 beside a post crossed=true ticks=53 y=0.150 rise=0.069 hover=0.000 sink=0.000 speed=4.00",
+        "CITY_BICYCLE_CURB_MATRIX PASS checks=2616 failures=0 crossings=277"
+      ]
+    },
+    {
+      "name": "city_bicycle_feel-final",
+      "log": ".work/five-priorities-20261101/city_bicycle_feel-final.log",
+      "failed_assertion_lines": [],
+      "script_errors": 0,
+      "tail": [
+        "BIKE_FEEL PASS crash: the explorer's anchor never jumps between frames, recovery included (worst 0.07 m)",
+        "BIKE_FEEL PASS crash: the camera never cuts from ejection to walking again (worst 0.12 m per frame)",
+        "CITY_BICYCLE_FEEL PASS checks=52 failures=0"
+      ]
+    },
+    {
+      "name": "city_bicycle_mobility_smoke-final",
+      "log": ".work/five-priorities-20261101/city_bicycle_mobility_smoke-final.log",
+      "failed_assertion_lines": [],
+      "script_errors": 0,
+      "tail": [
+        "BIKE_MOBILITY PASS impact remains harmless",
+        "BIKE_MOBILITY PASS pedestrian contact slows bike without stepping onto person",
+        "CITY_BICYCLE_MOBILITY_SMOKE PASS checks=27 failures=0"
+      ]
+    },
+    {
+      "name": "city_bicycle_save_hooks-final",
+      "log": ".work/five-priorities-20261101/city_bicycle_save_hooks-final.log",
+      "failed_assertion_lines": [],
+      "script_errors": 0,
+      "tail": [
+        "BIKE_SAVE_HOOKS PASS it faces the explorer's heading, as setup parks it",
+        "BIKE_SAVE_HOOKS PASS the re-parked bicycle is on the map",
+        "CITY_BICYCLE_SAVE_HOOKS PASS checks=58 failures=0"
+      ]
+    },
+    {
+      "name": "city_bicycle_smoke-final",
+      "log": ".work/five-priorities-20261101/city_bicycle_smoke-final.log",
+      "failed_assertion_lines": [],
+      "script_errors": 0,
+      "tail": [
+        "CITY_BICYCLE_SMOKE PASS contacts=1"
+      ]
+    },
+    {
+      "name": "city_case_incident_audit-final",
+      "log": ".work/five-priorities-20261101/city_case_incident_audit-final.log",
+      "failed_assertion_lines": [],
+      "script_errors": 0,
+      "tail": [
+        "[case_engine] PASS linked closure reaches phone once",
+        "[case_engine] PASS unlinked status keeps direct phone fallback",
+        "[case_engine] passes=50 failures=0"
+      ]
+    },
+    {
+      "name": "city_driving_smoke-final",
+      "log": ".work/five-priorities-20261101/city_driving_smoke-final.log",
+      "failed_assertion_lines": [
+        "[city_driving] FAIL starter exposes a map point and was chosen in view of the spawn",
+        "[city_driving] FAIL starter carries a YOUR CAR / F label",
+        "[city_driving] FAIL approaching the starter announces the F prompt once",
+        "[city_driving] FAIL at the starter's door the HUD prompt offers F ()",
+        "[city_driving] FAIL a downed explorer is refused with a reason",
+        "[city_driving] FAIL F at the door boards the starter car",
+        "[city_driving] FAIL the occupied car leaves AI control and forces detailed LOD",
+        "[city_driving] FAIL the seated explorer has no collider and a hidden puppet",
+        "[city_driving] FAIL the explorer rides at the car origin for streaming and presence",
+        "[city_driving] FAIL a seated explorer cannot jump, stumble or ride a roof",
+        "[city_driving] FAIL boarding cancels held combat actions",
+        "[city_driving] FAIL only one car can be occupied at a time",
+        "[city_driving] FAIL stopped in the open, the prompt offers F to get out",
+        "[city_driving] FAIL the occupied car keeps its exact model at far viewer distance",
+        "[city_driving] FAIL even beyond the visual cutoff (inspector or overview camera)"
+      ],
+      "script_errors": 1,
+      "tail": [
+        "       [4] stand (res://tests/city_driving_smoke_runner.gd:105)",
+        "       [5] frames (res://tests/city_driving_smoke_runner.gd:62)",
+        "[godot_run] FAILED: engine error logged; child stopped and output drained"
+      ]
+    },
+    {
+      "name": "city_incident_phone_followup-final",
+      "log": ".work/five-priorities-20261101/city_incident_phone_followup-final.log",
+      "failed_assertion_lines": [],
+      "script_errors": 0,
+      "tail": [
+        "[incident_phone_followup] PASS accepted restore replaces current session state",
+        "[incident_phone_followup] PASS restored NPC report has no stale transient phone subscription",
+        "[incident_phone_followup] failures=0"
+      ]
+    },
+    {
+      "name": "city_incident_save_smoke-final",
+      "log": ".work/five-priorities-20261101/city_incident_save_smoke-final.log",
+      "failed_assertion_lines": [],
+      "script_errors": 0,
+      "tail": [
+        "[incident_save] PASS no-valid-source reads each source once and verifies only a newly written temporary",
+        "[incident_save] PASS no valid source blocks writes and preserves rejected bytes",
+        "[incident_save] 75 passed, 0 failed"
+      ]
+    },
+    {
+      "name": "city_incidents_smoke-final",
+      "log": ".work/five-priorities-20261101/city_incidents_smoke-final.log",
+      "failed_assertion_lines": [],
+      "script_errors": 0,
+      "tail": [
+        "[incidents] PASS case closure is once-only",
+        "[incidents] PASS every incident ID is unique",
+        "[incidents] rays=45 records=9 counters={ \"spawned\": 7, \"spawn_attempts\": 1, \"external\": 2, \"cancelled\": 0, \"ended\": 6, \"unwitnessed\": 1, \"witnesses\": 29, \"player_witnessed\": 5, \"report_attempts\": 14, \"reports\": 6, \"duplicates\": 2, \"rejected_reports\": 6, \"npc_reports\": 3, \"phone_fallbacks\": 1, \"resolved\": 7, \"expired\": 1, \"lost_performers\": 0, \"handoffs\": 1, \"photos_checked\": 4, \"photos_verified\": 1 }"
+      ]
+    },
+    {
+      "name": "city_mounted_save_city-final",
+      "log": ".work/five-priorities-20261101/city_mounted_save_city-final.log",
+      "failed_assertion_lines": [],
+      "script_errors": 0,
+      "tail": [
+        "[mounted_city] PASS a standing checkpoint carries no bicycle section",
+        "[mounted_city] PASS loading it re-parks the bicycle beside the restored explorer",
+        "[mounted_city] 31 passed, 0 failed"
+      ]
+    },
+    {
+      "name": "city_mounted_save_smoke-final",
+      "log": ".work/five-priorities-20261101/city_mounted_save_smoke-final.log",
+      "failed_assertion_lines": [],
+      "script_errors": 0,
+      "tail": [
+        "[mounted_save] PASS schema-2 file loads standing, re-parks the bicycle and invents no seat (loaded checkpoint)",
+        "[mounted_save] PASS schema-1 file with the original 20 residents loads standing, re-parks the bicycle and invents no seat (loaded checkpoint)",
+        "[mounted_save] 113 passed, 0 failed"
+      ]
+    },
+    {
+      "name": "city_movement_smoke-final",
+      "log": ".work/five-priorities-20261101/city_movement_smoke-final.log",
+      "failed_assertion_lines": [],
+      "script_errors": 0,
+      "tail": [
+        "[city_movement] PASS FOV setting applies to exploration camera",
+        "[city_movement] PASS walking and running emit no step beep",
+        "[city_movement] 114 passed, 0 failed"
+      ]
+    },
+    {
+      "name": "city_player_phone_smoke-final",
+      "log": ".work/five-priorities-20261101/city_player_phone_smoke-final.log",
+      "failed_assertion_lines": [],
+      "script_errors": 0,
+      "tail": [
+        "[player_phone] PASS headless capture declines cleanly without invalid viewport read",
+        "[player_phone] PASS photo/gallery validation never changes desktop pointer mode",
+        "[player_phone] failures=0"
+      ]
+    },
+    {
+      "name": "city_police_assistance_smoke-final",
+      "log": ".work/five-priorities-20261101/city_police_assistance_smoke-final.log",
+      "failed_assertion_lines": [],
+      "script_errors": 0,
+      "tail": [
+        "[police_assistance] PASS every on-foot exit hands the crew to the incident",
+        "[police_assistance] PASS the player's incident ending does not recall a neighbor's call",
+        "[police_assistance] rays=86 shape_queries=19"
+      ]
+    },
+    {
+      "name": "city_police_audit_regressions-final",
+      "log": ".work/five-priorities-20261101/city_police_audit_regressions-final.log",
+      "failed_assertion_lines": [],
+      "script_errors": 0,
+      "tail": [
+        "[police_audit] PASS hidden player motion never changes either cruiser's remembered goal",
+        "[police_audit] PASS radio cannot replace another unit's own current sighting",
+        "[police_audit] 12 passed; 0 failed"
+      ]
+    },
+    {
+      "name": "city_police_lifecycle_regression-final",
+      "log": ".work/five-priorities-20261101/city_police_lifecycle_regression-final.log",
+      "failed_assertion_lines": [],
+      "script_errors": 0,
+      "tail": [
+        "[police_lifecycle] PASS station fixture keeps caller watching the handoff",
+        "[police_lifecycle] PASS actual station arrival completes custody while caller remains nearby",
+        "POLICE_LIFECYCLE_REGRESSION failures=0"
+      ]
+    },
+    {
+      "name": "city_police_status_smoke-final",
+      "log": ".work/five-priorities-20261101/city_police_status_smoke-final.log",
+      "failed_assertion_lines": [],
+      "script_errors": 0,
+      "tail": [
+        "[police_status] PASS after a load, the last notice from the abandoned session is not shown as current",
+        "[police_status] transitions=94 replacements=2 route_failures=12 officers_lost=3",
+        "POLICE_STATUS failures=0"
+      ]
+    },
+    {
+      "name": "city_save_story_context_audit-final",
+      "log": ".work/five-priorities-20261101/city_save_story_context_audit-final.log",
+      "failed_assertion_lines": [],
+      "script_errors": 1,
+      "tail": [
+        "SCRIPT ERROR: Compile Error: Identifier not found: G",
+        "   at: GDScript::reload (res://scripts/actors/puppet.gd:86)",
+        "[godot_run] FAILED: engine error logged; child stopped and output drained"
+      ]
+    },
+    {
+      "name": "city_traffic_allocation_smoke-final",
+      "log": ".work/five-priorities-20261101/city_traffic_allocation_smoke-final.log",
+      "failed_assertion_lines": [],
+      "script_errors": 0,
+      "tail": [
+        "[traffic_allocation] PASS self in both fleets is ignored and moved blocker is observed live",
+        "[traffic_allocation] PASS freed fleet entries retain original skip semantics",
+        "[traffic_allocation] comparisons=358 failures=0"
+      ]
+    },
+    {
+      "name": "city_world_persistence_smoke-final",
+      "log": ".work/five-priorities-20261101/city_world_persistence_smoke-final.log",
+      "failed_assertion_lines": [
+        "[world_persistence] FAIL starter boarded, driven and parked through the real driving controls",
+        "[world_persistence] FAIL v2: shared magazine migrates to the pistol without refill; future AK47 discarded",
+        "[world_persistence] FAIL v3: inventory and health restore exactly",
+        "[world_persistence] FAIL promoted parked persistence has the API and a remembered starter",
+        "[world_persistence] FAIL corrupt vehicle record checks have the API and a promoted fixture",
+        "[world_persistence] FAIL fresh-scene vehicle reload has the API and a promoted fixture"
+      ],
+      "script_errors": 0,
+      "tail": [
+        "[world_persistence] PASS a completed case survives its contact's death; reconciliation marks it paid without paying",
+        "[world_persistence] PASS a clue-only stage resumes beside dead past contacts; a repeated load pays nothing",
+        "[world_persistence] 132 passed, 6 failed"
+      ]
+    },
+    {
+      "name": "city_world_save_smoke-final",
+      "log": ".work/five-priorities-20261101/city_world_save_smoke-final.log",
+      "failed_assertion_lines": [],
+      "script_errors": 0,
+      "tail": [
+        "[city_world_save] PASS fresh world has no inherited in-memory deaths",
+        "[city_world_save] PASS fresh world restores both deaths from disk alone",
+        "[city_world_save] 86 passed, 0 failed"
+      ]
+    }
+  ],
+  "workers": [
+    {
+      "task": "bicycle",
+      "actual_models": [
+        "claude-opus-5-5"
+      ],
+      "effort_requested": "max",
+      "exit_code": 0,
+      "completed": true
+    },
+    {
+      "task": "save",
+      "actual_models": [
+        "claude-opus-5-5"
+      ],
+      "effort_requested": "max",
+      "exit_code": 0,
+      "completed": true
+    },
+    {
+      "task": "police",
+      "actual_models": [
+        "claude-opus-5-5"
+      ],
+      "effort_requested": "max",
+      "exit_code": 0,
+      "completed": true
+    },
+    {
+      "task": "police-final",
+      "actual_models": [
+        "claude-opus-5-5"
+      ],
+      "effort_requested": "max",
+      "exit_code": 0,
+      "completed": true
+    }
+  ],
+  "population": {
+    "ambient": 1200,
+    "daily": 40,
+    "traffic": 90
+  },
+  "performance": {
+    "baseline-v3": {
+      "population_ranges": {
+        "ambient": [
+          1200,
+          1200
+        ],
+        "daily": [
+          40,
+          40
+        ],
+        "traffic": [
+          90,
+          90
+        ]
+      },
+      "renderer_progress_verified": true,
+      "external_process_telemetry_valid": true,
+      "rendered_frame_delta": 36864,
+      "traffic_distance_delta": 55430.197789465645,
+      "memory_trends": {
+        "memory_static": {
+          "first": 887340778.0,
+          "last": 912338597.0,
+          "peak": 912338597.0,
+          "delta": 24997819.0,
+          "per_second": 137677.07543443408,
+          "samples": 44
+        },
+        "objects": {
+          "first": 18984.0,
+          "last": 18298.0,
+          "peak": 19205.0,
+          "delta": -686.0,
+          "per_second": -2.481767766131683,
+          "samples": 44
+        },
+        "nodes": {
+          "first": 11047.0,
+          "last": 10240.0,
+          "peak": 11093.0,
+          "delta": -807.0,
+          "per_second": -2.814361022969106,
+          "samples": 44
+        },
+        "orphans": {
+          "first": 0.0,
+          "last": 0.0,
+          "peak": 0.0,
+          "delta": 0.0,
+          "per_second": 0.0,
+          "samples": 44
+        }
+      },
+      "process_trends": {
+        "child_cores": {
+          "first": 1.0619045258891842,
+          "last": 1.5343904576059189,
+          "peak": 8.452344644984105,
+          "delta": 0.4724859317167347,
+          "per_second": 0.0007543684573669152,
+          "samples": 701
+        },
+        "cpu_nominal_mhz": {
+          "first": 3401.0,
+          "last": 3401.0,
+          "peak": 3401.0,
+          "delta": 0.0,
+          "per_second": 0.0,
+          "samples": 701
+        },
+        "cpu_performance_pct": {
+          "first": 100.00484491521398,
+          "last": 99.99385957105989,
+          "peak": 102.31572503061047,
+          "delta": -0.010985344154093468,
+          "per_second": 1.4861115536575975e-05,
+          "samples": 701
+        },
+        "peak_pagefile": {
+          "first": 3112681472.0,
+          "last": 3132092416.0,
+          "peak": 3132092416.0,
+          "delta": 19410944.0,
+          "per_second": 128917.54858481509,
+          "samples": 701
+        },
+        "peak_working_set": {
+          "first": 2360520704.0,
+          "last": 2360520704.0,
+          "peak": 2360520704.0,
+          "delta": 0.0,
+          "per_second": 0.0,
+          "samples": 701
+        },
+        "private": {
+          "first": 3112226816.0,
+          "last": 3132092416.0,
+          "peak": 3132092416.0,
+          "delta": 19865600.0,
+          "per_second": 155626.83468348725,
+          "samples": 701
+        },
+        "system_cores": {
+          "first": 4.12268815933448,
+          "last": 5.665441689621854,
+          "peak": 14.317991623850274,
+          "delta": 1.5427535302873743,
+          "per_second": 0.004183422168265234,
+          "samples": 701
+        },
+        "working_set": {
+          "first": 2145972224.0,
+          "last": 2170548224.0,
+          "peak": 2170548224.0,
+          "delta": 24576000.0,
+          "per_second": 188270.85524129105,
+          "samples": 701
+        }
+      },
+      "frame_metrics": {
+        "draw_calls": {
+          "count": 36863,
+          "max": 1471.0,
+          "mean": 654.783549900985,
+          "median": 609.0,
+          "min": 124.0,
+          "p95": 1134.0,
+          "p99": 1270.0,
+          "sum": 24137286.0
+        },
+        "frame_ms": {
+          "count": 36863,
+          "max": 264.489,
+          "mean": 4.88315362287389,
+          "median": 3.633,
+          "min": 0.922,
+          "p95": 10.156,
+          "p99": 12.994,
+          "sum": 180007.692
+        },
+        "gpu_ms": {
+          "count": 36863,
+          "max": 5.30600023269653,
+          "mean": 2.07230301351273,
+          "median": 1.89900004863739,
+          "min": 0.828000009059906,
+          "p95": 3.72099995613098,
+          "p99": 4.28200006484985,
+          "sum": 76391.3059871197
+        },
+        "render_cpu_ms": {
+          "count": 36863,
+          "max": 5.80900001525879,
+          "mean": 1.47564788555095,
+          "median": 1.39800000190735,
+          "min": 0.344999998807907,
+          "p95": 2.55599999427795,
+          "p99": 3.24300003051758,
+          "sum": 54396.8080050647
+        }
+      },
+      "phase_frame_ms": {
+        "dumbarton_day": {
+          "count": 4032,
+          "max": 43.801,
+          "mean": 5.58259052579365,
+          "median": 4.17,
+          "min": 1.574,
+          "p95": 10.683,
+          "p99": 14.835,
+          "sum": 22509.005
+        },
+        "dumbarton_night": {
+          "count": 5295,
+          "max": 31.084,
+          "mean": 4.24998753541077,
+          "median": 3.208,
+          "min": 1.19,
+          "p95": 9.163,
+          "p99": 11.395,
+          "sum": 22503.684
+        },
+        "greenmount_day": {
+          "count": 3743,
+          "max": 256.747,
+          "mean": 6.00841704515096,
+          "median": 4.951,
+          "min": 1.463,
+          "p95": 10.964,
+          "p99": 18.893,
+          "sum": 22489.505
+        },
+        "greenmount_night": {
+          "count": 5432,
+          "max": 264.489,
+          "mean": 4.14244090574374,
+          "median": 3.238,
+          "min": 0.922,
+          "p95": 8.719,
+          "p99": 11.282,
+          "sum": 22501.739
+        },
+        "rose_hill_cator_day": {
+          "count": 4530,
+          "max": 31.066,
+          "mean": 4.96614790286976,
+          "median": 3.602,
+          "min": 1.413,
+          "p95": 10.245,
+          "p99": 12.405,
+          "sum": 22496.65
+        },
+        "rose_hill_cator_night": {
+          "count": 5718,
+          "max": 30.615,
+          "mean": 3.93309408884225,
+          "median": 2.902,
+          "min": 1.171,
+          "p95": 8.712,
+          "p99": 10.124,
+          "sum": 22489.432
+        },
+        "wyanoke_day": {
+          "count": 3684,
+          "max": 26.998,
+          "mean": 6.11037242128122,
+          "median": 4.731,
+          "min": 1.828,
+          "p95": 11.107,
+          "p99": 15.288,
+          "sum": 22510.612
+        },
+        "wyanoke_night": {
+          "count": 4429,
+          "max": 99.18,
+          "mean": 5.08174870173856,
+          "median": 3.64,
+          "min": 1.44,
+          "p95": 10.082,
+          "p99": 14.0,
+          "sum": 22507.0650000001
+        }
+      },
+      "runtime_error_lines": 6,
+      "runtime_errors_during_sample": 0
+    },
+    "candidate-v3": {
+      "population_ranges": {
+        "ambient": [
+          1200,
+          1200
+        ],
+        "daily": [
+          40,
+          40
+        ],
+        "traffic": [
+          90,
+          90
+        ]
+      },
+      "renderer_progress_verified": true,
+      "external_process_telemetry_valid": true,
+      "rendered_frame_delta": 36494,
+      "traffic_distance_delta": 55480.44296988848,
+      "memory_trends": {
+        "memory_static": {
+          "first": 887806291.0,
+          "last": 919572090.0,
+          "peak": 919572090.0,
+          "delta": 31765799.0,
+          "per_second": 163789.49752221827,
+          "samples": 44
+        },
+        "objects": {
+          "first": 19007.0,
+          "last": 18321.0,
+          "peak": 19232.0,
+          "delta": -686.0,
+          "per_second": -2.4867709618468785,
+          "samples": 44
+        },
+        "nodes": {
+          "first": 11051.0,
+          "last": 10244.0,
+          "peak": 11089.0,
+          "delta": -807.0,
+          "per_second": -2.8186578845208308,
+          "samples": 44
+        },
+        "orphans": {
+          "first": 0.0,
+          "last": 0.0,
+          "peak": 0.0,
+          "delta": 0.0,
+          "per_second": 0.0,
+          "samples": 44
+        }
+      },
+      "process_trends": {
+        "child_cores": {
+          "first": 1.0625056856512627,
+          "last": 1.9913042239746286,
+          "peak": 5.456770522375703,
+          "delta": 0.9287985383233659,
+          "per_second": 0.0003720669887203397,
+          "samples": 700
+        },
+        "cpu_nominal_mhz": {
+          "first": 3401.0,
+          "last": 3401.0,
+          "peak": 3401.0,
+          "delta": 0.0,
+          "per_second": 0.0,
+          "samples": 700
+        },
+        "cpu_performance_pct": {
+          "first": 99.9809191728413,
+          "last": 99.98574389565745,
+          "peak": 100.45397573225476,
+          "delta": 0.004824722816152871,
+          "per_second": -1.0710774768357996e-05,
+          "samples": 700
+        },
+        "peak_pagefile": {
+          "first": 3089489920.0,
+          "last": 3118854144.0,
+          "peak": 3118854144.0,
+          "delta": 29364224.0,
+          "per_second": 152364.12718416099,
+          "samples": 700
+        },
+        "peak_working_set": {
+          "first": 2321272832.0,
+          "last": 2321272832.0,
+          "peak": 2321272832.0,
+          "delta": 0.0,
+          "per_second": 0.0,
+          "samples": 700
+        },
+        "private": {
+          "first": 3089338368.0,
+          "last": 3118854144.0,
+          "peak": 3118854144.0,
+          "delta": 29515776.0,
+          "per_second": 197655.02678310417,
+          "samples": 700
+        },
+        "system_cores": {
+          "first": 3.3055732442483725,
+          "last": 4.293749732945293,
+          "peak": 12.78592247634327,
+          "delta": 0.9881764886969204,
+          "per_second": -0.00016071157178443508,
+          "samples": 700
+        },
+        "working_set": {
+          "first": 2125418496.0,
+          "last": 2156584960.0,
+          "peak": 2156584960.0,
+          "delta": 31166464.0,
+          "per_second": 211725.8974455424,
+          "samples": 700
+        }
+      },
+      "frame_metrics": {
+        "draw_calls": {
+          "count": 36493,
+          "max": 1478.0,
+          "mean": 652.812703806209,
+          "median": 601.0,
+          "min": 124.0,
+          "p95": 1134.0,
+          "p99": 1269.0,
+          "sum": 23823094.0
+        },
+        "frame_ms": {
+          "count": 36493,
+          "max": 272.996,
+          "mean": 4.93262209190805,
+          "median": 3.643,
+          "min": 0.901,
+          "p95": 10.234,
+          "p99": 12.983,
+          "sum": 180006.178
+        },
+        "gpu_ms": {
+          "count": 36493,
+          "max": 5.29099988937378,
+          "mean": 2.08621362951486,
+          "median": 1.91100001335144,
+          "min": 0.818000018596649,
+          "p95": 3.75099992752075,
+          "p99": 4.30800008773804,
+          "sum": 76132.1939818859
+        },
+        "render_cpu_ms": {
+          "count": 36493,
+          "max": 11.1309995651245,
+          "mean": 1.45978828779464,
+          "median": 1.41799998283386,
+          "min": 0.347000002861023,
+          "p95": 2.45000004768372,
+          "p99": 2.85199999809265,
+          "sum": 53272.0539864898
+        }
+      },
+      "phase_frame_ms": {
+        "dumbarton_day": {
+          "count": 3727,
+          "max": 33.852,
+          "mean": 6.03663616850013,
+          "median": 4.404,
+          "min": 1.582,
+          "p95": 11.205,
+          "p99": 15.805,
+          "sum": 22498.543
+        },
+        "dumbarton_night": {
+          "count": 5123,
+          "max": 33.248,
+          "mean": 4.39129396837789,
+          "median": 3.247,
+          "min": 1.265,
+          "p95": 9.352,
+          "p99": 11.485,
+          "sum": 22496.599
+        },
+        "greenmount_day": {
+          "count": 4070,
+          "max": 272.996,
+          "mean": 5.52991941031942,
+          "median": 4.372,
+          "min": 1.386,
+          "p95": 9.948,
+          "p99": 16.488,
+          "sum": 22506.772
+        },
+        "greenmount_night": {
+          "count": 5468,
+          "max": 264.375,
+          "mean": 4.11438716166789,
+          "median": 3.227,
+          "min": 0.901,
+          "p95": 8.552,
+          "p99": 11.492,
+          "sum": 22497.469
+        },
+        "rose_hill_cator_day": {
+          "count": 4537,
+          "max": 32.9,
+          "mean": 4.95967687899494,
+          "median": 3.6,
+          "min": 1.389,
+          "p95": 10.297,
+          "p99": 12.348,
+          "sum": 22502.054
+        },
+        "rose_hill_cator_night": {
+          "count": 5611,
+          "max": 34.389,
+          "mean": 4.01046391017644,
+          "median": 2.953,
+          "min": 1.135,
+          "p95": 8.991,
+          "p99": 10.739,
+          "sum": 22502.713
+        },
+        "wyanoke_day": {
+          "count": 3559,
+          "max": 29.757,
+          "mean": 6.3240084293341,
+          "median": 4.849,
+          "min": 1.796,
+          "p95": 11.324,
+          "p99": 15.772,
+          "sum": 22507.1460000001
+        },
+        "wyanoke_night": {
+          "count": 4398,
+          "max": 103.817,
+          "mean": 5.11479809004092,
+          "median": 3.569,
+          "min": 1.579,
+          "p95": 10.231,
+          "p99": 13.49,
+          "sum": 22494.882
+        }
+      },
+      "runtime_error_lines": 0,
+      "runtime_errors_during_sample": 0
+    }
+  },
+  "release": {
+    "verified": true,
+    "files": 14,
+    "build_id": "five-priorities-20261101-r1",
+    "zip": "C:\\files\\projects\\Tattletale\\artifacts\\priorities-five\\release\\five-priorities-20261101-r1.zip",
+    "zip_integrity": {
+      "files": 16,
+      "sha256": "b6d97706418c8a892e53d49654f969d49ebc3c8c0425f69f22a74bad45d47ff6"
+    },
+    "gameplay_passed": true,
+    "work": "C:\\files\\projects\\Tattletale\\.work\\priorities-five\\release\\five-priorities-20261101-r1"
+  },
+  "rendered_phone_checks": 51,
+  "rendered_foundation_checks": 80,
+  "knowledge_graph_updated": true
+}

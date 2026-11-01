@@ -27,6 +27,13 @@ const MAX_SLIDE := 2.6
 const DOWN_TIME := 0.85
 const DOWN_MIN := 0.45
 const GETUP_TIME := 0.7
+## Farthest standing spot the rider visibly gets up toward (the nearby rings
+## reach 1.35 m). Farther fallbacks (recent trail, mount point) are not walked
+## to through whatever ruled the near ones out: the rider rises in place.
+const GETUP_REACH := 1.5
+## Where the chase camera looks above this rig's anchor (city_player's
+## CHASE_TARGET_HEIGHT); the anchor only glides if that point can follow it.
+const VIEW_HEIGHT := 1.45
 const PIVOT_HEIGHT := 0.95
 const HEAD_REACH := 0.85
 const LYING_HEIGHT := 0.17
@@ -62,6 +69,10 @@ var _pivot: Node3D
 var _puppet: Puppet
 var _lying := Basis.IDENTITY
 var _getup_from := Transform3D.IDENTITY
+## Ground under the lying rider and the spot the get-up blends toward.
+var _getup_ground := Vector3.ZERO
+var _getup_target := Vector3.ZERO
+var _getup_glide := false
 var _grounded := false
 
 func setup(owner_bike: CharacterBody3D, explorer: Node3D) -> void:
@@ -182,7 +193,7 @@ func step(delta: float) -> String:
 		"getup":
 			var t := clampf(phase_time / GETUP_TIME, 0.0, 1.0)
 			var eased := t * t * (3.0 - 2.0 * t)
-			var target := Transform3D(Basis(Vector3.UP, standing_heading), standing_spot + Vector3.UP * PIVOT_HEIGHT)
+			var target := Transform3D(Basis(Vector3.UP, standing_heading), _getup_target + Vector3.UP * PIVOT_HEIGHT)
 			_pivot.global_transform = _getup_from.interpolate_with(target, eased)
 			# The visual rig rises from its lowered lying pivot; collision and
 			# recovery traces must continue to describe the swept torso sphere.
@@ -198,12 +209,23 @@ func step(delta: float) -> String:
 	return phase
 
 ## The bicycle picked a verified standing spot: blend from lying to standing.
+## The explorer's anchor (this node's origin, which the chase camera and the
+## seated explorer follow) moves with the blend, so standing up never ends in
+## a jump of the camera's subject.
 func begin_getup(spot: Vector3, heading: float) -> void:
 	if phase != "down" or not spot.is_finite():
 		return
 	standing_spot = spot
 	standing_heading = heading
 	_getup_from = _pivot.global_transform
+	_getup_ground = ground_point
+	var reach := Vector2(spot.x - ground_point.x, spot.z - ground_point.z).length()
+	# Standing spots are ground + 0.05 m, as the bicycle's recovery reports them.
+	_getup_target = spot if reach <= GETUP_REACH else ground_point + Vector3.UP * 0.05
+	# The recovery rays clear the body's path, not necessarily the camera's view
+	# point above it (a rail at head height). If that is blocked the anchor stays
+	# put, and the explorer's own camera glide (clamped by a sweep) takes over.
+	_getup_glide = _view_path_clear(ground_point + Vector3.UP * VIEW_HEIGHT, _getup_target + Vector3.UP * (VIEW_HEIGHT - 0.05))
 	_enter("getup")
 
 ## Hides the rig and releases the explorer layer (recovery, abort or teardown).
@@ -318,9 +340,33 @@ func _ground_below(at: Vector3, fallback_y: float) -> Vector3:
 
 func _update_anchor() -> void:
 	ground_point = _ground_below(center, ground_point.y)
-	global_position = ground_point
+	global_position = _getup_anchor() if phase == "getup" or phase == "done" else ground_point
 	velocity = body_velocity if phase != "getup" else Vector3.ZERO
 	speed = Vector2(velocity.x, velocity.z).length()
+
+## On the ground between where the rider lay and where they stand, in step
+## with the get-up blend; at the standing spot once it completes.
+func _getup_anchor() -> Vector3:
+	var t := clampf(phase_time / GETUP_TIME, 0.0, 1.0) if phase == "getup" else 1.0
+	var eased := t * t * (3.0 - 2.0 * t) if _getup_glide else 0.0
+	var at := _getup_ground.lerp(_getup_target, eased)
+	var floor_y := lerpf(_getup_ground.y, _getup_target.y - 0.05, eased)
+	at.y = maxf(_getup_ground.y, _getup_target.y) + 0.25
+	return _ground_below(at, floor_y)
+
+## A camera-sized sphere can travel from `from` to `to` (walls, roofs, cars),
+## ignoring what the chase camera ignores here (the bicycle, the explorer).
+func _view_path_clear(from: Vector3, to: Vector3) -> bool:
+	var sphere := SphereShape3D.new()
+	sphere.radius = 0.2
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape = sphere
+	query.transform = Transform3D(Basis.IDENTITY, from)
+	query.motion = to - from
+	query.collision_mask = 1 | 2 | 16
+	query.exclude = _excluded()
+	var fractions := get_world_3d().direct_space_state.cast_motion(query)
+	return fractions.size() >= 2 and fractions[0] >= 1.0
 
 func _lying_basis() -> Basis:
 	var head := orientation.y

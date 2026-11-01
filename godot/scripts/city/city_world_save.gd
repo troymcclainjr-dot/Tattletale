@@ -5,8 +5,16 @@ extends Node
 ## Schema 4 adds the driving manager's remembered parked cars ("vehicles"). A load
 ## preflights every section before changing the world, and rolls back what it has
 ## applied if a scene restore still fails: never a silent half-restored world.
-## Contract: .work/priorities-five/persistence-contract.md
+## A stationary, grounded, collision-clear rider may be saved: the optional
+## "bicycle" section (city_bicycle_checkpoint.gd) remounts them last, after every
+## fallible step, or stands them at the checked spot written as player.position.
+## A save request that cannot be written yet waits in memory for the next safe
+## moment (never on disk, never by dismounting or interrupting anything).
+## Contracts: .work/priorities-five/persistence-contract.md,
+## .work/five-priorities-20261101/save-contract.md
+signal pending_save_resolved(result: Dictionary)
 const Residents := preload("res://scripts/city/city_residents.gd")
+const Mounted := preload("res://scripts/city/city_bicycle_checkpoint.gd")
 const VERSION := 4
 ## Layout written while the driving manager has no persistence API (no vehicles).
 const NO_VEHICLES_VERSION := 3
@@ -20,6 +28,11 @@ const EMPTY_INCIDENTS := {"version": INCIDENTS_VERSION, "next_sequence": 1, "inc
 ## Early v1 checkpoints omitted equipment entirely: their historical defaults.
 const LEGACY_EQUIPMENT := {"health": 100.0, "weapon": "fists", "ammo": 12, "reserve": 72}
 const VEHICLES_SETTLING := "waiting for parked vehicles to settle"
+const WRITE_BLOCKED := "Saving is paused to protect an incompatible checkpoint. Use Recover saving in Settings."
+## A queued request re-checks the world this often; no disk access while it waits.
+const POLL_SECONDS := 0.25
+## Write failures retry after these delays, then every AUTOSAVE_SECONDS.
+const RETRY_SECONDS := [5.0, 10.0, 20.0]
 var level: Node3D
 var path := DEFAULT_PATH
 var enabled := false
@@ -33,6 +46,11 @@ var last_saved_unix := 0.0
 var _elapsed := 0.0
 var _write_blocked := false
 var _preserved_files: Array[String] = []
+## The one queued request: {} or {source, waiting_for, attempts, error, queued}.
+var _pending: Dictionary = {}
+var _poll_wait := 0.0
+## checkpoint_blocker()'s capture of a safe mounted pose, for snapshot_state().
+var _mounted_capture: Dictionary = {}
 
 func setup(owner_level: Node3D, fixture_path := "") -> void:
 	level = owner_level
@@ -40,20 +58,129 @@ func setup(owner_level: Node3D, fixture_path := "") -> void:
 	var validation := DisplayServer.get_name() == "headless" or "--offscreen-validation" in OS.get_cmdline_user_args() or bool(level.get("offscreen_validation"))
 	enabled = not validation or not fixture_path.is_empty()
 	last_result = "ready" if enabled else "disabled for validation"
+	_pending = {}
+	_poll_wait = 0.0
+
+## Leaving the scene (menu, quit, reload) discards a queued request: it lives in
+## memory only, so no later session can replay it.
+func _exit_tree() -> void:
+	_pending = {}
 
 func tick(delta: float) -> void:
-	if not enabled or _write_blocked or delta <= 0.0 or bool(level.get("paused")):
+	if not enabled or delta <= 0.0 or bool(level.get("paused")):
+		return
+	if _write_blocked:
+		_drop_pending("unavailable", WRITE_BLOCKED)
 		return
 	_elapsed += delta
 	if _elapsed >= AUTOSAVE_SECONDS:
 		_elapsed = 0.0
-		save_state()
+		_queue("autosave")
+	if _pending.is_empty():
+		return
+	_poll_wait -= delta
+	if _poll_wait <= 0.0:
+		_attempt_pending()
+
+## Player or autosave request. Writes now when safe; otherwise one in-memory
+## request waits for the next safe moment. Repeated requests coalesce (a manual
+## request upgrades a queued autosave) and never add writes or disk reads.
+## {state: saved|queued|failed|unavailable, reason, message, error, source}
+func request_save(source := "manual") -> Dictionary:
+	var kind := "autosave" if source == "autosave" else "manual"
+	if not enabled:
+		return {"state": "unavailable", "reason": last_result, "message": "Progress saving is unavailable in this session.", "error": ERR_UNAVAILABLE, "source": kind}
+	if _write_blocked:
+		_drop_pending("unavailable", WRITE_BLOCKED)
+		return {"state": "unavailable", "reason": "write blocked", "message": WRITE_BLOCKED, "error": ERR_UNAVAILABLE, "source": kind}
+	# During a failure back-off a repeated request joins the scheduled retry.
+	var retrying := not _pending.is_empty() and int(_pending.attempts) > 0 and _poll_wait > 0.0
+	_queue(kind)
+	var result: Error = ERR_BUSY if retrying else _attempt_pending(false)
+	if result == OK:
+		return {"state": "saved", "reason": "", "message": "Progress saved.", "error": OK, "source": kind}
+	if _pending.is_empty():
+		return {"state": "unavailable", "reason": "write blocked", "message": WRITE_BLOCKED, "error": ERR_UNAVAILABLE, "source": kind}
+	var failing := int(_pending.attempts) > 0 and str(_pending.waiting_for).is_empty()
+	return {"state": "failed" if failing else "queued", "reason": str(_pending.waiting_for), "message": _pending_message(),
+		"error": int(_pending.get("error", ERR_BUSY)), "source": str(_pending.source)}
+
+## Explicit cancel (e.g. "Leave without saving"): the slot is left exactly as is.
+func cancel_pending_save(reason := "cancelled") -> bool:
+	if _pending.is_empty():
+		return false
+	_drop_pending("cancelled", "Queued save cancelled (%s). Your last checkpoint is unchanged." % reason)
+	return true
+
+func _queue(source: String) -> void:
+	if _pending.is_empty():
+		_pending = {"source": source, "waiting_for": "", "attempts": 0, "error": ERR_BUSY, "queued": false}
+		_poll_wait = 0.0
+	elif source == "manual":
+		_pending.source = "manual"
+
+## `polled`: a later retry from tick(). A caller's own attempt reports through its
+## return value instead of the signal, so no outcome is announced twice.
+func _attempt_pending(polled := true) -> Error:
+	_poll_wait = POLL_SECONDS
+	var result := save_state()
+	if result == OK or _pending.is_empty():
+		return result
+	if result == ERR_UNAVAILABLE:
+		_drop_pending("unavailable", WRITE_BLOCKED)
+		return result
+	_pending.queued = true
+	if result == ERR_BUSY:
+		_pending.waiting_for = blocked_reason if not blocked_reason.is_empty() else "a safe moment"
+	else:
+		# A failed write keeps the request and backs off: never a busy loop.
+		_pending.waiting_for = ""
+		_pending.attempts = int(_pending.attempts) + 1
+		_pending.error = result
+		var step := int(_pending.attempts) - 1
+		_poll_wait = float(RETRY_SECONDS[step]) if step < RETRY_SECONDS.size() else AUTOSAVE_SECONDS
+		if polled and int(_pending.attempts) == 1:
+			pending_save_resolved.emit({"source": str(_pending.source), "state": "failed", "message": _pending_message(), "error": result, "retrying": true})
+	last_result = _pending_message()
+	return result
+
+## Ends the queued request; only requests that actually had to wait are announced.
+func _drop_pending(state: String, message: String) -> void:
+	if _pending.is_empty():
+		return
+	var was := _pending
+	_pending = {}
+	last_result = message
+	if bool(was.queued):
+		pending_save_resolved.emit({"source": str(was.source), "state": state, "message": message, "error": ERR_UNAVAILABLE, "retrying": false})
+
+## Any written checkpoint satisfies the queued request and restarts the autosave interval.
+func _saved_checkpoint() -> void:
+	_elapsed = 0.0
+	var was := _pending
+	_pending = {}
+	if bool(was.get("queued", false)):
+		pending_save_resolved.emit({"source": str(was.source), "state": "saved", "message": "Progress saved.", "error": OK, "retrying": false})
+
+func _pending_message() -> String:
+	if _pending.is_empty():
+		return ""
+	if int(_pending.attempts) > 0 and str(_pending.waiting_for).is_empty():
+		return "Could not save (error %d). Your previous checkpoint is kept; trying again in %d s." % [int(_pending.error), ceili(maxf(_poll_wait, 0.0))]
+	return "Save queued until it is safe: %s." % str(_pending.waiting_for)
+
+func _pending_status() -> Dictionary:
+	if _pending.is_empty():
+		return {"active": false, "source": "", "waiting_for": "", "attempts": 0, "retry_in": 0.0, "message": ""}
+	return {"active": true, "source": str(_pending.source), "waiting_for": str(_pending.waiting_for), "attempts": int(_pending.attempts),
+		"retry_in": maxf(_poll_wait, 0.0) if int(_pending.attempts) > 0 else 0.0, "message": _pending_message()}
 
 func can_checkpoint() -> bool:
 	return checkpoint_blocker().is_empty()
 
 ## "" when the current world can become a checkpoint, otherwise why not.
 func checkpoint_blocker() -> String:
+	_mounted_capture = {}
 	if level == null or level.player == null or level.world_time == null or level.residents == null or level.missions == null:
 		return "world not ready"
 	if int(level.residents.get_status().pending_routes) > 0:
@@ -62,8 +189,14 @@ func checkpoint_blocker() -> String:
 		return "recovering from an impact"
 	if _bicycle_blocks_checkpoint():
 		return "recovering from a bicycle crash"
-	if level.player.has_method("is_seated") and level.player.is_seated():
-		return "step off your bicycle before saving"
+	# A rider hears the bicycle's own reason first (stop, land, steady). Nothing
+	# here dismounts anyone to make a save possible.
+	var mounted: bool = level.player.has_method("is_seated") and level.player.is_seated()
+	var seat := {}
+	if mounted:
+		seat = Mounted.seat_check(level)
+		if not str(seat.reason).is_empty():
+			return str(seat.reason)
 	var assistance = level.get("police_assistance")
 	if _assistance_blocks_checkpoint(assistance):
 		return "police response in progress"
@@ -80,6 +213,10 @@ func checkpoint_blocker() -> String:
 		var combat: Dictionary = level.combat.get_status()
 		if int(combat.active_count) > 0 or int(combat.get("knocked_count", 0)) > 0 or float(combat.downed) > 0.0 or int(combat.combo) > 0 or bool(combat.reloading):
 			return "fight in progress"
+	if mounted:
+		# The seat overlaps the frame by design: check a standing spot beside it.
+		_mounted_capture = Mounted.capture(self, seat.facts)
+		return str(_mounted_capture.reason)
 	if safe_player_position(level.player.global_position).is_empty():
 		return "no stable ground"
 	return ""
@@ -88,9 +225,12 @@ func snapshot_state() -> Dictionary:
 	blocked_reason = checkpoint_blocker()
 	if not blocked_reason.is_empty():
 		return {}
-	var point: Vector3 = safe_player_position(level.player.global_position).position
+	# A rider's player.position is the checked standing spot beside the bicycle.
+	var mounted := _mounted_capture.duplicate(true)
+	var point: Vector3 = mounted.stand if not mounted.is_empty() else safe_player_position(level.player.global_position).position
+	var heading: float = float(mounted.yaw) if not mounted.is_empty() else level.player.yaw
 	var state := {"version": NO_VEHICLES_VERSION, "chapter": "pen_lucy", "saved_at": Time.get_unix_time_from_system(), "clock": {"total_minutes": level.world_time.total_minutes,
-		"elapsed_seconds": level.world_time.elapsed_seconds}, "player": {"position": [point.x, point.y, point.z], "yaw": level.player.yaw},
+		"elapsed_seconds": level.world_time.elapsed_seconds}, "player": {"position": [point.x, point.y, point.z], "yaw": heading},
 		"residents": level.residents.snapshot_state(), "missions": level.missions.snapshot_state(),
 		"walk": {"visited": level.visited.keys(), "route_index": level.route_index}}
 	if level.get("combat") != null:
@@ -121,20 +261,24 @@ func snapshot_state() -> Dictionary:
 			return {}
 		state.version = VERSION
 		state.vehicles = payload
+	if not mounted.is_empty():
+		state.bicycle = mounted.section
 	return state
 
+## One immediate attempt (exit path, fixtures); request_save() is the queued form.
 func save_state() -> Error:
 	if not enabled or _write_blocked:
 		return ERR_UNAVAILABLE
 	var state := snapshot_state()
 	if state.is_empty():
-		last_result = VEHICLES_SETTLING if blocked_reason == VEHICLES_SETTLING else "waiting for a stable ground checkpoint"
+		last_result = VEHICLES_SETTLING if blocked_reason == VEHICLES_SETTLING else "waiting until a checkpoint is safe: " + blocked_reason
 		return ERR_BUSY
 	var result := write_snapshot(state)
 	if result == OK:
 		save_count += 1
 		last_saved_unix = float(state.saved_at)
 		last_result = "saved"
+		_saved_checkpoint()
 	else:
 		last_result = "save failed (%d); previous checkpoint retained" % result
 	return result
@@ -156,6 +300,10 @@ func load_state() -> Dictionary:
 		# Never relocate the occupied car or the seated explorer. The checkpoint
 		# itself is fine, so saving is not paused.
 		last_load = {"ok": false, "partial": false, "reason": "leave the vehicle before loading a checkpoint"}
+		return last_load.duplicate()
+	var resting := Mounted.load_blocker(level)
+	if not resting.is_empty():
+		last_load = {"ok": false, "partial": false, "reason": resting}
 		return last_load.duplicate()
 	var read := read_snapshot()
 	if not bool(read.get("ok", false)):
@@ -242,23 +390,38 @@ func load_state() -> Dictionary:
 	for id in state.walk.visited:
 		level.visited[id] = true
 	level.route_index = int(state.walk.route_index)
+	# The bicycle goes last, so no later provider can refuse after a remount and it
+	# never needs unwinding. It sees the restored residents, cars and incidents.
+	var bicycle_result := Mounted.restore(self, state)
+	var bicycle_state := str(bicycle_result.state)
+	var remounted := bicycle_state == "mounted"
+	# A rider restored standing is not where they saved: report it as a fallback.
+	placed = remounted if state.has("bicycle") else placed
 	var fallbacks := _count(vehicle_result.get("fallbacks", []))
 	var notes := PackedStringArray()
-	if placement == "nearby":
-		notes.append("your saved spot was blocked, so you start at a checked spot nearby")
-	elif placement == "current":
-		notes.append("your saved spot was blocked, so you start where you arrived")
-	elif placement == "unplaced":
-		notes.append("your saved spot was blocked and no checked spot was free, so you stay where you were")
+	if bicycle_state == "unverified":
+		notes.append("your bicycle seat could not be checked (%s); reload before continuing" % str(bicycle_result.reason))
+	elif not remounted:
+		# Seated exactly where the checkpoint was made needs no standing-spot notes.
+		if state.has("bicycle"):
+			notes.append("you could not be put back on your bicycle where you stopped (%s), so you start standing" % str(bicycle_result.reason))
+		if placement == "nearby":
+			notes.append("your saved spot was blocked, so you start at a checked spot nearby")
+		elif placement == "current":
+			notes.append("your saved spot was blocked, so you start where you arrived")
+		elif placement == "unplaced":
+			notes.append("your saved spot was blocked and no checked spot was free, so you stay where you were")
 	if fallbacks > 0:
 		notes.append("%d remembered car%s could not return to where you left %s" % [fallbacks, "" if fallbacks == 1 else "s", "it" if fallbacks == 1 else "them"])
+	# The world a queued request described is gone; it is not written later.
+	_drop_pending("discarded", "Queued save discarded because a checkpoint was loaded.")
 	last_result = "loaded " + str(read.get("source", "checkpoint")) + ("" if notes.is_empty() else " (" + "; ".join(notes) + ")")
 	var result := {"ok": true, "partial": false, "reason": last_result, "backup": read.get("backup", false), "source": read.get("source", "checkpoint"),
 		"player_fallback": not placed, "residents": resident_result, "mission_restored": true, "version": version, "migrated": version < VERSION,
-		"vehicles": vehicle_result, "vehicle_fallbacks": fallbacks, "incidents": incident_result}
+		"vehicles": vehicle_result, "vehicle_fallbacks": fallbacks, "incidents": incident_result, "bicycle": bicycle_result.duplicate(true)}
 	last_load = {"ok": true, "partial": false, "reason": last_result, "source": result.source, "version": version, "migrated": version < VERSION,
 		"player_fallback": not placed, "player_placement": placement, "vehicle_fallbacks": fallbacks, "vehicle_details": vehicle_result.get("fallbacks", []),
-		"residents_fallback": int(resident_result.get("fallback", 0))}
+		"residents_fallback": int(resident_result.get("fallback", 0)), "bicycle": bicycle_result.duplicate(true)}
 	return result
 
 ## A clean rollback restores the prior live state. If a provider cannot return
@@ -665,13 +828,22 @@ func validate_snapshot(value) -> String:
 	for index in int(walk.route_index):
 		if walk.visited.count(str(level.landmarks[index].get("id", index))) != 1:
 			return "unknown walk stop"
+	if value.has("bicycle"):
+		# Optional like incidents: written only for a safe rider, never by a build
+		# older than schema 3. Older readers ignore it and stand the explorer clear.
+		var bicycle = value.bicycle
+		if version < NO_VEHICLES_VERSION or not bicycle is Dictionary or not _position(bicycle.get("position")):
+			return "invalid bicycle"
+		var bicycle_error := Mounted.validate(value)
+		if not bicycle_error.is_empty():
+			return bicycle_error
 	return ""
 
 ## True when a nested section was written by a newer build than this one. Only an
 ## integer version above what this build declares counts: corrupt version values
 ## stay "invalid", so an older valid backup can still recover them.
 func _future_section(value: Dictionary, version: int) -> bool:
-	if _newer(value.get("incidents"), INCIDENTS_VERSION):
+	if _newer(value.get("incidents"), INCIDENTS_VERSION) or _newer(value.get("bicycle"), Mounted.VERSION):
 		return true
 	var missions = value.get("missions")
 	var case_engine = level.missions.get("cases") if level.get("missions") != null else null
@@ -899,7 +1071,8 @@ func _preserve_rejected(source: String) -> Error:
 
 func get_status() -> Dictionary:
 	return {"enabled": enabled, "path": path, "result": last_result, "saves": save_count, "write_blocked": _write_blocked, "age_seconds": maxf(0.0, Time.get_unix_time_from_system() - last_saved_unix) if last_saved_unix > 0.0 else -1.0, "preserved_files": _preserved_files.duplicate(),
-		"version": VERSION, "vehicle_persistence": _vehicle_api() != null, "blocked_reason": blocked_reason, "last_load": last_load.duplicate(true)}
+		"version": VERSION, "vehicle_persistence": _vehicle_api() != null, "blocked_reason": blocked_reason, "last_load": last_load.duplicate(true),
+		"mounted_checkpoints": Mounted.api(level) != null, "pending": _pending_status()}
 
 func recover_saving() -> Error:
 	# Explicit user action only: preserve every old candidate before allowing the
@@ -929,6 +1102,7 @@ func recover_saving() -> Error:
 		save_count += 1
 		last_saved_unix = float(state.saved_at)
 		last_result = "Current progress saved. The old checkpoint is kept as a recovery copy."
+		_saved_checkpoint()
 	else:
 		_write_blocked = true
 		last_result = "New checkpoint failed; old progress remains in the recovery copies."

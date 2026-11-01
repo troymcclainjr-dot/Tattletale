@@ -10,8 +10,12 @@ signal police_requested(world_position: Vector3)
 const Gallery := preload("res://scripts/city/city_phone_gallery.gd")
 const UI := preload("res://scripts/city/city_phone_ui.gd")
 const PhotoContext := preload("res://scripts/city/city_photo_context.gd")
+const PoliceStatus := preload("res://scripts/city/city_police_status.gd")
 const T := preload("res://scripts/ui/hud_theme.gd")
 const VIEWMODEL_LAYER := 1 << 19
+const DEFAULT_REPORT_STATUS := "Report nearby violence to neighborhood officers."
+## The same police notice is not repeated on the HUD within this window.
+const NOTICE_REPEAT_MS := 5000
 const PHOTO_DIRECTORY := Gallery.DIRECTORY
 const PAGES := ["home", "contacts", "camera", "photos", "photo", "cases", "police"]
 const TITLES := {"contacts": "Contacts", "photos": "Photos", "photo": "Photo", "cases": "Cases", "police": "Police"}
@@ -35,7 +39,15 @@ var _content: VBoxContainer
 var _controls: Label
 var _previous_mouse_mode: int = Input.MOUSE_MODE_CAPTURED
 var _last_police_call := -10000
-var _report_status := "Report nearby violence to neighborhood officers."
+var _report_status := DEFAULT_REPORT_STATUS
+## Police generation the last notice belongs to (-1: no police service).
+var _report_generation := -1
+## Banner and HUD notices actually shown (identical repeats are not).
+var notices_shown := 0
+var _police_cards: Array = []
+var _police_key := ""
+var _hud_notice := ""
+var _hud_notice_at := -100000
 var _viewmodel: Node3D
 var _overlay: CanvasLayer
 var _root: Control
@@ -227,11 +239,55 @@ func request_police() -> bool:
 	police_requested.emit(player.global_position)
 	return true
 
+## Police progress for the player's own calls and reports. Several owners may
+## deliver one step in the same frame (the call reply and the incident relay);
+## the same message still on the banner is not announced again. While the phone
+## is put away the update reaches the HUD notice line instead of a hidden banner.
 func set_report_status(message: String) -> void:
+	var on_banner := active and _feedback != null and _feedback.text == message and _feedback_time > 0.0
 	_report_status = message
-	_notice(message)
-	if active and page == "police":
+	_report_generation = _police_generation()
+	if active:
+		if not on_banner:
+			_notice(message)
+	else:
+		_notify_hud(message)
+	if active and page == "police" and (not on_banner or _police_refresh_key() != _police_key):
 		show_page("police")
+
+func _notify_hud(message: String) -> void:
+	if message.is_empty() or level == null or not level.has_method("show_notice"):
+		return
+	var now := Time.get_ticks_msec()
+	if message == _hud_notice and now - _hud_notice_at < NOTICE_REPEAT_MS:
+		return
+	_hud_notice = message
+	_hud_notice_at = now
+	notices_shown += 1
+	level.call("show_notice", "Police: " + message)
+
+func _police_service() -> Node:
+	return level.get("police_assistance") as Node if level != null else null
+
+func _police_generation() -> int:
+	var police := _police_service()
+	var value = police.get("generation") if police != null else null
+	return int(value) if value is int else -1
+
+## The last police notice, unless a loaded checkpoint has since replaced the
+## session it came from: then the neutral prompt, never a stale "on the way".
+func _current_report_status() -> String:
+	var generation := _police_generation()
+	if _report_generation >= 0 and generation >= 0 and generation != _report_generation:
+		return DEFAULT_REPORT_STATUS
+	return _report_status
+
+## Changes when anything the Police page shows changes (dispatch or records).
+func _police_refresh_key() -> String:
+	var police := _police_service()
+	var incidents: Node = level.get("incidents") as Node if level != null else null
+	return "%s:%s:%s" % [str(police.get("revision")) if police != null else "-", str(police.get("generation")) if police != null else "-",
+		str(incidents.get("revision")) if incidents != null else "-"]
 
 func _process(delta: float) -> void:
 	if not can_open():
@@ -243,6 +299,8 @@ func _process(delta: float) -> void:
 	_status_refresh -= delta
 	if _status_refresh <= 0.0:
 		_refresh_status_bar()
+		if page == "police" and _police_refresh_key() != _police_key:
+			show_page("police")
 	if _viewfinder.flash > 0.0:
 		_viewfinder.flash = maxf(0.0, _viewfinder.flash - delta * 4.0)
 		_viewfinder.queue_redraw()
@@ -252,6 +310,8 @@ func _refresh_title() -> void:
 	_viewfinder.queue_redraw()
 
 func _notice(message: String) -> void:
+	if not message.is_empty():
+		notices_shown += 1
 	_feedback.text = message
 	_banner.visible = not message.is_empty()
 	_viewfinder.notice = message
@@ -412,6 +472,7 @@ func get_status() -> Dictionary:
 		"page": page, "gallery_count": gallery.entries.size(), "gallery_limit": Gallery.LIMIT,
 		"fov": photo_fov, "last_photo": last_photo.duplicate(true), "last_error": last_error,
 		"report_status": _report_status, "captures_emitted": captures_emitted,
+		"police_cards": _police_cards.duplicate(true), "notices": notices_shown,
 		"viewmodel_visible": _viewmodel != null and _viewmodel.visible,
 		"layout": {"handset": Rect2(_handset.position, _handset.size), "screen": Rect2(_handset.position + _handset.screen.position, _handset.screen.size),
 			"viewport": _root.size, "handset_visible": _handset.visible}}
@@ -666,13 +727,60 @@ func _show_cases() -> void:
 	if _content.get_child_count() == 0:
 		_text("No cases yet. Neighbors with a problem will ask you in person.", 17, UI.MUTED)
 
+## Police page: the latest dispatch notice, a report button that names exactly
+## what it files (incidents.phone_report_preview), then bounded status cards
+## built from live dispatch state and the durable report records (so they are
+## rebuilt honestly after a reload). Pull-only: never changes a response.
 func _show_police() -> void:
-	_card([["DISPATCH", 14, T.TICKET, "monob"], [_report_status, 19]], Color("7cbcff"))
-	_text("A call shares your current location with neighborhood officers. Use it to report violence you witness.", 16, UI.MUTED)
-	var dial := _button("Report nearby violence", request_police)
+	var police := _police_service()
+	var incidents: Node = level.get("incidents") as Node if level != null else null
+	var view: Dictionary = {}
+	if police != null and police.has_method("dispatch_view"):
+		view = police.dispatch_view()
+	var records: Array = []
+	if incidents != null and incidents.has_method("reports_for"):
+		records = incidents.reports_for("player", PoliceStatus.MAX_CARDS)
+	var preview: Dictionary = {}
+	if incidents != null and incidents.has_method("phone_report_preview"):
+		preview = incidents.phone_report_preview(player.global_position)
+	_police_cards = PoliceStatus.cards(view, records)
+	_police_key = _police_refresh_key()
+	_card([["DISPATCH", 14, T.TICKET, "monob"], [_current_report_status(), 19]], Color("7cbcff"))
+	var action := PoliceStatus.report_action(preview)
+	var dial := _button(str(action.button), request_police)
+	dial.set_meta("police_report_kind", str(preview.get("kind", "area_check")))
 	dial.custom_minimum_size = Vector2(0, 56)
 	for state in ["normal", "hover", "pressed", "hover_pressed"]:
 		dial.add_theme_stylebox_override(state, UI.flat(T.SIREN.lightened(0.08 if state == "hover" else 0.0), 14, 0, Color.TRANSPARENT, 10))
+	_text(str(action.hint), 16, UI.MUTED)
+	_text(PoliceStatus.DEFAULT_ACTION_HINT, 15, UI.MUTED)
+	for i in _police_cards.size():
+		_police_card(_police_cards[i], i == 0)
+
+## One status card: what and where, the dispatch stage, then (for the newest)
+## responders, the incident as officers know it, a short timeline and the next
+## useful step. Times are the game clock; nothing estimates an arrival.
+func _police_card(card: Dictionary, expanded: bool) -> void:
+	var accent: Color = card.get("accent", Color("7cbcff"))
+	var header := str(card.get("title", "")).to_upper()
+	if not str(card.get("time", "")).is_empty():
+		header += "  ·  " + str(card.time)
+	var lines: Array = [[header, 14, accent, "monob"], [str(card.get("label", "")), 19]]
+	if not str(card.get("where", "")).is_empty():
+		lines.append([str(card.where), 15, T.TICKET, "monob"])
+	if expanded:
+		if not str(card.get("responders", "")).is_empty():
+			lines.append(["Dispatch: " + str(card.responders), 15, UI.MUTED])
+		if not str(card.get("incident", "")).is_empty():
+			lines.append(["Incident: " + str(card.incident), 15, UI.MUTED])
+		if not str(card.get("text", "")).is_empty() and str(card.text) != str(card.get("label", "")):
+			lines.append([str(card.text), 16])
+		for entry in card.get("timeline", []):
+			lines.append(["%s  %s" % [str(entry.get("time", "")), str(entry.get("label", ""))], 14, UI.MUTED, "monob"])
+		lines.append(["Next: " + str(card.get("next", "")), 16, T.TICKET])
+	var panel := _card(lines, accent)
+	panel.set_meta("police_card", str(card.get("key", "")))
+	panel.set_meta("police_stage", str(card.get("stage", "")))
 
 func _show_gallery() -> void:
 	gallery.directory = storage_directory

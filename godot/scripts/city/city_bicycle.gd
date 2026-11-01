@@ -14,6 +14,7 @@ extends CharacterBody3D
 ##   (city_bicycle_crash.gd) while the riderless bicycle recoils, slides and falls.
 ## Nothing here deals damage or reaches law, money or alignment.
 ## Contract: .work/pacifist-foundation/bike-contract.md
+## Checkpoint hooks: .work/five-priorities-20261101/bicycle-save-contract.md
 signal mounted
 signal dismounted
 signal pedestrian_contact(contact: Dictionary)
@@ -37,6 +38,8 @@ const HULL_FOOT_OFFSET := 0.015
 const HULL_CLEARANCE := 0.31
 const HULL_TOP := 1.465
 const HULL_RADIUS := 0.28
+## The three hull capsules sit at -/0/+ this far along the frame.
+const HULL_HALF_SPAN := 0.52
 const SNAP_DOWN := 0.32
 const MOUNT_DISTANCE := 2.7
 const EXIT_SPEED := 1.5
@@ -62,6 +65,14 @@ const PERSON_COOLDOWN := 2.0
 const REDUCED_MASS := 42.0
 const MAX_CRASH_TIME := 7.0
 const TURN_SHRINK := 0.015
+## Checkpoints: a ridden bicycle saves only below this speed (m/s), and a saved
+## pose must find wheel support within this height of where it was written.
+const SAVE_VERSION := 1
+const SAVE_STILL_SPEED := 0.05
+const SAVE_SUPPORT_REACH := 0.35
+## A standing explorer's capsule (city_player: radius 0.30) plus a little room.
+const STANDING_RADIUS := 0.32
+const STANDING_HEIGHT := 1.74
 
 var level: Node3D
 var player: CharacterBody3D
@@ -138,7 +149,7 @@ func setup(owner_level: Node3D) -> void:
 	collision_mask = WORLD_MASK
 	floor_max_angle = deg_to_rad(46.0)
 	var hull_height := HULL_TOP - HULL_CLEARANCE
-	for z in [-0.52, 0.0, 0.52]:
+	for z in [-HULL_HALF_SPAN, 0.0, HULL_HALF_SPAN]:
 		var shape := CollisionShape3D.new()
 		var capsule := CapsuleShape3D.new()
 		capsule.radius = HULL_RADIUS
@@ -157,10 +168,26 @@ func setup(owner_level: Node3D) -> void:
 	add_child(_crash)
 	_crash.setup(self, player)
 	_support_rids = [get_rid(), player.get_rid(), _crash.get_rid(), _crash.rider_rid()]
+	# The upright hull is a coarse proxy for a few thin tubes (and stays upright
+	# when the bicycle lies fallen): the explorer's camera never sweeps against it.
+	var camera_ignore = player.get("camera_ignore")
+	if camera_ignore is Array:
+		camera_ignore.append(get_rid())
 	yaw = float(player.get("yaw"))
 	rotation.y = yaw
-	var origin := player.global_position
-	# Short bounded search on actual ground, with the complete bike hull clear.
+	var at := _find_parking(player.global_position)
+	if at.is_finite():
+		global_position = at
+		_parked_position = at
+		spawned = true
+		return
+	visible = false
+	collision_layer = 0
+	_flash("No clear bicycle parking spot nearby")
+
+## Short bounded search on actual ground beside `origin`, with the complete
+## bike hull clear at the current yaw. INF when nothing nearby fits.
+func _find_parking(origin: Vector3) -> Vector3:
 	for radius in [2.1, 3.0, 4.0, 5.0]:
 		for step in 12:
 			var angle := yaw + PI * 0.5 + float(step) * TAU / 12.0
@@ -171,13 +198,8 @@ func setup(owner_level: Node3D) -> void:
 			var at: Vector3 = spot.position + Vector3.UP * 0.01
 			if absf(at.y - origin.y) > 0.65 or not _bike_clear(at):
 				continue
-			global_position = at
-			_parked_position = at
-			spawned = true
-			return
-	visible = false
-	collision_layer = 0
-	_flash("No clear bicycle parking spot nearby")
+			return at
+	return Vector3.INF
 
 func tick(delta: float) -> void:
 	if not spawned or not is_instance_valid(player) or _paused() or delta <= 0.0:
@@ -253,13 +275,18 @@ func tick(delta: float) -> void:
 	_move(planar, delta, touched)
 	var moved := global_position - before
 	moved.y = 0.0
+	# Slip pressing into what it touched is spent on that contact first.
+	_absorb_slip(touched)
 	# Pedalling speed only loses what walls, risers and people actually removed.
-	var along := moved.dot(forward) / delta
+	# The slip left over moved the bike too, but it is not pedalled: measure
+	# progress net of its share, or steering off the slip's line would brake
+	# the pedals on every frame until the slip decayed.
+	var along := moved.dot(forward) / delta - _slip.dot(forward)
 	if speed > 0.0:
 		speed = clampf(along, 0.0, speed)
 	elif speed < 0.0:
 		speed = clampf(along, speed, 0.0)
-	_absorb_slip(touched, delta)
+	_slip = _slip.move_toward(Vector3.ZERO, SLIP_DECAY * delta)
 	_resolve_contacts(touched, planar, forward, absf(commanded_speed))
 	if _crashed:
 		return
@@ -331,10 +358,15 @@ func enter_bicycle() -> bool:
 	if phone != null and bool(phone.get("active")):
 		_flash("Put away the phone before riding")
 		return false
+	_seat_rider(player.global_position)
+	return true
+
+## Seats the explorer on the upright bicycle (mounting, or a mounted restore).
+func _seat_rider(mount_spot: Vector3) -> void:
 	if _fallen or _settling:
 		_pick_up()
 	active = true
-	_mount_spot = player.global_position
+	_mount_spot = mount_spot
 	reset_motion_state()
 	_trail.clear()
 	_saved_chase = float(player.get("chase_distance"))
@@ -346,7 +378,6 @@ func enter_bicycle() -> bool:
 	_last_seat = player.global_position
 	_animate(0.0, 0.0)
 	mounted.emit()
-	return true
 
 func exit_vehicle(force := false) -> bool:
 	if not active:
@@ -367,7 +398,18 @@ func exit_vehicle(force := false) -> bool:
 	if _hop_active and not force:
 		_flash("Land before getting off")
 		return false
-	for radius in ([1.0, 1.4, 2.0, 3.0] if force else [1.0, 1.4]):
+	var at := _exit_spot([1.0, 1.4, 2.0, 3.0] if force else [1.0, 1.4])
+	if at.is_finite():
+		_finish_exit(at, yaw)
+		return true
+	_flash("Move to a clear spot to get off")
+	return false
+
+## A verified spot beside the frame where the explorer can stand (INF: none):
+## ground within reach, a clear standing capsule and an unobstructed step off.
+## `avoid`: a pose the bicycle is about to take, which the spot must keep clear.
+func _exit_spot(radii: Array, avoid: Variant = null) -> Vector3:
+	for radius in radii:
 		for side in [1.0, -1.0]:
 			var wanted := global_position + Vector3(cos(yaw), 0.0, -sin(yaw)) * float(radius) * float(side)
 			var spot := _ground(wanted)
@@ -380,10 +422,10 @@ func exit_vehicle(force := false) -> bool:
 			ray.exclude = [get_rid(), player.get_rid()]
 			if not get_world_3d().direct_space_state.intersect_ray(ray).is_empty():
 				continue
-			_finish_exit(at, yaw)
-			return true
-	_flash("Move to a clear spot to get off")
-	return false
+			if avoid is Transform3D and _hull_reaches(avoid, at):
+				continue
+			return at
+	return Vector3.INF
 
 func recovery_exit_at(at: Vector3, heading: float) -> bool:
 	if not active or not at.is_finite() or not is_finite(heading):
@@ -448,6 +490,167 @@ func is_crashed() -> bool:
 ## The checkpoint provider refuses saves/loads while a crash plays out.
 func blocks_checkpoint() -> bool:
 	return _crashed
+
+# ------------------------------------------------------------------ checkpoint hooks
+# The save helper owns schema, versioning, ordering and rollback. These only
+# report the bicycle's state truthfully and place it, never faking a dismount.
+
+## "" when the bicycle's present state may be written into a checkpoint, else
+## the player-facing reason. A parked bicycle only waits out a crash slide; a
+## ridden one must be stopped, on its wheels, steady after any knock and clear.
+func save_blocker() -> String:
+	if not spawned or not is_instance_valid(player):
+		return ""
+	if _crashed:
+		return "recovering from a bicycle crash"
+	if not active:
+		return "your bicycle is still settling" if _settling else ""
+	if _hop_active or not _grounded or absf(velocity.y) > 0.001:
+		return "land the bicycle before saving"
+	if absf(speed) > SAVE_STILL_SPEED or _slip.length() > SAVE_STILL_SPEED or Vector2(velocity.x, velocity.z).length() > SAVE_STILL_SPEED:
+		return "stop the bicycle before saving"
+	var knocked := not last_impact.is_empty() and _clock - float(last_impact.get("time", -INF)) < IMPACT_DEDUPE
+	if _wobble > 0.0 or absf(_yaw_deflect) >= 0.0005 or knocked:
+		return "steady the bicycle before saving"
+	var footing := pose_blocker(global_position, yaw)
+	if not footing.is_empty():
+		return footing
+	if not player.is_seated() or player.get("seated_vehicle") != self:
+		return "bicycle seat state is changing"
+	return ""
+
+## The facts a checkpoint needs, so the save helper never reads solver internals.
+func persistence_state() -> Dictionary:
+	return {"version": SAVE_VERSION, "spawned": spawned, "mounted": active, "crashed": _crashed,
+		"settling": _settling, "fallen": _fallen, "grounded": _grounded, "airborne": _hop_active,
+		"steady": _wobble <= 0.0 and absf(_yaw_deflect) < 0.0005, "speed": speed,
+		"planar_speed": Vector2(velocity.x, velocity.z).length(), "slip": _slip.length(),
+		"position": global_position, "yaw": yaw, "parked_position": _parked_position,
+		"blocker": save_blocker()}
+
+## "" when the bicycle could stand at `at` facing `heading`, else why not: real
+## wheel support (a car roof never counts) within SAVE_SUPPORT_REACH of that
+## height, and a clear upright hull. With `explorer`, a standing explorer is an
+## obstacle too. Changes nothing.
+func pose_blocker(at: Vector3, heading: float, explorer := false) -> String:
+	if player == null or not is_inside_tree():
+		return "bicycle unavailable"
+	if not at.is_finite() or not is_finite(heading):
+		return "invalid bicycle pose"
+	var pose := _supported_pose(at, heading)
+	if not pose.origin.is_finite():
+		return "no stable ground under the bicycle"
+	# The same pivot allowance riding tolerates: a frame at rest against a wall
+	# is restorable; anything deeper than that is a genuine overlap.
+	if not _hull_clear(pose, 0.0, TURN_SHRINK) or (explorer and not player.is_seated() and _hull_reaches(pose, player.global_position)):
+		return "something is pressing against the bicycle"
+	return ""
+
+## Places the bicycle for a checkpoint restore or its rollback. Refuses and
+## changes nothing mid-crash, on a pose pose_blocker() rejects, with the phone
+## up (mounted), or with no verified spot for a seated explorer to step off to.
+## mounted: the explorer rides it at that pose (no walk-up distance is needed,
+## every motion state is cleared, the chase view starts behind `heading`).
+## Not mounted: a seated explorer first steps off beside the current pose, to a
+## spot clear of the new one; `fallen` lays the riderless bicycle on its side.
+func restore_pose(at: Vector3, heading: float, mounted: bool, fallen := false) -> Dictionary:
+	var result := {"ok": false, "reason": "", "mounted": active, "position": global_position, "yaw": yaw, "fallen": _fallen}
+	if player == null or not is_inside_tree():
+		result.reason = "bicycle unavailable"
+		return result
+	if _crashed:
+		result.reason = "recovering from a bicycle crash"
+		return result
+	var blocker := pose_blocker(at, heading, not mounted)
+	if not blocker.is_empty():
+		result.reason = blocker
+		return result
+	var pose := _supported_pose(at, heading)
+	if mounted and not active and player.is_seated():
+		result.reason = "leave the vehicle first"
+		return result
+	var phone = player.get("phone")
+	if mounted and not active and phone != null and bool(phone.get("active")):
+		result.reason = "put away the phone before riding"
+		return result
+	var step_off := Vector3.INF
+	if not mounted and active:
+		step_off = _exit_spot([1.0, 1.4, 2.0, 3.0], pose)
+		if not step_off.is_finite():
+			result.reason = "no clear spot to step off the bicycle"
+			return result
+		_finish_exit(step_off, yaw)
+	_place_at(pose, heading, fallen and not mounted)
+	if mounted:
+		if active:
+			player.follow_vehicle()
+			_mount_spot = global_position
+			_last_seat = player.global_position
+		else:
+			var combat = level.get("combat")
+			if combat != null and combat.has_method("cancel_player_actions"):
+				combat.cancel_player_actions()
+			player.set("camera_yaw", heading)
+			# As when mounting: the spot they stood on is the crash fallback.
+			_seat_rider(player.global_position)
+		if player.has_method("reset_vehicle_view"):
+			player.reset_vehicle_view(heading)
+		_animate(0.0, 0.0)
+	return {"ok": true, "reason": "", "mounted": active, "position": global_position, "yaw": yaw, "fallen": _fallen}
+
+## Parks the riderless bicycle beside the explorer where they stand now, as
+## setup() does (a checkpoint with no usable bicycle section). Refuses, changing
+## nothing, while ridden or crashed or when no clear spot is nearby.
+func park_beside_explorer() -> Dictionary:
+	if player == null or not is_inside_tree():
+		return {"ok": false, "reason": "bicycle unavailable"}
+	if active or _crashed:
+		return {"ok": false, "reason": "the bicycle is being ridden"}
+	var previous_yaw := yaw
+	yaw = float(player.get("yaw"))
+	var at := _find_parking(player.global_position)
+	if not at.is_finite():
+		yaw = previous_yaw
+		return {"ok": false, "reason": "no clear bicycle parking spot nearby"}
+	_place_at(Transform3D(Basis(Vector3.UP, yaw), at), yaw, false)
+	return {"ok": true, "reason": "", "position": global_position, "yaw": yaw}
+
+## `at` settled onto its sampled wheel support (INF origin: none).
+func _supported_pose(at: Vector3, heading: float) -> Transform3D:
+	var pose := Transform3D(Basis(Vector3.UP, heading), at)
+	var profile := _support_profile(pose, SAVE_SUPPORT_REACH)
+	var height := float(profile.height)
+	if bool(profile.blocked) or not is_finite(height) or absf(height - at.y) > SAVE_SUPPORT_REACH:
+		pose.origin = Vector3.INF
+	else:
+		pose.origin.y = height
+	return pose
+
+## Puts the bicycle at rest at `pose`: every transient solver state cleared.
+func _place_at(pose: Transform3D, heading: float, lying: bool) -> void:
+	global_position = pose.origin
+	yaw = heading
+	rotation.y = heading
+	reset_motion_state()
+	speed = 0.0
+	_settling = false
+	_spin_rate = 0.0
+	_trail.clear()
+	_parked_position = pose.origin
+	if not spawned:
+		spawned = true
+		visible = true
+		collision_layer = 16
+	if lying:
+		_fallen = true
+		_fall_amount = 1.0
+		_fall_side = _choose_fall_side(_fall_side)
+		_visual.rotation = Vector3.ZERO
+		_front.rotation.y = 0.5 * _fall_side
+		_animate_riderless(0.0)
+	else:
+		_pick_up()
+	_support = _support_profile(global_transform, SNAP_DOWN)
 
 func _read_controls() -> Dictionary:
 	if not bool(player.get("enabled")):
@@ -700,13 +903,13 @@ func _riser_contact(profile: Dictionary, attempted: Vector3) -> Dictionary:
 	return {"collider": collider, "normal": normal.normalized(), "position": point, "riser": true}
 
 ## Slip (recoil/sideways) velocity cannot keep pushing into what it touched.
-func _absorb_slip(touched: Array[Dictionary], delta: float) -> void:
+## (It decays in tick, after the pedal speed has been measured against it.)
+func _absorb_slip(touched: Array[Dictionary]) -> void:
 	for contact in touched:
 		var normal: Vector3 = contact.normal
 		var into := _slip.dot(normal)
 		if into < 0.0:
 			_slip -= normal * into
-	_slip = _slip.move_toward(Vector3.ZERO, SLIP_DECAY * delta)
 
 func _try_turn(amount: float) -> bool:
 	if is_zero_approx(amount):
@@ -810,10 +1013,14 @@ func _apply_impact(contact: Dictionary, v_pre: Vector3, forward: Vector3) -> voi
 	_slip.y = 0.0
 	# A glancing touch ahead of the centre (behind it while reversing) swings
 	# the frame along the obstacle, so the bike slides off posts and walls.
+	# It swings toward where the bike now travels along the face (a moving car's
+	# drag included). The relative tangent alone points backwards when a faster
+	# car brushes past, and would yank the frame into that car.
 	var heading_sign := 1.0 if v_pre.dot(forward) >= 0.0 else -1.0
 	var lever := (Vector3(contact.position) - global_position).dot(forward) * heading_sign
-	if kept > 0.3 and lever > 0.15:
-		var travel := direction * heading_sign
+	var along_face := after - normal * after.dot(normal)
+	if along_face.length() > 0.3 and lever > 0.15:
+		var travel := along_face.normalized() * heading_sign
 		var angle := atan2(forward.cross(travel).y, forward.dot(travel))
 		_yaw_deflect = clampf(angle * clampf(closing / CRASH_SPEED + 0.25, 0.25, 0.85), -0.7, 0.7)
 	if severity == "bump":
@@ -906,6 +1113,10 @@ func _eject(event: Dictionary, v_pre: Vector3) -> bool:
 	var vehicle := kind == "vehicle" or kind == "parked_vehicle"
 	var closing := float(event.closing_speed)
 	var launch := tangent * 0.85 + normal_part * (0.3 if vehicle else 0.45)
+	# A car driving into the rider carries them off with it (as it does the
+	# riderless bicycle below), never leaving them in its path.
+	var other: Vector3 = event.other_velocity
+	launch += normal * maxf(0.0, other.dot(normal))
 	launch.y = clampf(1.7 + 0.2 * closing, 2.0, 3.0 if vehicle else 3.8)
 	var forward := Vector3(sin(yaw), 0.0, cos(yaw))
 	var right := Vector3(-cos(yaw), 0.0, sin(yaw))
@@ -921,7 +1132,6 @@ func _eject(event: Dictionary, v_pre: Vector3) -> bool:
 	_crash_heading = yaw
 	_crash_recovery = {}
 	_recovery_retry = 0.0
-	var other: Vector3 = event.other_velocity
 	var recoil := tangent * 0.5 + normal * (0.25 * closing + maxf(0.0, other.dot(normal)))
 	recoil.y = 0.0
 	var lever := Vector3(event.position) - global_position
@@ -1190,10 +1400,20 @@ func _bike_clear(at: Vector3) -> bool:
 	query.exclude = [get_rid(), player.get_rid()]
 	return get_world_3d().direct_space_state.intersect_shape(query, 1).is_empty()
 
+## Whether an explorer standing at `stand` would touch the upright hull at
+## `pose` (the explorer's own layer is outside the hull's collision mask).
+func _hull_reaches(pose: Transform3D, stand: Vector3) -> bool:
+	if stand.y > pose.origin.y + HULL_TOP or stand.y + STANDING_HEIGHT < pose.origin.y + HULL_CLEARANCE:
+		return false
+	var forward := Vector3(pose.basis.z.x, 0.0, pose.basis.z.z).normalized()
+	var offset := Vector3(stand.x - pose.origin.x, 0.0, stand.z - pose.origin.z)
+	var along := clampf(offset.dot(forward), -HULL_HALF_SPAN, HULL_HALF_SPAN)
+	return (offset - forward * along).length() < HULL_RADIUS + STANDING_RADIUS
+
 func _standing_clear(at: Vector3) -> bool:
 	var shape := CapsuleShape3D.new()
-	shape.radius = 0.32
-	shape.height = 1.74
+	shape.radius = STANDING_RADIUS
+	shape.height = STANDING_HEIGHT
 	var query := PhysicsShapeQueryParameters3D.new()
 	query.shape = shape
 	query.transform.origin = at + Vector3.UP * 0.89

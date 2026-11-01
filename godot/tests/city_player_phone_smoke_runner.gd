@@ -88,7 +88,7 @@ func _run() -> void:
 	await _pointer_and_keyboard_checks(phone)
 	phone.show_page("home")
 	phone.handle_input(key(KEY_1))
-	check(phone.page == "contacts" and _contact_rows(phone) == 20, "Contacts lists the twenty authored residents as rows")
+	check(phone.page == "contacts" and _contact_rows(phone) == 40, "Contacts lists the forty authored residents as rows")
 	phone.handle_input(key(KEY_4))
 	check(phone.page == "cases", "Cases opens gracefully when no mission provider is attached")
 	phone.handle_input(key(KEY_5))

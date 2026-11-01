@@ -17,9 +17,12 @@ extends Node3D
 ##
 ## Police: city_police_assistance.report_incident() sends real officers; its
 ## progress (report_received, responding, on_scene, resolved, unavailable)
-## updates the record and is re-emitted as report_status_changed. Infractions
+## updates the record and is re-emitted as report_status_changed, carrying the
+## police dispatch stage/handling (city_police_status.gd) for the phone. A record
+## closed here while police still answer it stands that call down. Infractions
 ## end with a warning, theft and violence with custody. A report never removes
-## anyone by itself. Contract: .work/pacifist-foundation/incidents-contract.md.
+## anyone by itself. Contract: .work/pacifist-foundation/incidents-contract.md
+## and .work/five-priorities-20261101/police-contract.md.
 
 signal incident_opened(summary: Dictionary)
 signal incident_changed(summary: Dictionary)
@@ -30,6 +33,7 @@ const Templates := preload("res://scripts/city/city_incident_templates.gd")
 const Actors := preload("res://scripts/city/city_incident_actors.gd")
 const Tactics := preload("res://scripts/city/city_police_tactics.gd")
 const Combat := preload("res://scripts/city/city_combat.gd")
+const PoliceStatus := preload("res://scripts/city/city_police_status.gd")
 
 const STATE_VERSION := 1
 const MAX_LIVE := 2
@@ -91,6 +95,8 @@ var counters := {"spawned": 0, "spawn_attempts": 0, "external": 0, "cancelled": 
 	"npc_reports": 0, "phone_fallbacks": 0, "resolved": 0, "expired": 0, "lost_performers": 0, "handoffs": 0,
 	"photos_checked": 0, "photos_verified": 0}
 var outcomes: Dictionary = {}
+## Bumps whenever a record changes (the phone's refresh key).
+var revision := 0
 var _live: Dictionary = {}
 # UI subscriptions belong to this live session, not the original reporter's
 # attribution or the version-1 durable record. Only accepted player phone
@@ -241,17 +247,7 @@ func report_incident(id: String, reporter_id := "player", context := {}) -> Dict
 ## With none, the legacy neighborhood call goes out (police check the spot and
 ## act only on violence actually there), so the old button keeps working.
 func report_from_phone(at: Vector3) -> Dictionary:
-	var best: Dictionary = {}
-	var newest := -INF
-	for rec in records:
-		if not str(rec.state) in ["active", "ended", "reported", "responding"] or not _may_report(rec, "player") or not _in_window(rec):
-			continue
-		if at.is_finite() and Tactics.flat(_vec(rec.at), at) > PHONE_REPORT_RADIUS:
-			continue
-		var seen := _witness_minutes(rec, "player")
-		if seen > newest:
-			newest = seen
-			best = rec
+	var best := _phone_choice(at)
 	if not best.is_empty():
 		var result := report_incident(str(best.id), "player", {"channel": "phone", "phone": true})
 		result.fallback = false
@@ -265,6 +261,57 @@ func report_from_phone(at: Vector3) -> Dictionary:
 	return {"ok": bool(reply.get("ok", false)), "incident_id": "", "fallback": true, "reason": "", "duplicate": false,
 		"message": str(reply.get("message", "")), "status": "report_received" if bool(reply.get("ok", false)) else "rejected",
 		"police_incident_id": str(reply.get("incident_id", ""))}
+
+## The freshest incident the player witnessed near `at` that may still be
+## reported (or corroborated); {} when the phone would make an area call.
+func _phone_choice(at: Vector3) -> Dictionary:
+	var best: Dictionary = {}
+	var newest := -INF
+	for rec in records:
+		if not str(rec.state) in ["active", "ended", "reported", "responding"] or not _may_report(rec, "player") or not _in_window(rec):
+			continue
+		if at.is_finite() and Tactics.flat(_vec(rec.at), at) > PHONE_REPORT_RADIUS:
+			continue
+		var seen := _witness_minutes(rec, "player")
+		if seen > newest:
+			newest = seen
+			best = rec
+	return best
+
+## Read-only: exactly what report_from_phone(at) would do now, so the phone can
+## name it before the player presses anything. {kind: "incident" | "area_check",
+## incident_id, title, street, state, already_reported, yours}.
+func phone_report_preview(at: Vector3) -> Dictionary:
+	var rec := _phone_choice(at)
+	if rec.is_empty():
+		return {"kind": "area_check", "incident_id": "", "title": "", "street": "", "state": "", "already_reported": false, "yours": false}
+	var report: Dictionary = rec.report
+	var yours := str(report.get("by", "")) == "player" or "player" in (report.get("corroborating", []) as Array)
+	return {"kind": "incident", "incident_id": str(rec.id), "title": str(rec.title), "street": str(rec.street), "state": str(rec.state),
+		"already_reported": not report.is_empty(), "yours": yours}
+
+## Bounded: deep copies of the records `person_id` reported or corroborated.
+## Reports police are still answering come first however old they are (at most
+## PoliceStatus.MAX_LIVE_CALLS), then the `limit` newest others, newest first.
+## Nobody else's reports are included. Durable (saved with the records), so the
+## phone rebuilds its report history from these after a reload.
+func reports_for(person_id := "player", limit := 4) -> Array:
+	var police = _police()
+	var answering: bool = police != null and police.has_method("has_open_ref")
+	var live: Array = []
+	var recent: Array = []
+	for i in range(records.size() - 1, -1, -1):
+		var report: Dictionary = records[i].report
+		if report.is_empty():
+			continue
+		if not (str(report.get("by", "")) == person_id or person_id in (report.get("corroborating", []) as Array)):
+			continue
+		if answering and live.size() < PoliceStatus.MAX_LIVE_CALLS and not str(records[i].state) in CLOSED_STATES \
+				and bool(police.has_open_ref(str(records[i].id))):
+			live.append(_serialize(records[i]))
+		elif recent.size() < limit:
+			recent.append(_serialize(records[i]))
+	return live + recent
 
 ## Case/traffic incidents without an ambient performance. spec: {template, at,
 ## offender_id, victim_id, source ("case:<id>" | "external:<tag>"), case_id,
@@ -493,6 +540,7 @@ func restore_state(value) -> Dictionary:
 		records.append(_deserialize(entry))
 	next_sequence = int(value.next_sequence)
 	_observe_left = 0.0
+	revision += 1
 	return {"ok": true, "restored": records.size(), "reason": ""}
 
 ## Stops every act now: performers go back to normal life where they stand.
@@ -541,15 +589,26 @@ func on_police_progress(ref: String, event: String, data: Dictionary) -> void:
 	var live: Dictionary = _live.get(ref, {})
 	match event:
 		"report_received", "responding", "on_scene":
+			if str(rec.state) in CLOSED_STATES:
+				return # A late step from a call this closed record no longer waits on.
+			# One relay per police transition. The record itself only changes
+			# (and is re-announced) when its coarse status, dispatch id or state
+			# does; a new handling step within "on_scene" is a status, not a change.
 			var report: Dictionary = rec.report
+			var changed := false
 			if not report.is_empty():
+				changed = str(report.get("status", "")) != event
 				report.status = event
-				if not str(data.get("police_incident_id", "")).is_empty():
-					report.police_incident_id = str(data.police_incident_id)
+				var police_id := str(data.get("police_incident_id", ""))
+				if not police_id.is_empty() and str(report.get("police_incident_id", "")) != police_id:
+					report.police_incident_id = police_id
+					changed = true
 			if event != "report_received" and str(rec.state) == "reported":
 				rec.state = "responding"
-			_emit_status(rec, event, str(data.get("text", "")))
-			_changed(rec)
+				changed = true
+			_emit_status(rec, event, str(data.get("text", "")), "", false, data)
+			if changed:
+				_changed(rec)
 		"contact":
 			if not live.is_empty() and str(data.get("suspect_id", "")) == str(live.offender) and actors.owns(str(live.offender)):
 				live.phase = "stopped"
@@ -1075,12 +1134,15 @@ func _refuse(result: Dictionary, reason: String, message: String) -> Dictionary:
 	result.message = message
 	return result
 
-func _emit_status(rec: Dictionary, status: String, text: String, by := "", phone := false) -> void:
+## `police` is the relayed police payload (or {"stage": ...}): its dispatch
+## stage/handling ride along so the phone can tell dispatch from incident state.
+func _emit_status(rec: Dictionary, status: String, text: String, by := "", phone := false, police := {}) -> void:
 	var report: Dictionary = rec.report
 	report_status_changed.emit({"incident_id": str(rec.id), "police_incident_id": str(report.get("police_incident_id", "")),
 		"status": status, "outcome": str((rec.resolution as Dictionary).get("outcome", "")),
 		"text": text if not text.is_empty() else _status_text(status), "by": str(report.get("by", by)),
-		"phone": bool(report.get("phone", phone)) or _phone_followups.has(str(rec.id)), "minutes": _minutes(), "title": str(rec.title)})
+		"phone": bool(report.get("phone", phone)) or _phone_followups.has(str(rec.id)), "minutes": _minutes(), "title": str(rec.title),
+		"stage": str(police.get("stage", "")), "handling": str(police.get("handling", "")), "street": str(rec.get("street", ""))})
 
 static func _status_text(status: String) -> String:
 	match status:
@@ -1121,7 +1183,7 @@ func _resolve(rec: Dictionary, outcome: String, text: String, by: String) -> voi
 			counters.resolved = int(counters.resolved) + 1
 	if reported:
 		rec.report.status = "unavailable" if outcome == "unanswered" else "resolved"
-		_emit_status(rec, str(rec.report.status), text)
+		_emit_status(rec, str(rec.report.status), text, "", false, {"stage": PoliceStatus.record_stage(outcome)})
 	_phone_followups.erase(str(rec.id))
 	var live: Dictionary = _live.get(str(rec.id), {})
 	if not live.is_empty():
@@ -1131,6 +1193,13 @@ func _resolve(rec: Dictionary, outcome: String, text: String, by: String) -> voi
 	_clear_props(str(rec.id))
 	_changed(rec)
 	incident_closed.emit(_serialize(rec))
+	if by != "police":
+		# Closed here (a case settled it) while officers may still be on the way:
+		# the call stands down instead of answering an incident that is over.
+		# The record is already closed, so the police closure relay is a no-op.
+		var police = _police()
+		if police != null and police.has_method("cancel_ref") and police.has_method("has_open_ref") and bool(police.has_open_ref(str(rec.id))):
+			police.cancel_ref(str(rec.id), "This was settled, so officers are standing down.")
 
 func _housekeeping() -> void:
 	_connect_services()
@@ -1149,6 +1218,7 @@ func _housekeeping() -> void:
 			if str(records[i].state) in CLOSED_STATES:
 				_phone_followups.erase(str(records[i].id))
 				records.remove_at(i)
+				revision += 1
 				dropped = true
 				break
 		if not dropped:
@@ -1179,7 +1249,8 @@ func _settle() -> void:
 				_phone_followups.erase(str(rec.id))
 				_changed(rec)
 			else:
-				_resolve(rec, "interrupted", "The response ended before officers finished.", "system")
+				# Officer responses are never saved: say what is known, not how it went.
+				_resolve(rec, "interrupted", "The response stopped before officers finished, so its result is unknown.", "system")
 
 func _new_record(template: String, at: Vector3, source: String, case_id: String, offender: String, victim: String) -> Dictionary:
 	var t := Templates.template(template)
@@ -1197,6 +1268,7 @@ func _new_record(template: String, at: Vector3, source: String, case_id: String,
 func _commit(rec: Dictionary) -> void:
 	next_sequence += 1
 	records.append(rec)
+	revision += 1
 	var summary := _serialize(rec)
 	incident_opened.emit(summary)
 	# Listeners of incident_changed alone (the case engine) see new incidents too.
@@ -1204,6 +1276,7 @@ func _commit(rec: Dictionary) -> void:
 
 func _changed(rec: Dictionary) -> void:
 	rec.updated_minutes = _minutes()
+	revision += 1
 	incident_changed.emit(_serialize(rec))
 
 func _add_participant(rec: Dictionary, id: String, role: String) -> void:

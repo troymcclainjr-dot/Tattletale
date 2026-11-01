@@ -68,7 +68,7 @@ func setup(owner_level: Node3D) -> void:
 	_button(row, "Cases", _show_cases)
 	_button(row, "Credits", _show_credits)
 	_save_feedback = Label.new()
-	_save_feedback.text = "Settings save immediately. Progress autosaves on solid ground every 30 seconds."
+	_save_feedback.text = "Settings save immediately. Progress autosaves every 30 seconds when safe, including on a stopped bicycle. Pending saves wait until it is safe."
 	_save_feedback.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	C.text(_save_feedback, "body600", 14, T.PAPER)
 	column.add_child(_save_feedback)

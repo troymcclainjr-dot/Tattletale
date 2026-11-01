@@ -100,6 +100,11 @@ func tick(delta: float) -> void:
 		var collision := body.move_and_collide(body.velocity * delta)
 		if collision != null:
 			var normal := collision.get_normal()
+			# Only real, energetic contacts sound; resting/rolling balls stay quiet.
+			if absf(body.velocity.dot(normal)) >= 1.0:
+				var ambience := _level.get_node_or_null("NeighborhoodAudio")
+				if ambience != null:
+					ambience.play_activity("court_bounce", collision.get_position())
 			body.velocity = body.velocity.bounce(normal) * 0.68
 			if normal.y > 0.65 and absf(body.velocity.y) < 0.75:
 				body.velocity.y = 0.0

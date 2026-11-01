@@ -111,9 +111,19 @@ func _set_far(value: bool) -> void:
 		return
 	far = value
 	for index in originals.size():
-		originals[index].layers = 0 if far else original_layers[index]
+		_set_render_layers(originals[index], 0 if far else original_layers[index])
 	for proxy in proxies:
-		proxy.layers = original_layers[0] if far and not original_layers.is_empty() else 0
+		_set_render_layers(proxy, original_layers[0] if far and not original_layers.is_empty() else 0)
+
+func _set_render_layers(mesh: MeshInstance3D, mask: int) -> void:
+	if mesh.layers == mask:
+		return
+	# Forward+ must unpair local lights using the old layer mask. Preserve local
+	# visibility so distance-faded meshes and hidden props remain hidden.
+	var was_visible := mesh.visible
+	mesh.hide()
+	mesh.layers = mask
+	mesh.visible = was_visible
 
 func set_fade(value: float) -> void:
 	for proxy in proxies:

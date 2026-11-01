@@ -17,12 +17,14 @@ class ClockFixture extends Node:
 
 class ResidentsFixture extends Node:
 	var actors: Dictionary = {}
+	var definitions: Array = []
 	var state: Dictionary = {"version": 1, "residents": {}}
 	var events: Array = []
 	func initialize() -> void:
 		for i in 20:
 			var id := "resident_%d" % i
 			actors[id] = true
+			definitions.append({"id": id})
 			state.residents[id] = {"position": [i + 1., 0., 1.], "yaw": 0., "activity": "home", "route_cursor": 0, "slot": 0}
 	func get_status() -> Dictionary: return {"pending_routes": 0}
 	func snapshot_state() -> Dictionary: return state.duplicate(true)
@@ -193,6 +195,12 @@ func _run() -> void:
 	provider.enabled = true
 	var state := _state(level)
 	check(provider.validate_snapshot(state).is_empty(), "optional incident section validates through its owner")
+	# Exercise the real roster gate: a missing fixture property must never make
+	# later empty-error assertions pass through a script-error fallback.
+	var last_definition: Dictionary = level.residents.definitions.pop_back()
+	check(provider.validate_snapshot(state) == "resident roster mismatch", "incomplete live resident roster is rejected explicitly")
+	level.residents.definitions.append(last_definition)
+	check(provider.validate_snapshot(state).is_empty(), "restored fixture roster passes full snapshot validation")
 	var legacy := state.duplicate(true)
 	legacy.erase("incidents")
 	check(provider.validate_snapshot(legacy).is_empty(), "old checkpoints without incidents remain valid")

@@ -1,6 +1,7 @@
 extends Node3D
 const CivicClearance := preload("res://scripts/city/city_civic_clearance.gd")
 const Appearance := preload("res://scripts/city/city_population_appearance.gd")
+const LocalActivity := preload("res://scripts/city/city_resident_activity.gd")
 ## Forty authored adults, separate from mission contacts and the primitive crowd.
 ## Real street polylines provide a small local sidewalk network for each resident.
 ## Each edge is grounded and swept once; moving actors still collide every step.
@@ -55,6 +56,7 @@ var _max_tick_usec := 0
 var _route_exclude: Array[RID] = []
 var _activation_waits := 0
 var _logical_waits := 0
+var _local_activity := LocalActivity.new()
 
 func setup(owner_level: Node3D) -> void:
 	if not actors.is_empty():
@@ -272,7 +274,7 @@ static func schedule_slot(schedule: Array, minute: float) -> int:
 	return result
 
 func _update_schedule(actor, force := false) -> void:
-	if not routines_enabled or actor.dead or actor.has_meta("combat_controlled") or not routes.has(actor.actor_id):
+	if not routines_enabled or actor.dead or actor.bicycle_override or actor.has_meta("combat_controlled") or actor.has_meta("police_custody_completed") or actor.has_meta("police_custody") or not routes.has(actor.actor_id):
 		return
 	if actor.needs_replan and not force:
 		return
@@ -301,6 +303,7 @@ func _update_schedule(actor, force := false) -> void:
 
 func tick(delta: float) -> void:
 	var started := Time.get_ticks_usec()
+	_local_activity.begin_tick()
 	# One bounded local corridor per physics frame; no all-city navigation bake.
 	if not _build_queue.is_empty():
 		_build_route(_build_queue.pop_front())
@@ -314,7 +317,7 @@ func tick(delta: float) -> void:
 		_far_accumulator = 0.0
 	for actor in actors.values():
 		# The timetable never revives, relocates or re-enables a dead identity.
-		if actor.dead or actor.has_meta("combat_controlled"):
+		if actor.dead or actor.bicycle_override or actor.has_meta("combat_controlled") or actor.has_meta("police_custody_completed") or actor.has_meta("police_custody"):
 			continue
 		if update_schedule:
 			_update_schedule(actor)
@@ -335,6 +338,7 @@ func tick(delta: float) -> void:
 			actor.set_distance_fade(distance)
 			_near_updates += 1
 			actor.tick(delta)
+			_local_activity.tick(actor, routes.get(actor.actor_id, {}), delta)
 			if routines_enabled and actor.recovery_retry <= 0.0:
 				if actor.needs_replan:
 					resume_after_combat(actor)
@@ -501,7 +505,7 @@ func try_recovery(actor) -> bool:
 	return false
 
 func resume_after_combat(actor) -> bool:
-	if actor.dead:
+	if actor.dead or actor.bicycle_override or actor.has_meta("police_custody_completed") or actor.has_meta("police_custody"):
 		return false
 	actor.has_target = false
 	actor.recovery_retry = 2.0
@@ -624,4 +628,4 @@ func get_status() -> Dictionary:
 		"near_updates": _near_updates, "far_updates": _far_updates, "last_tick_usec": _last_tick_usec,
 		"max_tick_usec": _max_tick_usec, "placement_failures": placement_failures.duplicate(),
 		"activation_waits": _activation_waits, "logical_waits": _logical_waits,
-		"route_failures": route_failures.duplicate(), "actors": detail}
+		"route_failures": route_failures.duplicate(), "actors": detail, "local_activity": _local_activity.status()}

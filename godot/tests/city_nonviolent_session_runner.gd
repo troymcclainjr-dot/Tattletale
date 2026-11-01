@@ -128,11 +128,11 @@ func _bicycle_input() -> void:
 		return
 	await key(KEY_P)
 	check(not player.phone.active and not player.phone.open(), "ordinary P and direct phone open both reject seated rider")
-	check(not provider.can_checkpoint() and str(provider.checkpoint_blocker()).contains("bicycle"), "checkpoint refuses rider instead of saving a seated pose")
 	var before := bike.global_position
 	player.camera_yaw = bike.yaw
 	await held_key(KEY_W, true)
 	await frames(40)
+	check(not provider.can_checkpoint() and str(provider.checkpoint_blocker()).contains("bicycle"), "checkpoint refuses a moving bicycle rider")
 	await held_key(KEY_W, false)
 	var moved := flat_distance(before, bike.global_position)
 	check(moved > .05 and bike.input_override.is_empty(), "ordinary W pedals bicycle through normal physics without control override")

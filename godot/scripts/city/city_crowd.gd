@@ -3,6 +3,7 @@ const CivicClearance := preload("res://scripts/city/city_civic_clearance.gd")
 const Appearance := preload("res://scripts/city/city_population_appearance.gd")
 const ModularPeople := preload("res://scripts/city/city_modular_people.gd")
 const IdleLife := preload("res://scripts/city/city_crowd_idle_life.gd")
+const Attention := preload("res://scripts/city/city_crowd_attention.gd")
 ## Modular residents share one detailed mesh per pose and a draw batch per block.
 ## Deck footing is measured on imported building collision, never guessed from terrain.
 
@@ -101,6 +102,7 @@ var _planned_park_counts: Dictionary = {}
 var _physical_park_population: Dictionary = {}
 var _destination_population: Dictionary = {}
 var _idle_life := IdleLife.new()
+var _attention := Attention.new()
 
 func setup(owner_level: Node3D, owner_npcs: Node3D) -> void:
 	level = owner_level
@@ -193,6 +195,12 @@ func _index_social_groups() -> void:
 		for index in indices:
 			_social_membership[index] = identity
 			residents[index].social_group_id = identity
+			residents[index].erase("attention_court")
+			if str(group.get("destination", "")) == "court_edge" and level.get("park_courts") != null:
+				for court in level.park_courts.records:
+					if str(court.id) == str(group.street):
+						residents[index].attention_court = court.position
+						break
 
 func social_group_id(index: int) -> String:
 	return str(_social_membership.get(index, ""))
@@ -408,6 +416,7 @@ func tick(delta: float) -> void:
 	# One shared shader clock pauses with simulation; no per-person material work.
 	ModularPeople.material().set_shader_parameter("crowd_clock", _clock)
 	_idle_life.tick(self)
+	_attention.begin_tick(self)
 	_walk_updates = 0
 	# At 60 physics Hz the three phases land on successive frames. Each
 	# resident still receives a 0.05 s step, including after a long frame.
@@ -468,14 +477,16 @@ func _idle_pass(first: int, stride: int) -> void:
 			continue
 		var at: Vector3 = resident.position
 		if at.distance_squared_to(player_position) > radius_squared:
+			_set_idle_visual(index - stride, 0)
 			continue
 		var batch: Dictionary = _batches[resident.batch]
 		if not is_instance_valid(batch.node):
 			continue
+		_attention.present(self, index - stride)
 		var yaw: float = resident.yaw + sin(_clock * 0.65 + float(resident.slot)) * 0.045
 		batch.node.multimesh.set_instance_transform(resident.slot, Transform3D(Basis(Vector3.UP, yaw), at - batch.origin))
 		if IdleLife.owns_idle(resident):
-			_set_idle_visual(index - stride, IdleLife.activity_for(index - stride))
+			_set_idle_visual(index - stride, IdleLife.activity_for(index - stride) if at.distance_squared_to(player_position) <= Attention.RADIUS * Attention.RADIUS else 0)
 			_idle_life.consider(self, index - stride)
 		updated += 1
 	_near_updates += updated
@@ -1178,6 +1189,7 @@ func get_status() -> Dictionary:
 	result.staggered_idle = use_staggered_idle
 	result.idle_skipped_steps = _idle_skipped_steps
 	result.idle_life = _idle_life.status()
+	result.attention = _attention.status()
 	result.identity_source = _identity_source
 	result.identity_relocated = _identity_relocated
 	result.identity_failures = _identity_failures.duplicate()
