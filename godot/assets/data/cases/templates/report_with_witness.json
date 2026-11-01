@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "template": "report_with_witness",
+  "about": "Shape of the original parcel_report, porch_light and torn_notice cases, and of the three.js 'call it in' step (crimes-core.js): a neighbor's brief, evidence recorded at the scene (inspect it with E, or photograph it with the phone), one witness account, then a report the officer accepts only with that evidence. Fill the params; override every [draft] text by objective/topic id.",
+  "params": {
+    "owner": "actor id of the neighbor who asks for help",
+    "owner_label": "ledger name, e.g. Resident",
+    "witness": "actor id of the witness",
+    "witness_label": "ledger name of the witness",
+    "prop_builder": "satchel|parcel|dumped_bags|tool_caddy|torn_notice|lantern|checkpoint|crate|marker",
+    "prop_title": "tag above the clue, upper case",
+    "route_metres": "number: metres along the neighborhood walk",
+    "prop_radius": "number 0.2..1.0: clear radius for the clue"
+  },
+  "case": {
+    "schema": 1,
+    "kind": "case",
+    "participants": {
+      "owner": {"actors": ["{owner}"], "label": "{owner_label}"},
+      "witness": {"actors": ["{witness}"], "label": "{witness_label}"},
+      "officer": {"actors": ["@police"], "label": "Officer", "bind": "step", "stand_in_line": "Officer Dan's not on this beat anymore. I'll take it from here."}
+    },
+    "props": {
+      "scene": {"builder": "{prop_builder}", "title": "{prop_title}", "placement": {"route_metres": "{route_metres}", "radius": "{prop_radius}"}, "photo_height": 0.2, "photo_radius": 0.3}
+    },
+    "evidence": {
+      "scene_record": {"kind": "observation", "label": "[draft] What the scene shows"},
+      "scene_photo": {"kind": "photo", "label": "[draft] Photo of the scene"},
+      "witness_account": {"kind": "testimony", "label": "[draft] Witness account"}
+    },
+    "discovery": {"givers": ["owner"]},
+    "stages": [
+      {"id": "brief", "objectives": [
+        {"id": "brief_owner", "verb": "talk", "target": "owner", "objective": "[draft] Hear what happened", "dialogue": "[draft] What the neighbor asks."}
+      ]},
+      {"id": "scene", "complete": "any", "objectives": [
+        {"id": "record_scene", "verb": "examine", "target": "prop:scene", "objective": "[draft] Inspect the scene", "dialogue": "[draft] What 2-Pack notices.", "grants": ["scene_record"]},
+        {"id": "photograph_scene", "verb": "photo", "subject": "prop:scene", "optional": true, "max_distance": 15.0, "min_centrality": 0.2,
+          "objective": "[draft] Or photograph the scene", "grants": ["scene_photo"], "notice": "Photo evidence recorded."}
+      ]},
+      {"id": "witness", "objectives": [
+        {"id": "interview_witness", "verb": "interview", "target": "witness", "objective": "[draft] Ask the witness what they saw",
+          "greeting": "[draft] The witness's first line.",
+          "topics": [{"id": "account", "ask": "[draft] The question.", "answer": "[draft] The witness account."}], "grants": ["witness_account"]}
+      ]},
+      {"id": "report", "objectives": [
+        {"id": "file_report", "verb": "report", "target": "officer", "objective": "[draft] Report the evidence to an officer",
+          "greeting": "[draft] The officer asks what you found.", "dialogue": "[draft] The officer takes the report.",
+          "requires_evidence": ["scene_record|scene_photo", "witness_account"]}
+      ]}
+    ],
+    "outcomes": {"resolved": {"rewarded": true, "banner": "REPORT FILED"}}
+  }
+}

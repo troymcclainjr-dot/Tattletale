@@ -1,0 +1,35 @@
+{
+  "_read_me": "Compact authoring example. NOT listed in index.json, so it never loads in play; tests/city_case_engine_smoke_runner.gd validates it so it stays correct. Copy it to cases/<id>.json, list it in index.json, replace every value, and drop status draft when the text is final.",
+  "schema": 1,
+  "id": "example_lost_tools",
+  "version": 1,
+  "status": "draft",
+  "_status": "draft = loads and validates, never offered to players; ready = playable content",
+  "template": "return_property_with_pointer",
+  "_template": "a shape from templates/; the fields below override it by key, and by \"id\" inside stage/objective/topic lists",
+  "title": "Example: the borrowed tools",
+  "reward": {"points": 120, "_points": "community points, paid once as money through progression.reward_case at the configured rate"},
+  "params": {
+    "owner": "gardener", "owner_label": "Gardener",
+    "pointer": "ambient_mailman", "pointer_label": "Mail carrier",
+    "item_builder": "tool_caddy", "item_title": "GARDEN TOOL CADDY",
+    "route_metres": 88.0, "item_radius": 0.32
+  },
+  "discovery": {"requires_completed": ["lost_satchel"], "_givers": "the template already names the owner as the giver"},
+  "evidence": {
+    "pointer_account": {"label": "Where the mail carrier saw the caddy"},
+    "item_found": {"label": "The green tool caddy"}
+  },
+  "stages": [
+    {"id": "brief", "objectives": [{"id": "brief_owner", "objective": "Ask the gardener what is missing", "prompt": "E  Ask about the tools",
+      "dialogue": "Our tool caddy is gone. Could you ask around before anyone gets blamed?"}]},
+    {"id": "ask", "objectives": [{"id": "ask_pointer", "objective": "Ask the mail carrier where it went", "prompt": "E  Ask the mail carrier",
+      "greeting": "Morning. Something on your mind?",
+      "topics": [{"id": "where", "ask": "Did you see a green tool caddy?", "answer": "A volunteer set one down farther along Old York."}]}]},
+    {"id": "recover", "objectives": [{"id": "pick_up", "objective": "Recover the caddy along Old York", "prompt": "E  Pick up the caddy",
+      "dialogue": "The caddy still holds the hand tools."}]},
+    {"id": "return", "objectives": [{"id": "hand_back", "objective": "Return the caddy", "prompt": "E  Return the tools",
+      "dialogue": "Everything's here. Glad we asked first."}]}
+  ],
+  "outcomes": {"resolved": {"rewarded": true, "banner": "TOOLS RETURNED"}}
+}

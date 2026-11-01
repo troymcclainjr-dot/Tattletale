@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "template": "return_property_with_pointer",
+  "about": "Shape of the original missing_tools case: the owner suspects theft, a witness explains where the item really went (a recorded interview, not a click), 2-Pack recovers it and clears up the misunderstanding.",
+  "params": {
+    "owner": "actor id of the owner",
+    "owner_label": "ledger name of the owner",
+    "pointer": "actor id of the person who saw where it went",
+    "pointer_label": "ledger name of that person",
+    "item_builder": "satchel|parcel|dumped_bags|tool_caddy|torn_notice|lantern|checkpoint|crate|marker",
+    "item_title": "tag above the item, upper case",
+    "route_metres": "number: metres along the neighborhood walk",
+    "item_radius": "number 0.2..1.0"
+  },
+  "case": {
+    "schema": 1,
+    "kind": "case",
+    "participants": {
+      "owner": {"actors": ["{owner}"], "label": "{owner_label}"},
+      "pointer": {"actors": ["{pointer}"], "label": "{pointer_label}"}
+    },
+    "props": {
+      "item": {"builder": "{item_builder}", "title": "{item_title}", "solid": true, "placement": {"route_metres": "{route_metres}", "radius": "{item_radius}"},
+        "photo_height": 0.2, "photo_radius": 0.3}
+    },
+    "evidence": {
+      "pointer_account": {"kind": "testimony", "label": "[draft] Where the witness saw it go"},
+      "item_found": {"kind": "item", "label": "[draft] The recovered item"}
+    },
+    "discovery": {"givers": ["owner"]},
+    "stages": [
+      {"id": "brief", "objectives": [
+        {"id": "brief_owner", "verb": "talk", "target": "owner", "objective": "[draft] Ask about what went missing", "dialogue": "[draft] The owner describes it."}
+      ]},
+      {"id": "ask", "objectives": [
+        {"id": "ask_pointer", "verb": "interview", "target": "pointer", "objective": "[draft] Ask who saw where it went", "greeting": "[draft] The witness's first line.",
+          "topics": [{"id": "where", "ask": "[draft] Where did it go?", "answer": "[draft] What the witness saw."}], "grants": ["pointer_account"]}
+      ]},
+      {"id": "recover", "objectives": [
+        {"id": "pick_up", "verb": "collect", "target": "prop:item", "objective": "[draft] Recover it where the witness said", "dialogue": "[draft] 2-Pack finds it.",
+          "grants": ["item_found"]}
+      ]},
+      {"id": "return", "objectives": [
+        {"id": "hand_back", "verb": "deliver", "target": "owner", "item": "prop:item", "objective": "[draft] Return it and clear up the misunderstanding",
+          "dialogue": "[draft] The owner is relieved nobody was accused."}
+      ]}
+    ],
+    "outcomes": {"resolved": {"rewarded": true, "banner": "PROPERTY RETURNED"}}
+  }
+}

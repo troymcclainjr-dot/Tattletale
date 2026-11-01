@@ -1,0 +1,601 @@
+{
+  "version": 1,
+  "coordinate_system": "Godot x east,y up,z south",
+  "generator": "blender/city/backlots.py",
+  "source_geometry_sha256": "f9a7e4bc5b53f1404a04067ee4f0f8a7f45645e557884a4576e1fdf084d18e0f",
+  "source_files_sha256": {
+    ".work/city/build/pen_lucy_geom.json": "f9a7e4bc5b53f1404a04067ee4f0f8a7f45645e557884a4576e1fdf084d18e0f",
+    "godot/assets/data/pen_lucy_street_surfaces.json": "87674a46e243dfab10b77b01c7322d248666974e4ff234969782f0359f3fa8db",
+    "godot/assets/data/pen_lucy_level.json": "23f0262c398251e93deb2940242828160f0e99f70a3bab8f87d1af6b66684981",
+    "godot/assets/data/pen_lucy_civic_build.json": "2218e96e9790f4e9d9dff5db00c4a4d5b74901f9ade7a8ffc614958d14a046e5",
+    "godot/assets/data/pen_lucy_new_businesses.json": "186220341a8dab826ea461c5810178a7bec0eb8701a60553aadf9482d0e61939",
+    "artifacts/civic-plan/map-source.json": "6aa7959829959c4e71d62bfbc010ae8261813f744a069fc913e59e5f7ec7d359",
+    "godot/assets/data/pen_lucy_yards.json": "f17fa3a6f1fda09851a5f1b47a0d0354b46cbd249825799a42245060b325cffd",
+    "godot/assets/data/pen_lucy_vegetation.json": "59c447bdc8a1a25a2b1d95d01c6946d65955b95f6f03081f08724e0b35329817"
+  },
+  "records": [
+    {
+      "id": "WyanokeBldg219Dumpster",
+      "kind": "dumpster",
+      "position": [
+        215.05,
+        -2.4041,
+        -49.2
+      ],
+      "yaw": -1.5707963,
+      "building_id": "w336336837",
+      "mandatory": true,
+      "paved_area_m2": 2.266,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.0441,
+      "source_surface": "alley"
+    },
+    {
+      "id": "CatorMarketDumpster",
+      "kind": "dumpster",
+      "position": [
+        181.2,
+        -2.3553,
+        -211.0
+      ],
+      "yaw": -1.5707963,
+      "building_id": "w336338569",
+      "mandatory": true,
+      "paved_area_m2": 2.266,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.0545,
+      "source_surface": "alley"
+    },
+    {
+      "id": "CatorAcrossGapCar",
+      "kind": "compact",
+      "position": [
+        188.3,
+        -2.6782,
+        -216.5
+      ],
+      "yaw": 0,
+      "building_id": "w336337537",
+      "mandatory": true,
+      "paved_area_m2": 8.17,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.0863,
+      "source_surface": "alley",
+      "site": "backlot",
+      "paint": 2
+    },
+    {
+      "id": "BacklotCompact_03",
+      "kind": "compact",
+      "position": [
+        -135.8013,
+        1.0606,
+        -76.2093
+      ],
+      "yaw": 1.5574308,
+      "building_id": "w336349370",
+      "mandatory": false,
+      "paved_area_m2": 8.17,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.045,
+      "source_surface": "alley",
+      "site": "backlot",
+      "paint": 3
+    },
+    {
+      "id": "BacklotCompact_04",
+      "kind": "compact",
+      "position": [
+        534.7853,
+        -13.3483,
+        -180.8305
+      ],
+      "yaw": 1.0969888,
+      "building_id": "w336325234",
+      "mandatory": false,
+      "paved_area_m2": 8.17,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.1293,
+      "source_surface": "alley",
+      "site": "backlot",
+      "paint": 4
+    },
+    {
+      "id": "BacklotCompact_05",
+      "kind": "compact",
+      "position": [
+        26.4649,
+        -1.2645,
+        56.0798
+      ],
+      "yaw": -0.0047884,
+      "building_id": "w336344206",
+      "mandatory": false,
+      "paved_area_m2": 8.17,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.129,
+      "source_surface": "alley",
+      "site": "backlot",
+      "paint": 5
+    },
+    {
+      "id": "BacklotCompact_06",
+      "kind": "compact",
+      "position": [
+        146.6839,
+        -0.8186,
+        -208.2702
+      ],
+      "yaw": 0.0211288,
+      "building_id": "w336339759",
+      "mandatory": false,
+      "paved_area_m2": 8.17,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.0865,
+      "source_surface": "alley",
+      "site": "backlot",
+      "paint": 0
+    },
+    {
+      "id": "BacklotCompact_07",
+      "kind": "compact",
+      "position": [
+        -82.9381,
+        2.5012,
+        -138.2903
+      ],
+      "yaw": 0.0119026,
+      "building_id": "w336348806",
+      "mandatory": false,
+      "paved_area_m2": 8.17,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.1101,
+      "source_surface": "alley",
+      "site": "backlot",
+      "paint": 1
+    },
+    {
+      "id": "BacklotCompact_08",
+      "kind": "compact",
+      "position": [
+        -207.1157,
+        1.5791,
+        -104.3073
+      ],
+      "yaw": 1.5405626,
+      "building_id": "w336351606",
+      "mandatory": false,
+      "paved_area_m2": 8.17,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.0353,
+      "source_surface": "alley",
+      "site": "backlot",
+      "paint": 2
+    },
+    {
+      "id": "BacklotCompact_09",
+      "kind": "compact",
+      "position": [
+        382.1432,
+        -7.3197,
+        -284.6429
+      ],
+      "yaw": -3.1186646,
+      "building_id": "w336329997",
+      "mandatory": false,
+      "paved_area_m2": 8.17,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.1472,
+      "source_surface": "alley",
+      "site": "backlot",
+      "paint": 3
+    },
+    {
+      "id": "BacklotCompact_10",
+      "kind": "compact",
+      "position": [
+        402.7963,
+        -8.7234,
+        -247.0701
+      ],
+      "yaw": -3.1203021,
+      "building_id": "w336329082",
+      "mandatory": false,
+      "paved_area_m2": 8.17,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.137,
+      "source_surface": "alley",
+      "site": "backlot",
+      "paint": 4
+    },
+    {
+      "id": "BacklotCompact_11",
+      "kind": "compact",
+      "position": [
+        98.484,
+        0.1985,
+        -30.2214
+      ],
+      "yaw": 0.0527023,
+      "building_id": "w336341256",
+      "mandatory": false,
+      "paved_area_m2": 8.17,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.0863,
+      "source_surface": "alley",
+      "site": "backlot",
+      "paint": 5
+    },
+    {
+      "id": "BacklotCompact_12",
+      "kind": "compact",
+      "position": [
+        87.4646,
+        -1.9632,
+        78.2777
+      ],
+      "yaw": 1.6387829,
+      "building_id": "w336341124",
+      "mandatory": false,
+      "paved_area_m2": 8.17,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.0848,
+      "source_surface": "alley",
+      "site": "backlot",
+      "paint": 0
+    },
+    {
+      "id": "BacklotCompact_13",
+      "kind": "compact",
+      "position": [
+        28.1851,
+        2.6031,
+        -232.871
+      ],
+      "yaw": 0.0218568,
+      "building_id": "w336344673",
+      "mandatory": false,
+      "paved_area_m2": 8.17,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.1414,
+      "source_surface": "alley",
+      "site": "backlot",
+      "paint": 1
+    },
+    {
+      "id": "BacklotCompact_14",
+      "kind": "compact",
+      "position": [
+        301.9695,
+        -4.9962,
+        -137.0846
+      ],
+      "yaw": -3.1193493,
+      "building_id": "w336333103",
+      "mandatory": false,
+      "paved_area_m2": 8.17,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.1273,
+      "source_surface": "alley",
+      "site": "backlot",
+      "paint": 2
+    },
+    {
+      "id": "BacklotDumpster_15",
+      "kind": "dumpster",
+      "position": [
+        -83.8649,
+        -2.728,
+        145.2412
+      ],
+      "yaw": -1.5836055,
+      "building_id": "w336347588",
+      "mandatory": false,
+      "paved_area_m2": 2.266,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.0353,
+      "source_surface": "alley"
+    },
+    {
+      "id": "BacklotDumpster_16",
+      "kind": "dumpster",
+      "position": [
+        -187.1483,
+        -4.16,
+        117.7887
+      ],
+      "yaw": 1.551573,
+      "building_id": "w336351254",
+      "mandatory": false,
+      "paved_area_m2": 2.266,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.0457,
+      "source_surface": "alley"
+    },
+    {
+      "id": "BacklotDumpster_17",
+      "kind": "dumpster",
+      "position": [
+        195.3454,
+        -2.5905,
+        -68.7696
+      ],
+      "yaw": 0.0313767,
+      "building_id": "w336339504",
+      "mandatory": false,
+      "paved_area_m2": 2.266,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.0292,
+      "source_surface": "alley"
+    },
+    {
+      "id": "BacklotDumpster_18",
+      "kind": "dumpster",
+      "position": [
+        100.5464,
+        0.1458,
+        -164.2542
+      ],
+      "yaw": -1.5457362,
+      "building_id": "w336341201",
+      "mandatory": false,
+      "paved_area_m2": 2.266,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.023,
+      "source_surface": "alley"
+    },
+    {
+      "id": "BacklotDumpster_19",
+      "kind": "dumpster",
+      "position": [
+        60.2292,
+        -1.0918,
+        66.1406
+      ],
+      "yaw": 1.5670554,
+      "building_id": "w336344206",
+      "mandatory": false,
+      "paved_area_m2": 2.266,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.0425,
+      "source_surface": "alley"
+    },
+    {
+      "id": "BacklotDumpster_20",
+      "kind": "dumpster",
+      "position": [
+        211.8534,
+        -3.2486,
+        -248.242
+      ],
+      "yaw": 1.5622312,
+      "building_id": "w336337434",
+      "mandatory": false,
+      "paved_area_m2": 2.266,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.0579,
+      "source_surface": "alley"
+    },
+    {
+      "id": "BacklotDumpster_21",
+      "kind": "dumpster",
+      "position": [
+        -21.5332,
+        -4.3653,
+        189.9027
+      ],
+      "yaw": 3.1403347,
+      "building_id": "w336345639",
+      "mandatory": false,
+      "paved_area_m2": 2.266,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.043,
+      "source_surface": "alley"
+    },
+    {
+      "id": "BacklotDumpster_22",
+      "kind": "dumpster",
+      "position": [
+        406.3245,
+        -8.3916,
+        -284.2178
+      ],
+      "yaw": 0.0215648,
+      "building_id": "w336329468",
+      "mandatory": false,
+      "paved_area_m2": 2.266,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.1022,
+      "source_surface": "alley"
+    },
+    {
+      "id": "BacklotDumpster_23",
+      "kind": "dumpster",
+      "position": [
+        59.5582,
+        1.2104,
+        -203.9444
+      ],
+      "yaw": -1.5470336,
+      "building_id": "w336342678",
+      "mandatory": false,
+      "paved_area_m2": 2.266,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.0535,
+      "source_surface": "alley"
+    },
+    {
+      "id": "BacklotDumpster_24",
+      "kind": "dumpster",
+      "position": [
+        99.0676,
+        0.1698,
+        -67.3829
+      ],
+      "yaw": -1.5503137,
+      "building_id": "w336341066",
+      "mandatory": false,
+      "paved_area_m2": 2.266,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.0541,
+      "source_surface": "alley"
+    },
+    {
+      "id": "BacklotDumpster_25",
+      "kind": "dumpster",
+      "position": [
+        -67.6582,
+        -2.3714,
+        118.2111
+      ],
+      "yaw": 1.5553323,
+      "building_id": "w336347387",
+      "mandatory": false,
+      "paved_area_m2": 2.266,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.0554,
+      "source_surface": "alley"
+    },
+    {
+      "id": "BacklotDumpster_26",
+      "kind": "dumpster",
+      "position": [
+        -150.7525,
+        -5.3738,
+        192.6864
+      ],
+      "yaw": -1.5804922,
+      "building_id": "w336348853",
+      "mandatory": false,
+      "paved_area_m2": 2.266,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.0861,
+      "source_surface": "alley"
+    },
+    {
+      "id": "BacklotDumpster_27",
+      "kind": "dumpster",
+      "position": [
+        127.6109,
+        -1.3274,
+        26.0992
+      ],
+      "yaw": 1.659262,
+      "building_id": "w336339877",
+      "mandatory": false,
+      "paved_area_m2": 2.266,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.0349,
+      "source_surface": "alley"
+    },
+    {
+      "id": "BacklotDumpster_28",
+      "kind": "dumpster",
+      "position": [
+        67.3375,
+        0.8739,
+        -58.2165
+      ],
+      "yaw": -1.5674281,
+      "building_id": "w336342158",
+      "mandatory": false,
+      "paved_area_m2": 2.266,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.0452,
+      "source_surface": "alley"
+    },
+    {
+      "id": "BacklotDumpster_29",
+      "kind": "dumpster",
+      "position": [
+        204.6075,
+        -3.0293,
+        -167.8019
+      ],
+      "yaw": -1.5637316,
+      "building_id": "w336337102",
+      "mandatory": false,
+      "paved_area_m2": 2.266,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.0842,
+      "source_surface": "alley"
+    },
+    {
+      "id": "BacklotDumpster_30",
+      "kind": "dumpster",
+      "position": [
+        -201.1007,
+        1.1618,
+        -81.8327
+      ],
+      "yaw": -0.0293289,
+      "building_id": "w336351607",
+      "mandatory": false,
+      "paved_area_m2": 2.266,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.0232,
+      "source_surface": "alley"
+    },
+    {
+      "id": "BacklotDumpster_31",
+      "kind": "dumpster",
+      "position": [
+        81.1961,
+        -4.4028,
+        216.0183
+      ],
+      "yaw": -1.4542118,
+      "building_id": "w336342346",
+      "mandatory": false,
+      "paved_area_m2": 2.266,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.0123,
+      "source_surface": "alley"
+    },
+    {
+      "id": "BacklotDumpster_32",
+      "kind": "dumpster",
+      "position": [
+        348.0882,
+        -7.0819,
+        -169.0938
+      ],
+      "yaw": -1.5507753,
+      "building_id": "w336331251",
+      "mandatory": false,
+      "paved_area_m2": 2.266,
+      "paved_coverage": 1.0,
+      "max_corner_grade_m": 0.0436,
+      "source_surface": "alley"
+    }
+  ],
+  "audit": {
+    "counts": {
+      "dumpster": 20,
+      "compact": 13
+    },
+    "rejections": {
+      "yard_or_tree": 55,
+      "service_lane": 102,
+      "building": 528,
+      "entrance": 156,
+      "unpaved": 8,
+      "new_prop": 29,
+      "spacing": 85
+    },
+    "runtime_repair": {
+      "building_id": "w336329468",
+      "reason": "Row_015 imported convex rear wall spans the source footprint notch",
+      "outward_offset_m": 1.65
+    },
+    "rules": [
+      "entire footprint on source alley/asphalt",
+      "no public road or sidewalk overlap",
+      "building clearance >=0.22m",
+      "rear door 2.5m approach and front stair corridor clear",
+      "existing bins hedges and tree trunks clear",
+      "cars retain adjacent 2.4m paved lane",
+      "sparse deterministic distribution"
+    ]
+  }
+}

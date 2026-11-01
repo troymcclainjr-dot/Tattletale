@@ -1,0 +1,94 @@
+{
+  "suites": {
+    "city_vegetation_batch_smoke": {
+      "pass_lines": 38,
+      "errors": false
+    },
+    "city_crowd_cadence_smoke": {
+      "pass_lines": 13,
+      "errors": false
+    },
+    "city_world_save_smoke": {
+      "pass_lines": 56,
+      "errors": false
+    },
+    "city_ui_smoke": {
+      "pass_lines": 84,
+      "errors": false
+    },
+    "city_resident_recovery_smoke": {
+      "pass_lines": 11,
+      "errors": false
+    },
+    "city_combat_smoke": {
+      "pass_lines": 40,
+      "errors": false
+    },
+    "city_residents_smoke": {
+      "pass_lines": 201,
+      "errors": false
+    },
+    "city_world_time_smoke": {
+      "pass_lines": 8,
+      "errors": false
+    },
+    "city_vehicle_impact_smoke": {
+      "pass_lines": 35,
+      "errors": false
+    },
+    "city_traffic_optimization_smoke": {
+      "pass_lines": 12,
+      "errors": false
+    },
+    "city_mission_navigation_smoke": {
+      "pass_lines": 9,
+      "errors": false
+    },
+    "city_movement_smoke": {
+      "pass_lines": 114,
+      "errors": false
+    },
+    "city_jump_smoke": {
+      "pass_lines": 15,
+      "errors": false
+    },
+    "city_day_night_smoke": {
+      "pass_lines": 19,
+      "errors": false
+    },
+    "city_material_palette_smoke": {
+      "pass_lines": 20,
+      "errors": false,
+      "backend": "Vulkan GPU; headless separately passed 19 with one default-query backend skip"
+    },
+    "city_material_fidelity_smoke": {
+      "pass_lines": 20,
+      "errors": false
+    },
+    "original_smoke": {
+      "pass_lines": 197,
+      "errors": false
+    },
+    "crowd_gpu": {
+      "pass_lines": 11,
+      "errors": false
+    },
+    "vegetation_standard_fallback": {
+      "pass_lines": 37,
+      "errors": false
+    },
+    "full_level_render": {
+      "pass_lines": 26,
+      "errors": false
+    }
+  },
+  "total_pass_checks": 966,
+  "notes": [
+    "Headless UI has one renderer-dependent skip; real-GPU scene captures passed.",
+    "Palette suite counted once using all 20 GPU checks; headless-only backend skip separately documented.",
+    "Original smoke audio teardown exits without prior leaked WAV warnings.",
+    "Seven full-level captures each passed in final, no-palette and legacy-finish profiles; duplicate checks not added to total.",
+    "Three final private-viewport runs passed at 1920x1080 with playable 4x MSAA; both final runs reused all 21 palette meshes.",
+    "Two intermediate Vulkan startup failures excluded from measurements; underlying cause remains unproven."
+  ]
+}

@@ -5,6 +5,7 @@ const GLASS := preload("res://assets/materials/city_glass.gdshader")
 const BARS := preload("res://assets/materials/city_window_bars.gdshader")
 const GLASS_NAME := "gloss_1a2230_r25"
 const CELL := 45.0
+const HOMES := "res://assets/data/pen_lucy_window_homes.json"
 
 static func glass_material() -> ShaderMaterial:
 	var material := ShaderMaterial.new()
@@ -15,6 +16,10 @@ static func glass_material() -> ShaderMaterial:
 func build(level: Node3D, city: Node3D) -> Dictionary:
 	var began := Time.get_ticks_msec()
 	var groups := {}
+	var homes_by_mesh := _load_homes()
+	var home_counts := {}
+	var first_floor := 0
+	var unowned := 0
 	var panes := 0
 	var eligible := 0
 	var barred := 0
@@ -26,6 +31,7 @@ func build(level: Node3D, city: Node3D) -> Dictionary:
 		var label := str(source.name)
 		if not (label.begins_with("Row_") or label.begins_with("Bldg_")) or source.mesh == null:
 			continue
+		var homes: Array = homes_by_mesh.get(label, [])
 		for surface in source.mesh.get_surface_count():
 			var material: Material = source.mesh.surface_get_material(surface)
 			if material == null or material.resource_name != GLASS_NAME:
@@ -36,17 +42,28 @@ func build(level: Node3D, city: Node3D) -> Dictionary:
 				if pane.is_empty():
 					continue
 				var center: Vector3 = pane.center
-				var ground: Dictionary = level.ground_at(center)
-				if ground.is_empty():
+				var home := _home_for_pane(center, homes)
+				if home.is_empty():
+					unowned += 1
 					continue
-				var bottom: float = center.y - float(pane.height) * 0.5 - float(ground.position.y)
-				if bottom < 0.35 or bottom > 2.60 or bottom + float(pane.height) > 4.35:
+				if not home.residential:
 					continue
+				var home_id: String = home.id
+				var seed_value := home_seed(home_id)
+				if not home_counts.has(home_id):
+					home_counts[home_id] = {"windows": 0, "barred": 0, "selected": seed_value % 10 < 8}
+				home_counts[home_id].windows += 1
 				eligible += 1
-				# Stable position hash: roughly four in five eligible first-floor panes.
-				var seed_value := posmod(roundi(center.x * 100.0) * 73856093 ^ roundi(center.z * 100.0) * 19349663 ^ roundi(center.y * 100.0) * 83492791, 10000)
-				if seed_value % 10 >= 8:
+				var ground: Dictionary = level.ground_at(center)
+				if not ground.is_empty():
+					var bottom: float = center.y - float(pane.height) * 0.5 - float(ground.position.y)
+					if bottom >= 0.35 and bottom <= 2.60 and bottom + float(pane.height) <= 4.35:
+						first_floor += 1
+				# One decision and finish for the entire home, including upper floors,
+				# side/rear windows and bays; joined row objects contain several homes.
+				if not home_counts[home_id].selected:
 					continue
+				home_counts[home_id].barred += 1
 				var normal: Vector3 = pane.normal
 				var probe := center + Vector3.UP * float(pane.height) * 0.18
 				var space := level.get_world_3d().direct_space_state
@@ -91,7 +108,45 @@ func build(level: Node3D, city: Node3D) -> Dictionary:
 		instance.visibility_range_end = 105.0
 		instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		root.add_child(instance)
-	return {"glass_panes": panes, "first_floor_windows": eligible, "barred_windows": barred, "window_bar_triangles": barred * 2, "window_bar_batches": groups.size(), "window_setup_ms": Time.get_ticks_msec() - began}
+	return {"glass_panes": panes, "first_floor_windows": first_floor, "eligible_house_windows": eligible, "window_homes": home_counts, "unowned_windows": unowned, "barred_windows": barred, "window_bar_triangles": barred * 2, "window_bar_batches": groups.size(), "window_setup_ms": Time.get_ticks_msec() - began}
+
+static func home_seed(home_id: String) -> int:
+	# Stable across meshes, window positions, load order and future city rebuilds.
+	return posmod(home_id.hash(), 10000)
+
+func _load_homes() -> Dictionary:
+	var grouped := {}
+	var data = JSON.parse_string(FileAccess.get_file_as_string(HOMES))
+	if not data is Dictionary:
+		return grouped
+	for entry in data.get("homes", []):
+		var home: Dictionary = entry.duplicate()
+		var polygon := PackedVector2Array()
+		for point in entry.polygon:
+			polygon.append(Vector2(float(point[0]), float(point[1])))
+		home.polygon = polygon
+		home.center = Vector2(float(entry.center[0]), float(entry.center[1]))
+		if not grouped.has(home.source_mesh):
+			grouped[home.source_mesh] = []
+		grouped[home.source_mesh].append(home)
+	return grouped
+
+func _home_for_pane(center: Vector3, homes: Array) -> Dictionary:
+	var point := Vector2(center.x, center.z)
+	var nearest := {}
+	var best_distance := INF
+	var best_center := INF
+	for home in homes:
+		var polygon: PackedVector2Array = home.polygon
+		var distance := 0.0 if Geometry2D.is_point_in_polygon(point, polygon) else INF
+		for index in polygon.size() - 1:
+			distance = minf(distance, point.distance_squared_to(Geometry2D.get_closest_point_to_segment(point, polygon[index], polygon[index + 1])))
+		var center_distance := point.distance_squared_to(home.center)
+		if distance < best_distance - 0.0001 or (absf(distance - best_distance) <= 0.0001 and center_distance < best_center):
+			nearest = home
+			best_distance = distance
+			best_center = center_distance
+	return nearest
 
 func _backing_hit(space: PhysicsDirectSpaceState3D, center: Vector3, direction: Vector3) -> bool:
 	var ray := PhysicsRayQueryParameters3D.create(center + direction * 0.035, center + direction * 0.30, 2)

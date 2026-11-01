@@ -6,8 +6,33 @@ var level: Node3D
 var lanes: Array[Dictionary] = []
 var nodes: Dictionary = {}
 var _road_cells: Dictionary = {}
+# on_road() is called for every corner/support sample of each near car, many
+# times per physics tick. Packed per-cell mirrors of _road_cells hold the same
+# segments in the same order (endpoints interleaved a0,b0,a1,b1…, half widths
+# as the same doubles), so results are identical without a default-Array
+# allocation per call or three Dictionary lookups per candidate segment.
+var _cell_slots: Dictionary = {}
+var _cell_points: Array[PackedVector2Array] = []
+var _cell_halves: Array[PackedFloat64Array] = []
+var _packed_dirty := false
 var _connector_cache: Dictionary = {}
 var rejected_lanes := 0
+
+## Reserve room for two moving lanes. Narrow streets retain both directions;
+## only their canonical right curb is parked. The same policy places parked cars.
+static func parking_mode(width: float, street: String) -> String:
+	if street == "Old York Road" or width < 8.0:
+		return "none"
+	return "single" if width < 11.0 else "both"
+
+static func lane_offset(width: float, street: String, reverse: bool) -> float:
+	if street == "Old York Road":
+		return 2.1
+	if parking_mode(width, street) == "single":
+		# 9.5m road: parked inner edge +2.41; moving centers +0.9/-2.3.
+		# A 2.12m moving envelope retains 0.45m to the parked envelope.
+		return 2.3 if reverse else 0.9
+	return clampf((width - 9.5) * 0.23 + 1.20, 1.20, 2.30)
 
 func _key(point: Vector3) -> String:
 	return "%d_%d" % [roundi(point.x * 10), roundi(point.z * 10)]
@@ -79,21 +104,34 @@ func setup(owner_level: Node3D) -> void:
 				source.reverse()
 			var from: String = str(edge.to if reverse else edge.from)
 			var to: String = str(edge.from if reverse else edge.to)
-			var offset := 2.1 if str(edge.street) == "Old York Road" else clampf((float(edge.width) - 9.5) * 0.23 + 1.20, 1.20, 2.30)
-			var needs_stop: bool = str(edge.street) in ["Cator Avenue", "Rose Hill Terrace"] and nodes[to].streets.has("Old York Road")
+			var offset := lane_offset(float(edge.width), str(edge.street), reverse)
+			var priority := "Old York Road" if nodes[to].streets.has("Old York Road") else ("Greenmount Avenue" if nodes[to].streets.has("Greenmount Avenue") else "")
+			var needs_stop: bool = not bool(nodes[to].signal) and nodes[to].streets.size() > 1 and (priority.is_empty() or str(edge.street) != priority)
 			var start_trim := 11.6 if bool(nodes[from].signal) else float(nodes[from].width) * 0.5 + 2.75
 			var end_trim := 11.6 if bool(nodes[to].signal) else float(nodes[to].width) * 0.5 + 2.75
+			var legacy_end_trim := end_trim
 			if needs_stop:
-				end_trim = maxf(end_trim, 13.0)
+				# The leading bumper waits behind a crossing band outside the
+				# junction. Major-road approaches retain priority at unlit junctions.
+				legacy_end_trim = maxf(end_trim, maxf(13.0, float(nodes[to].width) * 0.5 + 5.0))
+				# Waiting bumpers stay behind the existing crosswalk band. Only the
+				# sidewalk sign moves closer; its target is recorded for dressing.
+				end_trim = legacy_end_trim
 			start_trim = minf(start_trim, float(edge.length) * 0.36)
 			end_trim = minf(end_trim, float(edge.length) * 0.36)
+			legacy_end_trim = minf(legacy_end_trim, float(edge.length) * 0.36)
 			var path := lane_path(source, start_trim, float(edge.length) - end_trim, offset)
 			if not ground_path(path):
 				rejected_lanes += 1
 				continue
 			var id := lanes.size()
 			lanes.append({"id": id, "from": from, "to": to, "street": str(edge.street), "width": float(edge.width),
-				"points": path, "length": path_length(path), "enabled": true, "stop": needs_stop, "axis": "old_york" if str(edge.street) == "Old York Road" else "wyanoke"})
+				"points": path, "length": path_length(path), "enabled": true, "stop": needs_stop, "offset": offset,
+				"parking_mode": parking_mode(float(edge.width), str(edge.street)), "canonical_reverse": reverse,
+				"junction_point": source[-1], "legacy_stop_setback": legacy_end_trim - 2.35,
+				"stop_setback": maxf(float(nodes[to].width) * 0.5 + 0.4, (legacy_end_trim - 2.35) * (2.0 / 3.0)),
+				"stop_line_setback": end_trim - 2.35,
+				"axis": "old_york" if str(edge.street) == "Old York Road" else "wyanoke"})
 			nodes[from].out.append(id)
 	# Eliminate unsupported terminal chains before spawning. Every selected lane
 	# must have a grounded continuation, including a valid turn at a map boundary.
@@ -121,11 +159,35 @@ func _index_road(a: Vector3, b: Vector3, width: float) -> void:
 			if not _road_cells.has(cell):
 				_road_cells[cell] = []
 			_road_cells[cell].append({"a": Vector2(a.x, a.z), "b": Vector2(b.x, b.z), "half": width * 0.5})
+	_packed_dirty = true
+
+func _pack_road_cells() -> void:
+	_cell_slots.clear()
+	_cell_points.clear()
+	_cell_halves.clear()
+	for cell in _road_cells:
+		var points := PackedVector2Array()
+		var halves := PackedFloat64Array()
+		for road in _road_cells[cell]:
+			points.append(road.a)
+			points.append(road.b)
+			halves.append(float(road.half))
+		_cell_slots[cell] = _cell_points.size()
+		_cell_points.append(points)
+		_cell_halves.append(halves)
+	_packed_dirty = false
 
 func on_road(point: Vector3, margin := 0.12) -> bool:
+	if _packed_dirty:
+		_pack_road_cells()
+	var slot: int = _cell_slots.get(Vector2i(floori(point.x / 32), floori(point.z / 32)), -1)
+	if slot < 0:
+		return false
 	var flat := Vector2(point.x, point.z)
-	for road in _road_cells.get(Vector2i(floori(point.x / 32), floori(point.z / 32)), []):
-		if Geometry2D.get_closest_point_to_segment(flat, road.a, road.b).distance_to(flat) < float(road.half) - margin:
+	var points := _cell_points[slot]
+	var halves := _cell_halves[slot]
+	for i in halves.size():
+		if Geometry2D.get_closest_point_to_segment(flat, points[2 * i], points[2 * i + 1]).distance_to(flat) < halves[i] - margin:
 			return true
 	return false
 
@@ -153,7 +215,32 @@ func lane_path(source: Array[Vector3], start: float, finish: float, offset: floa
 		var tangent := point_at(source, along + 0.5) - point_at(source, along - 0.5)
 		tangent.y = 0
 		path.append(at + tangent.normalized().cross(Vector3.UP) * offset)
-	return path
+	return rounded_path(path)
+
+static func rounded_path(source: Array[Vector3]) -> Array[Vector3]:
+	# Round the exported polyline's corners, preserving tangent continuity with
+	# the straight pieces. Only bends gain samples, so long lanes stay compact.
+	if source.size() < 3:
+		return source.duplicate()
+	var result: Array[Vector3] = [source[0]]
+	for i in range(1, source.size() - 1):
+		var incoming := source[i] - source[i - 1]
+		var outgoing := source[i + 1] - source[i]
+		var before := Vector2(incoming.x, incoming.z).length()
+		var after := Vector2(outgoing.x, outgoing.z).length()
+		if minf(before, after) < 0.001 or incoming.normalized().dot(outgoing.normalized()) > 0.99999:
+			result.append(source[i])
+			continue
+		var trim := minf(2.5, minf(before, after) * 0.45)
+		var a := source[i] - incoming * (trim / before)
+		var b := source[i] + outgoing * (trim / after)
+		result.append(a)
+		var steps := maxi(4, ceili(trim * 2.0 / 0.20))
+		for sample in range(1, steps + 1):
+			var t := float(sample) / steps
+			result.append(a * (1 - t) * (1 - t) + source[i] * 2 * (1 - t) * t + b * t * t)
+	result.append(source[-1])
+	return result
 
 func ground_path(path: Array[Vector3]) -> bool:
 	if path.size() < 2:
@@ -195,7 +282,9 @@ func connector(from_id: int, to_id: int) -> Array[Vector3]:
 	var p1 := p0 + incoming * reach
 	var p2 := p3 - outgoing * reach
 	var path: Array[Vector3] = []
-	var steps := maxi(12, ceili(p0.distance_to(p3) / 1.3))
+	# Bound spacing by the control polygon, including tight terminal U-turns.
+	# Coarse ~1.3m samples produced visible heading snaps at each waypoint.
+	var steps := maxi(24, ceili((p0.distance_to(p1) + p1.distance_to(p2) + p2.distance_to(p3)) / 0.20))
 	for i in range(steps + 1):
 		var t := float(i) / steps
 		var q := 1.0 - t
@@ -229,9 +318,11 @@ func choices(lane_id: int, sequence: int) -> Array[int]:
 func get_status() -> Dictionary:
 	var streets: Dictionary = {}
 	var enabled := 0
+	var stop_approaches := 0
 	for lane in lanes:
 		if bool(lane.enabled):
 			streets[lane.street] = true
 			enabled += 1
+			stop_approaches += int(bool(lane.stop))
 	return {"lanes": lanes.size(), "junctions": nodes.size(), "streets": streets.size(), "rejected_lanes": rejected_lanes,
-		"enabled_lanes": enabled, "cached_connectors": _connector_cache.size()}
+		"enabled_lanes": enabled, "stop_approaches": stop_approaches, "cached_connectors": _connector_cache.size()}

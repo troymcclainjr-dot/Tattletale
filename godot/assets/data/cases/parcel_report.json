@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "id": "parcel_report",
+  "version": 1,
+  "_about": "The original 'The opened parcel' case (city_missions.gd legacy_steps) migrated to data: same id, title, reward, four stages, contacts, clue, placement, lines and offer. Added only what the engine verbs need: the parcel may be photographed instead of inspected, the witness is a recorded interview, and the officer files the report only with that evidence. Any officer may take a report.",
+  "template": "report_with_witness",
+  "legacy_slot": true,
+  "title": "The opened parcel",
+  "summary": "A resident's delivery is missing. Record the opened carton, hear the Dumbarton witness, and report only what is known.",
+  "reward": {"points": 150},
+  "params": {
+    "owner": "resident",
+    "owner_label": "Resident",
+    "witness": "lookout",
+    "witness_label": "Dumbarton witness",
+    "prop_builder": "parcel",
+    "prop_title": "OPENED PARCEL",
+    "route_metres": 55.0,
+    "prop_radius": 0.42
+  },
+  "discovery": {"requires_completed": ["lost_satchel"], "locked_reason": "Resolve Lost satchel first."},
+  "evidence": {
+    "scene_record": {"label": "Delivery label on the empty carton"},
+    "scene_photo": {"label": "Photo of the opened parcel"},
+    "witness_account": {"label": "Dumbarton witness account"}
+  },
+  "stages": [
+    {"id": "brief", "objectives": [
+      {"id": "brief_owner", "objective": "Ask the resident about an opened delivery", "prompt": "E  Ask about the delivery",
+        "dialogue": "My delivery is missing. There may be some packing material farther up Old York. Please check before reporting anything."}
+    ]},
+    {"id": "scene", "objective": "Inspect the opened parcel on Old York Road (a phone photo also counts)", "objectives": [
+      {"id": "record_scene", "objective": "Inspect the opened parcel on Old York Road", "prompt": "E  Inspect the packing label",
+        "dialogue": "The empty carton has the resident's delivery label. Record the location; leave the evidence here."},
+      {"id": "photograph_scene", "objective": "Or photograph the opened parcel from the sidewalk",
+        "notice": "Photo recorded: the opened carton and its delivery label are in frame. Leave the evidence where it is."}
+    ]},
+    {"id": "witness", "objectives": [
+      {"id": "interview_witness", "objective": "Ask the witness at Dumbarton what happened", "prompt": "E  Ask the witness",
+        "greeting": "You're asking about that doorstep on Old York?",
+        "topics": [{"id": "account", "ask": "What did you see at that doorstep?",
+          "answer": "I saw someone remove a parcel from that doorstep. I couldn't identify them. Tell the officer exactly that."}]}
+    ]},
+    {"id": "report", "objectives": [
+      {"id": "file_report", "objective": "Report the evidence to the officer near Wyanoke", "prompt": "E  File the parcel report",
+        "greeting": "What did you find about that delivery?",
+        "missing": "Bring me what you recorded at the doorstep and what the witness saw, then I can file it.",
+        "dialogue": "I'll record the missing delivery and the witness account. We will investigate; a report is not proof of who took it."}
+    ]}
+  ],
+  "outcomes": {"resolved": {"rewarded": true, "banner": "REPORT FILED"}}
+}

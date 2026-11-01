@@ -1,0 +1,10 @@
+{
+  "exit_code": 0,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "effort_requested": "high",
+  "is_error": false,
+  "session_persistence": false,
+  "role": "read-only cross-system correctness and Rust assessment"
+}

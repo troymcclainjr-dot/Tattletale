@@ -1,0 +1,495 @@
+{
+  "version": 3,
+  "scope": "Pen Lucy canonical birth population, including dead or temporarily unplaced identities; excludes player and separate original-block scene",
+  "authoring_note": "Forty modular daily adults and 1200 immutable ambient slots. New daily roster adds sixteen Black, two Hispanic and two White adults; original named cast and patrol profiles remain unchanged. No demographic metadata drives behavior.",
+  "population": 1255,
+  "black": 1004,
+  "crowd": {
+    "total": 1200,
+    "black": 964,
+    "permutation_multiplier": 719,
+    "permutation_offset": 137
+  },
+  "identities": [
+    {
+      "id": "daily_nadine_brooks",
+      "identity_group": "Black",
+      "skin": "#482b20",
+      "apply_skin": false,
+      "source": "modular_roster_v2",
+      "roster_index": 0,
+      "roster_id": "b01"
+    },
+    {
+      "id": "daily_calvin_reed",
+      "identity_group": "Black",
+      "skin": "#563626",
+      "apply_skin": false,
+      "source": "modular_roster_v2",
+      "roster_index": 1,
+      "roster_id": "b02"
+    },
+    {
+      "id": "daily_ines_morales",
+      "identity_group": "Black",
+      "skin": "#65412e",
+      "apply_skin": false,
+      "source": "modular_roster_v2",
+      "roster_index": 2,
+      "roster_id": "b03"
+    },
+    {
+      "id": "daily_walter_price",
+      "identity_group": "Black",
+      "skin": "#754b34",
+      "apply_skin": false,
+      "source": "modular_roster_v2",
+      "roster_index": 3,
+      "roster_id": "b04"
+    },
+    {
+      "id": "daily_aisha_bell",
+      "identity_group": "Hispanic",
+      "skin": "#c48e64",
+      "apply_skin": false,
+      "source": "modular_roster_v2",
+      "roster_index": 16,
+      "roster_id": "h01"
+    },
+    {
+      "id": "daily_ernest_cole",
+      "identity_group": "Black",
+      "skin": "#8a5a3c",
+      "apply_skin": false,
+      "source": "modular_roster_v2",
+      "roster_index": 4,
+      "roster_id": "b05"
+    },
+    {
+      "id": "daily_june_harris",
+      "identity_group": "Black",
+      "skin": "#9b6849",
+      "apply_skin": false,
+      "source": "modular_roster_v2",
+      "roster_index": 5,
+      "roster_id": "b06"
+    },
+    {
+      "id": "daily_marcus_webb",
+      "identity_group": "Black",
+      "skin": "#b0805c",
+      "apply_skin": false,
+      "source": "modular_roster_v2",
+      "roster_index": 6,
+      "roster_id": "b07"
+    },
+    {
+      "id": "daily_pearl_sutton",
+      "identity_group": "Black",
+      "skin": "#c68e62",
+      "apply_skin": false,
+      "source": "modular_roster_v2",
+      "roster_index": 7,
+      "roster_id": "b08"
+    },
+    {
+      "id": "daily_andre_foster",
+      "identity_group": "Hispanic",
+      "skin": "#a87550",
+      "apply_skin": false,
+      "source": "modular_roster_v2",
+      "roster_index": 17,
+      "roster_id": "h02"
+    },
+    {
+      "id": "daily_luz_santos",
+      "identity_group": "Black",
+      "skin": "#563626",
+      "apply_skin": false,
+      "source": "modular_roster_v2",
+      "roster_index": 8,
+      "roster_id": "b09"
+    },
+    {
+      "id": "daily_theo_washington",
+      "identity_group": "Black",
+      "skin": "#482b20",
+      "apply_skin": false,
+      "source": "modular_roster_v2",
+      "roster_index": 9,
+      "roster_id": "b10"
+    },
+    {
+      "id": "daily_ruth_daniels",
+      "identity_group": "Black",
+      "skin": "#754b34",
+      "apply_skin": false,
+      "source": "modular_roster_v2",
+      "roster_index": 10,
+      "roster_id": "b11"
+    },
+    {
+      "id": "daily_devon_clarke",
+      "identity_group": "Black",
+      "skin": "#8a5a3c",
+      "apply_skin": false,
+      "source": "modular_roster_v2",
+      "roster_index": 11,
+      "roster_id": "b12"
+    },
+    {
+      "id": "daily_celia_grant",
+      "identity_group": "White",
+      "skin": "#e8b48a",
+      "apply_skin": false,
+      "source": "modular_roster_v2",
+      "roster_index": 18,
+      "roster_id": "w01"
+    },
+    {
+      "id": "daily_oscar_bennett",
+      "identity_group": "Black",
+      "skin": "#65412e",
+      "apply_skin": false,
+      "source": "modular_roster_v2",
+      "roster_index": 12,
+      "roster_id": "b13"
+    },
+    {
+      "id": "daily_miriam_owens",
+      "identity_group": "Black",
+      "skin": "#9b6849",
+      "apply_skin": false,
+      "source": "modular_roster_v2",
+      "roster_index": 13,
+      "roster_id": "b14"
+    },
+    {
+      "id": "daily_leon_turner",
+      "identity_group": "Black",
+      "skin": "#b0805c",
+      "apply_skin": false,
+      "source": "modular_roster_v2",
+      "roster_index": 14,
+      "roster_id": "b15"
+    },
+    {
+      "id": "daily_estelle_ross",
+      "identity_group": "Black",
+      "skin": "#c68e62",
+      "apply_skin": false,
+      "source": "modular_roster_v2",
+      "roster_index": 15,
+      "roster_id": "b16"
+    },
+    {
+      "id": "daily_samir_haddad",
+      "identity_group": "White",
+      "skin": "#ecc0a0",
+      "apply_skin": false,
+      "source": "modular_roster_v2",
+      "roster_index": 19,
+      "roster_id": "w02"
+    },
+    {
+      "id": "resident",
+      "cast": "mama",
+      "identity_group": "Black",
+      "skin": "#8a5a3c",
+      "apply_skin": false,
+      "source": "authored_cast_appearance_preserved"
+    },
+    {
+      "id": "lookout",
+      "cast": "ricky",
+      "identity_group": "other",
+      "skin": "#e8b48a",
+      "apply_skin": false,
+      "source": "authored_cast_appearance_preserved"
+    },
+    {
+      "id": "officer",
+      "cast": "cop_dan",
+      "identity_group": "other",
+      "skin": "#e8b48a",
+      "apply_skin": false,
+      "source": "authored_cast_appearance_preserved"
+    },
+    {
+      "id": "ambient_mailman",
+      "cast": "mailman",
+      "identity_group": "other",
+      "skin": "#e8b48a",
+      "apply_skin": false,
+      "source": "authored_cast_appearance_preserved"
+    },
+    {
+      "id": "ambient_granny",
+      "cast": "granny",
+      "identity_group": "other",
+      "skin": "#ecc0a0",
+      "apply_skin": false,
+      "source": "authored_cast_appearance_preserved"
+    },
+    {
+      "id": "ambient_neighbor",
+      "cast": "liner_2",
+      "identity_group": "Black",
+      "skin": "#5c3a26",
+      "apply_skin": false,
+      "source": "authored_cast_appearance_preserved"
+    },
+    {
+      "id": "gardener",
+      "cast": "granny",
+      "identity_group": "other",
+      "skin": "#ecc0a0",
+      "apply_skin": false,
+      "source": "authored_cast_appearance_preserved"
+    },
+    {
+      "id": "organizer",
+      "cast": "liner_2",
+      "identity_group": "Black",
+      "skin": "#5c3a26",
+      "apply_skin": false,
+      "source": "authored_cast_appearance_preserved"
+    },
+    {
+      "id": "caretaker",
+      "cast": "mailman",
+      "identity_group": "other",
+      "skin": "#e8b48a",
+      "apply_skin": false,
+      "source": "authored_cast_appearance_preserved"
+    },
+    {
+      "id": "patrol_officer_0",
+      "cast": "cop_dan",
+      "identity_group": "Black",
+      "skin": "#563626",
+      "apply_skin": true,
+      "source": "generic_patrol_instance"
+    },
+    {
+      "id": "patrol_officer_1",
+      "cast": "cop_steve",
+      "identity_group": "Black",
+      "skin": "#754b34",
+      "apply_skin": true,
+      "source": "generic_patrol_instance"
+    },
+    {
+      "id": "patrol_officer_2",
+      "cast": "cop_dan",
+      "identity_group": "Black",
+      "skin": "#9b6849",
+      "apply_skin": true,
+      "source": "generic_patrol_instance"
+    },
+    {
+      "id": "patrol_officer_3",
+      "cast": "cop_steve",
+      "identity_group": "Black",
+      "skin": "#482b20",
+      "apply_skin": true,
+      "source": "generic_patrol_instance"
+    },
+    {
+      "id": "patrol_officer_4",
+      "cast": "cop_dan",
+      "identity_group": "Black",
+      "skin": "#b0805c",
+      "apply_skin": true,
+      "source": "generic_patrol_instance"
+    },
+    {
+      "id": "patrol_officer_5",
+      "cast": "cop_steve",
+      "identity_group": "other",
+      "skin": "#c48e64",
+      "apply_skin": false,
+      "source": "generic_patrol_instance"
+    },
+    {
+      "id": "daily_simone_avery",
+      "identity_group": "Black",
+      "skin": "#482b20",
+      "apply_skin": false,
+      "source": "modular_roster_v3",
+      "roster_index": 20,
+      "roster_id": "b17"
+    },
+    {
+      "id": "daily_malcolm_ellis",
+      "identity_group": "Black",
+      "skin": "#563626",
+      "apply_skin": false,
+      "source": "modular_roster_v3",
+      "roster_index": 21,
+      "roster_id": "b18"
+    },
+    {
+      "id": "daily_tessa_monroe",
+      "identity_group": "Black",
+      "skin": "#65412e",
+      "apply_skin": false,
+      "source": "modular_roster_v3",
+      "roster_index": 22,
+      "roster_id": "b19"
+    },
+    {
+      "id": "daily_darius_coleman",
+      "identity_group": "Black",
+      "skin": "#754b34",
+      "apply_skin": false,
+      "source": "modular_roster_v3",
+      "roster_index": 23,
+      "roster_id": "b20"
+    },
+    {
+      "id": "daily_yvette_freeman",
+      "identity_group": "Black",
+      "skin": "#8a5a3c",
+      "apply_skin": false,
+      "source": "modular_roster_v3",
+      "roster_index": 24,
+      "roster_id": "b21"
+    },
+    {
+      "id": "daily_ellis_chandler",
+      "identity_group": "Black",
+      "skin": "#9b6849",
+      "apply_skin": false,
+      "source": "modular_roster_v3",
+      "roster_index": 25,
+      "roster_id": "b22"
+    },
+    {
+      "id": "daily_nia_lawson",
+      "identity_group": "Black",
+      "skin": "#b0805c",
+      "apply_skin": false,
+      "source": "modular_roster_v3",
+      "roster_index": 26,
+      "roster_id": "b23"
+    },
+    {
+      "id": "daily_warren_miles",
+      "identity_group": "Black",
+      "skin": "#c68e62",
+      "apply_skin": false,
+      "source": "modular_roster_v3",
+      "roster_index": 27,
+      "roster_id": "b24"
+    },
+    {
+      "id": "daily_camille_porter",
+      "identity_group": "Black",
+      "skin": "#563626",
+      "apply_skin": false,
+      "source": "modular_roster_v3",
+      "roster_index": 28,
+      "roster_id": "b25"
+    },
+    {
+      "id": "daily_jonah_bishop",
+      "identity_group": "Black",
+      "skin": "#482b20",
+      "apply_skin": false,
+      "source": "modular_roster_v3",
+      "roster_index": 29,
+      "roster_id": "b26"
+    },
+    {
+      "id": "daily_alana_reid",
+      "identity_group": "Black",
+      "skin": "#754b34",
+      "apply_skin": false,
+      "source": "modular_roster_v3",
+      "roster_index": 30,
+      "roster_id": "b27"
+    },
+    {
+      "id": "daily_desmond_hayes",
+      "identity_group": "Black",
+      "skin": "#8a5a3c",
+      "apply_skin": false,
+      "source": "modular_roster_v3",
+      "roster_index": 31,
+      "roster_id": "b28"
+    },
+    {
+      "id": "daily_marisol_benton",
+      "identity_group": "Black",
+      "skin": "#65412e",
+      "apply_skin": false,
+      "source": "modular_roster_v3",
+      "roster_index": 32,
+      "roster_id": "b29"
+    },
+    {
+      "id": "daily_quentin_shaw",
+      "identity_group": "Black",
+      "skin": "#9b6849",
+      "apply_skin": false,
+      "source": "modular_roster_v3",
+      "roster_index": 33,
+      "roster_id": "b30"
+    },
+    {
+      "id": "daily_imani_fletcher",
+      "identity_group": "Black",
+      "skin": "#b0805c",
+      "apply_skin": false,
+      "source": "modular_roster_v3",
+      "roster_index": 34,
+      "roster_id": "b31"
+    },
+    {
+      "id": "daily_hugo_sterling",
+      "identity_group": "Black",
+      "skin": "#c68e62",
+      "apply_skin": false,
+      "source": "modular_roster_v3",
+      "roster_index": 35,
+      "roster_id": "b32"
+    },
+    {
+      "id": "daily_elena_vega",
+      "identity_group": "Hispanic",
+      "skin": "#bf885f",
+      "apply_skin": false,
+      "source": "modular_roster_v3",
+      "roster_index": 36,
+      "roster_id": "h03"
+    },
+    {
+      "id": "daily_rafael_ortiz",
+      "identity_group": "Hispanic",
+      "skin": "#ab7552",
+      "apply_skin": false,
+      "source": "modular_roster_v3",
+      "roster_index": 37,
+      "roster_id": "h04"
+    },
+    {
+      "id": "daily_clara_whitmore",
+      "identity_group": "White",
+      "skin": "#e8b99b",
+      "apply_skin": false,
+      "source": "modular_roster_v3",
+      "roster_index": 38,
+      "roster_id": "w03"
+    },
+    {
+      "id": "daily_graham_mercer",
+      "identity_group": "White",
+      "skin": "#d6a17e",
+      "apply_skin": false,
+      "source": "modular_roster_v3",
+      "roster_index": 39,
+      "roster_id": "w04"
+    }
+  ]
+}

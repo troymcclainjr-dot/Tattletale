@@ -1,0 +1,1037 @@
+{
+  "final-live-clock": {
+    "delivered_fps": 180.401183439761,
+    "frame_ms": {
+      "max": 43.539,
+      "median": 4.643,
+      "min": 2.48,
+      "p95": 9.483,
+      "p99": 12.315
+    },
+    "draw_calls": {
+      "max": 2162.0,
+      "median": 1587.0,
+      "min": 1413.0,
+      "p95": 1874.0,
+      "p99": 2155.0
+    },
+    "physics_components_ms": {
+      "clock": {
+        "max": 0.109,
+        "median": 0.006,
+        "min": 0.003,
+        "p95": 0.064,
+        "p99": 0.075
+      },
+      "combat": {
+        "max": 0.085,
+        "median": 0.014,
+        "min": 0.007,
+        "p95": 0.018,
+        "p99": 0.021
+      },
+      "missions": {
+        "max": 0.056,
+        "median": 0.004,
+        "min": 0.002,
+        "p95": 0.005,
+        "p99": 0.006
+      },
+      "npcs": {
+        "max": 3.2,
+        "median": 0.443,
+        "min": 0.268,
+        "p95": 1.528,
+        "p99": 1.881
+      },
+      "residents": {
+        "max": 0.594,
+        "median": 0.23,
+        "min": 0.129,
+        "p95": 0.363,
+        "p99": 0.521
+      },
+      "traffic": {
+        "max": 4.736,
+        "median": 2.373,
+        "min": 1.802,
+        "p95": 3.205,
+        "p99": 3.935
+      }
+    },
+    "valid_active_play": true,
+    "elapsed_stalled_seconds": 0.0,
+    "startup_ms": 16075,
+    "static_memory_bytes": 820407409.0,
+    "resident_count": 20,
+    "near": 3,
+    "wind_shader": true,
+    "world_minute": 550.791666666657
+  },
+  "final-routines-off": {
+    "delivered_fps": 189.514153397885,
+    "frame_ms": {
+      "max": 42.497,
+      "median": 4.309,
+      "min": 2.445,
+      "p95": 9.621,
+      "p99": 12.189
+    },
+    "draw_calls": {
+      "max": 2164.0,
+      "median": 1598.0,
+      "min": 1434.0,
+      "p95": 1878.0,
+      "p99": 2156.0
+    },
+    "physics_components_ms": {
+      "clock": {
+        "max": 0.052,
+        "median": 0.007,
+        "min": 0.002,
+        "p95": 0.029,
+        "p99": 0.035
+      },
+      "combat": {
+        "max": 0.04,
+        "median": 0.014,
+        "min": 0.007,
+        "p95": 0.019,
+        "p99": 0.023
+      },
+      "missions": {
+        "max": 0.077,
+        "median": 0.004,
+        "min": 0.002,
+        "p95": 0.005,
+        "p99": 0.005
+      },
+      "npcs": {
+        "max": 2.148,
+        "median": 0.482,
+        "min": 0.284,
+        "p95": 1.552,
+        "p99": 1.888
+      },
+      "residents": {
+        "max": 0.273,
+        "median": 0.119,
+        "min": 0.075,
+        "p95": 0.147,
+        "p99": 0.191
+      },
+      "traffic": {
+        "max": 5.167,
+        "median": 2.357,
+        "min": 1.732,
+        "p95": 3.277,
+        "p99": 4.122
+      }
+    },
+    "valid_active_play": true,
+    "elapsed_stalled_seconds": 0.0,
+    "startup_ms": 16010,
+    "static_memory_bytes": 820242005.0,
+    "resident_count": 20,
+    "near": 3,
+    "wind_shader": true,
+    "world_minute": 540.0
+  },
+  "final-routines-on-a": {
+    "delivered_fps": 189.672146645265,
+    "frame_ms": {
+      "max": 45.015,
+      "median": 4.349,
+      "min": 2.541,
+      "p95": 9.192,
+      "p99": 11.659
+    },
+    "draw_calls": {
+      "max": 2167.0,
+      "median": 1610.0,
+      "min": 1449.0,
+      "p95": 1880.0,
+      "p99": 2159.0
+    },
+    "physics_components_ms": {
+      "clock": {
+        "max": 0.071,
+        "median": 0.006,
+        "min": 0.003,
+        "p95": 0.029,
+        "p99": 0.031
+      },
+      "combat": {
+        "max": 0.046,
+        "median": 0.014,
+        "min": 0.009,
+        "p95": 0.017,
+        "p99": 0.02
+      },
+      "missions": {
+        "max": 0.046,
+        "median": 0.003,
+        "min": 0.002,
+        "p95": 0.004,
+        "p99": 0.005
+      },
+      "npcs": {
+        "max": 2.081,
+        "median": 0.43,
+        "min": 0.259,
+        "p95": 1.519,
+        "p99": 1.873
+      },
+      "residents": {
+        "max": 0.574,
+        "median": 0.227,
+        "min": 0.146,
+        "p95": 0.331,
+        "p99": 0.505
+      },
+      "traffic": {
+        "max": 4.963,
+        "median": 2.349,
+        "min": 1.765,
+        "p95": 3.196,
+        "p99": 4.07
+      }
+    },
+    "valid_active_play": true,
+    "elapsed_stalled_seconds": 0.0,
+    "startup_ms": 16071,
+    "static_memory_bytes": 820436489.0,
+    "resident_count": 20,
+    "near": 3,
+    "wind_shader": true,
+    "world_minute": 540.0
+  },
+  "final-routines-on-b": {
+    "delivered_fps": 188.742837209328,
+    "frame_ms": {
+      "max": 40.472,
+      "median": 4.39,
+      "min": 2.536,
+      "p95": 9.215,
+      "p99": 11.648
+    },
+    "draw_calls": {
+      "max": 2173.0,
+      "median": 1615.0,
+      "min": 1449.0,
+      "p95": 1882.0,
+      "p99": 2159.0
+    },
+    "physics_components_ms": {
+      "clock": {
+        "max": 0.045,
+        "median": 0.006,
+        "min": 0.003,
+        "p95": 0.029,
+        "p99": 0.033
+      },
+      "combat": {
+        "max": 0.025,
+        "median": 0.014,
+        "min": 0.008,
+        "p95": 0.018,
+        "p99": 0.02
+      },
+      "missions": {
+        "max": 0.007,
+        "median": 0.003,
+        "min": 0.001,
+        "p95": 0.005,
+        "p99": 0.005
+      },
+      "npcs": {
+        "max": 2.028,
+        "median": 0.432,
+        "min": 0.263,
+        "p95": 1.513,
+        "p99": 1.878
+      },
+      "residents": {
+        "max": 0.618,
+        "median": 0.225,
+        "min": 0.14,
+        "p95": 0.342,
+        "p99": 0.509
+      },
+      "traffic": {
+        "max": 4.888,
+        "median": 2.348,
+        "min": 1.824,
+        "p95": 3.174,
+        "p99": 3.882
+      }
+    },
+    "valid_active_play": true,
+    "elapsed_stalled_seconds": 0.0,
+    "startup_ms": 16013,
+    "static_memory_bytes": 820475013.0,
+    "resident_count": 20,
+    "near": 3,
+    "wind_shader": true,
+    "world_minute": 540.0
+  },
+  "no-residents-a": {
+    "delivered_fps": 184.367496010453,
+    "frame_ms": {
+      "max": 41.291,
+      "median": 4.597,
+      "min": 2.441,
+      "p95": 9.235,
+      "p99": 11.899
+    },
+    "draw_calls": {
+      "max": 2114.0,
+      "median": 1601.0,
+      "min": 1434.0,
+      "p95": 1849.0,
+      "p99": 2105.0
+    },
+    "physics_components_ms": {
+      "clock": {
+        "max": 0.038,
+        "median": 0.006,
+        "min": 0.003,
+        "p95": 0.03,
+        "p99": 0.033
+      },
+      "combat": {
+        "max": 0.114,
+        "median": 0.015,
+        "min": 0.008,
+        "p95": 0.019,
+        "p99": 0.022
+      },
+      "missions": {
+        "max": 0.008,
+        "median": 0.004,
+        "min": 0.001,
+        "p95": 0.005,
+        "p99": 0.005
+      },
+      "npcs": {
+        "max": 2.231,
+        "median": 0.502,
+        "min": 0.199,
+        "p95": 1.595,
+        "p99": 1.964
+      },
+      "residents": {
+        "max": 0.043,
+        "median": 0.004,
+        "min": 0.002,
+        "p95": 0.005,
+        "p99": 0.006
+      },
+      "traffic": {
+        "max": 4.717,
+        "median": 2.449,
+        "min": 1.841,
+        "p95": 3.315,
+        "p99": 4.106
+      }
+    },
+    "valid_active_play": true,
+    "elapsed_stalled_seconds": 0.0,
+    "startup_ms": 15943,
+    "static_memory_bytes": 815224729.0,
+    "resident_count": 0,
+    "near": 0,
+    "wind_shader": true,
+    "world_minute": 540.0
+  },
+  "no-residents-b": {
+    "delivered_fps": 188.522532267049,
+    "frame_ms": {
+      "max": 42.39,
+      "median": 4.456,
+      "min": 2.511,
+      "p95": 9.07,
+      "p99": 11.614
+    },
+    "draw_calls": {
+      "max": 2114.0,
+      "median": 1605.0,
+      "min": 1434.0,
+      "p95": 1846.0,
+      "p99": 2105.0
+    },
+    "physics_components_ms": {
+      "clock": {
+        "max": 0.063,
+        "median": 0.006,
+        "min": 0.002,
+        "p95": 0.03,
+        "p99": 0.034
+      },
+      "combat": {
+        "max": 0.06,
+        "median": 0.016,
+        "min": 0.008,
+        "p95": 0.019,
+        "p99": 0.021
+      },
+      "missions": {
+        "max": 0.009,
+        "median": 0.004,
+        "min": 0.002,
+        "p95": 0.004,
+        "p99": 0.005
+      },
+      "npcs": {
+        "max": 2.13,
+        "median": 0.511,
+        "min": 0.229,
+        "p95": 1.583,
+        "p99": 1.944
+      },
+      "residents": {
+        "max": 0.019,
+        "median": 0.004,
+        "min": 0.002,
+        "p95": 0.005,
+        "p99": 0.006
+      },
+      "traffic": {
+        "max": 5.286,
+        "median": 2.422,
+        "min": 1.845,
+        "p95": 3.374,
+        "p99": 4.163
+      }
+    },
+    "valid_active_play": true,
+    "elapsed_stalled_seconds": 0.0,
+    "startup_ms": 16022,
+    "static_memory_bytes": 815233749.0,
+    "resident_count": 0,
+    "near": 0,
+    "wind_shader": true,
+    "world_minute": 540.0
+  },
+  "release-live": {
+    "delivered_fps": 157.037680393973,
+    "frame_ms": {
+      "max": 46.194,
+      "median": 5.664,
+      "min": 2.459,
+      "p95": 10.803,
+      "p99": 14.47
+    },
+    "draw_calls": {
+      "max": 2162.0,
+      "median": 1586.0,
+      "min": 1413.0,
+      "p95": 1873.0,
+      "p99": 2157.0
+    },
+    "physics_components_ms": {
+      "clock": {
+        "max": 0.135,
+        "median": 0.007,
+        "min": 0.004,
+        "p95": 0.067,
+        "p99": 0.08
+      },
+      "combat": {
+        "max": 0.128,
+        "median": 0.016,
+        "min": 0.009,
+        "p95": 0.02,
+        "p99": 0.023
+      },
+      "missions": {
+        "max": 0.022,
+        "median": 0.004,
+        "min": 0.002,
+        "p95": 0.005,
+        "p99": 0.006
+      },
+      "npcs": {
+        "max": 2.456,
+        "median": 0.459,
+        "min": 0.279,
+        "p95": 1.556,
+        "p99": 1.96
+      },
+      "residents": {
+        "max": 0.663,
+        "median": 0.242,
+        "min": 0.154,
+        "p95": 0.369,
+        "p99": 0.54
+      },
+      "traffic": {
+        "max": 5.02,
+        "median": 2.456,
+        "min": 1.806,
+        "p95": 3.255,
+        "p99": 4.249
+      }
+    },
+    "valid_active_play": true,
+    "elapsed_stalled_seconds": 0.0,
+    "startup_ms": 17582,
+    "static_memory_bytes": 821385780.0,
+    "resident_count": 20,
+    "near": 3,
+    "wind_shader": true,
+    "world_minute": 550.791666666657
+  },
+  "routines-off-a": {
+    "delivered_fps": 169.244381086548,
+    "frame_ms": {
+      "max": 40.756,
+      "median": 4.987,
+      "min": 2.573,
+      "p95": 10.459,
+      "p99": 14.376
+    },
+    "draw_calls": {
+      "max": 2167.0,
+      "median": 1609.0,
+      "min": 1434.0,
+      "p95": 1874.0,
+      "p99": 2153.0
+    },
+    "physics_components_ms": {
+      "clock": {
+        "max": 0.168,
+        "median": 0.007,
+        "min": 0.004,
+        "p95": 0.02,
+        "p99": 0.025
+      },
+      "combat": {
+        "max": 0.126,
+        "median": 0.014,
+        "min": 0.009,
+        "p95": 0.019,
+        "p99": 0.025
+      },
+      "missions": {
+        "max": 0.01,
+        "median": 0.004,
+        "min": 0.002,
+        "p95": 0.005,
+        "p99": 0.007
+      },
+      "npcs": {
+        "max": 2.39,
+        "median": 0.491,
+        "min": 0.286,
+        "p95": 1.552,
+        "p99": 1.938
+      },
+      "residents": {
+        "max": 0.41,
+        "median": 0.122,
+        "min": 0.087,
+        "p95": 0.158,
+        "p99": 0.206
+      },
+      "traffic": {
+        "max": 6.268,
+        "median": 2.46,
+        "min": 1.829,
+        "p95": 3.313,
+        "p99": 4.35
+      }
+    },
+    "valid_active_play": true,
+    "elapsed_stalled_seconds": 0.0,
+    "startup_ms": 16455,
+    "static_memory_bytes": 819999688.0,
+    "resident_count": 20,
+    "near": 3,
+    "wind_shader": true,
+    "world_minute": 540.0
+  },
+  "routines-off-b": {
+    "delivered_fps": 192.438573607305,
+    "frame_ms": {
+      "max": 42.406,
+      "median": 4.36,
+      "min": 2.387,
+      "p95": 9.041,
+      "p99": 11.373
+    },
+    "draw_calls": {
+      "max": 2167.0,
+      "median": 1601.0,
+      "min": 1434.0,
+      "p95": 1875.0,
+      "p99": 2156.0
+    },
+    "physics_components_ms": {
+      "clock": {
+        "max": 0.027,
+        "median": 0.006,
+        "min": 0.002,
+        "p95": 0.021,
+        "p99": 0.023
+      },
+      "combat": {
+        "max": 0.035,
+        "median": 0.012,
+        "min": 0.006,
+        "p95": 0.017,
+        "p99": 0.019
+      },
+      "missions": {
+        "max": 0.006,
+        "median": 0.003,
+        "min": 0.001,
+        "p95": 0.005,
+        "p99": 0.005
+      },
+      "npcs": {
+        "max": 2.223,
+        "median": 0.464,
+        "min": 0.295,
+        "p95": 1.534,
+        "p99": 1.897
+      },
+      "residents": {
+        "max": 0.291,
+        "median": 0.118,
+        "min": 0.074,
+        "p95": 0.146,
+        "p99": 0.171
+      },
+      "traffic": {
+        "max": 4.707,
+        "median": 2.355,
+        "min": 1.801,
+        "p95": 3.167,
+        "p99": 3.956
+      }
+    },
+    "valid_active_play": true,
+    "elapsed_stalled_seconds": 0.0,
+    "startup_ms": 15978,
+    "static_memory_bytes": 820117252.0,
+    "resident_count": 20,
+    "near": 3,
+    "wind_shader": true,
+    "world_minute": 540.0
+  },
+  "routines-on-a": {
+    "delivered_fps": 181.792655576715,
+    "frame_ms": {
+      "max": 41.054,
+      "median": 4.499,
+      "min": 2.613,
+      "p95": 9.958,
+      "p99": 13.104
+    },
+    "draw_calls": {
+      "max": 2170.0,
+      "median": 1610.0,
+      "min": 1448.0,
+      "p95": 1876.0,
+      "p99": 2159.0
+    },
+    "physics_components_ms": {
+      "clock": {
+        "max": 0.122,
+        "median": 0.007,
+        "min": 0.003,
+        "p95": 0.02,
+        "p99": 0.021
+      },
+      "combat": {
+        "max": 0.053,
+        "median": 0.013,
+        "min": 0.007,
+        "p95": 0.016,
+        "p99": 0.019
+      },
+      "missions": {
+        "max": 0.095,
+        "median": 0.004,
+        "min": 0.002,
+        "p95": 0.005,
+        "p99": 0.005
+      },
+      "npcs": {
+        "max": 2.563,
+        "median": 0.455,
+        "min": 0.254,
+        "p95": 1.493,
+        "p99": 1.858
+      },
+      "residents": {
+        "max": 0.52,
+        "median": 0.23,
+        "min": 0.135,
+        "p95": 0.335,
+        "p99": 0.394
+      },
+      "traffic": {
+        "max": 4.959,
+        "median": 2.388,
+        "min": 1.829,
+        "p95": 3.374,
+        "p99": 4.269
+      }
+    },
+    "valid_active_play": true,
+    "elapsed_stalled_seconds": 0.0,
+    "startup_ms": 16057,
+    "static_memory_bytes": 820216624.0,
+    "resident_count": 20,
+    "near": 3,
+    "wind_shader": true,
+    "world_minute": 540.0
+  },
+  "routines-on-b": {
+    "delivered_fps": 171.912626195065,
+    "frame_ms": {
+      "max": 43.322,
+      "median": 4.944,
+      "min": 2.552,
+      "p95": 9.875,
+      "p99": 13.433
+    },
+    "draw_calls": {
+      "max": 2167.0,
+      "median": 1617.0,
+      "min": 1449.0,
+      "p95": 1885.0,
+      "p99": 2156.0
+    },
+    "physics_components_ms": {
+      "clock": {
+        "max": 0.062,
+        "median": 0.007,
+        "min": 0.003,
+        "p95": 0.019,
+        "p99": 0.023
+      },
+      "combat": {
+        "max": 0.081,
+        "median": 0.014,
+        "min": 0.008,
+        "p95": 0.018,
+        "p99": 0.02
+      },
+      "missions": {
+        "max": 0.047,
+        "median": 0.003,
+        "min": 0.002,
+        "p95": 0.005,
+        "p99": 0.005
+      },
+      "npcs": {
+        "max": 2.343,
+        "median": 0.451,
+        "min": 0.261,
+        "p95": 1.51,
+        "p99": 1.877
+      },
+      "residents": {
+        "max": 0.56,
+        "median": 0.227,
+        "min": 0.136,
+        "p95": 0.337,
+        "p99": 0.419
+      },
+      "traffic": {
+        "max": 5.165,
+        "median": 2.397,
+        "min": 1.821,
+        "p95": 3.344,
+        "p99": 4.208
+      }
+    },
+    "valid_active_play": true,
+    "elapsed_stalled_seconds": 0.0,
+    "startup_ms": 16040,
+    "static_memory_bytes": 820051528.0,
+    "resident_count": 20,
+    "near": 3,
+    "wind_shader": true,
+    "world_minute": 540.0
+  },
+  "standard-material-a": {
+    "delivered_fps": 190.430042931501,
+    "frame_ms": {
+      "max": 46.501,
+      "median": 4.353,
+      "min": 2.51,
+      "p95": 9.034,
+      "p99": 11.206
+    },
+    "draw_calls": {
+      "max": 2170.0,
+      "median": 1615.0,
+      "min": 1449.0,
+      "p95": 1887.0,
+      "p99": 2159.0
+    },
+    "physics_components_ms": {
+      "clock": {
+        "max": 0.057,
+        "median": 0.006,
+        "min": 0.003,
+        "p95": 0.025,
+        "p99": 0.028
+      },
+      "combat": {
+        "max": 0.058,
+        "median": 0.014,
+        "min": 0.01,
+        "p95": 0.017,
+        "p99": 0.019
+      },
+      "missions": {
+        "max": 0.007,
+        "median": 0.004,
+        "min": 0.002,
+        "p95": 0.004,
+        "p99": 0.005
+      },
+      "npcs": {
+        "max": 2.035,
+        "median": 0.443,
+        "min": 0.273,
+        "p95": 1.515,
+        "p99": 1.898
+      },
+      "residents": {
+        "max": 0.617,
+        "median": 0.232,
+        "min": 0.157,
+        "p95": 0.341,
+        "p99": 0.518
+      },
+      "traffic": {
+        "max": 5.443,
+        "median": 2.352,
+        "min": 1.796,
+        "p95": 3.252,
+        "p99": 4.148
+      }
+    },
+    "valid_active_play": true,
+    "elapsed_stalled_seconds": 0.0,
+    "startup_ms": 15916,
+    "static_memory_bytes": 820261312.0,
+    "resident_count": 20,
+    "near": 3,
+    "wind_shader": false,
+    "world_minute": 540.0
+  },
+  "standard-material-b": {
+    "delivered_fps": 186.768417460607,
+    "frame_ms": {
+      "max": 42.915,
+      "median": 4.493,
+      "min": 2.408,
+      "p95": 9.422,
+      "p99": 11.85
+    },
+    "draw_calls": {
+      "max": 2167.0,
+      "median": 1616.0,
+      "min": 1449.0,
+      "p95": 1885.0,
+      "p99": 2159.0
+    },
+    "physics_components_ms": {
+      "clock": {
+        "max": 0.048,
+        "median": 0.007,
+        "min": 0.004,
+        "p95": 0.026,
+        "p99": 0.029
+      },
+      "combat": {
+        "max": 0.087,
+        "median": 0.014,
+        "min": 0.008,
+        "p95": 0.018,
+        "p99": 0.021
+      },
+      "missions": {
+        "max": 0.009,
+        "median": 0.004,
+        "min": 0.001,
+        "p95": 0.005,
+        "p99": 0.005
+      },
+      "npcs": {
+        "max": 2.29,
+        "median": 0.446,
+        "min": 0.256,
+        "p95": 1.494,
+        "p99": 1.881
+      },
+      "residents": {
+        "max": 0.582,
+        "median": 0.229,
+        "min": 0.145,
+        "p95": 0.361,
+        "p99": 0.519
+      },
+      "traffic": {
+        "max": 5.126,
+        "median": 2.364,
+        "min": 1.782,
+        "p95": 3.304,
+        "p99": 4.206
+      }
+    },
+    "valid_active_play": true,
+    "elapsed_stalled_seconds": 0.0,
+    "startup_ms": 15908,
+    "static_memory_bytes": 820257744.0,
+    "resident_count": 20,
+    "near": 3,
+    "wind_shader": false,
+    "world_minute": 540.0
+  },
+  "wind-off-a": {
+    "delivered_fps": 179.84295381505,
+    "frame_ms": {
+      "max": 43.765,
+      "median": 4.639,
+      "min": 2.491,
+      "p95": 9.786,
+      "p99": 12.769
+    },
+    "draw_calls": {
+      "max": 2167.0,
+      "median": 1610.0,
+      "min": 1449.0,
+      "p95": 1883.0,
+      "p99": 2161.0
+    },
+    "physics_components_ms": {
+      "clock": {
+        "max": 0.119,
+        "median": 0.007,
+        "min": 0.002,
+        "p95": 0.017,
+        "p99": 0.018
+      },
+      "combat": {
+        "max": 0.065,
+        "median": 0.013,
+        "min": 0.007,
+        "p95": 0.017,
+        "p99": 0.019
+      },
+      "missions": {
+        "max": 0.017,
+        "median": 0.004,
+        "min": 0.002,
+        "p95": 0.005,
+        "p99": 0.005
+      },
+      "npcs": {
+        "max": 2.151,
+        "median": 0.451,
+        "min": 0.259,
+        "p95": 1.536,
+        "p99": 1.911
+      },
+      "residents": {
+        "max": 0.519,
+        "median": 0.225,
+        "min": 0.134,
+        "p95": 0.338,
+        "p99": 0.406
+      },
+      "traffic": {
+        "max": 5.064,
+        "median": 2.413,
+        "min": 1.818,
+        "p95": 3.343,
+        "p99": 4.093
+      }
+    },
+    "valid_active_play": true,
+    "elapsed_stalled_seconds": 0.0,
+    "startup_ms": 16001,
+    "static_memory_bytes": 820160072.0,
+    "resident_count": 20,
+    "near": 3,
+    "wind_shader": true,
+    "world_minute": 540.0
+  },
+  "wind-off-b": {
+    "delivered_fps": 167.769784661782,
+    "frame_ms": {
+      "max": 44.809,
+      "median": 5.199,
+      "min": 2.469,
+      "p95": 10.293,
+      "p99": 13.234
+    },
+    "draw_calls": {
+      "max": 2167.0,
+      "median": 1616.0,
+      "min": 1449.0,
+      "p95": 1887.0,
+      "p99": 2159.0
+    },
+    "physics_components_ms": {
+      "clock": {
+        "max": 0.096,
+        "median": 0.007,
+        "min": 0.004,
+        "p95": 0.017,
+        "p99": 0.02
+      },
+      "combat": {
+        "max": 0.074,
+        "median": 0.015,
+        "min": 0.01,
+        "p95": 0.02,
+        "p99": 0.022
+      },
+      "missions": {
+        "max": 0.007,
+        "median": 0.003,
+        "min": 0.002,
+        "p95": 0.005,
+        "p99": 0.005
+      },
+      "npcs": {
+        "max": 2.133,
+        "median": 0.453,
+        "min": 0.274,
+        "p95": 1.521,
+        "p99": 1.914
+      },
+      "residents": {
+        "max": 0.605,
+        "median": 0.229,
+        "min": 0.144,
+        "p95": 0.351,
+        "p99": 0.43
+      },
+      "traffic": {
+        "max": 5.294,
+        "median": 2.42,
+        "min": 1.862,
+        "p95": 3.41,
+        "p99": 4.256
+      }
+    },
+    "valid_active_play": true,
+    "elapsed_stalled_seconds": 0.0,
+    "startup_ms": 15887,
+    "static_memory_bytes": 820119155.0,
+    "resident_count": 20,
+    "near": 3,
+    "wind_shader": true,
+    "world_minute": 540.0
+  }
+}

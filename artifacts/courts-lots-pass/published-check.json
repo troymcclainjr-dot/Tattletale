@@ -1,0 +1,69 @@
+{
+  "courts": 21,
+  "full": 17,
+  "half": 4,
+  "changed": [
+    "park_court_2",
+    "park_court_5",
+    "park_court_8",
+    "park_court_9",
+    "park_court_10",
+    "park_court_13",
+    "park_court_14",
+    "park_court_15",
+    "park_court_18",
+    "park_court_20",
+    "park_court_21"
+  ],
+  "supported_floor_samples": 66444,
+  "min_ground_clearance_m": 0.01087068244933323,
+  "court13": {
+    "id": "park_court_13",
+    "position": [
+      224.486556,
+      -2.075642,
+      -31.051028
+    ],
+    "width_m": 10.0,
+    "length_m": 18.0,
+    "across": [
+      6.123233995736766e-17,
+      0,
+      -1.0
+    ],
+    "along": [
+      -1.0,
+      0,
+      -6.123233995736766e-17
+    ],
+    "hoops": [
+      {
+        "position": [
+          234.20656,
+          -2.20466,
+          -31.05103
+        ],
+        "radius": 0.22,
+        "rim_position": [
+          231.91156,
+          0.8758,
+          -31.05103
+        ]
+      },
+      {
+        "position": [
+          214.76656,
+          -1.94663,
+          -31.05103
+        ],
+        "radius": 0.22,
+        "rim_position": [
+          217.06156,
+          1.07291,
+          -31.05103
+        ]
+      }
+    ]
+  },
+  "failures": []
+}

@@ -47,8 +47,10 @@ func reset(position_: Vector3, heading: float) -> void:
 	player.camera_yaw = heading
 	player.camera_pitch = 0.24
 	player.update_camera()
-	await frames(12)
 	player.enabled = true
+	# A paused controller intentionally does not settle; register floor contact
+	# under ordinary physics before measuring curb and locomotion behavior.
+	await frames(12)
 
 func set_move(direction: Vector2) -> void:
 	for action in ["move_forward", "move_back", "move_left", "move_right"]:
@@ -98,6 +100,9 @@ func _run() -> void:
 	await direction_transitions(true)
 	await orbit_controls()
 	await camera_follow_controls()
+	await camera_relative_controls()
+	await free_look_release_controls()
+	await streetlight_contacts()
 	await porch_stairs(false)
 	await porch_stairs(true)
 	await sloped_curb(false)
@@ -116,6 +121,7 @@ func _run() -> void:
 	var delta_position := player.global_position - initial
 	check(player.position.z < 13.48 and player.position.y < 0.08, "diagonal tall wall remains impassable")
 	check(delta_position.x > delta_position.z + 3.0 and player.current_speed > player.walk_speed, "diagonal facade contact glides along the wall without hard stopping")
+	check(absf(player.camera_yaw - PI * 0.25) < 0.001 and absf(angle_difference(player.yaw, PI * 0.25)) < 0.001, "wall glide neither swings the camera nor bends held W")
 	await reset(Vector3(0, 0.08, 11), 0.0)
 	Input.action_press("move_forward")
 	Input.action_press("run")
@@ -247,8 +253,8 @@ func orbit_controls() -> void:
 	player.set_orbiting(false)
 	check(absf(player.yaw) < 0.001, "repeated orbit holds preserve the original movement frame")
 	player.look(Vector2(-0.2 / player.mouse_sensitivity, 0))
-	await frames(8)
-	check(absf(angle_difference(player.yaw, 0.2)) < 0.025, "ordinary mouse look resumes smooth steering after orbit")
+	await frames(25)
+	check(absf(angle_difference(player.yaw, player.camera_yaw)) < 0.025, "ordinary mouse look takes over steering against the chosen view after orbit")
 	set_move(Vector2.ZERO)
 	await frames(15)
 	set_move(Vector2(0, 1))
@@ -274,10 +280,14 @@ func camera_follow_controls() -> void:
 	check(absf(player.camera_yaw - 1.2) < 0.001, "held orbit defeats automatic follow during sustained movement")
 	player.set_orbiting(false)
 	var before := player.global_position
-	await frames(30)
-	check(absf(player.camera_yaw - 1.2) < 0.001, "orbit release grants a look grace period before following")
-	await frames(60)
-	check(player.camera_yaw < 1.0 and player.camera_yaw > 0.1, "moving camera eases behind the character without snapping")
+	var previous_camera: float = player.camera_yaw
+	var largest_step := 0.0
+	for tick in 45:
+		await frames(1)
+		largest_step = maxf(largest_step, absf(player.camera_yaw - previous_camera))
+		previous_camera = player.camera_yaw
+	check(absf(player.camera_yaw) < 0.01 and largest_step <= player.FREE_LOOK_RETURN_MAX_RATE / 60.0 + 0.002, "moving camera eases back behind the character after orbit release without snapping")
+	await frames(45)
 	check(absf(player.position.x - before.x) < 0.02 and absf(player.yaw) < 0.001, "automatic follow cannot redirect a held movement input")
 	set_move(Vector2.ZERO)
 	await frames(20)
@@ -303,6 +313,187 @@ func camera_follow_controls() -> void:
 	check(player._camera_boom_length > 5.0, "camera recovers its full chase distance after clearing a wall")
 	wall.queue_free()
 	await frames(2)
+
+func camera_relative_controls() -> void:
+	# Held W with A/D changes and mouse steering. Each new key combination is read
+	# against the view on screen, even after camera assistance has turned it.
+	await reset(Vector3(-12, 0.08, -20), 0.0)
+	set_move(Vector2(-1, 1))
+	await frames(50)
+	var diagonal: float = player.yaw
+	check(absf(angle_difference(diagonal, PI * 0.25)) < 0.025, "held W+A travels 45 degrees left of the view")
+	var steady := true
+	var never_passes := true
+	var bounded := true
+	var previous_camera: float = player.camera_yaw
+	for tick in 90:
+		await frames(1)
+		steady = steady and absf(angle_difference(player.yaw, diagonal)) < 0.01
+		never_passes = never_passes and angle_difference(player.camera_yaw, diagonal) >= -0.001
+		bounded = bounded and absf(player.camera_yaw - previous_camera) <= 0.85 / 60.0 + 0.0005
+		previous_camera = player.camera_yaw
+	check(player.camera_yaw > 0.4 and bounded, "sustained diagonal travel gently eases the camera toward travel")
+	check(steady and never_passes, "camera assistance neither bends held travel nor spirals past it")
+	set_move(Vector2(0, 1))
+	await frames(30)
+	check(absf(angle_difference(player.yaw, player.camera_yaw)) < 0.03, "releasing A while holding W runs where the camera now looks")
+	set_move(Vector2(1, 1))
+	await frames(30)
+	check(absf(angle_difference(player.yaw, player.camera_yaw - PI * 0.25)) < 0.03, "adding D to held W reads against the current view")
+	player.look(Vector2(-0.4 / player.mouse_sensitivity, 0))
+	await frames(25)
+	check(absf(angle_difference(player.yaw, player.camera_yaw - PI * 0.25)) < 0.03, "mouse look steers held W+D relative to the view")
+	# Running toward the camera must not make assistance swing the view around.
+	await reset(Vector3(-6, 0.08, -4), 0.0)
+	set_move(Vector2(0, -1))
+	await frames(120)
+	check(absf(player.camera_yaw) < 0.001 and absf(angle_difference(player.yaw, PI)) < 0.025, "running toward the camera keeps the view instead of chasing behind")
+
+func free_look_release_controls() -> void:
+	await reset(Vector3(6, 0.08, -20), 0.0)
+	set_move(Vector2(0, 1))
+	await frames(30)
+	player.set_orbiting(true)
+	player.look(Vector2(-1.4 / player.mouse_sensitivity, 0))
+	await frames(10)
+	player.set_orbiting(false)
+	var previous_camera: float = player.camera_yaw
+	var largest_step := 0.0
+	var travel_held := true
+	for tick in 50:
+		await frames(1)
+		largest_step = maxf(largest_step, absf(player.camera_yaw - previous_camera))
+		previous_camera = player.camera_yaw
+		travel_held = travel_held and absf(player.yaw) < 0.001
+	check(absf(angle_difference(player.camera_yaw, 0.0)) < 0.01, "free look release returns the view behind held travel")
+	check(largest_step > 0.0 and largest_step <= player.FREE_LOOK_RETURN_MAX_RATE / 60.0 + 0.002, "free look return is a bounded swing, not a snap")
+	check(travel_held, "free look return never steers held travel")
+	# No need to release every key before the controls are camera-relative again.
+	set_move(Vector2(-1, 1))
+	await frames(30)
+	check(absf(angle_difference(player.yaw, player.camera_yaw + PI * 0.25)) < 0.03, "after free look, adding A to held W reads against the restored view")
+	player.look(Vector2(-0.3 / player.mouse_sensitivity, 0))
+	await frames(20)
+	check(absf(angle_difference(player.yaw, player.camera_yaw + PI * 0.25)) < 0.03, "mouse look steers again right after free look")
+	# Stopping mid-return leaves the view where it is; idle never recenters.
+	set_move(Vector2(0, 1))
+	await frames(5)
+	player.set_orbiting(true)
+	player.look(Vector2(1.0 / player.mouse_sensitivity, 0))
+	await frames(2)
+	player.set_orbiting(false)
+	await frames(3)
+	var mid_return: float = absf(angle_difference(player.camera_yaw, player.yaw))
+	set_move(Vector2.ZERO)
+	await frames(1)
+	var idle_view: float = player.camera_yaw
+	await frames(60)
+	check(mid_return > 0.3 and absf(player.camera_yaw - idle_view) < 0.001, "releasing all keys mid-return leaves the view where it is")
+	set_move(Vector2(0, 1))
+	await frames(30)
+	check(absf(angle_difference(player.yaw, player.camera_yaw)) < 0.03, "next movement after that stop adopts the view")
+	# Active steering always takes priority over a still-running release swing.
+	player.set_orbiting(true)
+	player.look(Vector2(-1.2 / player.mouse_sensitivity, 0))
+	await frames(2)
+	player.set_orbiting(false)
+	await frames(3)
+	player.look(Vector2(-0.15 / player.mouse_sensitivity, 0))
+	var steered_view: float = player.camera_yaw
+	await frames(20)
+	check(not player._view_returning and absf(player.camera_yaw - steered_view) < 0.001, "manual look cancels an unfinished free-look return")
+	check(absf(angle_difference(player.yaw, steered_view)) < 0.03, "manual override reads held W against the chosen view")
+	player.set_orbiting(true)
+	player.look(Vector2(1.0 / player.mouse_sensitivity, 0))
+	await frames(2)
+	player.set_orbiting(false)
+	await frames(3)
+	set_move(Vector2(1, 1))
+	await frames(25)
+	check(not player._view_returning and absf(angle_difference(player.yaw, player.camera_yaw - PI * 0.25)) < 0.03, "new direction cancels return and uses the current camera bearing")
+
+func lamp(position_: Vector3) -> Node3D:
+	# The real streetlight builder, so the capsule meets the shipped collider.
+	var prop := Node3D.new()
+	prop.name = "Streetlight"
+	prop.position = position_
+	world.add_child(prop)
+	CityDressing._lamp(prop)
+	return prop
+
+func lamp_collider_reach(prop: Node3D) -> float:
+	# Widest solid cylinder that overlaps the capsule's height band.
+	var reach := 0.0
+	for body in prop.get_children():
+		if not body is StaticBody3D:
+			continue
+		for child in body.get_children():
+			var collision := child as CollisionShape3D
+			if collision == null or not collision.shape is CylinderShape3D:
+				continue
+			var cylinder := collision.shape as CylinderShape3D
+			if collision.position.y - cylinder.height * 0.5 < 1.72:
+				reach = maxf(reach, cylinder.radius)
+	return reach
+
+func lamp_visible_radius(prop: Node3D) -> float:
+	# Widest rendered vertex within the capsule's height band, for collider review.
+	var radius := 0.0
+	for child in prop.get_children():
+		var instance := child as MeshInstance3D
+		if instance == null or instance.mesh == null:
+			continue
+		for surface in instance.mesh.get_surface_count():
+			var vertices: PackedVector3Array = instance.mesh.surface_get_arrays(surface)[Mesh.ARRAY_VERTEX]
+			for vertex in vertices:
+				var placed: Vector3 = instance.transform * vertex
+				if placed.y > 0.5 and placed.y < 1.8:
+					radius = maxf(radius, Vector2(placed.x, placed.z).length())
+	return radius
+
+func streetlight_contacts() -> void:
+	# Raised pavement's road-side curb edge is z=-1. The builder sets lamps 0.85m
+	# back from the road edge; the narrow case leaves less than a capsule width.
+	var open_lamp := lamp(Vector3(3.0, 0.0, -16.0))
+	var curb_lamp := lamp(Vector3(-5.0, 0.18, -0.15))
+	var narrow_lamp := lamp(Vector3(4.0, 0.18, -0.45))
+	await frames(2)
+	print("[city_movement] streetlight collider reach=%.3f visible radius=%.3f" % [lamp_collider_reach(open_lamp), lamp_visible_radius(open_lamp)])
+	await streetlight_pass(open_lamp, Vector3(2.75, 0.08, -18.5), 0.0, "open-ground streetlight", 0.0)
+	await streetlight_pass(curb_lamp, Vector3(-7.5, 0.20, -0.55), PI * 0.5, "curb-side streetlight", 0.18)
+	await streetlight_pass(narrow_lamp, Vector3(1.5, 0.20, -0.55), PI * 0.5, "narrow curb streetlight", -1.0)
+	set_move(Vector2.ZERO)
+	player.enabled = false
+	for prop in [open_lamp, curb_lamp, narrow_lamp]:
+		prop.queue_free()
+	await frames(2)
+
+func streetlight_pass(prop: Node3D, start: Vector3, heading: float, label: String, floor_y: float) -> void:
+	# floor_y < 0 accepts either the pavement or a controlled curb descent.
+	await reset(start, heading)
+	var direction := Vector3(sin(heading), 0, cos(heading))
+	var axis := Vector2(prop.position.x, prop.position.z)
+	var reach := lamp_collider_reach(prop)
+	var closest := INF
+	var stalled := 0
+	var lowest := INF
+	var highest := -INF
+	set_move(Vector2(0, 1))
+	await frames(14)
+	for tick in 80:
+		await frames(1)
+		closest = minf(closest, Vector2(player.position.x, player.position.z).distance_to(axis))
+		stalled += int(player.current_speed < 0.001)
+		lowest = minf(lowest, player.position.y)
+		highest = maxf(highest, player.position.y)
+	var passed_by: float = (player.global_position - prop.position).dot(direction)
+	print("[city_movement] ", label, " final=", player.global_position, " passed_by=", passed_by, " closest=", closest, " stalled=", stalled, " y=[", lowest, ", ", highest, "] step=", player.debug_step_reason)
+	check(passed_by > 1.0 and stalled == 0, label + " glides past the pole without snagging")
+	check(closest >= reach + 0.27, label + " never enters the pole collider")
+	if floor_y >= 0.0:
+		check(lowest > floor_y - 0.06 and highest < floor_y + 0.07, label + " stays on its walking surface without climbing")
+	else:
+		check(lowest > -0.06 and highest < 0.25, label + " neither climbs the pole nor falls through")
 
 func porch_stairs(running: bool) -> void:
 	# Match the porch kit: 18cm risers, 30cm treads, a 1.25m stair opening,

@@ -1,0 +1,68 @@
+{
+	"capture": "",
+	"failures": 0,
+	"graphics": false,
+	"snapshot": {
+		"axes": "Godot metres: +X east, +Y up, +Z south; heading 0 north,90 east; pitch positive up",
+		"camera_position": [
+			365.0,
+			25.0,
+			-170.0
+		],
+		"capture_directory": "C:/files/projects/Tattletale/.work/test-profile/Godot/app_userdata/Tattletale 2-Pack/inspection_shots",
+		"clock": {
+			"day_index": 0,
+			"elapsed_seconds": 0.433333333333333,
+			"label": "DAY 1  ·  09:00",
+			"minute_of_day": 540.216666666666,
+			"total_minutes": 540.216666666666
+		},
+		"forward": [
+			0.893,
+			-0.406,
+			0.195
+		],
+		"fov_degrees": 68.0,
+		"heading_degrees": 102.31,
+		"last_capture": "",
+		"level": "pen_lucy",
+		"pitch_degrees": -23.95,
+		"player_position": [
+			-6.726,
+			-0.108,
+			9.997
+		],
+		"speed_metres_per_second": 35.0,
+		"streaming": {
+			"background_loads": 4,
+			"cells": 21,
+			"collision_streaming": false,
+			"enabled": true,
+			"failures": 0,
+			"load_radius": 240.0,
+			"loaded_cells": 12,
+			"loaded_detail_triangles": 688779,
+			"near_cells_missing": 0,
+			"pending": false,
+			"proxy_cells": 9,
+			"quality": "balanced",
+			"released_original_meshes": 358,
+			"total_detail_triangles": 1151771,
+			"unload_radius": 330.0,
+			"unloads": 13
+		},
+		"street": "Elkader Road",
+		"target": {
+			"distance": 53.76,
+			"object_path": "/root/@Node@231/@SubViewport@232/PenLucy/CivicDistrict/PenLucyHospital/SolidArchitecture",
+			"position": [
+				413.0,
+				3.182,
+				-159.527
+			]
+		},
+		"utc": "2026-10-31T21:38:28Z",
+		"version": 1,
+		"world_paused": true
+	}
+}

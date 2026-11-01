@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "template": "incident_report",
+  "about": "A case that starts when the player is near a live world incident of a listed template (city_incidents.gd, grounded in js/crimes-stage1.js). Evidence comes from the trusted phone photo of the offender or a recorded witness interview; the officer's report goes through incidents.report_incident (its answer is authoritative), and the case ends when the incident service records a resolution. No content uses it yet.",
+  "params": {
+    "incident_template": "incident template id, e.g. jaywalking",
+    "points": "community points (0 keeps incident reporting unpaid)"
+  },
+  "case": {
+    "schema": 1,
+    "kind": "case",
+    "status": "draft",
+    "reward": {"points": "{points}"},
+    "incident": {"templates": ["{incident_template}"], "radius": 60.0},
+    "participants": {
+      "witness": {"actors": ["incident:witness"], "label": "Witness"},
+      "officer": {"actors": ["@police"], "label": "Officer", "bind": "step"}
+    },
+    "evidence": {
+      "offender_photo": {"kind": "photo", "label": "[draft] Photo of what happened"},
+      "witness_account": {"kind": "testimony", "label": "[draft] Witness account"}
+    },
+    "discovery": {"trigger": "incident", "givers": []},
+    "stages": [
+      {"id": "evidence", "complete": "any", "objective": "[draft] Photograph what is happening, or ask someone who saw it", "objectives": [
+        {"id": "photograph_offender", "verb": "photo", "subject": "incident:offender", "max_distance": 35.0, "min_centrality": 0.15,
+          "objective": "[draft] Photograph what is happening", "grants": ["offender_photo"]},
+        {"id": "ask_witness", "verb": "interview", "target": "witness", "objective": "[draft] Ask someone who saw it", "greeting": "[draft] The witness's first line.",
+          "topics": [{"id": "account", "ask": "[draft] What did you see?", "answer": "[draft] What the witness saw."}], "grants": ["witness_account"]}
+      ]},
+      {"id": "report", "objectives": [
+        {"id": "file_report", "verb": "report", "target": "officer", "incident": true, "objective": "[draft] Report it to an officer",
+          "requires_evidence": ["offender_photo|witness_account"], "greeting": "[draft] The officer asks what you saw.", "dialogue": "[draft] The officer takes the report."}
+      ]},
+      {"id": "outcome", "objectives": [
+        {"id": "await_resolution", "verb": "await_incident", "states": ["resolved"], "objective": "[draft] See how the police handle it"}
+      ]}
+    ],
+    "outcomes": {"resolved": {"rewarded": true, "banner": "REPORT FILED"}}
+  }
+}

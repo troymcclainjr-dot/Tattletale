@@ -1,0 +1,31 @@
+{
+  "source": "Exported Ground barycentric heights and matched source-terrain rim vertices; legacy fit plane retained only for external fallback",
+  "sample_count": 168,
+  "boundary_fit_max_error_m": 0.0889,
+  "plane_ax_bz_c": [
+    0.00019499169210915877,
+    -0.030150071487817738,
+    -0.8886658345625208
+  ],
+  "grid_spacing_m": 1.0,
+  "triangles": 964,
+  "method": "Exact Ground triangle clipping at +25mm; removed-building holes triangulated from matching terrain-rim heights; east apron clipped to existing sidewalk",
+  "uncovered_m2": 317.2287,
+  "bay_count": 14,
+  "bay_width_m": 2.8,
+  "bay_depth_m": 5,
+  "aisle_width_m": 7.4,
+  "lot_area_m2": 536.7672,
+  "east_apron_added_m2": 32.7672,
+  "road_sidewalk_overlap_m2": 0.0,
+  "former_front_garden_area_m2": 7.4406,
+  "former_front_garden_uncovered_m2": 1.58e-06,
+  "source_material_areas_m2": {
+    "alley": 210.5564,
+    "sidewalk": 0.0044,
+    "grass": 8.9777
+  },
+  "maximum_filled_hole_rim_error_m": 0.00024009,
+  "coverage_missing_m2": 1.56e-06,
+  "legacy_plane_used_for_mesh": false
+}

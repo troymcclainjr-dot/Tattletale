@@ -1,0 +1,58 @@
+{
+  "suite": "park_neighborhood",
+  "failures": [],
+  "canonical_count": 1200,
+  "recipe_sha256": "cb1ea6ebf383cd7087aab325ed93f0ba9c7fdd03c28a6e6bbbdcb1f35f13e6b0",
+  "identity_failures": [],
+  "distribution_fallbacks": 0,
+  "redistributed": 872,
+  "distribution": {
+    "bench": 36,
+    "business": 197,
+    "court_edge": 260,
+    "street": 379
+  },
+  "groups": 168,
+  "group_size_histogram": {
+    "2": 25,
+    "3": 24,
+    "4": 24,
+    "5": 24,
+    "6": 23,
+    "7": 24,
+    "8": 24
+  },
+  "actual_park_population": {
+    "Community green 1": 13,
+    "Community green 2": 12,
+    "Community green 3": 20
+  },
+  "max_court_population": 16,
+  "max_business_population": 14,
+  "furniture": {
+    "bench_seats": 36,
+    "benches": 18,
+    "draw_batches": 20,
+    "obstructed_candidates": 0,
+    "playground_parks": [
+      "Community green 1",
+      "Community green 2"
+    ],
+    "playgrounds": 2,
+    "setup_ms": 173
+  },
+  "draw_batches": 201,
+  "source_log": ".work/neighborhood-pass/parks-final-engine.log",
+  "saved_death_identity_verified": true,
+  "portable_chairs_only_on_porches": true,
+  "all_redistributed_standing_neighbors_grounded": true,
+  "geometry": "final rebuilt/imported GLB with9new neighborhood shops",
+  "converted_shop_front_canonical_chairs": 0,
+  "expansion_test": {
+    "passed": 44,
+    "failed": 12,
+    "cause": "Stale case-start call in fixture: missions.interact rejects empty active_id; current acceptance uses commit_dialogue_action",
+    "scene_geometry_checks": "all passed",
+    "log": ".work/neighborhood-pass/expansion-final-engine.log"
+  }
+}

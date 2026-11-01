@@ -1,0 +1,7638 @@
+{
+	"cars": 90,
+	"content_scale_factor": 1.0,
+	"content_scale_mode": 2,
+	"crowd": {
+		"active_cells": 73,
+		"actual_park_population": {
+			"Community green 1": 13,
+			"Community green 2": 12,
+			"Community green 3": 20
+		},
+		"cell_activations": 150,
+		"circle_groups": 168,
+		"dead": 0,
+		"destination_population": {
+			"business:Blue Basket Laundry": 7,
+			"business:Cedar Barber": 5,
+			"business:Common Shelf": 14,
+			"business:Corner Pantry": 2,
+			"business:Fresh Fold": 13,
+			"business:Hillside Corner Grocery": 14,
+			"business:Hilltop Foods": 11,
+			"business:Little Skillet": 12,
+			"business:Maple Kitchen": 10,
+			"business:Mend & Stitch": 12,
+			"business:Northside Clippers": 12,
+			"business:Parkway Spirits": 12,
+			"business:Pen Lucy Food Market": 10,
+			"business:Ruth's Mini Mart": 14,
+			"business:Second Chapter": 14,
+			"business:Spin Cycle": 7,
+			"business:Two Sisters Market": 13,
+			"business:Warm Plate": 3,
+			"business:Wilsby Corner Market": 6,
+			"business:York Bottle Shop": 6,
+			"court_edge:park_court_0": 15,
+			"court_edge:park_court_1": 16,
+			"court_edge:park_court_10": 16,
+			"court_edge:park_court_12": 15,
+			"court_edge:park_court_13": 15,
+			"court_edge:park_court_14": 16,
+			"court_edge:park_court_15": 15,
+			"court_edge:park_court_16": 12,
+			"court_edge:park_court_18": 14,
+			"court_edge:park_court_19": 16,
+			"court_edge:park_court_2": 12,
+			"court_edge:park_court_20": 15,
+			"court_edge:park_court_21": 12,
+			"court_edge:park_court_3": 16,
+			"court_edge:park_court_5": 13,
+			"court_edge:park_court_6": 15,
+			"court_edge:park_court_7": 14,
+			"court_edge:park_court_8": 12,
+			"court_edge:park_court_9": 16,
+			"street:Argonne Drive": 26,
+			"street:Cator Avenue": 38,
+			"street:Dumbarton Avenue": 41,
+			"street:East 38th Street": 22,
+			"street:East 39th Street": 5,
+			"street:East 41st Street": 45,
+			"street:Elkader Road": 28,
+			"street:Frisby Street": 21,
+			"street:Greenmount Avenue": 2,
+			"street:Lowndes Avenue": 6,
+			"street:North Hill Road": 2,
+			"street:Old York Road": 24,
+			"street:Rose Hill Terrace": 13,
+			"street:Wilsby Avenue": 49,
+			"street:Wyanoke Avenue": 42
+		},
+		"distribution_fallbacks": 0,
+		"draw_batches": 200,
+		"far_from_intro_route": 875,
+		"identity_failures": [],
+		"identity_relocated": 6,
+		"identity_source": "canonical_legacy_recipe",
+		"idle_skipped_steps": 0,
+		"name_labels": 0,
+		"near_updates": 2,
+		"neighborhood_distribution": {
+			"bench": 36,
+			"business": 197,
+			"court_edge": 275,
+			"street": 364
+		},
+		"new_group_sizes": [
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			2
+		],
+		"occupied_cells": 142,
+		"panic": 0,
+		"panic_budget": 160,
+		"panic_casts": 0,
+		"panic_cowered": 0,
+		"panic_mover_budget": 48,
+		"panic_movers": 0,
+		"panic_replans": 0,
+		"panic_restored": 0,
+		"panic_started": 0,
+		"panic_updates": 0,
+		"park": 36,
+		"park_population": {
+			"Community green 1": 12,
+			"Community green 2": 12,
+			"Community green 3": 12
+		},
+		"porch": 196,
+		"seated": 136,
+		"shared_meshes": 3,
+		"social": 1004,
+		"span_x": 750.249588012695,
+		"span_z": 551.479248046875,
+		"staggered_idle": true,
+		"threat_cells": 0,
+		"threat_scanned": 0,
+		"total": 1200,
+		"update_interval": 0.25,
+		"walkers": 126,
+		"walking_updates": 3
+	},
+	"crowd_idle": {},
+	"day_night": {
+		"active_lights": 0,
+		"enabled": true,
+		"lamp_anchors": 21,
+		"lighting_writes": 149,
+		"max_lights": 8,
+		"minute_of_day": 551.19999999999,
+		"night_factor": 0.0,
+		"pool_updates": 90,
+		"shared_lens_material": true,
+		"sky_updates": 14
+	},
+	"delivered_fps": 224.148408546299,
+	"diagnostic_hide_group": "city",
+	"diagnostic_hide_world": false,
+	"draw_calls": {
+		"max": 1595.0,
+		"median": 1337.0,
+		"min": 1206.0,
+		"p95": 1442.0,
+		"p99": 1581.0
+	},
+	"elapsed_stalled_seconds": 0.0,
+	"fps_cap": 0,
+	"frame_ms": {
+		"max": 36.204,
+		"median": 3.437,
+		"min": 2.27,
+		"p95": 8.326,
+		"p99": 11.721
+	},
+	"frames_with_physics_ms": {
+		"max": 36.204,
+		"median": 7.221,
+		"min": 5.95,
+		"p95": 10.962,
+		"p99": 14.601
+	},
+	"frames_without_physics_ms": {
+		"max": 14.531,
+		"median": 3.05,
+		"min": 2.27,
+		"p95": 4.584,
+		"p99": 7.099
+	},
+	"level_ui_ms": {
+		"max": 1.754,
+		"median": 0.004,
+		"min": 0.003,
+		"p95": 0.01,
+		"p99": 1.198
+	},
+	"map_live_redraws": 1327,
+	"map_static_draw_builds": 2,
+	"maximum_allowed_stall_seconds": 1.0,
+	"median_fps": 290.951411114344,
+	"minimum_distance_m": 30.0,
+	"mission_route_active": true,
+	"mission_route_builds": 1,
+	"mission_route_points": 3,
+	"neighborhood_details": {
+		"active_batches": 90,
+		"active_cells": 39,
+		"active_postal_colliders": 30,
+		"business_cells": 22,
+		"cells": 71,
+		"counts": {
+			"business": 27,
+			"crosswalk_stripe": 346,
+			"hydrant": 45,
+			"mailbox": 24,
+			"postal_drop": 28,
+			"pothole": 24,
+			"road_dot": 875
+		},
+		"crossing_details": [
+			{
+				"across": "(-0.999883, 0.0, 0.015299)",
+				"forward": "(0.015299, 0.0, 0.999883)",
+				"id": "-12_1536",
+				"landing_a": "(-6.592036, -3.176319, 160.6086)",
+				"landing_b": "(4.306687, -3.170349, 160.4418)",
+				"position": "(-1.142674, -3.184, 160.5252)",
+				"street": "Old York Road",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.011203, 0.0, 0.999937)",
+				"forward": "(0.999937, 0.0, -0.011203)",
+				"id": "-15_-1864",
+				"landing_a": "(5.473621, 3.173199, -181.0492)",
+				"landing_b": "(5.351505, 3.177071, -191.9485)",
+				"position": "(5.412563, 3.147, -186.4989)",
+				"street": "Cator Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.999425, 0.0, -0.033897)",
+				"forward": "(-0.033897, 0.0, 0.999425)",
+				"id": "-1661_-2765",
+				"landing_a": "(-174.5861, 4.835155, -267.0405)",
+				"landing_b": "(-158.1955, 4.742931, -266.4846)",
+				"position": "(-166.3908, 4.789, -266.7626)",
+				"street": "Greenmount Avenue",
+				"stripes": 15,
+				"surface_checked": true,
+				"width": 15.0
+			},
+			{
+				"across": "(0.013225, 0.0, 0.999913)",
+				"forward": "(0.999913, 0.0, -0.013225)",
+				"id": "-1672_-1496",
+				"landing_a": "(-157.3958, 2.447075, -144.2808)",
+				"landing_b": "(-157.5399, 2.64925, -155.1798)",
+				"position": "(-157.4678, 2.368, -149.7303)",
+				"street": "Rose Hill Terrace",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.010415, 0.0, 0.999946)",
+				"forward": "(0.999946, 0.0, -0.010415)",
+				"id": "-1675_-2341",
+				"landing_a": "(-157.7418, 4.034161, -228.7683)",
+				"landing_b": "(-157.8553, 4.237183, -239.6677)",
+				"position": "(-157.7985, 4.019, -234.218)",
+				"street": "East 41st Street",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.020539, 0.0, 0.999789)",
+				"forward": "(0.999789, 0.0, 0.020539)",
+				"id": "-1691_-14",
+				"landing_a": "(-159.564, -0.985149, 4.202075)",
+				"landing_b": "(-159.3401, -0.775333, -6.695626)",
+				"position": "(-159.452, -1.177, -1.246776)",
+				"street": "Wyanoke Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.008518, 0.0, 0.999964)",
+				"forward": "(0.999964, 0.0, 0.008518)",
+				"id": "-1699_1014",
+				"landing_a": "(-160.2227, -3.602074, 108.6744)",
+				"landing_b": "(-160.1, -3.33514, 94.27489)",
+				"position": "(-160.1613, -3.818, 101.4746)",
+				"street": "East 39th Street",
+				"stripes": 13,
+				"surface_checked": true,
+				"width": 13.0
+			},
+			{
+				"across": "(-0.999904, 0.0, 0.013831)",
+				"forward": "(0.013831, 0.0, 0.999904)",
+				"id": "-16_1141",
+				"landing_a": "(-6.864402, -2.623581, 124.3764)",
+				"landing_b": "(4.034555, -2.728405, 124.2256)",
+				"position": "(-1.414923, -2.673, 124.301)",
+				"street": "Old York Road",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.003616, 0.0, 0.999993)",
+				"forward": "(0.999993, 0.0, 0.003616)",
+				"id": "-1709_2167",
+				"landing_a": "(-161.1748, -6.135326, 222.211)",
+				"landing_b": "(-161.1354, -5.93684, 211.3111)",
+				"position": "(-161.1551, -6.381, 216.7611)",
+				"street": "East 38th Street",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.010753, 0.0, -0.999942)",
+				"forward": "(-0.999942, 0.0, 0.010753)",
+				"id": "-21_-2359",
+				"landing_a": "(-9.122201, 3.356007, -241.2769)",
+				"landing_b": "(-9.004994, 3.152134, -230.3776)",
+				"position": "(-9.063598, 3.029, -235.8273)",
+				"street": "East 41st Street",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.034818, 0.0, 0.999394)",
+				"forward": "(0.999394, 0.0, -0.034818)",
+				"id": "-24_-2594",
+				"landing_a": "(4.759542, 3.853191, -254.2393)",
+				"landing_b": "(4.380029, 4.077061, -265.1327)",
+				"position": "(4.569786, 3.912, -259.686)",
+				"street": "East 41st Street",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.999974, 0.0, 0.007236)",
+				"forward": "(0.007236, 0.0, 0.999974)",
+				"id": "-2_-864",
+				"landing_a": "(-5.612565, 1.731304, -79.41175)",
+				"landing_b": "(5.287149, 1.874477, -79.49062)",
+				"position": "(-0.162708, 1.877, -79.45119)",
+				"street": "Old York Road",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.120972, 0.0, 0.992656)",
+				"forward": "(0.992656, 0.0, -0.120972)",
+				"id": "-8_1991",
+				"landing_a": "(6.800254, -4.625156, 203.7172)",
+				"landing_b": "(5.481664, -4.370029, 192.8973)",
+				"position": "(6.140959, -4.712, 198.3072)",
+				"street": "East 38th Street",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.003616, 0.0, -0.999993)",
+				"forward": "(-0.999993, 0.0, -0.003616)",
+				"id": "-8_2173",
+				"landing_a": "(-7.701248, -4.952011, 211.8689)",
+				"landing_b": "(-7.74066, -5.045567, 222.7688)",
+				"position": "(-7.720954, -5.186, 217.3189)",
+				"street": "East 38th Street",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.01905, 0.0, -0.999819)",
+				"forward": "(-0.999819, 0.0, 0.01905)",
+				"id": "-9_-1525",
+				"landing_a": "(-7.909563, 2.715611, -157.7866)",
+				"landing_b": "(-7.701914, 2.541607, -146.8886)",
+				"position": "(-7.805738, 2.328, -152.3376)",
+				"street": "Rose Hill Terrace",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.004705, 0.0, -0.999989)",
+				"forward": "(-0.999989, 0.0, -0.004705)",
+				"id": "0_0",
+				"landing_a": "(-6.924279, 0.182846, -5.482642)",
+				"landing_b": "(-6.975567, -0.015682, 5.417238)",
+				"position": "(-6.949923, 0.0, -0.032702)",
+				"street": "Wyanoke Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.99978, 0.0, 0.020972)",
+				"forward": "(0.020972, 0.0, 0.99978)",
+				"id": "1071_-2633",
+				"landing_a": "(101.824, 0.715122, -256.1952)",
+				"landing_b": "(112.7215, 0.513493, -256.4238)",
+				"position": "(107.2728, 0.603, -256.3095)",
+				"street": "Frisby Street",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.999784, 0.0, -0.0208)",
+				"forward": "(-0.0208, 0.0, -0.999784)",
+				"id": "1087_-1887",
+				"landing_a": "(113.9943, 0.019745, -195.8079)",
+				"landing_b": "(103.0966, 0.2262, -195.5811)",
+				"position": "(108.5454, -0.041, -195.6945)",
+				"street": "Frisby Street",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.998615, 0.0, 0.052612)",
+				"forward": "(0.052612, 0.0, 0.998615)",
+				"id": "1089_-65",
+				"landing_a": "(103.8572, -0.293419, 0.704109)",
+				"landing_b": "(114.7421, -0.504047, 0.13064)",
+				"position": "(109.2997, -0.399, 0.417375)",
+				"street": "Frisby Street",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.986949, 0.0, -0.161035)",
+				"forward": "(-0.161035, 0.0, 0.986949)",
+				"id": "1153_1294",
+				"landing_a": "(109.3087, -3.931519, 140.263)",
+				"landing_b": "(117.5991, -3.968204, 141.6156)",
+				"position": "(113.4539, -3.988, 140.9393)",
+				"street": "Frisby Street",
+				"stripes": 6,
+				"surface_checked": true,
+				"width": 7.0
+			},
+			{
+				"across": "(-0.429393, 0.0, 0.903118)",
+				"forward": "(0.903118, 0.0, 0.429393)",
+				"id": "1181_1613",
+				"landing_a": "(122.3898, -4.144836, 170.2437)",
+				"landing_b": "(127.7142, -4.021896, 159.045)",
+				"position": "(125.052, -4.247, 164.6443)",
+				"street": "Ellerslie Avenue",
+				"stripes": 11,
+				"surface_checked": true,
+				"width": 11.0
+			},
+			{
+				"across": "(-0.869895, 0.0, -0.493238)",
+				"forward": "(-0.493238, 0.0, 0.869895)",
+				"id": "1370_1703",
+				"landing_a": "(127.7643, -4.133553, 175.6599)",
+				"landing_b": "(137.2461, -4.01442, 181.0362)",
+				"position": "(132.5052, -4.17, 178.348)",
+				"street": "East 38th Street",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.998021, 0.0, 0.062884)",
+				"forward": "(0.062884, 0.0, 0.998021)",
+				"id": "1917_-111",
+				"landing_a": "(186.6658, -1.874798, -3.813039)",
+				"landing_b": "(197.5443, -1.874798, -4.498471)",
+				"position": "(192.105, -2.025, -4.155755)",
+				"street": "Lowndes Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.998036, 0.0, -0.062644)",
+				"forward": "(-0.062644, 0.0, -0.998036)",
+				"id": "1973_786",
+				"landing_a": "(202.0304, -1.823353, 66.60658)",
+				"landing_b": "(191.1518, -1.835739, 67.28939)",
+				"position": "(196.5911, -1.816, 66.94798)",
+				"street": "Lowndes Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.999915, 0.0, 0.013019)",
+				"forward": "(0.013019, 0.0, 0.999915)",
+				"id": "2335_-2670",
+				"landing_a": "(228.1409, -3.221371, -259.9876)",
+				"landing_b": "(239.04, -3.420578, -260.1295)",
+				"position": "(233.5905, -3.331, -260.0586)",
+				"street": "Wilsby Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.999912, 0.0, -0.013238)",
+				"forward": "(-0.013238, 0.0, -0.999912)",
+				"id": "2345_-1918",
+				"landing_a": "(239.8405, -3.74107, -198.7945)",
+				"landing_b": "(228.9415, -3.540756, -198.6502)",
+				"position": "(234.391, -3.965, -198.7224)",
+				"street": "Wilsby Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.999739, 0.0, 0.022836)",
+				"forward": "(0.022836, 0.0, 0.999739)",
+				"id": "2612_-1937",
+				"landing_a": "(255.9182, -4.242336, -186.6244)",
+				"landing_b": "(266.8153, -4.272354, -186.8733)",
+				"position": "(261.3667, -4.288, -186.7488)",
+				"street": "Wilsby Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.999783, 0.0, -0.020837)",
+				"forward": "(-0.020837, 0.0, -0.999783)",
+				"id": "2634_-942",
+				"landing_a": "(268.685, -3.790073, -101.2561)",
+				"landing_b": "(257.7874, -3.583668, -101.0289)",
+				"position": "(263.2362, -3.765, -101.1425)",
+				"street": "Wilsby Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.999938, 0.0, -0.011108)",
+				"forward": "(-0.011108, 0.0, -0.999938)",
+				"id": "2645_-164",
+				"landing_a": "(269.9155, -2.474964, -23.43611)",
+				"landing_b": "(259.0161, -2.434414, -23.31503)",
+				"position": "(264.4658, -2.406, -23.37557)",
+				"street": "Wilsby Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.862722, 0.0, -0.505679)",
+				"forward": "(-0.505679, 0.0, -0.862722)",
+				"id": "2864_255",
+				"landing_a": "(286.6724, -1.846901, 15.21137)",
+				"landing_b": "(277.2687, -1.846901, 20.72327)",
+				"position": "(281.9706, -1.997, 17.96732)",
+				"street": "Wilsby Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.019656, 0.0, -0.999807)",
+				"forward": "(-0.999807, 0.0, 0.019656)",
+				"id": "3434_-2692",
+				"landing_a": "(336.3142, -6.331886, -274.4774)",
+				"landing_b": "(336.5284, -6.510334, -263.5795)",
+				"position": "(336.4213, -6.713, -269.0284)",
+				"street": "East 41st Street",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.027769, 0.0, -0.999614)",
+				"forward": "(-0.999614, 0.0, 0.027769)",
+				"id": "3453_-1960",
+				"landing_a": "(338.1973, -6.663956, -201.2889)",
+				"landing_b": "(338.5, -6.641716, -190.3931)",
+				"position": "(338.3487, -6.95, -195.841)",
+				"street": "Cator Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.012459, 0.0, -0.999922)",
+				"forward": "(-0.999922, 0.0, 0.012459)",
+				"id": "3740_-1964",
+				"landing_a": "(366.9326, -7.203465, -201.755)",
+				"landing_b": "(367.0685, -7.287716, -190.8558)",
+				"position": "(367.0005, -7.495, -196.3054)",
+				"street": "Cator Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.962076, 0.0, 0.27278)",
+				"forward": "(0.27278, 0.0, 0.962076)",
+				"id": "4030_-983",
+				"landing_a": "(399.6315, -6.979, -90.12692)",
+				"landing_b": "(410.1181, -7.130169, -93.10022)",
+				"position": "(404.8748, -7.428, -91.61357)",
+				"street": "Elkader Road",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.96221, 0.0, -0.272309)",
+				"forward": "(-0.272309, 0.0, -0.96221)",
+				"id": "4158_-530",
+				"landing_a": "(418.2895, -6.195129, -64.28562)",
+				"landing_b": "(407.8014, -5.901829, -61.31746)",
+				"position": "(413.0454, -5.89, -62.80154)",
+				"street": "Elkader Road",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.938463, 0.0, 0.345379)",
+				"forward": "(0.345379, 0.0, 0.938463)",
+				"id": "4308_-641",
+				"landing_a": "(429.2382, -6.017426, -52.61236)",
+				"landing_b": "(439.4675, -6.181736, -56.37699)",
+				"position": "(434.3528, -6.604, -54.49467)",
+				"street": "North Hill Road",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.850712, 0.0, -0.525632)",
+				"forward": "(-0.525632, 0.0, 0.850712)",
+				"id": "5158_-2195",
+				"landing_a": "(505.1259, -12.69567, -215.9274)",
+				"landing_b": "(517.3761, -12.98846, -208.3583)",
+				"position": "(511.251, -13.22, -212.1428)",
+				"street": "Argonne Drive",
+				"stripes": 13,
+				"surface_checked": true,
+				"width": 13.0
+			}
+		],
+		"crossings": 37,
+		"fictional_businesses": true,
+		"postal_cells": 33,
+		"records": 1369,
+		"setup_ms": 387,
+		"shared_meshes": 4,
+		"span_x": 766.383773803711,
+		"span_z": 574.045867919922
+	},
+	"notes": "Wall-clock frames during actual forward input; active collision, normal chase camera, HUD, NPCs and traffic. Half-second movement windows detect stalls; more than one cumulative stalled second invalidates play. CPU Performance monitors are rolling engine observations, not per-frame traces. Direct viewport GPU/render CPU and global render setup timings are milliseconds; GPU results can lag. Screenshot writes plus 1.3s cooldown excluded. Slow/event frame counters indicate correlation, not causation.",
+	"npc_count": 1235,
+	"npc_simulated_seconds": 20.0,
+	"offscreen_validation": true,
+	"optimization_disabled": false,
+	"p95_frame_equivalent_fps": 120.105693009849,
+	"park_courts": {
+		"arm_colliders": 37,
+		"audit": {
+			"civic_removed": 1,
+			"courts": 21.0,
+			"covered_greens": 21.0,
+			"excluded_greens": 27.0,
+			"full_courts": 17.0,
+			"green_coverage": [
+				{
+					"court_id": "park_court_0",
+					"green_id": "green_000",
+					"reason": "existing_full_court_preserved",
+					"status": "covered"
+				},
+				{
+					"court_id": "park_court_1",
+					"green_id": "green_001",
+					"reason": "existing_full_court_preserved",
+					"status": "covered"
+				},
+				{
+					"area_m2": 3022.72,
+					"bounds_xz": [
+						5.614,
+						2.698,
+						91.367,
+						129.302
+					],
+					"court_id": "park_court_2",
+					"geometry_candidates": 20.0,
+					"green_id": "green_002",
+					"name": "Neighborhood green 3",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 20.0,
+							"length_m": 24.0,
+							"selected": true,
+							"terrain_candidates": 20.0,
+							"width_m": 13.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"court_id": "park_court_3",
+					"green_id": "green_003",
+					"reason": "existing_full_court_preserved",
+					"status": "covered"
+				},
+				{
+					"court_id": "park_court_4",
+					"green_id": "green_004",
+					"reason": "existing_full_court_preserved",
+					"status": "covered"
+				},
+				{
+					"area_m2": 2036.83,
+					"bounds_xz": [
+						-159.765,
+						148.852,
+						-59.223,
+						182.358
+					],
+					"court_id": "park_court_5",
+					"geometry_candidates": 1502.0,
+					"green_id": "green_005",
+					"name": "Neighborhood green 6",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 103.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 103.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 1399.0,
+							"length_m": 24.0,
+							"selected": true,
+							"terrain_candidates": 1399.0,
+							"width_m": 13.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"court_id": "park_court_6",
+					"green_id": "green_006",
+					"reason": "existing_full_court_preserved",
+					"status": "covered"
+				},
+				{
+					"court_id": "park_court_7",
+					"green_id": "green_007",
+					"reason": "existing_full_court_preserved",
+					"status": "covered"
+				},
+				{
+					"area_m2": 1507.66,
+					"bounds_xz": [
+						-79.536,
+						-115.722,
+						-7.418,
+						-88.533
+					],
+					"court_id": "park_court_8",
+					"geometry_candidates": 434.0,
+					"green_id": "green_008",
+					"name": "Neighborhood pitch / Neighborhood playground",
+					"named_parks": [
+						"Neighborhood pitch",
+						"Neighborhood playground"
+					],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 434.0,
+							"length_m": 28.0,
+							"selected": true,
+							"terrain_candidates": 434.0,
+							"width_m": 15.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"area_m2": 1446.8,
+					"bounds_xz": [
+						172.422,
+						-165.029,
+						254.816,
+						-126.727
+					],
+					"court_id": "park_court_9",
+					"geometry_candidates": 616.0,
+					"green_id": "green_009",
+					"name": "Neighborhood green 10",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 133.0,
+							"length_m": 24.0,
+							"selected": false,
+							"terrain_candidates": 133.0,
+							"width_m": 13.0
+						},
+						{
+							"geometry_candidates": 483.0,
+							"length_m": 22.0,
+							"selected": true,
+							"terrain_candidates": 483.0,
+							"width_m": 12.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"area_m2": 1382.61,
+					"bounds_xz": [
+						145.917,
+						-2.774,
+						189.751,
+						95.138
+					],
+					"court_id": "park_court_10",
+					"geometry_candidates": 788.0,
+					"green_id": "green_010",
+					"name": "Neighborhood green 11",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 24.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 13.0
+						},
+						{
+							"geometry_candidates": 36.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 36.0,
+							"width_m": 12.0
+						},
+						{
+							"geometry_candidates": 179.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 179.0,
+							"width_m": 11.0
+						},
+						{
+							"geometry_candidates": 573.0,
+							"length_m": 20.0,
+							"selected": true,
+							"terrain_candidates": 573.0,
+							"width_m": 10.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"area_m2": 1369.43,
+					"bounds_xz": [
+						393.068,
+						-191.588,
+						450.568,
+						-106.145
+					],
+					"court_id": "park_court_11",
+					"geometry_candidates": 244.0,
+					"green_id": "green_011",
+					"name": "Neighborhood green 12",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 24.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 13.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 12.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 11.0
+						},
+						{
+							"geometry_candidates": 20.0,
+							"length_m": 20.0,
+							"selected": false,
+							"terrain_candidates": 20.0,
+							"width_m": 10.0
+						},
+						{
+							"geometry_candidates": 78.0,
+							"length_m": 18.0,
+							"selected": false,
+							"terrain_candidates": 78.0,
+							"width_m": 10.0
+						},
+						{
+							"geometry_candidates": 35.0,
+							"length_m": 11.0,
+							"selected": false,
+							"terrain_candidates": 35.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 111.0,
+							"length_m": 10.0,
+							"selected": true,
+							"terrain_candidates": 111.0,
+							"width_m": 14.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"area_m2": 1223.5,
+					"bounds_xz": [
+						299.42,
+						-34.149,
+						415.559,
+						32.451
+					],
+					"court_id": "park_court_12",
+					"geometry_candidates": 831.0,
+					"green_id": "green_013",
+					"name": "Neighborhood green 14",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 24.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 13.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 12.0
+						},
+						{
+							"geometry_candidates": 72.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 72.0,
+							"width_m": 11.0
+						},
+						{
+							"geometry_candidates": 341.0,
+							"length_m": 20.0,
+							"selected": false,
+							"terrain_candidates": 341.0,
+							"width_m": 10.0
+						},
+						{
+							"geometry_candidates": 377.0,
+							"length_m": 18.0,
+							"selected": false,
+							"terrain_candidates": 377.0,
+							"width_m": 10.0
+						},
+						{
+							"geometry_candidates": 41.0,
+							"length_m": 11.0,
+							"selected": true,
+							"terrain_candidates": 41.0,
+							"width_m": 15.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"area_m2": 1167.84,
+					"bounds_xz": [
+						156.267,
+						-53.734,
+						257.319,
+						-19.836
+					],
+					"court_id": "park_court_13",
+					"geometry_candidates": 19.0,
+					"green_id": "green_014",
+					"name": "Neighborhood green 15",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 24.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 13.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 12.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 11.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 20.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 10.0
+						},
+						{
+							"geometry_candidates": 19.0,
+							"length_m": 18.0,
+							"selected": true,
+							"terrain_candidates": 19.0,
+							"width_m": 10.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"area_m2": 1062.08,
+					"bounds_xz": [
+						-79.894,
+						-56.771,
+						-7.088,
+						-38.445
+					],
+					"court_id": "park_court_14",
+					"geometry_candidates": 80.0,
+					"green_id": "green_015",
+					"name": "Neighborhood green 16",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 80.0,
+							"length_m": 24.0,
+							"selected": true,
+							"terrain_candidates": 80.0,
+							"width_m": 13.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"area_m2": 932.02,
+					"bounds_xz": [
+						7.031,
+						-52.781,
+						61.506,
+						-7.589
+					],
+					"court_id": "park_court_15",
+					"geometry_candidates": 39.0,
+					"green_id": "green_018",
+					"name": "Neighborhood green 19",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 39.0,
+							"length_m": 24.0,
+							"selected": true,
+							"terrain_candidates": 39.0,
+							"width_m": 13.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"area_m2": 814.51,
+					"bounds_xz": [
+						184.546,
+						85.206,
+						253.078,
+						133.722
+					],
+					"court_id": "park_court_16",
+					"geometry_candidates": 21.0,
+					"green_id": "green_019",
+					"name": "Neighborhood green 20",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 24.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 13.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 12.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 11.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 20.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 10.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 18.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 10.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 11.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 10.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 14.0
+						},
+						{
+							"geometry_candidates": 21.0,
+							"length_m": 9.0,
+							"selected": true,
+							"terrain_candidates": 21.0,
+							"width_m": 12.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"court_id": "park_court_17",
+					"green_id": "green_022",
+					"reason": "removed_at_user_request",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 625.76,
+					"bounds_xz": [
+						99.252,
+						-58.326,
+						178.517,
+						-30.677
+					],
+					"court_id": "park_court_18",
+					"geometry_candidates": 36.0,
+					"green_id": "green_023",
+					"name": "Neighborhood green 24",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 24.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 13.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 12.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 11.0
+						},
+						{
+							"geometry_candidates": 9.0,
+							"length_m": 20.0,
+							"selected": false,
+							"terrain_candidates": 9.0,
+							"width_m": 10.0
+						},
+						{
+							"geometry_candidates": 27.0,
+							"length_m": 18.0,
+							"selected": true,
+							"terrain_candidates": 27.0,
+							"width_m": 10.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"area_m2": 497.88,
+					"bounds_xz": [
+						121.712,
+						69.573,
+						148.222,
+						113.152
+					],
+					"court_id": "park_court_19",
+					"geometry_candidates": 39.0,
+					"green_id": "green_026",
+					"name": "Neighborhood green 27",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 24.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 13.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 12.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 11.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 20.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 10.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 18.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 10.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 11.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 5.0,
+							"length_m": 10.0,
+							"selected": false,
+							"terrain_candidates": 5.0,
+							"width_m": 14.0
+						},
+						{
+							"geometry_candidates": 34.0,
+							"length_m": 9.0,
+							"selected": true,
+							"terrain_candidates": 34.0,
+							"width_m": 12.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"area_m2": 430.87,
+					"bounds_xz": [
+						-192.313,
+						-121.818,
+						-178.281,
+						-89.718
+					],
+					"court_id": "park_court_20",
+					"geometry_candidates": 12.0,
+					"green_id": "green_030",
+					"name": "Neighborhood green 31",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 24.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 13.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 12.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 11.0
+						},
+						{
+							"geometry_candidates": 12.0,
+							"length_m": 20.0,
+							"selected": true,
+							"terrain_candidates": 12.0,
+							"width_m": 10.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"area_m2": 402.97,
+					"bounds_xz": [
+						-191.572,
+						-200.882,
+						-177.723,
+						-171.336
+					],
+					"court_id": "park_court_21",
+					"geometry_candidates": 6.0,
+					"green_id": "green_033",
+					"name": "Neighborhood green 34",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 24.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 13.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 12.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 11.0
+						},
+						{
+							"geometry_candidates": 6.0,
+							"length_m": 20.0,
+							"selected": true,
+							"terrain_candidates": 6.0,
+							"width_m": 10.0
+						}
+					],
+					"status": "covered"
+				}
+			],
+			"green_inventory": {
+				"grass_components": 1292.0,
+				"minimum_apron_footprint_m": [
+					16.0,
+					13.0
+				],
+				"minimum_green_area_m2": 250.0,
+				"minimum_playing_area_m": [
+					12.0,
+					9.0
+				],
+				"minimum_retained_slab_m": [
+					14.0,
+					11.0
+				],
+				"named_parks": [
+					{
+						"area_m2": 265.65,
+						"green_ids": [
+							"green_008"
+						],
+						"name": "Neighborhood playground",
+						"park_index": 0.0
+					},
+					{
+						"area_m2": 161.1,
+						"green_ids": [
+							"green_008"
+						],
+						"name": "Neighborhood pitch",
+						"park_index": 1.0
+					},
+					{
+						"area_m2": 151.23,
+						"green_ids": [
+							"green_001"
+						],
+						"name": "Neighborhood playground",
+						"park_index": 2.0
+					},
+					{
+						"area_m2": 209.53,
+						"green_ids": [
+							"green_001"
+						],
+						"name": "Neighborhood playground",
+						"park_index": 3.0
+					},
+					{
+						"area_m2": 1959.84,
+						"green_ids": [
+							"green_003"
+						],
+						"name": "Community green 1",
+						"park_index": 4.0
+					},
+					{
+						"area_m2": 1946.49,
+						"green_ids": [
+							"green_004"
+						],
+						"name": "Community green 2",
+						"park_index": 5.0
+					},
+					{
+						"area_m2": 1890.15,
+						"green_ids": [
+							"green_000"
+						],
+						"name": "Community green 3",
+						"park_index": 6.0
+					}
+				],
+				"retained_access_ramps_m": {
+					"length_each": [
+						2.5,
+						8.0
+					],
+					"width": 3.0
+				},
+				"small_lawns_omitted": 1244.0
+			},
+			"hoops": 38.0,
+			"layout_changes": [
+				{
+					"change": "upgraded_to_full",
+					"id": "park_court_2",
+					"length_m": 24.0,
+					"width_m": 13.0
+				},
+				{
+					"change": "upgraded_to_full",
+					"id": "park_court_5",
+					"length_m": 24.0,
+					"width_m": 13.0
+				},
+				{
+					"change": "upgraded_to_full",
+					"id": "park_court_8",
+					"length_m": 28.0,
+					"width_m": 15.0
+				},
+				{
+					"change": "upgraded_to_full",
+					"id": "park_court_9",
+					"length_m": 22.0,
+					"width_m": 12.0
+				},
+				{
+					"change": "upgraded_to_full",
+					"id": "park_court_10",
+					"length_m": 20.0,
+					"width_m": 10.0
+				},
+				{
+					"change": "half_retained_no_safe_full_fit",
+					"id": "park_court_11"
+				},
+				{
+					"change": "half_retained_no_safe_full_fit",
+					"id": "park_court_12"
+				},
+				{
+					"change": "upgraded_to_full",
+					"id": "park_court_13",
+					"length_m": 18.0,
+					"width_m": 10.0
+				},
+				{
+					"change": "upgraded_to_full",
+					"id": "park_court_14",
+					"length_m": 24.0,
+					"width_m": 13.0
+				},
+				{
+					"change": "upgraded_to_full",
+					"id": "park_court_15",
+					"length_m": 24.0,
+					"width_m": 13.0
+				},
+				{
+					"change": "half_retained_no_safe_full_fit",
+					"id": "park_court_16"
+				},
+				{
+					"change": "removed",
+					"id": "park_court_17"
+				},
+				{
+					"change": "upgraded_to_full",
+					"id": "park_court_18",
+					"length_m": 18.0,
+					"width_m": 10.0
+				},
+				{
+					"change": "half_retained_no_safe_full_fit",
+					"id": "park_court_19"
+				},
+				{
+					"change": "upgraded_to_full",
+					"id": "park_court_20",
+					"length_m": 20.0,
+					"width_m": 10.0
+				},
+				{
+					"change": "upgraded_to_full",
+					"id": "park_court_21",
+					"length_m": 20.0,
+					"width_m": 10.0
+				}
+			],
+			"max_apron_slope_deg": 3.85644,
+			"max_court_grade": 0.015,
+			"max_fill_m": 0.68092,
+			"new_full_court_civic_overlap_m2": 0.0,
+			"placement_limits": {
+				"max_apron_slope_deg": 4.0,
+				"max_court_grade": 0.015,
+				"max_fill_m": 0.8
+			},
+			"removed_vegetation_records": 24.0,
+			"reservation_records_removed": 0.0,
+			"retained_bushes": 288.0,
+			"retained_trees": 1774.0,
+			"road_building_overlap_m2": 0.0,
+			"source_ground_sha256": "c55db8f21bb9fbd8b5d100aef1c4ab4272d59109b58cbd61fa24bb05a6cebf60",
+			"source_height_method": "exact exported grass triangles",
+			"tree_trunks_removed_from_courts": 32.0,
+			"triangles": 45098.0
+		},
+		"backboard_colliders": 37,
+		"courts": 20,
+		"draw_batches": 19,
+		"enabled": true,
+		"floor_colliders": 20,
+		"hoops": 37,
+		"pole_colliders": 37
+	},
+	"parked_cars": {
+		"active_colliders": 0,
+		"animated_spinner_cars": 0,
+		"attempts": 281,
+		"baseline": 144,
+		"benchmark_legacy_catalog": false,
+		"damaged_cars": 0,
+		"draw_batches": 19,
+		"far": 65,
+		"far_radius": 180.0,
+		"flat_tires": 0,
+		"hidden": 151,
+		"increase_percent": 50.0,
+		"kinds": {
+			"box_sedan": 34,
+			"cargo_van": 16,
+			"compact": 33,
+			"compact_suv": 17,
+			"hatchback": 33,
+			"long_sedan": 17,
+			"midsize_sedan": 33,
+			"minivan": 17,
+			"pickup": 16
+		},
+		"near": 0,
+		"presence_radius": 55.0,
+		"rejected": {
+			"civic_approach": 5,
+			"driveway_or_curb_cut": 1,
+			"junction": 42,
+			"occupied": 11,
+			"tree_trunk": 6
+		},
+		"street_count": 16,
+		"streets": {
+			"Argonne Drive": 16,
+			"Cator Avenue": 20,
+			"Dumbarton Avenue": 16,
+			"East 38th Street": 18,
+			"East 39th Street": 7,
+			"East 41st Street": 17,
+			"Elkader Road": 16,
+			"Ellerslie Avenue": 5,
+			"Frisby Street": 18,
+			"Greenmount Avenue": 20,
+			"Lowndes Avenue": 7,
+			"North Hill Road": 2,
+			"Pen Lucy Avenue": 2,
+			"Rose Hill Terrace": 16,
+			"Wilsby Avenue": 16,
+			"Wyanoke Avenue": 20
+		},
+		"target": 216,
+		"total": 216,
+		"visible_spinner_cars": 0
+	},
+	"paused_during_sample": false,
+	"physics_components_ms": {
+		"clock": {
+			"max": 0.091,
+			"median": 0.005,
+			"min": 0.003,
+			"p95": 0.069,
+			"p99": 0.078
+		},
+		"combat": {
+			"max": 0.03,
+			"median": 0.01,
+			"min": 0.007,
+			"p95": 0.015,
+			"p99": 0.019
+		},
+		"missions": {
+			"max": 0.007,
+			"median": 0.002,
+			"min": 0.001,
+			"p95": 0.003,
+			"p99": 0.004
+		},
+		"npcs": {
+			"max": 1.207,
+			"median": 0.538,
+			"min": 0.38,
+			"p95": 0.809,
+			"p99": 0.964
+		},
+		"residents": {
+			"max": 1.097,
+			"median": 0.204,
+			"min": 0.133,
+			"p95": 0.328,
+			"p99": 0.756
+		},
+		"traffic": {
+			"max": 5.461,
+			"median": 2.392,
+			"min": 1.831,
+			"p95": 3.689,
+			"p99": 4.51
+		}
+	},
+	"physics_cpu_ms": {
+		"max": 8.281,
+		"median": 6.562,
+		"min": 4.857,
+		"p95": 7.938,
+		"p99": 7.938
+	},
+	"physics_fps": 59.9995740030246,
+	"physics_frames": 1200,
+	"player_distance_m": 75.4454731456935,
+	"player_end": [
+		-5.55500602722168,
+		1.11716687679291,
+		-64.3579330444336
+	],
+	"player_physics_ms": {
+		"max": 0.997,
+		"median": 0.417,
+		"min": 0.199,
+		"p95": 0.755,
+		"p99": 0.881
+	},
+	"player_start": [
+		-6.72599983215332,
+		-0.108433023095131,
+		9.99699974060059
+	],
+	"power_grid": {
+		"audit": {
+			"civic_removed_poles": 25,
+			"collision_bodies": 0.0,
+			"filtered_spans": 7,
+			"isolated_poles": 0,
+			"minimum_wire_ground_clearance_m": 8.182,
+			"placement": "Exact exported sidewalk/ground; reserved entrances, courts, architecture, trees and yard props",
+			"poles": 178.0,
+			"source_geometry": "current .work/city/build/pen_lucy_geom.json",
+			"source_spans": 137,
+			"spans": 110.0,
+			"streets": {
+				"Argonne Drive": 19.0,
+				"Cator Avenue": 17.0,
+				"Dumbarton Avenue": 14.0,
+				"East 38th Street": 11.0,
+				"East 39th Street": 5.0,
+				"East 41st Street": 23.0,
+				"Elkader Road": 8.0,
+				"Ellerslie Avenue": 6.0,
+				"Frisby Street": 8.0,
+				"Greenmount Avenue": 16.0,
+				"Lowndes Avenue": 3.0,
+				"North Hill Road": 1.0,
+				"Old York Road": 17.0,
+				"Pen Lucy Avenue": 1.0,
+				"Rose Hill Terrace": 5.0,
+				"Wilsby Avenue": 9.0,
+				"Wyanoke Avenue": 15.0
+			},
+			"transformers": 15
+		},
+		"cells": 60,
+		"collision_bodies": 0,
+		"enabled": true,
+		"per_frame_processing": false,
+		"poles": 153,
+		"setup_ms": 108,
+		"shadow_casters": 0,
+		"spans": 130,
+		"visible_cells": 38,
+		"wire_vertices": 75168
+	},
+	"private_viewport": true,
+	"process_cpu_ms": {
+		"max": 25.347,
+		"median": 10.608,
+		"min": 7.062,
+		"p95": 19.551,
+		"p99": 19.551
+	},
+	"quality": "balanced",
+	"render_frame_setup_cpu_ms": {
+		"max": 0.441,
+		"median": 0.013,
+		"min": 0.007,
+		"p95": 0.197,
+		"p99": 0.255
+	},
+	"render_inventory_all_loaded_surfaces_not_draw_calls": {
+		"city": {
+			"nodes": 42,
+			"surfaces": 297
+		},
+		"details": {
+			"nodes": 717,
+			"surfaces": 1022
+		},
+		"people": {
+			"nodes": 423,
+			"surfaces": 825
+		},
+		"vehicles": {
+			"nodes": 511,
+			"surfaces": 1698
+		}
+	},
+	"render_optimizer": {
+		"batch_meshes": 21,
+		"batch_surfaces": 316,
+		"batch_triangles": 1161413,
+		"building_meshes": 363,
+		"building_surfaces": 3901,
+		"building_triangles": 1161413,
+		"cache_hit": true,
+		"cache_saved": false,
+		"collision_nodes_preserved": true,
+		"collision_shapes_after": 367,
+		"collision_shapes_before": 367,
+		"enabled": true,
+		"lod_bias": 1.0,
+		"material_palette": {
+			"cache_builds": 0,
+			"cache_hits": 21,
+			"enabled": true,
+			"merged_surfaces": 429,
+			"palette_materials": 4,
+			"setup_ms": 341,
+			"surfaces_after": 316,
+			"surfaces_before": 745
+		},
+		"quality": "balanced",
+		"setup_ms": 288,
+		"shadow_distance": 90.0,
+		"shared_materials": 59,
+		"source_meshes": 367,
+		"source_surfaces": 3914,
+		"visible_surface_budget": 329
+	},
+	"render_scale": 1.0,
+	"rendered_frames": 4483,
+	"requested_resolution": [
+		1920,
+		1080
+	],
+	"residents": {
+		"activation_waits": 0,
+		"actors": {
+			"daily_aisha_bell": {
+				"activity": "home",
+				"blocked": false,
+				"dead": false,
+				"destination": "Home frontage · morning",
+				"distance_walked": 0.0,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_aisha_bell",
+				"moving": false,
+				"name": "Aisha Bell",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(-159.7699, 0.667254, -63.69289)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": true,
+				"route_cursor": 1,
+				"route_size": 1,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 0.0
+			},
+			"daily_andre_foster": {
+				"activity": "work",
+				"blocked": false,
+				"dead": false,
+				"destination": "Delivery handoff",
+				"distance_walked": 23.1053333333333,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_andre_foster",
+				"moving": false,
+				"name": "Andre Foster",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(393.7533, -7.259574, -107.465)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": false,
+				"route_cursor": 23,
+				"route_size": 81,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 0.317730924415547
+			},
+			"daily_calvin_reed": {
+				"activity": "home",
+				"blocked": false,
+				"dead": false,
+				"destination": "Home frontage · morning",
+				"distance_walked": 0.0,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_calvin_reed",
+				"moving": false,
+				"name": "Calvin Reed",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(-114.7102, -0.77992, 5.086021)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": true,
+				"route_cursor": 1,
+				"route_size": 1,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 0.0
+			},
+			"daily_celia_grant": {
+				"activity": "work",
+				"blocked": false,
+				"dead": false,
+				"destination": "Community pantry pickup",
+				"distance_walked": 20.2171666666667,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_celia_grant",
+				"moving": false,
+				"name": "Celia Grant",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(41.76531, -3.469295, 140.8764)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": false,
+				"route_cursor": 21,
+				"route_size": 23,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 1.73290945738679
+			},
+			"daily_devon_clarke": {
+				"activity": "home",
+				"blocked": false,
+				"dead": false,
+				"destination": "Home frontage · morning",
+				"distance_walked": 0.0,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_devon_clarke",
+				"moving": false,
+				"name": "Devon Clarke",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(473.2406, -8.378255, -101.9047)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": true,
+				"route_cursor": 1,
+				"route_size": 1,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 0.0
+			},
+			"daily_ernest_cole": {
+				"activity": "work",
+				"blocked": false,
+				"dead": false,
+				"destination": "Street sweeping round",
+				"distance_walked": 27.4375833333334,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_ernest_cole",
+				"moving": false,
+				"name": "Ernest Cole",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(101.4305, 0.682054, -253.4941)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": false,
+				"route_cursor": 28,
+				"route_size": 81,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 0.0209711424509088
+			},
+			"daily_estelle_ross": {
+				"activity": "home",
+				"blocked": false,
+				"dead": false,
+				"destination": "Home frontage · morning",
+				"distance_walked": 0.0,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_estelle_ross",
+				"moving": false,
+				"name": "Estelle Ross",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(-133.6037, -0.548356, -6.800819)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": true,
+				"route_cursor": 1,
+				"route_size": 1,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 0.0
+			},
+			"daily_ines_morales": {
+				"activity": "work",
+				"blocked": false,
+				"dead": false,
+				"destination": "Flower cart",
+				"distance_walked": 23.1053333333333,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_ines_morales",
+				"moving": false,
+				"name": "Ines Morales",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(205.3858, -2.862149, -86.57708)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": false,
+				"route_cursor": 23,
+				"route_size": 81,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": -1.54118344895956
+			},
+			"daily_june_harris": {
+				"activity": "home",
+				"blocked": false,
+				"dead": false,
+				"destination": "Home frontage · morning",
+				"distance_walked": 0.0,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_june_harris",
+				"moving": false,
+				"name": "June Harris",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(26.59134, -3.340924, 133.075)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": true,
+				"route_cursor": 1,
+				"route_size": 1,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 0.0
+			},
+			"daily_leon_turner": {
+				"activity": "work",
+				"blocked": false,
+				"dead": false,
+				"destination": "Recycling collection point",
+				"distance_walked": 24.1816874001622,
+				"enabled": true,
+				"fade": 0.236412486482844,
+				"has_target": true,
+				"id": "daily_leon_turner",
+				"moving": true,
+				"name": "Leon Turner",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": true,
+				"position": "(68.53552, 0.980341, -82.52856)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": false,
+				"route_cursor": 25,
+				"route_size": 81,
+				"schedule_transitions": 2,
+				"target": "(67.72157, 1.001422, -82.50449)",
+				"yaw": -1.54122630876237
+			},
+			"daily_luz_santos": {
+				"activity": "work",
+				"blocked": false,
+				"dead": false,
+				"destination": "Market produce table",
+				"distance_walked": 24.5494166666667,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_luz_santos",
+				"moving": false,
+				"name": "Luz Santos",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(257.9384, -3.244328, -70.17019)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": false,
+				"route_cursor": 25,
+				"route_size": 81,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": -3.12246836154305
+			},
+			"daily_marcus_webb": {
+				"activity": "home",
+				"blocked": false,
+				"dead": false,
+				"destination": "Home frontage · morning",
+				"distance_walked": 0.0,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_marcus_webb",
+				"moving": false,
+				"name": "Marcus Webb",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(171.2682, -1.194394, -271.0639)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": true,
+				"route_cursor": 1,
+				"route_size": 1,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 0.0
+			},
+			"daily_miriam_owens": {
+				"activity": "work",
+				"blocked": false,
+				"dead": false,
+				"destination": "Garden advice table",
+				"distance_walked": 22.0832639597356,
+				"enabled": true,
+				"fade": 0.0,
+				"has_target": true,
+				"id": "daily_miriam_owens",
+				"moving": true,
+				"name": "Miriam Owens",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": true,
+				"position": "(5.796269, 0.680556, -31.80155)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": false,
+				"route_cursor": 23,
+				"route_size": 81,
+				"schedule_transitions": 2,
+				"target": "(5.793259, 0.682383, -32.7163)",
+				"yaw": -3.1383016772433
+			},
+			"daily_nadine_brooks": {
+				"activity": "work",
+				"blocked": false,
+				"dead": false,
+				"destination": "Porch plant care",
+				"distance_walked": 19.3678022986278,
+				"enabled": true,
+				"fade": 0.0,
+				"has_target": true,
+				"id": "daily_nadine_brooks",
+				"moving": true,
+				"name": "Nadine Brooks",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": true,
+				"position": "(5.783356, 0.167084, 5.089157)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": false,
+				"route_cursor": 20,
+				"route_size": 81,
+				"schedule_transitions": 2,
+				"target": "(5.79821, 0.180453, 4.449657)",
+				"yaw": 3.11836979438106
+			},
+			"daily_oscar_bennett": {
+				"activity": "home",
+				"blocked": false,
+				"dead": false,
+				"destination": "Home frontage · morning",
+				"distance_walked": 0.0,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_oscar_bennett",
+				"moving": false,
+				"name": "Oscar Bennett",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(269.7247, -3.382661, -71.00017)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": true,
+				"route_cursor": 1,
+				"route_size": 1,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 0.0
+			},
+			"daily_pearl_sutton": {
+				"activity": "work",
+				"blocked": false,
+				"dead": false,
+				"destination": "Seed exchange",
+				"distance_walked": 21.66125,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_pearl_sutton",
+				"moving": false,
+				"name": "Pearl Sutton",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(-51.48132, 3.736841, -157.4065)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": false,
+				"route_cursor": 22,
+				"route_size": 73,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 1.58984948168511
+			},
+			"daily_ruth_daniels": {
+				"activity": "work",
+				"blocked": false,
+				"dead": false,
+				"destination": "Book exchange",
+				"distance_walked": 27.4375833333334,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_ruth_daniels",
+				"moving": false,
+				"name": "Ruth Daniels",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(-107.7379, -4.595688, 222.8553)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": false,
+				"route_cursor": 28,
+				"route_size": 81,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 1.56719334395816
+			},
+			"daily_samir_haddad": {
+				"activity": "home",
+				"blocked": false,
+				"dead": false,
+				"destination": "Home frontage · morning",
+				"distance_walked": 0.0,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_samir_haddad",
+				"moving": false,
+				"name": "Samir Haddad",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(-177.815, -1.612222, 20.56987)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": true,
+				"route_cursor": 1,
+				"route_size": 1,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 0.0
+			},
+			"daily_theo_washington": {
+				"activity": "work",
+				"blocked": false,
+				"dead": false,
+				"destination": "Tool lending table",
+				"distance_walked": 25.9935,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_theo_washington",
+				"moving": false,
+				"name": "Theo Washington",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(188.7172, -2.077802, 35.85549)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": false,
+				"route_cursor": 26,
+				"route_size": 70,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 0.0630185700200053
+			},
+			"daily_walter_price": {
+				"activity": "work",
+				"blocked": false,
+				"dead": false,
+				"destination": "Front-step repairs",
+				"distance_walked": 24.5494166666667,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_walter_price",
+				"moving": false,
+				"name": "Walter Price",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(308.6834, -6.032976, -200.9192)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": false,
+				"route_cursor": 25,
+				"route_size": 81,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 1.5985686589509
+			}
+		},
+		"count": 20,
+		"expected": 20,
+		"far": 17,
+		"far_updates": 683,
+		"last_tick_usec": 208,
+		"logical_waits": 0,
+		"max_tick_usec": 1095,
+		"near": 3,
+		"near_updates": 2980,
+		"path_builds": 20,
+		"pending_routes": 0,
+		"placement_failures": [],
+		"route_failures": [],
+		"routines_enabled": true
+	},
+	"resolution": [
+		1920,
+		1080
+	],
+	"route_distance_cache": true,
+	"route_waypoint_reached": 42,
+	"route_waypoint_start": 0,
+	"sample_seconds": 20.000142,
+	"sample_unix_end": 1793457621.893,
+	"sample_unix_start": 1793457601.879,
+	"slow_or_event_frames": [
+		{
+			"elapsed_ms": 597.424,
+			"events": {
+				"sky_updates": 1
+			},
+			"frame_ms": 8.986,
+			"gpu_ms": 1.19400000572205,
+			"render_cpu_ms": 2.00999999046326
+		},
+		{
+			"elapsed_ms": 924.321,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 9.162,
+			"gpu_ms": 1.22599995136261,
+			"render_cpu_ms": 1.86800003051758
+		},
+		{
+			"elapsed_ms": 1191.674,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 21.007,
+			"gpu_ms": 1.28400003910065,
+			"render_cpu_ms": 2.03099989891052
+		},
+		{
+			"elapsed_ms": 1196.258,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 4.584,
+			"gpu_ms": 1.28699994087219,
+			"render_cpu_ms": 2.8840000629425
+		},
+		{
+			"elapsed_ms": 1421.971,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 13.896,
+			"gpu_ms": 1.50999999046326,
+			"render_cpu_ms": 1.80499994754791
+		},
+		{
+			"elapsed_ms": 1429.471,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 7.5,
+			"gpu_ms": 1.5110000371933,
+			"render_cpu_ms": 1.91299998760223
+		},
+		{
+			"elapsed_ms": 1678.371,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 12.065,
+			"gpu_ms": 1.49899995326996,
+			"render_cpu_ms": 1.99699997901917
+		},
+		{
+			"elapsed_ms": 2093.651,
+			"events": {
+				"sky_updates": 1
+			},
+			"frame_ms": 6.55,
+			"gpu_ms": 1.26300001144409,
+			"render_cpu_ms": 1.682000041008
+		},
+		{
+			"elapsed_ms": 2192.136,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 15.411,
+			"gpu_ms": 1.25499999523163,
+			"render_cpu_ms": 1.91400003433228
+		},
+		{
+			"elapsed_ms": 2686.341,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 3.379,
+			"gpu_ms": 1.55099999904633,
+			"render_cpu_ms": 1.78100001811981
+		},
+		{
+			"elapsed_ms": 3589.488,
+			"events": {
+				"sky_updates": 1
+			},
+			"frame_ms": 7.072,
+			"gpu_ms": 1.25499999523163,
+			"render_cpu_ms": 1.97800004482269
+		},
+		{
+			"elapsed_ms": 3951.182,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 16.046,
+			"gpu_ms": 1.26499998569489,
+			"render_cpu_ms": 2.11999988555908
+		},
+		{
+			"elapsed_ms": 3954.737,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 3.555,
+			"gpu_ms": 1.25600004196167,
+			"render_cpu_ms": 1.94700002670288
+		},
+		{
+			"elapsed_ms": 4201.497,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 12.22,
+			"gpu_ms": 1.43700003623962,
+			"render_cpu_ms": 1.567999958992
+		},
+		{
+			"elapsed_ms": 5095.745,
+			"events": {
+				"sky_updates": 1
+			},
+			"frame_ms": 6.96,
+			"gpu_ms": 1.1599999666214,
+			"render_cpu_ms": 1.72899997234344
+		},
+		{
+			"elapsed_ms": 5212.29,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 10.651,
+			"gpu_ms": 1.16299998760223,
+			"render_cpu_ms": 1.77799999713898
+		},
+		{
+			"elapsed_ms": 5219.972,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 7.682,
+			"gpu_ms": 1.1599999666214,
+			"render_cpu_ms": 2.37800002098084
+		},
+		{
+			"elapsed_ms": 5228.095,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 8.123,
+			"gpu_ms": 1.16199994087219,
+			"render_cpu_ms": 1.77799999713898
+		},
+		{
+			"elapsed_ms": 5973.822,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 9.049,
+			"gpu_ms": 1.17700004577637,
+			"render_cpu_ms": 1.58399999141693
+		},
+		{
+			"elapsed_ms": 6465.843,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 8.49,
+			"gpu_ms": 1.4210000038147,
+			"render_cpu_ms": 1.58899998664856
+		},
+		{
+			"elapsed_ms": 6596.357,
+			"events": {
+				"sky_updates": 1
+			},
+			"frame_ms": 7.535,
+			"gpu_ms": 1.23000001907349,
+			"render_cpu_ms": 1.97099995613098
+		},
+		{
+			"elapsed_ms": 6726.939,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 9.595,
+			"gpu_ms": 1.22599995136261,
+			"render_cpu_ms": 1.74100005626678
+		},
+		{
+			"elapsed_ms": 6987.269,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 17.436,
+			"gpu_ms": 1.2389999628067,
+			"render_cpu_ms": 1.84200000762939
+		},
+		{
+			"elapsed_ms": 7219.671,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 8.4,
+			"gpu_ms": 1.23699998855591,
+			"render_cpu_ms": 2.01799988746643
+		},
+		{
+			"elapsed_ms": 7489.58,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 13.429,
+			"gpu_ms": 1.22099995613098,
+			"render_cpu_ms": 2.04200005531311
+		},
+		{
+			"elapsed_ms": 7729.281,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 14.811,
+			"gpu_ms": 1.25499999523163,
+			"render_cpu_ms": 1.94099998474121
+		},
+		{
+			"elapsed_ms": 7990.535,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 10.927,
+			"gpu_ms": 1.25800001621246,
+			"render_cpu_ms": 1.98099994659424
+		},
+		{
+			"elapsed_ms": 8099.341,
+			"events": {
+				"sky_updates": 1
+			},
+			"frame_ms": 7.38,
+			"gpu_ms": 1.22099995613098,
+			"render_cpu_ms": 1.67999994754791
+		},
+		{
+			"elapsed_ms": 8241.535,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 10.282,
+			"gpu_ms": 1.22200000286102,
+			"render_cpu_ms": 1.94099998474121
+		},
+		{
+			"elapsed_ms": 8481.461,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 8.521,
+			"gpu_ms": 1.2610000371933,
+			"render_cpu_ms": 1.75800001621246
+		},
+		{
+			"elapsed_ms": 8734.847,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 10.753,
+			"gpu_ms": 1.26800000667572,
+			"render_cpu_ms": 1.90699994564056
+		},
+		{
+			"elapsed_ms": 8984.574,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 8.727,
+			"gpu_ms": 1.54799997806549,
+			"render_cpu_ms": 1.66100001335144
+		},
+		{
+			"elapsed_ms": 9235.293,
+			"events": {
+				"crowd_activations": 1
+			},
+			"frame_ms": 6.768,
+			"gpu_ms": 1.24100005626678,
+			"render_cpu_ms": 1.70799994468689
+		},
+		{
+			"elapsed_ms": 9492.265,
+			"events": {
+				"crowd_activations": 1
+			},
+			"frame_ms": 11.194,
+			"gpu_ms": 1.26699995994568,
+			"render_cpu_ms": 2.17400002479553
+		},
+		{
+			"elapsed_ms": 9599.005,
+			"events": {
+				"sky_updates": 1
+			},
+			"frame_ms": 7.504,
+			"gpu_ms": 1.25499999523163,
+			"render_cpu_ms": 2.01699995994568
+		},
+		{
+			"elapsed_ms": 9754.333,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 3.45,
+			"gpu_ms": 1.2389999628067,
+			"render_cpu_ms": 1.78999996185303
+		},
+		{
+			"elapsed_ms": 10257.235,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 12.569,
+			"gpu_ms": 1.25600004196167,
+			"render_cpu_ms": 1.75
+		},
+		{
+			"elapsed_ms": 10260.376,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 3.141,
+			"gpu_ms": 1.2610000371933,
+			"render_cpu_ms": 2.08999991416931
+		},
+		{
+			"elapsed_ms": 10514.477,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 8.54,
+			"gpu_ms": 1.23800003528595,
+			"render_cpu_ms": 2.25099992752075
+		},
+		{
+			"elapsed_ms": 11104.392,
+			"events": {
+				"sky_updates": 1
+			},
+			"frame_ms": 7.892,
+			"gpu_ms": 1.28999996185303,
+			"render_cpu_ms": 2.15499997138977
+		},
+		{
+			"elapsed_ms": 11269.739,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 14.122,
+			"gpu_ms": 1.16100001335144,
+			"render_cpu_ms": 1.84099996089935
+		},
+		{
+			"elapsed_ms": 11521.014,
+			"events": {
+				"crowd_activations": 1,
+				"vegetation_builds": 1
+			},
+			"frame_ms": 12.635,
+			"gpu_ms": 1.28799998760223,
+			"render_cpu_ms": 1.72599995136261
+		},
+		{
+			"elapsed_ms": 11763.405,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 13.214,
+			"gpu_ms": 1.28900003433228,
+			"render_cpu_ms": 1.62800002098084
+		},
+		{
+			"elapsed_ms": 12016.529,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 13.928,
+			"gpu_ms": 1.30999994277954,
+			"render_cpu_ms": 2.20600008964539
+		},
+		{
+			"elapsed_ms": 12020.625,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 4.096,
+			"gpu_ms": 1.31200003623962,
+			"render_cpu_ms": 1.75600004196167
+		},
+		{
+			"elapsed_ms": 12269.477,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 12.912,
+			"gpu_ms": 1.31299996376038,
+			"render_cpu_ms": 1.5460000038147
+		},
+		{
+			"elapsed_ms": 12519.2,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 14.601,
+			"gpu_ms": 1.30400002002716,
+			"render_cpu_ms": 2.06599998474121
+		},
+		{
+			"elapsed_ms": 12595.904,
+			"events": {
+				"sky_updates": 1
+			},
+			"frame_ms": 7.522,
+			"gpu_ms": 1.28900003433228,
+			"render_cpu_ms": 1.58399999141693
+		},
+		{
+			"elapsed_ms": 12766.296,
+			"events": {
+				"crowd_activations": 1,
+				"vegetation_builds": 1
+			},
+			"frame_ms": 14.131,
+			"gpu_ms": 1.24000000953674,
+			"render_cpu_ms": 2.10400009155273
+		},
+		{
+			"elapsed_ms": 13013.575,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 11.683,
+			"gpu_ms": 1.56500005722046,
+			"render_cpu_ms": 1.97800004482269
+		},
+		{
+			"elapsed_ms": 13264.596,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 13.819,
+			"gpu_ms": 1.26999998092651,
+			"render_cpu_ms": 1.9650000333786
+		},
+		{
+			"elapsed_ms": 13268.463,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 3.867,
+			"gpu_ms": 1.26999998092651,
+			"render_cpu_ms": 1.96599996089935
+		},
+		{
+			"elapsed_ms": 13515.576,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 12.436,
+			"gpu_ms": 1.307000041008,
+			"render_cpu_ms": 1.8400000333786
+		},
+		{
+			"elapsed_ms": 13766.222,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 16.359,
+			"gpu_ms": 1.26699995994568,
+			"render_cpu_ms": 1.95200002193451
+		},
+		{
+			"elapsed_ms": 14044.173,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 25.57,
+			"gpu_ms": 1.21200001239777,
+			"render_cpu_ms": 2.70700001716614
+		},
+		{
+			"elapsed_ms": 14101.459,
+			"events": {
+				"sky_updates": 1
+			},
+			"frame_ms": 10.783,
+			"gpu_ms": 1.21300005912781,
+			"render_cpu_ms": 2.17000007629395
+		},
+		{
+			"elapsed_ms": 14271.2,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 14.531,
+			"gpu_ms": 1.22000002861023,
+			"render_cpu_ms": 2.10700011253357
+		},
+		{
+			"elapsed_ms": 14283.174,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 11.974,
+			"gpu_ms": 1.21899998188019,
+			"render_cpu_ms": 2.03099989891052
+		},
+		{
+			"elapsed_ms": 14288.189,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 5.015,
+			"gpu_ms": 1.22300004959106,
+			"render_cpu_ms": 2.66400003433228
+		},
+		{
+			"elapsed_ms": 14522.319,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 11.673,
+			"gpu_ms": 1.22699999809265,
+			"render_cpu_ms": 1.7059999704361
+		},
+		{
+			"elapsed_ms": 14777.745,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 19.395,
+			"gpu_ms": 1.24000000953674,
+			"render_cpu_ms": 1.80200004577637
+		},
+		{
+			"elapsed_ms": 15039.419,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 16.378,
+			"gpu_ms": 1.25100004673004,
+			"render_cpu_ms": 2.37800002098084
+		},
+		{
+			"elapsed_ms": 15269.706,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 10.883,
+			"gpu_ms": 1.2610000371933,
+			"render_cpu_ms": 1.51400005817413
+		},
+		{
+			"elapsed_ms": 15528.504,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 9.122,
+			"gpu_ms": 1.55200004577637,
+			"render_cpu_ms": 1.92999994754791
+		},
+		{
+			"elapsed_ms": 15601.785,
+			"events": {
+				"sky_updates": 1
+			},
+			"frame_ms": 7.112,
+			"gpu_ms": 1.28799998760223,
+			"render_cpu_ms": 1.83800005912781
+		},
+		{
+			"elapsed_ms": 15786.7,
+			"events": {
+				"crowd_activations": 1
+			},
+			"frame_ms": 12.535,
+			"gpu_ms": 1.23800003528595,
+			"render_cpu_ms": 1.63900005817413
+		},
+		{
+			"elapsed_ms": 15791.028,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 4.328,
+			"gpu_ms": 1.25499999523163,
+			"render_cpu_ms": 1.84899997711182
+		},
+		{
+			"elapsed_ms": 16048.43,
+			"events": {
+				"crowd_activations": 1,
+				"vegetation_builds": 1
+			},
+			"frame_ms": 17.301,
+			"gpu_ms": 1.21899998188019,
+			"render_cpu_ms": 1.66299998760223
+		},
+		{
+			"elapsed_ms": 16279.252,
+			"events": {
+				"crowd_activations": 1
+			},
+			"frame_ms": 7.824,
+			"gpu_ms": 1.26800000667572,
+			"render_cpu_ms": 1.93599998950958
+		},
+		{
+			"elapsed_ms": 16790.3,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 2.754,
+			"gpu_ms": 1.26199996471405,
+			"render_cpu_ms": 1.90499997138977
+		},
+		{
+			"elapsed_ms": 17044.169,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 9.078,
+			"gpu_ms": 1.27799999713898,
+			"render_cpu_ms": 2.16199994087219
+		},
+		{
+			"elapsed_ms": 17100.704,
+			"events": {
+				"sky_updates": 1
+			},
+			"frame_ms": 6.717,
+			"gpu_ms": 1.26699995994568,
+			"render_cpu_ms": 1.46700000762939
+		},
+		{
+			"elapsed_ms": 17295.488,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 8.382,
+			"gpu_ms": 1.29100000858307,
+			"render_cpu_ms": 1.88699996471405
+		},
+		{
+			"elapsed_ms": 17792.496,
+			"events": {
+				"crowd_activations": 1
+			},
+			"frame_ms": 10.74,
+			"gpu_ms": 1.23199999332428,
+			"render_cpu_ms": 1.89699995517731
+		},
+		{
+			"elapsed_ms": 18304.287,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 8.611,
+			"gpu_ms": 1.21300005912781,
+			"render_cpu_ms": 2.06500005722046
+		},
+		{
+			"elapsed_ms": 18597.685,
+			"events": {
+				"sky_updates": 1
+			},
+			"frame_ms": 9.658,
+			"gpu_ms": 1.20099997520447,
+			"render_cpu_ms": 1.56200003623962
+		},
+		{
+			"elapsed_ms": 19058.693,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 9.532,
+			"gpu_ms": 1.2059999704361,
+			"render_cpu_ms": 1.58299994468689
+		},
+		{
+			"elapsed_ms": 19345.867,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 36.204,
+			"gpu_ms": 1.18400001525879,
+			"render_cpu_ms": 2.78999996185303
+		},
+		{
+			"elapsed_ms": 19559.424,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 12.059,
+			"gpu_ms": 1.17200005054474,
+			"render_cpu_ms": 2.00999999046326
+		},
+		{
+			"elapsed_ms": 19815.544,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 12.039,
+			"gpu_ms": 1.17900002002716,
+			"render_cpu_ms": 1.51800000667572
+		}
+	],
+	"staggered_crowd_idle": true,
+	"stalled_half_second_windows": 0,
+	"startup_ms": 27210,
+	"static_memory_bytes": 851309799.0,
+	"streaming": {
+		"background_loads": 0,
+		"cells": 21,
+		"collision_streaming": false,
+		"enabled": true,
+		"failures": 0,
+		"load_radius": 240.0,
+		"loaded_cells": 17,
+		"loaded_detail_triangles": 1003261,
+		"near_cells_missing": 0,
+		"pending": false,
+		"proxy_cells": 4,
+		"quality": "balanced",
+		"released_original_meshes": 363,
+		"total_detail_triangles": 1161413,
+		"unload_radius": 330.0,
+		"unloads": 4
+	},
+	"texture_size": [
+		1920.0,
+		1080.0
+	],
+	"traffic_distance_m": 8795.14865209766,
+	"valid_active_play": true,
+	"vegetation": {
+		"active_vertices": 463326,
+		"active_wind_vertices": 375369,
+		"bushes": 401,
+		"cached_cell_meshes": 252,
+		"cached_mesh_variants": 278,
+		"cached_vertices": 543387,
+		"cell_mesh_builds": 291,
+		"cell_mesh_cache_hits": 13,
+		"civic_removed": 47,
+		"conifers": 11.0,
+		"draw_batches": 250,
+		"enabled": true,
+		"estimated_raw_mesh_bytes": 30429672,
+		"historical_mesh_variants": 26,
+		"historical_raw_mesh_bytes": 4483416,
+		"history_byte_budget": 33554432,
+		"history_evictions": 0,
+		"last_refresh_mesh_builds": 1,
+		"legacy_vegetation_cache": false,
+		"loaded_cells": 252,
+		"loaded_plants": 1448,
+		"max_refresh_mesh_builds": 1,
+		"pending_visual_cells": 0,
+		"playground_removed": 1,
+		"pointed_shrubs": 99,
+		"shared_meshes": 20,
+		"shared_variants": 9.0,
+		"spatial_cells": 346,
+		"trees": 1749,
+		"trunk_colliders": 77,
+		"wind_enabled": true,
+		"wind_shader": true,
+		"wind_time": 22.4,
+		"wind_vertices": 423825
+	},
+	"vehicle_queries": {},
+	"vehicle_query_profiling": false,
+	"video_memory_bytes": 568099312,
+	"viewport_gpu_ms": {
+		"max": 1.82299995422363,
+		"median": 1.25300002098084,
+		"min": 0.98199999332428,
+		"p95": 1.43799996376038,
+		"p99": 1.57299995422363
+	},
+	"viewport_msaa_3d": 2,
+	"viewport_render_cpu_ms": {
+		"max": 4.19700002670288,
+		"median": 1.81700003147125,
+		"min": 1.43400001525879,
+		"p95": 2.32800006866455,
+		"p99": 2.7960000038147
+	},
+	"viewport_screen_space_aa": 0,
+	"viewport_size": [
+		1920.0,
+		1080.0
+	],
+	"viewport_taa": false,
+	"vsync": false,
+	"warmup_frames": 120,
+	"weathering": {
+		"barred_windows": 7553,
+		"collision_groups": 0,
+		"draw_batches": 0,
+		"eligible_house_windows": 9255,
+		"finish_kinds": {
+			"1": 4,
+			"2": 7,
+			"3": 1,
+			"4": 28,
+			"5": 3,
+			"6": 5
+		},
+		"finish_profile": "calibrated",
+		"first_floor_windows": 4026,
+		"glass_panes": 11816,
+		"litter": 4483,
+		"provider": "CityYardDetails",
+		"rough_glass_surfaces": 326,
+		"shared_finishes": 48,
+		"spatial_cells": 172,
+		"unowned_windows": 0,
+		"weathered_surfaces": 2599,
+		"window_bar_batches": 168,
+		"window_bar_triangles": 15106,
+		"window_homes": {
+			"w1498118737": {
+				"barred": 27,
+				"selected": true,
+				"windows": 27
+			},
+			"w1498118738": {
+				"barred": 0,
+				"selected": false,
+				"windows": 10
+			},
+			"w336324408": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336324856": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336324857": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336324858": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336324859": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336324862": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336324863": {
+				"barred": 1,
+				"selected": true,
+				"windows": 1
+			},
+			"w336324864": {
+				"barred": 1,
+				"selected": true,
+				"windows": 1
+			},
+			"w336324865": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336325332": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336325333": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336325334": {
+				"barred": 0,
+				"selected": false,
+				"windows": 15
+			},
+			"w336325335": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336325770": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336325771": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336325772": {
+				"barred": 1,
+				"selected": true,
+				"windows": 1
+			},
+			"w336325773": {
+				"barred": 2,
+				"selected": true,
+				"windows": 2
+			},
+			"w336325775": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336325776": {
+				"barred": 0,
+				"selected": false,
+				"windows": 1
+			},
+			"w336325793": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336325794": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336325795": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336325796": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336325797": {
+				"barred": 2,
+				"selected": true,
+				"windows": 2
+			},
+			"w336325798": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336325799": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336325800": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336325801": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336326401": {
+				"barred": 23,
+				"selected": true,
+				"windows": 23
+			},
+			"w336326402": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336326403": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336327315": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336327316": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336327317": {
+				"barred": 0,
+				"selected": false,
+				"windows": 12
+			},
+			"w336327318": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336327319": {
+				"barred": 1,
+				"selected": true,
+				"windows": 1
+			},
+			"w336327413": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336327521": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336327522": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336327523": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336327524": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336327525": {
+				"barred": 0,
+				"selected": false,
+				"windows": 2
+			},
+			"w336327526": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336327527": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336327528": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336327597": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336327598": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336327599": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336327600": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336327601": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336327602": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336327603": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336327604": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336327699": {
+				"barred": 2,
+				"selected": true,
+				"windows": 2
+			},
+			"w336327700": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336327701": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336327702": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336327703": {
+				"barred": 0,
+				"selected": false,
+				"windows": 15
+			},
+			"w336327773": {
+				"barred": 0,
+				"selected": false,
+				"windows": 11
+			},
+			"w336327774": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336327775": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336327776": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336327777": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336327778": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336328097": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336328098": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336328099": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336328100": {
+				"barred": 0,
+				"selected": false,
+				"windows": 4
+			},
+			"w336328101": {
+				"barred": 0,
+				"selected": false,
+				"windows": 8
+			},
+			"w336328453": {
+				"barred": 2,
+				"selected": true,
+				"windows": 2
+			},
+			"w336328454": {
+				"barred": 2,
+				"selected": true,
+				"windows": 2
+			},
+			"w336328455": {
+				"barred": 2,
+				"selected": true,
+				"windows": 2
+			},
+			"w336328456": {
+				"barred": 2,
+				"selected": true,
+				"windows": 2
+			},
+			"w336328458": {
+				"barred": 0,
+				"selected": false,
+				"windows": 11
+			},
+			"w336328479": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336328480": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336328483": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336328496": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336328500": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336328504": {
+				"barred": 0,
+				"selected": false,
+				"windows": 15
+			},
+			"w336328509": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336329001": {
+				"barred": 29,
+				"selected": true,
+				"windows": 29
+			},
+			"w336329082": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336329085": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336329087": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336329089": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336329094": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336329098": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336329102": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336329104": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336329119": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336329461": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336329462": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336329463": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336329464": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336329465": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336329466": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336329467": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336329468": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336329675": {
+				"barred": 24,
+				"selected": true,
+				"windows": 24
+			},
+			"w336329850": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336329997": {
+				"barred": 25,
+				"selected": true,
+				"windows": 25
+			},
+			"w336330060": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336330061": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336330076": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336330111": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336330112": {
+				"barred": 0,
+				"selected": false,
+				"windows": 8
+			},
+			"w336330113": {
+				"barred": 0,
+				"selected": false,
+				"windows": 3
+			},
+			"w336330416": {
+				"barred": 0,
+				"selected": false,
+				"windows": 13
+			},
+			"w336330417": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336330480": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336330566": {
+				"barred": 24,
+				"selected": true,
+				"windows": 24
+			},
+			"w336330736": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336330737": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336330738": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336330739": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336330740": {
+				"barred": 0,
+				"selected": false,
+				"windows": 3
+			},
+			"w336330741": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336330742": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336330743": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336330819": {
+				"barred": 0,
+				"selected": false,
+				"windows": 24
+			},
+			"w336330896": {
+				"barred": 0,
+				"selected": false,
+				"windows": 29
+			},
+			"w336331250": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336331251": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336331372": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336331373": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336331493": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336331496": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336331497": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336331501": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336331505": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336331508": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336331512": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336331516": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336331519": {
+				"barred": 0,
+				"selected": false,
+				"windows": 3
+			},
+			"w336331522": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336331526": {
+				"barred": 0,
+				"selected": false,
+				"windows": 3
+			},
+			"w336331996": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336331997": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336332079": {
+				"barred": 0,
+				"selected": false,
+				"windows": 32
+			},
+			"w336332111": {
+				"barred": 23,
+				"selected": true,
+				"windows": 23
+			},
+			"w336332310": {
+				"barred": 0,
+				"selected": false,
+				"windows": 17
+			},
+			"w336332759": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336332760": {
+				"barred": 0,
+				"selected": false,
+				"windows": 13
+			},
+			"w336332788": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336332789": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336332790": {
+				"barred": 0,
+				"selected": false,
+				"windows": 3
+			},
+			"w336332791": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336333077": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336333078": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336333173": {
+				"barred": 0,
+				"selected": false,
+				"windows": 16
+			},
+			"w336333179": {
+				"barred": 34,
+				"selected": true,
+				"windows": 34
+			},
+			"w336333268": {
+				"barred": 0,
+				"selected": false,
+				"windows": 13
+			},
+			"w336333269": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336333396": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336333397": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336333452": {
+				"barred": 0,
+				"selected": false,
+				"windows": 13
+			},
+			"w336333453": {
+				"barred": 0,
+				"selected": false,
+				"windows": 14
+			},
+			"w336333559": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336333623": {
+				"barred": 0,
+				"selected": false,
+				"windows": 10
+			},
+			"w336333738": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336333756": {
+				"barred": 0,
+				"selected": false,
+				"windows": 2
+			},
+			"w336333758": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336333759": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336333760": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336333761": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336333762": {
+				"barred": 0,
+				"selected": false,
+				"windows": 4
+			},
+			"w336333763": {
+				"barred": 0,
+				"selected": false,
+				"windows": 10
+			},
+			"w336333764": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336333765": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336333766": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336333821": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336333822": {
+				"barred": 33,
+				"selected": true,
+				"windows": 33
+			},
+			"w336333824": {
+				"barred": 35,
+				"selected": true,
+				"windows": 35
+			},
+			"w336333826": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336333827": {
+				"barred": 77,
+				"selected": true,
+				"windows": 77
+			},
+			"w336333829": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336333830": {
+				"barred": 19,
+				"selected": true,
+				"windows": 19
+			},
+			"w336333831": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336333832": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336333833": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336333834": {
+				"barred": 52,
+				"selected": true,
+				"windows": 52
+			},
+			"w336333835": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336333877": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336333878": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336333883": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336333884": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336333941": {
+				"barred": 0,
+				"selected": false,
+				"windows": 13
+			},
+			"w336333942": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336333956": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336333957": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336333958": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336333959": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336333960": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336333961": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336333962": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336333963": {
+				"barred": 18,
+				"selected": true,
+				"windows": 18
+			},
+			"w336333964": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336333965": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336333966": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336334573": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336334574": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336334575": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336334645": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336334646": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336334647": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336334648": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336334649": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336334650": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336334651": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336334653": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336334654": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336334655": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336334656": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336334657": {
+				"barred": 0,
+				"selected": false,
+				"windows": 11
+			},
+			"w336334694": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336334695": {
+				"barred": 0,
+				"selected": false,
+				"windows": 16
+			},
+			"w336334809": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336334810": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336335178": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336335179": {
+				"barred": 0,
+				"selected": false,
+				"windows": 13
+			},
+			"w336335215": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336335216": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336335334": {
+				"barred": 0,
+				"selected": false,
+				"windows": 14
+			},
+			"w336335335": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336335339": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336335461": {
+				"barred": 20,
+				"selected": true,
+				"windows": 20
+			},
+			"w336335462": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336335463": {
+				"barred": 19,
+				"selected": true,
+				"windows": 19
+			},
+			"w336335464": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336335465": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336335500": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336335546": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336335547": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336335609": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336335616": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336335668": {
+				"barred": 0,
+				"selected": false,
+				"windows": 16
+			},
+			"w336335669": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336335777": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336335778": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336335779": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336335780": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336335998": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336336000": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336336003": {
+				"barred": 0,
+				"selected": false,
+				"windows": 4
+			},
+			"w336336004": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336336005": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336336006": {
+				"barred": 18,
+				"selected": true,
+				"windows": 18
+			},
+			"w336336007": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336336008": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336336009": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336336010": {
+				"barred": 0,
+				"selected": false,
+				"windows": 4
+			},
+			"w336336011": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336336012": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336336168": {
+				"barred": 1,
+				"selected": true,
+				"windows": 1
+			},
+			"w336336170": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336336171": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336336172": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336336173": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336336174": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336336175": {
+				"barred": 2,
+				"selected": true,
+				"windows": 2
+			},
+			"w336336582": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336336735": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336336736": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336336914": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336336940": {
+				"barred": 0,
+				"selected": false,
+				"windows": 11
+			},
+			"w336336941": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336337084": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336337101": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336337102": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336337104": {
+				"barred": 23,
+				"selected": true,
+				"windows": 23
+			},
+			"w336337162": {
+				"barred": 19,
+				"selected": true,
+				"windows": 19
+			},
+			"w336337165": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336337365": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336337366": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336337434": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336337435": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336337536": {
+				"barred": 19,
+				"selected": true,
+				"windows": 19
+			},
+			"w336337537": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336337585": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336337735": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336337757": {
+				"barred": 0,
+				"selected": false,
+				"windows": 22
+			},
+			"w336337806": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336337811": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336337812": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336337813": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336337814": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336337815": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336337816": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336337817": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336337818": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336337819": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336337820": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336337821": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336337822": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336337823": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336337824": {
+				"barred": 2,
+				"selected": true,
+				"windows": 2
+			},
+			"w336337825": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336337885": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336337886": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336337970": {
+				"barred": 29,
+				"selected": true,
+				"windows": 29
+			},
+			"w336337972": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336337973": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336337974": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336337975": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336337977": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336337978": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336337979": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336337980": {
+				"barred": 0,
+				"selected": false,
+				"windows": 10
+			},
+			"w336337981": {
+				"barred": 0,
+				"selected": false,
+				"windows": 4
+			},
+			"w336337982": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336337983": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336337984": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336337985": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336337986": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336338009": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336338015": {
+				"barred": 0,
+				"selected": false,
+				"windows": 14
+			},
+			"w336338016": {
+				"barred": 0,
+				"selected": false,
+				"windows": 12
+			},
+			"w336338017": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336338018": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336338078": {
+				"barred": 0,
+				"selected": false,
+				"windows": 16
+			},
+			"w336338102": {
+				"barred": 28,
+				"selected": true,
+				"windows": 28
+			},
+			"w336338106": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336338107": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336338108": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336338109": {
+				"barred": 0,
+				"selected": false,
+				"windows": 15
+			},
+			"w336338110": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336338135": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336338192": {
+				"barred": 0,
+				"selected": false,
+				"windows": 12
+			},
+			"w336338193": {
+				"barred": 0,
+				"selected": false,
+				"windows": 12
+			},
+			"w336338199": {
+				"barred": 18,
+				"selected": true,
+				"windows": 18
+			},
+			"w336338416": {
+				"barred": 25,
+				"selected": true,
+				"windows": 25
+			},
+			"w336338426": {
+				"barred": 0,
+				"selected": false,
+				"windows": 14
+			},
+			"w336338427": {
+				"barred": 0,
+				"selected": false,
+				"windows": 12
+			},
+			"w336338429": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336338666": {
+				"barred": 0,
+				"selected": false,
+				"windows": 8
+			},
+			"w336338667": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336338668": {
+				"barred": 18,
+				"selected": true,
+				"windows": 18
+			},
+			"w336338669": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336338671": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336338672": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336338673": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336338674": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336338675": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336338676": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336338677": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336338678": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336338815": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336338861": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336338862": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336338963": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336338965": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336339215": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336339216": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336339221": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336339222": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336339223": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336339224": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336339225": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336339226": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336339263": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336339264": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336339487": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336339488": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336339489": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336339490": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336339491": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336339492": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336339493": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336339494": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336339495": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336339496": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336339497": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336339498": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336339499": {
+				"barred": 0,
+				"selected": false,
+				"windows": 3
+			},
+			"w336339500": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336339501": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336339502": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336339503": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336339504": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336339505": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336339507": {
+				"barred": 0,
+				"selected": false,
+				"windows": 7
+			},
+			"w336339508": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336339509": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336339510": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336339511": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336339512": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336339513": {
+				"barred": 0,
+				"selected": false,
+				"windows": 7
+			},
+			"w336339514": {
+				"barred": 0,
+				"selected": false,
+				"windows": 7
+			},
+			"w336339515": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336339634": {
+				"barred": 24,
+				"selected": true,
+				"windows": 24
+			},
+			"w336339661": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336339662": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336339670": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336339681": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336339750": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336339758": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336339759": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336339796": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336339797": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336339798": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336339800": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336339801": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336339830": {
+				"barred": 0,
+				"selected": false,
+				"windows": 24
+			},
+			"w336339831": {
+				"barred": 0,
+				"selected": false,
+				"windows": 16
+			},
+			"w336339832": {
+				"barred": 18,
+				"selected": true,
+				"windows": 18
+			},
+			"w336339833": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336339834": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336339877": {
+				"barred": 25,
+				"selected": true,
+				"windows": 25
+			},
+			"w336340112": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336340482": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336340483": {
+				"barred": 0,
+				"selected": false,
+				"windows": 16
+			},
+			"w336340507": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336340508": {
+				"barred": 0,
+				"selected": false,
+				"windows": 16
+			},
+			"w336340590": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336340591": {
+				"barred": 0,
+				"selected": false,
+				"windows": 18
+			},
+			"w336340628": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336340629": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336340699": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336340701": {
+				"barred": 0,
+				"selected": false,
+				"windows": 14
+			},
+			"w336340702": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336340737": {
+				"barred": 26,
+				"selected": true,
+				"windows": 26
+			},
+			"w336340790": {
+				"barred": 20,
+				"selected": true,
+				"windows": 20
+			},
+			"w336341013": {
+				"barred": 0,
+				"selected": false,
+				"windows": 10
+			},
+			"w336341065": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336341066": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336341097": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336341119": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336341120": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336341124": {
+				"barred": 19,
+				"selected": true,
+				"windows": 19
+			},
+			"w336341126": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336341132": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336341147": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336341151": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336341201": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336341202": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336341256": {
+				"barred": 21,
+				"selected": true,
+				"windows": 21
+			},
+			"w336341258": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336341259": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336341287": {
+				"barred": 18,
+				"selected": true,
+				"windows": 18
+			},
+			"w336341316": {
+				"barred": 0,
+				"selected": false,
+				"windows": 22
+			},
+			"w336341317": {
+				"barred": 0,
+				"selected": false,
+				"windows": 16
+			},
+			"w336341320": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336341512": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336341513": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336341514": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336341515": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336341580": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336341685": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336341687": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336341688": {
+				"barred": 0,
+				"selected": false,
+				"windows": 13
+			},
+			"w336341689": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336341736": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336341737": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336341813": {
+				"barred": 24,
+				"selected": true,
+				"windows": 24
+			},
+			"w336341833": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336341890": {
+				"barred": 28,
+				"selected": true,
+				"windows": 28
+			},
+			"w336342013": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336342018": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336342019": {
+				"barred": 24,
+				"selected": true,
+				"windows": 24
+			},
+			"w336342033": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336342034": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336342064": {
+				"barred": 23,
+				"selected": true,
+				"windows": 23
+			},
+			"w336342076": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336342077": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336342137": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336342138": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336342140": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336342141": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336342158": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336342285": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336342287": {
+				"barred": 0,
+				"selected": false,
+				"windows": 16
+			},
+			"w336342304": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336342343": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336342344": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336342345": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336342346": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336342348": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336342349": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336342350": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336342352": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336342353": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336342357": {
+				"barred": 0,
+				"selected": false,
+				"windows": 15
+			},
+			"w336342446": {
+				"barred": 30,
+				"selected": true,
+				"windows": 30
+			},
+			"w336342477": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336342478": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336342621": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336342622": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336342650": {
+				"barred": 0,
+				"selected": false,
+				"windows": 16
+			},
+			"w336342651": {
+				"barred": 0,
+				"selected": false,
+				"windows": 16
+			},
+			"w336342678": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336342679": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336342778": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336342893": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336342896": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336342900": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336342901": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336342902": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336342903": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336342904": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336342906": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336342968": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336343009": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336343011": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336343014": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336343019": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336343020": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336343022": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336343097": {
+				"barred": 21,
+				"selected": true,
+				"windows": 21
+			},
+			"w336343109": {
+				"barred": 28,
+				"selected": true,
+				"windows": 28
+			},
+			"w336343124": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336343289": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336343293": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336343546": {
+				"barred": 0,
+				"selected": false,
+				"windows": 4
+			},
+			"w336343547": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336343548": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336343549": {
+				"barred": 23,
+				"selected": true,
+				"windows": 23
+			},
+			"w336343550": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336343551": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336343552": {
+				"barred": 0,
+				"selected": false,
+				"windows": 14
+			},
+			"w336343575": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336343576": {
+				"barred": 0,
+				"selected": false,
+				"windows": 16
+			},
+			"w336343628": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336343631": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336343791": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336343792": {
+				"barred": 0,
+				"selected": false,
+				"windows": 30
+			},
+			"w336343863": {
+				"barred": 0,
+				"selected": false,
+				"windows": 16
+			},
+			"w336343864": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336343890": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336343942": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336343999": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336344004": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336344148": {
+				"barred": 20,
+				"selected": true,
+				"windows": 20
+			},
+			"w336344160": {
+				"barred": 22,
+				"selected": true,
+				"windows": 22
+			},
+			"w336344197": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336344198": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336344273": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336344274": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336344354": {
+				"barred": 0,
+				"selected": false,
+				"windows": 28
+			},
+			"w336344357": {
+				"barred": 21,
+				"selected": true,
+				"windows": 21
+			},
+			"w336344471": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336344472": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336344473": {
+				"barred": 18,
+				"selected": true,
+				"windows": 18
+			},
+			"w336344474": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336344476": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336344478": {
+				"barred": 0,
+				"selected": false,
+				"windows": 4
+			},
+			"w336344481": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336344538": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336344539": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336344608": {
+				"barred": 23,
+				"selected": true,
+				"windows": 23
+			},
+			"w336344636": {
+				"barred": 37,
+				"selected": true,
+				"windows": 37
+			},
+			"w336344672": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336344673": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336344705": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336344706": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336344707": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336344708": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336344967": {
+				"barred": 0,
+				"selected": false,
+				"windows": 18
+			},
+			"w336345501": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336345504": {
+				"barred": 0,
+				"selected": false,
+				"windows": 4
+			},
+			"w336345508": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336345512": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336345516": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336345520": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336345522": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336345523": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336345524": {
+				"barred": 25,
+				"selected": true,
+				"windows": 25
+			},
+			"w336345526": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336345527": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336345639": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336345640": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336345641": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336345642": {
+				"barred": 0,
+				"selected": false,
+				"windows": 3
+			},
+			"w336345643": {
+				"barred": 0,
+				"selected": false,
+				"windows": 16
+			},
+			"w336345644": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336345645": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336345646": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336345647": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336345648": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336345649": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336345650": {
+				"barred": 0,
+				"selected": false,
+				"windows": 7
+			},
+			"w336345651": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336345729": {
+				"barred": 0,
+				"selected": false,
+				"windows": 11
+			},
+			"w336345732": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336345734": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336345737": {
+				"barred": 0,
+				"selected": false,
+				"windows": 11
+			},
+			"w336345740": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336345751": {
+				"barred": 0,
+				"selected": false,
+				"windows": 8
+			},
+			"w336345753": {
+				"barred": 19,
+				"selected": true,
+				"windows": 19
+			},
+			"w336345756": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336345758": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336345761": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336345763": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336345764": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336345935": {
+				"barred": 19,
+				"selected": true,
+				"windows": 19
+			},
+			"w336346045": {
+				"barred": 26,
+				"selected": true,
+				"windows": 26
+			},
+			"w336346046": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336346142": {
+				"barred": 20,
+				"selected": true,
+				"windows": 20
+			},
+			"w336346230": {
+				"barred": 26,
+				"selected": true,
+				"windows": 26
+			},
+			"w336346231": {
+				"barred": 26,
+				"selected": true,
+				"windows": 26
+			},
+			"w336346409": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336346410": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336346416": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336346418": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336346608": {
+				"barred": 0,
+				"selected": false,
+				"windows": 18
+			},
+			"w336346609": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336346610": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336346611": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336346612": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336346613": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336346614": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336346615": {
+				"barred": 0,
+				"selected": false,
+				"windows": 8
+			},
+			"w336346616": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336346617": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336346658": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336346659": {
+				"barred": 25,
+				"selected": true,
+				"windows": 25
+			},
+			"w336346660": {
+				"barred": 0,
+				"selected": false,
+				"windows": 7
+			},
+			"w336346661": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336346662": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336346663": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336346799": {
+				"barred": 30,
+				"selected": true,
+				"windows": 30
+			},
+			"w336346864": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336346875": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336346877": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336346878": {
+				"barred": 0,
+				"selected": false,
+				"windows": 8
+			},
+			"w336346879": {
+				"barred": 0,
+				"selected": false,
+				"windows": 8
+			},
+			"w336346880": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336346881": {
+				"barred": 25,
+				"selected": true,
+				"windows": 25
+			},
+			"w336346882": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336346883": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336346884": {
+				"barred": 19,
+				"selected": true,
+				"windows": 19
+			},
+			"w336346885": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336346886": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336346887": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336346888": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336346889": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336346972": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336346973": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336346986": {
+				"barred": 0,
+				"selected": false,
+				"windows": 29
+			},
+			"w336347034": {
+				"barred": 19,
+				"selected": true,
+				"windows": 19
+			},
+			"w336347144": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336347145": {
+				"barred": 18,
+				"selected": true,
+				"windows": 18
+			},
+			"w336347146": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336347147": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336347148": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336347149": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336347150": {
+				"barred": 0,
+				"selected": false,
+				"windows": 7
+			},
+			"w336347151": {
+				"barred": 0,
+				"selected": false,
+				"windows": 7
+			},
+			"w336347311": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336347312": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336347313": {
+				"barred": 20,
+				"selected": true,
+				"windows": 20
+			},
+			"w336347314": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336347315": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336347316": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336347317": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336347318": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336347319": {
+				"barred": 21,
+				"selected": true,
+				"windows": 21
+			},
+			"w336347387": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336347420": {
+				"barred": 33,
+				"selected": true,
+				"windows": 33
+			},
+			"w336347503": {
+				"barred": 20,
+				"selected": true,
+				"windows": 20
+			},
+			"w336347587": {
+				"barred": 32,
+				"selected": true,
+				"windows": 32
+			},
+			"w336347717": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336347719": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336347722": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336347725": {
+				"barred": 0,
+				"selected": false,
+				"windows": 14
+			},
+			"w336347728": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336347733": {
+				"barred": 0,
+				"selected": false,
+				"windows": 13
+			},
+			"w336347741": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336347742": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336347882": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336347886": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336347890": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336347891": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336347893": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336347895": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336347901": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336347938": {
+				"barred": 25,
+				"selected": true,
+				"windows": 25
+			},
+			"w336347994": {
+				"barred": 1,
+				"selected": true,
+				"windows": 1
+			},
+			"w336348086": {
+				"barred": 32,
+				"selected": true,
+				"windows": 32
+			},
+			"w336348270": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336348271": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336348272": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336348273": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336348274": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336348366": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336348372": {
+				"barred": 22,
+				"selected": true,
+				"windows": 22
+			},
+			"w336348416": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336348417": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336348541": {
+				"barred": 0,
+				"selected": false,
+				"windows": 19
+			},
+			"w336348686": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336348753": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336348754": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336348755": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336348756": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336348757": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336348758": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336348759": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336348760": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336348761": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336348763": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336348764": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336348804": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336348805": {
+				"barred": 0,
+				"selected": false,
+				"windows": 7
+			},
+			"w336348806": {
+				"barred": 0,
+				"selected": false,
+				"windows": 16
+			},
+			"w336348807": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336348808": {
+				"barred": 18,
+				"selected": true,
+				"windows": 18
+			},
+			"w336348815": {
+				"barred": 20,
+				"selected": true,
+				"windows": 20
+			},
+			"w336348840": {
+				"barred": 26,
+				"selected": true,
+				"windows": 26
+			},
+			"w336348851": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336348852": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336348853": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336348854": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336348856": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336348857": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336348858": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336348859": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336348860": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336348861": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336348931": {
+				"barred": 38,
+				"selected": true,
+				"windows": 38
+			},
+			"w336348946": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336348947": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336349018": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336349023": {
+				"barred": 35,
+				"selected": true,
+				"windows": 35
+			},
+			"w336349144": {
+				"barred": 21,
+				"selected": true,
+				"windows": 21
+			},
+			"w336349160": {
+				"barred": 29,
+				"selected": true,
+				"windows": 29
+			},
+			"w336349333": {
+				"barred": 27,
+				"selected": true,
+				"windows": 27
+			},
+			"w336349367": {
+				"barred": 18,
+				"selected": true,
+				"windows": 18
+			},
+			"w336349368": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336349369": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336349370": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336349371": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336349372": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336349373": {
+				"barred": 0,
+				"selected": false,
+				"windows": 4
+			},
+			"w336349374": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336349375": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336349383": {
+				"barred": 21,
+				"selected": true,
+				"windows": 21
+			},
+			"w336349391": {
+				"barred": 24,
+				"selected": true,
+				"windows": 24
+			},
+			"w336349392": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336349457": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336349458": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336349460": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336349461": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336349462": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336349463": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336349464": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336349501": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336349504": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336349507": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336349515": {
+				"barred": 23,
+				"selected": true,
+				"windows": 23
+			},
+			"w336349701": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336349702": {
+				"barred": 20,
+				"selected": true,
+				"windows": 20
+			},
+			"w336349703": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336349708": {
+				"barred": 0,
+				"selected": false,
+				"windows": 11
+			},
+			"w336349709": {
+				"barred": 23,
+				"selected": true,
+				"windows": 23
+			},
+			"w336349738": {
+				"barred": 0,
+				"selected": false,
+				"windows": 25
+			},
+			"w336349803": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336349808": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336349826": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336349827": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336349929": {
+				"barred": 26,
+				"selected": true,
+				"windows": 26
+			},
+			"w336350093": {
+				"barred": 29,
+				"selected": true,
+				"windows": 29
+			},
+			"w336350106": {
+				"barred": 31,
+				"selected": true,
+				"windows": 31
+			},
+			"w336350806": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336350813": {
+				"barred": 18,
+				"selected": true,
+				"windows": 18
+			},
+			"w336351023": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336351024": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336351025": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336351026": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336351027": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336351028": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336351049": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336351050": {
+				"barred": 0,
+				"selected": false,
+				"windows": 15
+			},
+			"w336351071": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336351072": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336351076": {
+				"barred": 20,
+				"selected": true,
+				"windows": 20
+			},
+			"w336351081": {
+				"barred": 0,
+				"selected": false,
+				"windows": 24
+			},
+			"w336351084": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336351085": {
+				"barred": 20,
+				"selected": true,
+				"windows": 20
+			},
+			"w336351185": {
+				"barred": 20,
+				"selected": true,
+				"windows": 20
+			},
+			"w336351189": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336351193": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336351253": {
+				"barred": 0,
+				"selected": false,
+				"windows": 7
+			},
+			"w336351254": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336351451": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336351452": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336351606": {
+				"barred": 26,
+				"selected": true,
+				"windows": 26
+			},
+			"w336351607": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336351608": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336351617": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336351618": {
+				"barred": 0,
+				"selected": false,
+				"windows": 17
+			},
+			"w336351619": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336351632": {
+				"barred": 0,
+				"selected": false,
+				"windows": 23
+			},
+			"w336351766": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336351768": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336351771": {
+				"barred": 0,
+				"selected": false,
+				"windows": 20
+			},
+			"w336351868": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336351869": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336351870": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336351872": {
+				"barred": 0,
+				"selected": false,
+				"windows": 3
+			},
+			"w336351873": {
+				"barred": 0,
+				"selected": false,
+				"windows": 1
+			},
+			"w336351874": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336351875": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336351876": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336351911": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336351915": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336351919": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336351983": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336351984": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336351985": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336351986": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336351987": {
+				"barred": 18,
+				"selected": true,
+				"windows": 18
+			},
+			"w336351988": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336352225": {
+				"barred": 0,
+				"selected": false,
+				"windows": 8
+			},
+			"w336352226": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336352234": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336352235": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336352236": {
+				"barred": 20,
+				"selected": true,
+				"windows": 20
+			},
+			"w336352255": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336352256": {
+				"barred": 0,
+				"selected": false,
+				"windows": 18
+			},
+			"w336352257": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			}
+		},
+		"window_setup_ms": 1357
+	},
+	"window_size": [
+		1920,
+		1080
+	],
+	"world_time": {
+		"day_index": 0,
+		"elapsed_seconds": 22.4,
+		"label": "DAY 1  ·  09:11",
+		"minute_of_day": 551.19999999999,
+		"total_minutes": 551.19999999999
+	},
+	"worst_frame_equivalent_fps": 27.6212573196332,
+	"yard_details": {
+		"active_batches": 31,
+		"active_bin_colliders": 91,
+		"active_cells": 31,
+		"async_loads": 58,
+		"audit": {
+			"bin_road_walk_path_overlap": 0.0,
+			"civic_removed": 161,
+			"counts": {
+				"can": 465.0,
+				"cardboard": 915.0,
+				"cup": 960.0,
+				"dumpster": 49.0,
+				"hedge1": 133.0,
+				"hedge2": 136.0,
+				"loose_can": 910.0,
+				"paper": 918.0,
+				"wrapper": 927.0
+			},
+			"court_overlap_m2": 0.0,
+			"hedge_homes": 265.0,
+			"hedge_length_m": 713.76,
+			"hedge_reserved_overlap_m2": 0.0,
+			"hedge_rows": 269.0,
+			"litter": 4483,
+			"litter_cells": 172.0,
+			"litter_paving_transition_rejections": 67.0,
+			"litter_span_x_m": 774.51,
+			"litter_span_z_m": 573.92,
+			"loose_litter_colliders": 0.0,
+			"seed": 429017.0
+		},
+		"cache_errors": 0,
+		"cache_hits": 172,
+		"cached_cells": 51,
+		"cell_builds": 0,
+		"cells": 172,
+		"enabled": true,
+		"litter_colliders": 0,
+		"max_activation_ms": 0.32,
+		"max_attach_ms": 0.058,
+		"max_cell_build_ms": 0.0,
+		"near_cells_missing": 0,
+		"pending_loads": 0,
+		"records": 5252,
+		"setup_ms": 239,
+		"shared_meshes": 10
+	}
+}

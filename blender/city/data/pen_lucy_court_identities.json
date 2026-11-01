@@ -1,0 +1,188 @@
+{
+  "version": 1,
+  "description": "Stable court identities anchored to their original greens. Court 17 was removed at user request; its ID remains reserved.",
+  "courts": [
+    {
+      "id": "park_court_0",
+      "anchor_xz": [
+        43.252046,
+        -131.755581
+      ],
+      "removed": false
+    },
+    {
+      "id": "park_court_1",
+      "anchor_xz": [
+        -103.061727,
+        -93.908969
+      ],
+      "removed": false
+    },
+    {
+      "id": "park_court_2",
+      "anchor_xz": [
+        66.314251,
+        22.512296
+      ],
+      "removed": false
+    },
+    {
+      "id": "park_court_3",
+      "anchor_xz": [
+        -55.754465,
+        38.811704
+      ],
+      "removed": false
+    },
+    {
+      "id": "park_court_4",
+      "anchor_xz": [
+        -59.192902,
+        -282.608794
+      ],
+      "removed": false
+    },
+    {
+      "id": "park_court_5",
+      "anchor_xz": [
+        -120.955465,
+        157.37856
+      ],
+      "removed": false
+    },
+    {
+      "id": "park_court_6",
+      "anchor_xz": [
+        -102.670419,
+        -189.05711
+      ],
+      "removed": false
+    },
+    {
+      "id": "park_court_7",
+      "anchor_xz": [
+        -53.904451,
+        -75.48092
+      ],
+      "removed": false
+    },
+    {
+      "id": "park_court_8",
+      "anchor_xz": [
+        -38.675974,
+        -107.596899
+      ],
+      "removed": false
+    },
+    {
+      "id": "park_court_9",
+      "anchor_xz": [
+        211.626655,
+        -135.432219
+      ],
+      "removed": false
+    },
+    {
+      "id": "park_court_10",
+      "anchor_xz": [
+        156.627661,
+        54.301635
+      ],
+      "removed": false
+    },
+    {
+      "id": "park_court_11",
+      "anchor_xz": [
+        432.231313,
+        -177.662605
+      ],
+      "removed": false
+    },
+    {
+      "id": "park_court_12",
+      "anchor_xz": [
+        373.164081,
+        -7.996093
+      ],
+      "removed": false
+    },
+    {
+      "id": "park_court_13",
+      "anchor_xz": [
+        225.486117,
+        -28.550915
+      ],
+      "removed": false,
+      "approved_position": [
+        224.486556,
+        -2.075642,
+        -31.051028
+      ]
+    },
+    {
+      "id": "park_court_14",
+      "anchor_xz": [
+        -52.654179,
+        -47.210969
+      ],
+      "removed": false
+    },
+    {
+      "id": "park_court_15",
+      "anchor_xz": [
+        33.538454,
+        -42.927262
+      ],
+      "removed": false
+    },
+    {
+      "id": "park_court_16",
+      "anchor_xz": [
+        225.068699,
+        106.987578
+      ],
+      "removed": false
+    },
+    {
+      "id": "park_court_17",
+      "anchor_xz": [
+        270.295019,
+        60.538038
+      ],
+      "removed": true
+    },
+    {
+      "id": "park_court_18",
+      "anchor_xz": [
+        131.904862,
+        -47.38724
+      ],
+      "removed": false
+    },
+    {
+      "id": "park_court_19",
+      "anchor_xz": [
+        134.924322,
+        95.302088
+      ],
+      "removed": false
+    },
+    {
+      "id": "park_court_20",
+      "anchor_xz": [
+        -184.443147,
+        -109.51452
+      ],
+      "removed": false
+    },
+    {
+      "id": "park_court_21",
+      "anchor_xz": [
+        -183.86999,
+        -191.041022
+      ],
+      "removed": false
+    }
+  ],
+  "preserve_published_layout": true
+}

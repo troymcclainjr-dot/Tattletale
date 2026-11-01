@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "template": "photograph_and_report",
+  "about": "The three.js 'spy, then call it in' shape (crimes-stage1.js gary/lawn, crimes-stage2.js mama/cops): someone tips 2-Pack off, the phone camera must actually show the subject (in frame, close enough, unobstructed, at the right time if a window is set), then an officer takes the report with that photo.",
+  "params": {
+    "tipster": "actor id who mentions it",
+    "tipster_label": "ledger name",
+    "subject": "actor id of the person to photograph",
+    "subject_label": "ledger name",
+    "photo_count": "whole number 1..6 of separate photos",
+    "photo_interval": "game minutes between counted photos (0 for one photo)"
+  },
+  "case": {
+    "schema": 1,
+    "kind": "case",
+    "participants": {
+      "tipster": {"actors": ["{tipster}"], "label": "{tipster_label}"},
+      "subject": {"actors": ["{subject}"], "label": "{subject_label}"},
+      "officer": {"actors": ["@police"], "label": "Officer", "bind": "step", "stand_in_line": "Officer Dan's not on this beat anymore. I'll take it from here."}
+    },
+    "evidence": {"subject_photo": {"kind": "photo", "label": "[draft] Photo of the subject"}},
+    "discovery": {"givers": ["tipster"]},
+    "stages": [
+      {"id": "tip", "objectives": [
+        {"id": "hear_tip", "verb": "talk", "target": "tipster", "objective": "[draft] Hear the tip", "dialogue": "[draft] The tip."}
+      ]},
+      {"id": "observe", "objectives": [
+        {"id": "photograph_subject", "verb": "photo", "subject": "subject", "count": "{photo_count}", "min_interval_minutes": "{photo_interval}",
+          "max_distance": 30.0, "min_centrality": 0.2, "objective": "[draft] Photograph them in the act", "grants": ["subject_photo"]}
+      ]},
+      {"id": "report", "objectives": [
+        {"id": "file_report", "verb": "report", "target": "officer", "objective": "[draft] Show an officer the photo", "requires_evidence": ["subject_photo"],
+          "greeting": "[draft] The officer asks what you saw.", "dialogue": "[draft] The officer takes the report."}
+      ]}
+    ],
+    "outcomes": {"resolved": {"rewarded": true, "banner": "REPORT FILED"}}
+  }
+}

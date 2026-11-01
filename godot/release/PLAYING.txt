@@ -1,0 +1,61 @@
+Tattletale 2-Pack — Pen Lucy / Windows release candidate
+
+START
+Extract the complete ZIP to a folder, then open Tattletale-PenLucy.exe.
+Keep Tattletale-PenLucy.pck beside the executable. Godot Editor, Python,
+Blender, and the source checkout are not needed to play. This candidate
+targets Windows x86_64 and the Forward+ Vulkan renderer.
+
+This is an unsigned release candidate, not a signed store release.
+
+CONTROLS
+WASD: move. Shift: run. Space: jump. Mouse: look.
+Left/right arrows: turn. V: first/third person. E: interact.
+Hold right mouse: orbit the camera.
+Esc: settings/resume. M: neighborhood map.
+Map: drag to pan; wheel or +/- to zoom; Find me centers the player.
+Use the legend for place symbols; hover or select a symbol for its name.
+Conversations: E/Enter/Space to continue; arrows to choose; Esc to leave.
+This build focuses on helping neighbors, documenting cases and reporting what
+you witnessed. Player attacks, car driving and alignment scoring are disabled.
+
+BICYCLE
+F near the bicycle: ride or pick it up. F while riding slowly: get off.
+W: pedal. S: brake/reverse. A/D: steer. Space: hop. Shift: pedal harder.
+Camera orbit does not steer. Slow down for curbs, people and traffic.
+After a crash, wait for the rider to recover before riding or saving again.
+
+BASKETBALL
+E near a court ball: pick it up. Hold left mouse to charge; release to throw.
+
+PHONE
+P: open/put away the phone. 1: Contacts. 2: Camera. 3: Photos.
+4: Cases. 5: Police. Click app controls or use Tab/arrows and Enter.
+Camera: left mouse/Enter takes a photo; wheel zooms.
+Photos stay in the phone gallery. Cases shows recorded progress and evidence.
+Police: Enter or the call button reports a witnessed incident or asks officers
+to check the area. A report is not proof of who committed an offense.
+Esc/Backspace: back. F5 while the phone is open: save progress.
+M opens the map; F6 opens inspection. Put the phone away before riding.
+
+FREE-FLY INSPECTOR — PRESERVED IN THIS BUILD
+F6 during play: enter/leave inspector.
+WASD: fly. E/Space: rise. Q: descend. Shift: boost. Ctrl: precision.
+Wheel: speed. Esc: release mouse. Click: capture mouse again.
+F7: copy location. F8: screenshot. M: inspection map.
+
+SAVING
+Settings save immediately. Progress autosaves on stable ground every 30 seconds.
+Get off the bicycle, finish any crash/impact recovery, and leave an active
+confrontation before using Save progress in settings. The game explains when
+a checkpoint must wait. Case and incident records are included in checkpoints.
+The preceding checkpoint is retained as a backup. Keep your save files when
+updating the executable/PCK. Older supported saves load through the game's
+compatibility path; exporting a build does not reset the saved game.
+Default Windows save folder:
+%APPDATA%\Godot\app_userdata\Tattletale 2-Pack\
+
+PACKAGE CONTENTS
+Executable + PCK, this guide, release-manifest.json, SHA256SUMS.txt,
+notices/, map-derived-data.zip, and source-snapshot.json.
+See notices/release_notices.txt for credits and third-party terms.

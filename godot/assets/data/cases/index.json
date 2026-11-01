@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "about": "Neighborhood case library read by scripts/city/city_case_library.gd. Templates are reusable case shapes taken from the original cases (city_missions.gd and the three.js js/crimes-*.js); cases are the playable content. Only files listed here load. Guide: artifacts/pacifist-foundation/CASE_AUTHORING.md. Field reference: case_schema.json.",
+  "templates": [
+    "templates/report_with_witness.json",
+    "templates/return_property.json",
+    "templates/return_property_with_pointer.json",
+    "templates/photograph_and_report.json",
+    "templates/tail_and_photograph.json",
+    "templates/report_and_confirm.json",
+    "templates/incident_report.json"
+  ],
+  "cases": [
+    "parcel_report.json"
+  ]
+}

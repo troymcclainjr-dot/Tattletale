@@ -1,0 +1,16 @@
+{
+  "failures": 0,
+  "mean_world_position_error_m": 1.95551400232797e-06,
+  "status": {
+    "batch_meshes": 2,
+    "batch_surfaces": 39,
+    "labels": 2,
+    "setup_ms": 761,
+    "source_meshes": 116,
+    "source_surfaces": 447,
+    "surface_reduction": 408,
+    "triangles": 161051,
+    "unbatched_surfaces": 0
+  },
+  "world_bounds_error_m": 1.52587890625e-05
+}

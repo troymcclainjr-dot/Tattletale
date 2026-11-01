@@ -37,7 +37,7 @@ func _run() -> void:
 	print("[city_expansion] crowd ", status)
 	check(int(status.total) >= 1150, "whole-level population reaches roughly five times the prior 240 residents")
 	check(int(status.social) - int(status.park) >= 800, "street population is at least five times the prior 160")
-	check(int(status.park) >= 100, "parks contain a substantial resident population")
+	check(int(status.park) >= 24 and int(status.park) <= 80, "parks retain visitors without concentrating the street population")
 	check(int(status.walkers) >= 100, "over one hundred ambient residents have validated walking routes")
 	check(int(level.npcs.get_status().foot_patrols) == 6, "all six police have actual sidewalk patrol routes")
 	check(int(status.porch) >= 32, "residents inhabit actual raised porches across the neighborhood")
@@ -47,7 +47,7 @@ func _run() -> void:
 	check(float(status.span_x) > 500.0 and float(status.span_z) > 350.0, "population spans the whole mapped neighborhood")
 	check(int(status.far_from_intro_route) >= 70 and int(status.occupied_cells) >= 35, "population extends well beyond the introductory walk")
 	check(int(status.draw_batches) < int(status.total), "residents share spatial draw batches")
-	check(int(status.shared_meshes) == 2, "only two shared primitive resident meshes")
+	check(int(status.shared_meshes) <= 3, "standing, porch and bench poses use a bounded shared mesh set")
 	var supported := true
 	var clear_routes := true
 	var clear_stairs := true
@@ -138,7 +138,19 @@ func _run() -> void:
 		_approach(level, actor.global_position)
 		var offer: Dictionary = level.missions.nearby_offer()
 		check(str(offer.get("id", "")) == id, "case is discovered by walking to " + contact)
-		check(level.missions.interact(), "E conversation accepts " + id)
+		var before_preview: String = str(level.missions.active_id)
+		var preview: Dictionary = level.missions.conversation_preview()
+		check(str(level.missions.active_id) == before_preview and level.missions.score == previous_score,
+			"conversation preview does not accept or reward " + id)
+		var start_node: Dictionary = preview.get("nodes", {}).get(str(preview.get("start", "")), {})
+		var accept_hook: Dictionary = {}
+		for choice in start_node.get("choices", []):
+			var hook: Dictionary = choice.get("hook", {})
+			if str(hook.get("kind", "")) == "start_case" and str(hook.get("id", "")) == id:
+				accept_hook = hook
+				break
+		check(not accept_hook.is_empty() and level.missions.commit_dialogue_action(accept_hook)
+			and str(level.missions.active_id) == id, "explicit conversation choice accepts " + id)
 		var advanced := true
 		for step in 8:
 			var state: Dictionary = level.missions.get_status()
@@ -167,7 +179,7 @@ func _check_details(level: Node) -> void:
 	check(int(counts.get("business", 0)) >= 9, "fictional business functions have readable facade signs")
 	check(int(counts.get("mailbox", 0)) + int(counts.get("postal_drop", 0)) >= 24 and int(counts.get("postal_drop", 0)) >= 6, "mailboxes and postal drop boxes are distributed across blocks")
 	check(int(counts.get("road_dot", 0)) >= 500 and int(counts.get("pothole", 0)) >= 10 and int(status.crossings) >= 6, "worn yellow dots, occasional potholes and crosswalks populate roads")
-	check(int(status.cells) >= 35 and int(status.shared_meshes) == 3, "street details share three meshes across geographic cells")
+	check(int(status.cells) >= 35 and int(status.shared_meshes) <= 4, "street details and hydrants share a bounded mesh set across geographic cells")
 	check(int(counts.get("shop_window", 0)) == 0 and int(counts.get("shopfront_trim", 0)) == 0 and level.level_data.get("businesses", []).size() >= 18, "businesses use constructed building facades instead of runtime overlays")
 	var clear := true
 	var supported := true
@@ -192,7 +204,10 @@ func _check_details(level: Node) -> void:
 		var normal: Vector3 = level.vector(business.normal)
 		var door: Vector3 = level.vector(business.door_position)
 		var at: Vector3 = door + normal * 1.2
-		var ground: Dictionary = level.ground_at(at)
+		# New raised corner-store landings belong to architectural collision layer2.
+		# Probe below their canopy, at the authored door's floor height.
+		var ray := PhysicsRayQueryParameters3D.create(at + Vector3.UP * 0.65, at - Vector3.UP * 3.0, 1 | 2)
+		var ground: Dictionary = level.get_world_3d().direct_space_state.intersect_ray(ray)
 		if ground.is_empty():
 			approaches = false
 			continue

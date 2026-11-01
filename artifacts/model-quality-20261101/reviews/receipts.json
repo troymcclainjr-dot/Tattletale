@@ -1,0 +1,56 @@
+[
+  {
+    "name": "validator-cast-r2",
+    "exit_code": 0,
+    "actual_models": [
+      "claude-opus-5-5"
+    ],
+    "effort_requested": "medium",
+    "wall_clock_timeout": null
+  },
+  {
+    "name": "validator-vehicles-r2",
+    "exit_code": 0,
+    "actual_models": [
+      "claude-opus-5-5"
+    ],
+    "effort_requested": "medium",
+    "wall_clock_timeout": null
+  },
+  {
+    "name": "validator-npc_existing-r3",
+    "exit_code": 0,
+    "actual_models": [
+      "claude-opus-5-5"
+    ],
+    "effort_requested": "medium",
+    "wall_clock_timeout": null
+  },
+  {
+    "name": "validator-npc_new-r3",
+    "exit_code": 0,
+    "actual_models": [
+      "claude-opus-5-5"
+    ],
+    "effort_requested": "medium",
+    "wall_clock_timeout": null
+  },
+  {
+    "name": "validator-motion-r2",
+    "exit_code": 0,
+    "actual_models": [
+      "claude-opus-5-5"
+    ],
+    "effort_requested": "medium",
+    "wall_clock_timeout": null
+  },
+  {
+    "name": "validator-garments-final",
+    "exit_code": 0,
+    "actual_models": [
+      "claude-opus-5-5"
+    ],
+    "effort_requested": "medium",
+    "wall_clock_timeout": null
+  }
+]

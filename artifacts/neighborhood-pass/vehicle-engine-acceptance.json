@@ -1,0 +1,73 @@
+{
+  "exit_code": 0,
+  "failures": 0,
+  "log": ".work\\neighborhood-pass\\vehicles-engine.log",
+  "validation": "actual populated-world headless fixture through shared Godot lock",
+  "parked": {
+    "active_colliders": 11,
+    "animated_spinner_cars": 0,
+    "attempts": 281,
+    "baseline": 144,
+    "damaged_cars": 0,
+    "draw_batches": 7,
+    "far": 53,
+    "far_radius": 180.0,
+    "flat_tires": 0,
+    "hidden": 152,
+    "increase_percent": 50.0,
+    "near": 11,
+    "presence_radius": 55.0,
+    "rejected": {
+      "civic_approach": 5,
+      "driveway_or_curb_cut": 1,
+      "junction": 42,
+      "occupied": 11,
+      "tree_trunk": 6
+    },
+    "street_count": 16,
+    "streets": {
+      "Argonne Drive": 16,
+      "Cator Avenue": 20,
+      "Dumbarton Avenue": 17,
+      "East 38th Street": 18,
+      "East 39th Street": 7,
+      "East 41st Street": 17,
+      "Elkader Road": 16,
+      "Ellerslie Avenue": 5,
+      "Frisby Street": 18,
+      "Greenmount Avenue": 20,
+      "Lowndes Avenue": 7,
+      "North Hill Road": 2,
+      "Pen Lucy Avenue": 2,
+      "Rose Hill Terrace": 15,
+      "Wilsby Avenue": 16,
+      "Wyanoke Avenue": 20
+    },
+    "target": 216,
+    "total": 216,
+    "visible_spinner_cars": 2
+  },
+  "network": {
+    "cached_connectors": 440,
+    "enabled_lanes": 134,
+    "junctions": 48,
+    "lanes": 134,
+    "rejected_lanes": 0,
+    "stop_approaches": 77,
+    "streets": 17
+  },
+  "minimum_parked_to_lane_center_distance_m": 2.54981470108032,
+  "median_stop_sign_setback_ratio": 0.6666667920323,
+  "civic_fleet": {
+    "kinds": {
+      "ambulance": 1,
+      "box_sedan": 2,
+      "compact": 2,
+      "minivan": 2,
+      "police": 9
+    },
+    "rejected": [],
+    "requested": 16,
+    "total": 16
+  }
+}

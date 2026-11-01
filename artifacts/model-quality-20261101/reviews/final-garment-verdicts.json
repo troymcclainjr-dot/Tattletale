@@ -1,0 +1,119 @@
+{
+	"validator": "claude-opus-5-5 (medium), independent visual review",
+	"round": "after-r5 final seated garments",
+	"method": "Each listed PNG opened and inspected visually; no source edits, no engine runs, no code-only approval.",
+	"summary": {
+		"pass": 12,
+		"revise": 0,
+		"blocked": 0,
+		"previously_revise_shared_skirt_tunic": ["b08", "b19", "b21", "b23", "b27", "b31", "h03", "w03"],
+		"previously_revise_resolved": true,
+		"r4_b08_rear_pelvis_patch_resolved": true,
+		"standing_walk_lod_regression": false,
+		"control_styles_regression": false
+	},
+	"controls_viewed": [
+		"after-r5/npcs/b01.png",
+		"after-r5/npcs/b03.png",
+		"after-r5/npcs/b05.png",
+		"after-r5/npcs/b06.png",
+		"after-r5/npcs/b29.png"
+	],
+	"comparison_viewed": [
+		"after-r3/garments/b19_chair.png",
+		"after-r3/garments/b08_bench.png"
+	],
+	"verdicts": {
+		"b08": {
+			"verdict": "PASS",
+			"previous": "REVISE",
+			"resolved": true,
+			"images": ["after-r5/garments/b08_chair.png", "after-r5/garments/b08_bench.png", "after-r5/garments/b08_standing_near.png", "after-r5/garments/b08_walk_left_near.png", "after-r5/garments/b08_walk_right_near.png", "after-r5/garments/b08_walk_left_far.png"],
+			"findings": "The r3 horizontal blade (x~1345 past the knee, rear fin x~775) is gone. Seated skirt is a closed lap volume whose downturned hem sits at the knee line (x~1415) and rests on the seat. In the rear three-quarter view (chair and bench), the skirt encloses the rear and sides of the pelvis down to the seat, with no patch, no fin, and legs still visible. Walk near/far: closed bell, legs clear. Standing unchanged."
+		},
+		"b18": {
+			"verdict": "PASS",
+			"previous": "PASS",
+			"resolved": null,
+			"images": ["after-r5/garments/b18_chair.png", "after-r5/garments/b18_bench.png", "after-r5/garments/b18_standing_near.png", "after-r5/garments/b18_walk_left_near.png", "after-r5/garments/b18_walk_right_near.png", "after-r5/garments/b18_walk_left_far.png"],
+			"findings": "Seated waistcoat hem ends at the waist above the thighs, with no lap intrusion. Walk near/far clean. Polish: faceted trouser seat in the bench rear three-quarter view."
+		},
+		"b19": {
+			"verdict": "PASS",
+			"previous": "REVISE",
+			"resolved": true,
+			"images": ["after-r5/garments/b19_chair.png", "after-r5/garments/b19_bench.png", "after-r5/garments/b19_standing_near.png", "after-r5/garments/b19_walk_left_near.png", "after-r5/garments/b19_walk_right_near.png", "after-r5/garments/b19_walk_left_far.png"],
+			"findings": "The r3 blade (tip x~1430 with lilac spike) and rear fin are gone. Seated tunic is a short downturned panel ending at mid-thigh, with the trim sloping down. Front: hem band on the lap. Rear: tidy trim. Polish: thin leading tip ~10-20 px above the thigh in side view. Walk near/far clean."
+		},
+		"b21": {
+			"verdict": "PASS",
+			"previous": "REVISE (shared)",
+			"resolved": true,
+			"images": ["after-r5/garments/b21_chair.png", "after-r5/garments/b21_bench.png", "after-r5/garments/b21_standing_near.png", "after-r5/garments/b21_walk_left_far.png"],
+			"findings": "Correct seated dress volume: downturned knee hem resting on the seat, full rear/side pelvis enclosure, no patch or fin, shins clear. Standing and far walk clean."
+		},
+		"b23": {
+			"verdict": "PASS",
+			"previous": "REVISE (shared)",
+			"resolved": true,
+			"images": ["after-r5/garments/b23_chair.png", "after-r5/garments/b23_bench.png", "after-r5/garments/b23_standing_near.png", "after-r5/garments/b23_walk_left_far.png"],
+			"findings": "Downturned seated tunic panel ending mid-thigh, lilac trim tidy front and rear, closed rear band on the bench, no blade or fin. Polish: same tip lift as b19. Standing and far walk clean."
+		},
+		"b24": {
+			"verdict": "PASS",
+			"previous": "PASS",
+			"resolved": null,
+			"images": ["after-r5/garments/b24_chair.png", "after-r5/garments/b24_bench.png", "after-r5/garments/b24_standing_near.png"],
+			"findings": "Seated waistcoat bottom sits above the thighs, with no intrusion. Standing clean. Polish: faceted trouser seat in the bench rear three-quarter view."
+		},
+		"b27": {
+			"verdict": "PASS",
+			"previous": "REVISE (shared)",
+			"resolved": true,
+			"images": ["after-r5/garments/b27_chair.png", "after-r5/garments/b27_bench.png", "after-r5/garments/b27_standing_near.png"],
+			"findings": "Downturned seated panel ending mid-thigh with lilac trim, closed rear band on the bench, no blade or fin. Braids attached. Standing clean. Polish: tip lift as b19."
+		},
+		"b31": {
+			"verdict": "PASS",
+			"previous": "REVISE (shared)",
+			"resolved": true,
+			"images": ["after-r5/garments/b31_chair.png", "after-r5/garments/b31_bench.png", "after-r5/garments/b31_standing_near.png"],
+			"findings": "Seated dress volume with downturned knee hem, encloses the rear pelvis on chair and bench, shins clear. Standing clean."
+		},
+		"b32": {
+			"verdict": "PASS",
+			"previous": "PASS",
+			"resolved": null,
+			"images": ["after-r5/garments/b32_chair.png", "after-r5/garments/b32_bench.png", "after-r5/garments/b32_standing_near.png"],
+			"findings": "Seated shirt/waistcoat hem above the thighs, with no intrusion. Standing clean. Polish: faceted trouser seat (bench rear three-quarter view), low cream contrast P10."
+		},
+		"h03": {
+			"verdict": "PASS",
+			"previous": "REVISE",
+			"resolved": true,
+			"images": ["after-r5/garments/h03_chair.png", "after-r5/garments/h03_bench.png", "after-r5/garments/h03_standing_near.png", "after-r5/garments/h03_walk_left_near.png", "after-r5/garments/h03_walk_right_near.png", "after-r5/garments/h03_walk_left_far.png"],
+			"findings": "The r3 blade and rear fin are gone. Downturned seated panel with tan trim ending mid-thigh, closed rear band on the bench. Walk near/far clean. Polish: tip lift as b19."
+		},
+		"w03": {
+			"verdict": "PASS",
+			"previous": "REVISE (shared)",
+			"resolved": true,
+			"images": ["after-r5/garments/w03_chair.png", "after-r5/garments/w03_bench.png", "after-r5/garments/w03_standing_near.png"],
+			"findings": "Seated dress volume with downturned knee hem, full rear/side enclosure, legs visible below the seat. Standing clean."
+		},
+		"w04": {
+			"verdict": "PASS",
+			"previous": "PASS",
+			"resolved": null,
+			"images": ["after-r5/garments/w04_chair.png", "after-r5/garments/w04_bench.png", "after-r5/garments/w04_standing_near.png"],
+			"findings": "Seated waistcoat bottom above the thighs, with no intrusion. Standing clean. Polish: faceted trouser seat in the bench rear three-quarter view."
+		}
+	},
+	"not_viewed": "Walk sheets for b21, b23, b24, b27, b31, b32, w03, w04 (except b21/b23 walk_left_far) were not required and were not opened, so no new walk verdict is claimed for them. The remaining 35 standalone NPC sheets were not opened.",
+	"optional_polish": [
+		"Tunic seated tip ~10-20 px above the thigh in side view (b19, b23, b27, h03)",
+		"Faceted trouser seat in bench rear three-quarter view (b18, b24, b32, w04)",
+		"Boxy apron-block read of the seated dress in front view (stylization)",
+		"Carry-overs: elbow cuff tabs P1, b29 crown seam P8, b32 contrast P10"
+	]
+}

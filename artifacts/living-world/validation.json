@@ -1,0 +1,84 @@
+{
+  "engine": "Godot4.7.2 Forward+ NVIDIA RTX3070Ti",
+  "headless": {
+    "city_world_time_smoke": {
+      "passed": 8,
+      "errors": [],
+      "warnings": [],
+      "backend_skips": []
+    },
+    "city_day_night_smoke": {
+      "passed": 12,
+      "errors": [],
+      "warnings": [],
+      "backend_skips": []
+    },
+    "city_vegetation_batch_smoke": {
+      "passed": 15,
+      "errors": [],
+      "warnings": [],
+      "backend_skips": []
+    },
+    "city_combat_smoke": {
+      "passed": 40,
+      "errors": [],
+      "warnings": [],
+      "backend_skips": []
+    },
+    "city_residents_smoke": {
+      "passed": 201,
+      "errors": [],
+      "warnings": [],
+      "backend_skips": []
+    },
+    "city_resident_recovery_smoke": {
+      "passed": 11,
+      "errors": [],
+      "warnings": [],
+      "backend_skips": []
+    },
+    "city_movement_smoke": {
+      "passed": 114,
+      "errors": [],
+      "warnings": [],
+      "backend_skips": []
+    },
+    "city_jump_smoke": {
+      "passed": 15,
+      "errors": [],
+      "warnings": [],
+      "backend_skips": []
+    },
+    "city_vehicle_impact_smoke": {
+      "passed": 35,
+      "errors": [],
+      "warnings": [],
+      "backend_skips": []
+    },
+    "city_vehicle_jump_smoke": {
+      "passed": 32,
+      "errors": [],
+      "warnings": [],
+      "backend_skips": []
+    },
+    "city_ui_smoke": {
+      "passed": 84,
+      "errors": [],
+      "warnings": [],
+      "backend_skips": [
+        "[city_ui] SKIP VSync cannot be exercised by headless display"
+      ]
+    },
+    "city_life_smoke": {
+      "passed": 325,
+      "errors": [],
+      "warnings": [],
+      "backend_skips": []
+    }
+  },
+  "checks_passed": 892,
+  "offscreen_visual": true,
+  "benchmark_runs": 15,
+  "all_benchmarks_valid": true,
+  "desktop_control_used": false
+}

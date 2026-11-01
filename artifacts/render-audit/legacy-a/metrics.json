@@ -1,0 +1,2975 @@
+{
+	"cars": 90,
+	"content_scale_factor": 1.0,
+	"content_scale_mode": 2,
+	"crowd": {
+		"active_cells": 67,
+		"cell_activations": 141,
+		"circle_groups": 203,
+		"draw_batches": 191,
+		"far_from_intro_route": 914,
+		"name_labels": 0,
+		"near_updates": 12,
+		"occupied_cells": 134,
+		"park": 160,
+		"park_population": {
+			"Community green 1": 58,
+			"Community green 2": 54,
+			"Community green 3": 36,
+			"Neighborhood pitch": 8,
+			"Neighborhood playground": 4
+		},
+		"porch": 200,
+		"seated": 154,
+		"shared_meshes": 2,
+		"social": 1000,
+		"span_x": 717.105377197266,
+		"span_z": 533.026977539063,
+		"total": 1200,
+		"update_interval": 0.25,
+		"walkers": 128,
+		"walking_updates": 0
+	},
+	"day_night": {
+		"active_lights": 0,
+		"enabled": true,
+		"lamp_anchors": 21,
+		"lighting_writes": 149,
+		"max_lights": 8,
+		"minute_of_day": 551.208333333323,
+		"night_factor": 0.0,
+		"pool_updates": 90,
+		"shared_lens_material": true,
+		"sky_updates": 14
+	},
+	"delivered_fps": 182.69688501811,
+	"draw_calls": {
+		"max": 2170.0,
+		"median": 1583.0,
+		"min": 1410.0,
+		"p95": 1886.0,
+		"p99": 2166.0
+	},
+	"elapsed_stalled_seconds": 0.0,
+	"fps_cap": 0,
+	"frame_ms": {
+		"max": 18.972,
+		"median": 4.585,
+		"min": 2.438,
+		"p95": 9.361,
+		"p99": 11.548
+	},
+	"map_live_redraws": 1336,
+	"map_static_draw_builds": 2,
+	"maximum_allowed_stall_seconds": 1.0,
+	"median_fps": 218.102508178844,
+	"minimum_distance_m": 30.0,
+	"mission_route_active": true,
+	"mission_route_builds": 1,
+	"mission_route_points": 3,
+	"neighborhood_details": {
+		"active_batches": 54,
+		"active_cells": 38,
+		"active_postal_colliders": 18,
+		"business_cells": 15,
+		"cells": 69,
+		"counts": {
+			"business": 18,
+			"crosswalk_stripe": 346,
+			"mailbox": 24,
+			"postal_drop": 12,
+			"pothole": 24,
+			"road_dot": 883
+		},
+		"crossing_details": [
+			{
+				"across": "(-0.999883, 0.0, 0.015299)",
+				"forward": "(0.015299, 0.0, 0.999883)",
+				"id": "-12_1536",
+				"landing_a": "(-6.592036, -3.176319, 160.6086)",
+				"landing_b": "(4.306687, -3.170349, 160.4418)",
+				"position": "(-1.142674, -3.184, 160.5252)",
+				"street": "Old York Road",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.011203, 0.0, 0.999937)",
+				"forward": "(0.999937, 0.0, -0.011203)",
+				"id": "-15_-1864",
+				"landing_a": "(5.473621, 3.173199, -181.0492)",
+				"landing_b": "(5.351505, 3.177071, -191.9485)",
+				"position": "(5.412563, 3.147, -186.4989)",
+				"street": "Cator Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.999425, 0.0, -0.033897)",
+				"forward": "(-0.033897, 0.0, 0.999425)",
+				"id": "-1661_-2765",
+				"landing_a": "(-174.5861, 4.835155, -267.0405)",
+				"landing_b": "(-158.1955, 4.742931, -266.4846)",
+				"position": "(-166.3908, 4.789, -266.7626)",
+				"street": "Greenmount Avenue",
+				"stripes": 15,
+				"surface_checked": true,
+				"width": 15.0
+			},
+			{
+				"across": "(0.013225, 0.0, 0.999913)",
+				"forward": "(0.999913, 0.0, -0.013225)",
+				"id": "-1672_-1496",
+				"landing_a": "(-157.3958, 2.447075, -144.2808)",
+				"landing_b": "(-157.5399, 2.64925, -155.1798)",
+				"position": "(-157.4678, 2.368, -149.7303)",
+				"street": "Rose Hill Terrace",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.010415, 0.0, 0.999946)",
+				"forward": "(0.999946, 0.0, -0.010415)",
+				"id": "-1675_-2341",
+				"landing_a": "(-157.7418, 4.034161, -228.7683)",
+				"landing_b": "(-157.8553, 4.237183, -239.6677)",
+				"position": "(-157.7985, 4.019, -234.218)",
+				"street": "East 41st Street",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.020539, 0.0, 0.999789)",
+				"forward": "(0.999789, 0.0, 0.020539)",
+				"id": "-1691_-14",
+				"landing_a": "(-159.564, -0.985149, 4.202075)",
+				"landing_b": "(-159.3401, -0.775333, -6.695626)",
+				"position": "(-159.452, -1.177, -1.246776)",
+				"street": "Wyanoke Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.008518, 0.0, 0.999964)",
+				"forward": "(0.999964, 0.0, 0.008518)",
+				"id": "-1699_1014",
+				"landing_a": "(-160.2227, -3.602074, 108.6744)",
+				"landing_b": "(-160.1, -3.33514, 94.27489)",
+				"position": "(-160.1613, -3.818, 101.4746)",
+				"street": "East 39th Street",
+				"stripes": 13,
+				"surface_checked": true,
+				"width": 13.0
+			},
+			{
+				"across": "(-0.999904, 0.0, 0.013831)",
+				"forward": "(0.013831, 0.0, 0.999904)",
+				"id": "-16_1141",
+				"landing_a": "(-6.864402, -2.623581, 124.3764)",
+				"landing_b": "(4.034555, -2.728405, 124.2256)",
+				"position": "(-1.414923, -2.673, 124.301)",
+				"street": "Old York Road",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.003616, 0.0, 0.999993)",
+				"forward": "(0.999993, 0.0, 0.003616)",
+				"id": "-1709_2167",
+				"landing_a": "(-161.1748, -6.135326, 222.211)",
+				"landing_b": "(-161.1354, -5.93684, 211.3111)",
+				"position": "(-161.1551, -6.381, 216.7611)",
+				"street": "East 38th Street",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.010753, 0.0, -0.999942)",
+				"forward": "(-0.999942, 0.0, 0.010753)",
+				"id": "-21_-2359",
+				"landing_a": "(-9.122201, 3.356007, -241.2769)",
+				"landing_b": "(-9.004994, 3.152134, -230.3776)",
+				"position": "(-9.063598, 3.029, -235.8273)",
+				"street": "East 41st Street",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.034818, 0.0, 0.999394)",
+				"forward": "(0.999394, 0.0, -0.034818)",
+				"id": "-24_-2594",
+				"landing_a": "(4.759542, 3.853191, -254.2393)",
+				"landing_b": "(4.380029, 4.077061, -265.1327)",
+				"position": "(4.569786, 3.912, -259.686)",
+				"street": "East 41st Street",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.999974, 0.0, 0.007236)",
+				"forward": "(0.007236, 0.0, 0.999974)",
+				"id": "-2_-864",
+				"landing_a": "(-5.612565, 1.731304, -79.41175)",
+				"landing_b": "(5.287149, 1.874477, -79.49062)",
+				"position": "(-0.162708, 1.877, -79.45119)",
+				"street": "Old York Road",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.120972, 0.0, 0.992656)",
+				"forward": "(0.992656, 0.0, -0.120972)",
+				"id": "-8_1991",
+				"landing_a": "(6.800254, -4.625156, 203.7172)",
+				"landing_b": "(5.481664, -4.370029, 192.8973)",
+				"position": "(6.140959, -4.712, 198.3072)",
+				"street": "East 38th Street",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.003616, 0.0, -0.999993)",
+				"forward": "(-0.999993, 0.0, -0.003616)",
+				"id": "-8_2173",
+				"landing_a": "(-7.701248, -4.952011, 211.8689)",
+				"landing_b": "(-7.74066, -5.045567, 222.7688)",
+				"position": "(-7.720954, -5.186, 217.3189)",
+				"street": "East 38th Street",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.01905, 0.0, -0.999819)",
+				"forward": "(-0.999819, 0.0, 0.01905)",
+				"id": "-9_-1525",
+				"landing_a": "(-7.909563, 2.715611, -157.7866)",
+				"landing_b": "(-7.701914, 2.541607, -146.8886)",
+				"position": "(-7.805738, 2.328, -152.3376)",
+				"street": "Rose Hill Terrace",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.004705, 0.0, -0.999989)",
+				"forward": "(-0.999989, 0.0, -0.004705)",
+				"id": "0_0",
+				"landing_a": "(-6.924279, 0.182846, -5.482642)",
+				"landing_b": "(-6.975567, -0.015682, 5.417238)",
+				"position": "(-6.949923, 0.0, -0.032702)",
+				"street": "Wyanoke Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.99978, 0.0, 0.020972)",
+				"forward": "(0.020972, 0.0, 0.99978)",
+				"id": "1071_-2633",
+				"landing_a": "(101.824, 0.715122, -256.1952)",
+				"landing_b": "(112.7215, 0.513493, -256.4238)",
+				"position": "(107.2728, 0.603, -256.3095)",
+				"street": "Frisby Street",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.999784, 0.0, -0.0208)",
+				"forward": "(-0.0208, 0.0, -0.999784)",
+				"id": "1087_-1887",
+				"landing_a": "(113.9943, 0.019745, -195.8079)",
+				"landing_b": "(103.0966, 0.2262, -195.5811)",
+				"position": "(108.5454, -0.041, -195.6945)",
+				"street": "Frisby Street",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.998615, 0.0, 0.052612)",
+				"forward": "(0.052612, 0.0, 0.998615)",
+				"id": "1089_-65",
+				"landing_a": "(103.8572, -0.293419, 0.704109)",
+				"landing_b": "(114.7421, -0.504047, 0.13064)",
+				"position": "(109.2997, -0.399, 0.417375)",
+				"street": "Frisby Street",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.986949, 0.0, -0.161035)",
+				"forward": "(-0.161035, 0.0, 0.986949)",
+				"id": "1153_1294",
+				"landing_a": "(109.3087, -3.931519, 140.263)",
+				"landing_b": "(117.5991, -3.968204, 141.6156)",
+				"position": "(113.4539, -3.988, 140.9393)",
+				"street": "Frisby Street",
+				"stripes": 6,
+				"surface_checked": true,
+				"width": 7.0
+			},
+			{
+				"across": "(-0.429393, 0.0, 0.903118)",
+				"forward": "(0.903118, 0.0, 0.429393)",
+				"id": "1181_1613",
+				"landing_a": "(122.3898, -4.144836, 170.2437)",
+				"landing_b": "(127.7142, -4.021896, 159.045)",
+				"position": "(125.052, -4.247, 164.6443)",
+				"street": "Ellerslie Avenue",
+				"stripes": 11,
+				"surface_checked": true,
+				"width": 11.0
+			},
+			{
+				"across": "(-0.869895, 0.0, -0.493238)",
+				"forward": "(-0.493238, 0.0, 0.869895)",
+				"id": "1370_1703",
+				"landing_a": "(127.7643, -4.133553, 175.6599)",
+				"landing_b": "(137.2461, -4.01442, 181.0362)",
+				"position": "(132.5052, -4.17, 178.348)",
+				"street": "East 38th Street",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.998021, 0.0, 0.062884)",
+				"forward": "(0.062884, 0.0, 0.998021)",
+				"id": "1917_-111",
+				"landing_a": "(186.6658, -1.874798, -3.813039)",
+				"landing_b": "(197.5443, -1.874798, -4.498471)",
+				"position": "(192.105, -2.025, -4.155755)",
+				"street": "Lowndes Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.998036, 0.0, -0.062644)",
+				"forward": "(-0.062644, 0.0, -0.998036)",
+				"id": "1973_786",
+				"landing_a": "(202.0304, -1.823353, 66.60658)",
+				"landing_b": "(191.1518, -1.835739, 67.28939)",
+				"position": "(196.5911, -1.816, 66.94798)",
+				"street": "Lowndes Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.999915, 0.0, 0.013019)",
+				"forward": "(0.013019, 0.0, 0.999915)",
+				"id": "2335_-2670",
+				"landing_a": "(228.1409, -3.221371, -259.9876)",
+				"landing_b": "(239.04, -3.420578, -260.1295)",
+				"position": "(233.5905, -3.331, -260.0586)",
+				"street": "Wilsby Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.999912, 0.0, -0.013238)",
+				"forward": "(-0.013238, 0.0, -0.999912)",
+				"id": "2345_-1918",
+				"landing_a": "(239.8405, -3.74107, -198.7945)",
+				"landing_b": "(228.9415, -3.540756, -198.6502)",
+				"position": "(234.391, -3.965, -198.7224)",
+				"street": "Wilsby Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.999739, 0.0, 0.022836)",
+				"forward": "(0.022836, 0.0, 0.999739)",
+				"id": "2612_-1937",
+				"landing_a": "(255.9182, -4.242336, -186.6244)",
+				"landing_b": "(266.8153, -4.272354, -186.8733)",
+				"position": "(261.3667, -4.288, -186.7488)",
+				"street": "Wilsby Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.999783, 0.0, -0.020837)",
+				"forward": "(-0.020837, 0.0, -0.999783)",
+				"id": "2634_-942",
+				"landing_a": "(268.685, -3.790073, -101.2561)",
+				"landing_b": "(257.7874, -3.583668, -101.0289)",
+				"position": "(263.2362, -3.765, -101.1425)",
+				"street": "Wilsby Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.999938, 0.0, -0.011108)",
+				"forward": "(-0.011108, 0.0, -0.999938)",
+				"id": "2645_-164",
+				"landing_a": "(269.9155, -2.474964, -23.43611)",
+				"landing_b": "(259.0161, -2.434414, -23.31503)",
+				"position": "(264.4658, -2.406, -23.37557)",
+				"street": "Wilsby Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.862722, 0.0, -0.505679)",
+				"forward": "(-0.505679, 0.0, -0.862722)",
+				"id": "2864_255",
+				"landing_a": "(286.6724, -1.846901, 15.21137)",
+				"landing_b": "(277.2687, -1.846901, 20.72327)",
+				"position": "(281.9706, -1.997, 17.96732)",
+				"street": "Wilsby Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.019656, 0.0, -0.999807)",
+				"forward": "(-0.999807, 0.0, 0.019656)",
+				"id": "3434_-2692",
+				"landing_a": "(336.3142, -6.331886, -274.4774)",
+				"landing_b": "(336.5284, -6.510334, -263.5795)",
+				"position": "(336.4213, -6.713, -269.0284)",
+				"street": "East 41st Street",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.027769, 0.0, -0.999614)",
+				"forward": "(-0.999614, 0.0, 0.027769)",
+				"id": "3453_-1960",
+				"landing_a": "(338.1973, -6.663956, -201.2889)",
+				"landing_b": "(338.5, -6.641716, -190.3931)",
+				"position": "(338.3487, -6.95, -195.841)",
+				"street": "Cator Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.012459, 0.0, -0.999922)",
+				"forward": "(-0.999922, 0.0, 0.012459)",
+				"id": "3740_-1964",
+				"landing_a": "(366.9326, -7.203465, -201.755)",
+				"landing_b": "(367.0685, -7.287716, -190.8558)",
+				"position": "(367.0005, -7.495, -196.3054)",
+				"street": "Cator Avenue",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.962076, 0.0, 0.27278)",
+				"forward": "(0.27278, 0.0, 0.962076)",
+				"id": "4030_-983",
+				"landing_a": "(399.6315, -6.979, -90.12692)",
+				"landing_b": "(410.1181, -7.130169, -93.10022)",
+				"position": "(404.8748, -7.428, -91.61357)",
+				"street": "Elkader Road",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(0.96221, 0.0, -0.272309)",
+				"forward": "(-0.272309, 0.0, -0.96221)",
+				"id": "4158_-530",
+				"landing_a": "(418.2895, -6.195129, -64.28562)",
+				"landing_b": "(407.8014, -5.901829, -61.31746)",
+				"position": "(413.0454, -5.89, -62.80154)",
+				"street": "Elkader Road",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.938463, 0.0, 0.345379)",
+				"forward": "(0.345379, 0.0, 0.938463)",
+				"id": "4308_-641",
+				"landing_a": "(429.2382, -6.017426, -52.61236)",
+				"landing_b": "(439.4675, -6.181736, -56.37699)",
+				"position": "(434.3528, -6.604, -54.49467)",
+				"street": "North Hill Road",
+				"stripes": 9,
+				"surface_checked": true,
+				"width": 9.5
+			},
+			{
+				"across": "(-0.850712, 0.0, -0.525632)",
+				"forward": "(-0.525632, 0.0, 0.850712)",
+				"id": "5158_-2195",
+				"landing_a": "(505.1259, -12.69567, -215.9274)",
+				"landing_b": "(517.3761, -12.98846, -208.3583)",
+				"position": "(511.251, -13.22, -212.1428)",
+				"street": "Argonne Drive",
+				"stripes": 13,
+				"surface_checked": true,
+				"width": 13.0
+			}
+		],
+		"crossings": 37,
+		"fictional_businesses": true,
+		"postal_cells": 32,
+		"records": 1307,
+		"setup_ms": 103,
+		"shared_meshes": 3,
+		"span_x": 762.118026733398,
+		"span_z": 574.045867919922
+	},
+	"notes": "Wall-clock frames during actual forward input; active collision, normal chase camera, HUD, NPCs and traffic. Half-second movement windows detect stalls; more than one cumulative stalled second invalidates play. CPU Performance monitors are rolling engine observations, not per-frame traces. Direct viewport GPU/render CPU and global render setup timings are milliseconds; GPU results can lag. Screenshot writes plus 1.3s cooldown excluded. Slow/event frame counters indicate correlation, not causation.",
+	"npc_count": 1235,
+	"npc_simulated_seconds": 20.0166666666667,
+	"offscreen_validation": true,
+	"optimization_disabled": false,
+	"p95_frame_equivalent_fps": 106.826193782716,
+	"park_courts": {
+		"arm_colliders": 28,
+		"audit": {
+			"courts": 22.0,
+			"covered_greens": 22.0,
+			"excluded_greens": 26.0,
+			"full_courts": 6.0,
+			"green_coverage": [
+				{
+					"area_m2": 3667.89,
+					"bounds_xz": [
+						24.049,
+						-160.328,
+						168.53,
+						-94.55
+					],
+					"court_id": "park_court_0",
+					"geometry_candidates": 947.0,
+					"green_id": "green_000",
+					"name": "Community green 3",
+					"named_parks": [
+						"Community green 3"
+					],
+					"reason": "",
+					"status": "covered"
+				},
+				{
+					"area_m2": 3041.6,
+					"bounds_xz": [
+						-137.219,
+						-143.038,
+						-83.975,
+						-7.984
+					],
+					"court_id": "park_court_1",
+					"geometry_candidates": 1156.0,
+					"green_id": "green_001",
+					"name": "Neighborhood playground",
+					"named_parks": [
+						"Neighborhood playground"
+					],
+					"reason": "",
+					"status": "covered"
+				},
+				{
+					"area_m2": 3022.72,
+					"bounds_xz": [
+						5.614,
+						2.698,
+						91.367,
+						129.302
+					],
+					"court_id": "park_court_2",
+					"geometry_candidates": 118.0,
+					"green_id": "green_002",
+					"name": "Neighborhood green 3",
+					"named_parks": [],
+					"reason": "",
+					"status": "covered"
+				},
+				{
+					"area_m2": 2987.53,
+					"bounds_xz": [
+						-129.955,
+						6.266,
+						-7.317,
+						54.015
+					],
+					"court_id": "park_court_3",
+					"geometry_candidates": 3.0,
+					"green_id": "green_003",
+					"name": "Community green 1",
+					"named_parks": [
+						"Community green 1"
+					],
+					"reason": "",
+					"status": "covered"
+				},
+				{
+					"area_m2": 2751.65,
+					"bounds_xz": [
+						-156.545,
+						-303.641,
+						-9.343,
+						-241.383
+					],
+					"court_id": "park_court_4",
+					"geometry_candidates": 12.0,
+					"green_id": "green_004",
+					"name": "Community green 2",
+					"named_parks": [
+						"Community green 2"
+					],
+					"reason": "",
+					"status": "covered"
+				},
+				{
+					"area_m2": 2036.83,
+					"bounds_xz": [
+						-159.765,
+						148.852,
+						-59.223,
+						182.358
+					],
+					"court_id": "park_court_5",
+					"geometry_candidates": 1971.0,
+					"green_id": "green_005",
+					"name": "Neighborhood green 6",
+					"named_parks": [],
+					"reason": "",
+					"status": "covered"
+				},
+				{
+					"area_m2": 1862.08,
+					"bounds_xz": [
+						-138.592,
+						-201.71,
+						-17.712,
+						-172.537
+					],
+					"court_id": "park_court_6",
+					"geometry_candidates": 79.0,
+					"green_id": "green_006",
+					"name": "Neighborhood green 7",
+					"named_parks": [],
+					"reason": "",
+					"status": "covered"
+				},
+				{
+					"area_m2": 1638.14,
+					"bounds_xz": [
+						-79.605,
+						-99.549,
+						-7.252,
+						-60.254
+					],
+					"court_id": "park_court_7",
+					"geometry_candidates": 226.0,
+					"green_id": "green_007",
+					"name": "Neighborhood green 8",
+					"named_parks": [],
+					"reason": "",
+					"status": "covered"
+				},
+				{
+					"area_m2": 1507.66,
+					"bounds_xz": [
+						-79.536,
+						-115.722,
+						-7.418,
+						-88.533
+					],
+					"court_id": "park_court_8",
+					"geometry_candidates": 2401.0,
+					"green_id": "green_008",
+					"name": "Neighborhood pitch / Neighborhood playground",
+					"named_parks": [
+						"Neighborhood pitch",
+						"Neighborhood playground"
+					],
+					"reason": "",
+					"status": "covered"
+				},
+				{
+					"area_m2": 1446.8,
+					"bounds_xz": [
+						172.422,
+						-165.029,
+						254.816,
+						-126.727
+					],
+					"court_id": "park_court_9",
+					"geometry_candidates": 588.0,
+					"green_id": "green_009",
+					"name": "Neighborhood green 10",
+					"named_parks": [],
+					"reason": "",
+					"status": "covered"
+				},
+				{
+					"area_m2": 1382.61,
+					"bounds_xz": [
+						145.917,
+						-2.774,
+						189.751,
+						95.138
+					],
+					"court_id": "park_court_10",
+					"geometry_candidates": 87.0,
+					"green_id": "green_010",
+					"name": "Neighborhood green 11",
+					"named_parks": [],
+					"reason": "",
+					"status": "covered"
+				},
+				{
+					"area_m2": 1369.43,
+					"bounds_xz": [
+						393.068,
+						-191.588,
+						450.568,
+						-106.145
+					],
+					"court_id": "park_court_11",
+					"geometry_candidates": 103.0,
+					"green_id": "green_011",
+					"name": "Neighborhood green 12",
+					"named_parks": [],
+					"reason": "",
+					"status": "covered"
+				},
+				{
+					"area_m2": 1353.29,
+					"bounds_xz": [
+						396.048,
+						-313.632,
+						521.726,
+						-270.909
+					],
+					"geometry_candidates": 1.0,
+					"green_id": "green_012",
+					"name": "Neighborhood green 13",
+					"named_parks": [],
+					"reason": "terrain_exceeds_1_5_percent_plane_or_80_cm_fill_or_4_degree_access_ramps",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 1223.5,
+					"bounds_xz": [
+						299.42,
+						-34.149,
+						415.559,
+						32.451
+					],
+					"court_id": "park_court_12",
+					"geometry_candidates": 41.0,
+					"green_id": "green_013",
+					"name": "Neighborhood green 14",
+					"named_parks": [],
+					"reason": "",
+					"status": "covered"
+				},
+				{
+					"area_m2": 1167.84,
+					"bounds_xz": [
+						156.267,
+						-53.734,
+						257.319,
+						-19.836
+					],
+					"court_id": "park_court_13",
+					"geometry_candidates": 13.0,
+					"green_id": "green_014",
+					"name": "Neighborhood green 15",
+					"named_parks": [],
+					"reason": "",
+					"status": "covered"
+				},
+				{
+					"area_m2": 1062.08,
+					"bounds_xz": [
+						-79.894,
+						-56.771,
+						-7.088,
+						-38.445
+					],
+					"court_id": "park_court_14",
+					"geometry_candidates": 103.0,
+					"green_id": "green_015",
+					"name": "Neighborhood green 16",
+					"named_parks": [],
+					"reason": "",
+					"status": "covered"
+				},
+				{
+					"area_m2": 949.59,
+					"bounds_xz": [
+						371.691,
+						-246.231,
+						471.065,
+						-204.63
+					],
+					"geometry_candidates": 0.0,
+					"green_id": "green_016",
+					"name": "Neighborhood green 17",
+					"named_parks": [],
+					"reason": "too_narrow_for_half_court_with_apron_or_two_access_ramps",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 941.07,
+					"bounds_xz": [
+						-128.643,
+						110.401,
+						-8.516,
+						147.412
+					],
+					"geometry_candidates": 0.0,
+					"green_id": "green_017",
+					"name": "Neighborhood green 18",
+					"named_parks": [],
+					"reason": "too_narrow_for_half_court_with_apron_or_two_access_ramps",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 932.02,
+					"bounds_xz": [
+						7.031,
+						-52.781,
+						61.506,
+						-7.589
+					],
+					"court_id": "park_court_15",
+					"geometry_candidates": 190.0,
+					"green_id": "green_018",
+					"name": "Neighborhood green 19",
+					"named_parks": [],
+					"reason": "",
+					"status": "covered"
+				},
+				{
+					"area_m2": 814.51,
+					"bounds_xz": [
+						184.546,
+						85.206,
+						253.078,
+						133.722
+					],
+					"court_id": "park_court_16",
+					"geometry_candidates": 33.0,
+					"green_id": "green_019",
+					"name": "Neighborhood green 20",
+					"named_parks": [],
+					"reason": "",
+					"status": "covered"
+				},
+				{
+					"area_m2": 739.46,
+					"bounds_xz": [
+						201.119,
+						-7.405,
+						242.779,
+						63.815
+					],
+					"geometry_candidates": 0.0,
+					"green_id": "green_020",
+					"name": "Neighborhood green 21",
+					"named_parks": [],
+					"reason": "too_narrow_for_half_court_with_apron_or_two_access_ramps",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 687.62,
+					"bounds_xz": [
+						329.745,
+						-174.129,
+						379.625,
+						-132.048
+					],
+					"geometry_candidates": 0.0,
+					"green_id": "green_021",
+					"name": "Neighborhood green 22",
+					"named_parks": [],
+					"reason": "too_narrow_for_half_court_with_apron_or_two_access_ramps",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 677.77,
+					"bounds_xz": [
+						254.038,
+						32.806,
+						295.94,
+						79.491
+					],
+					"court_id": "park_court_17",
+					"geometry_candidates": 268.0,
+					"green_id": "green_022",
+					"name": "Neighborhood green 23",
+					"named_parks": [],
+					"reason": "",
+					"status": "covered"
+				},
+				{
+					"area_m2": 625.76,
+					"bounds_xz": [
+						99.252,
+						-58.326,
+						178.517,
+						-30.677
+					],
+					"court_id": "park_court_18",
+					"geometry_candidates": 13.0,
+					"green_id": "green_023",
+					"name": "Neighborhood green 24",
+					"named_parks": [],
+					"reason": "",
+					"status": "covered"
+				},
+				{
+					"area_m2": 599.89,
+					"bounds_xz": [
+						-116.585,
+						-145.183,
+						-7.932,
+						-115.597
+					],
+					"geometry_candidates": 0.0,
+					"green_id": "green_024",
+					"name": "Neighborhood green 25",
+					"named_parks": [],
+					"reason": "too_narrow_for_half_court_with_apron_or_two_access_ramps",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 570.11,
+					"bounds_xz": [
+						6.347,
+						21.498,
+						54.184,
+						35.045
+					],
+					"geometry_candidates": 0.0,
+					"green_id": "green_025",
+					"name": "Neighborhood green 26",
+					"named_parks": [],
+					"reason": "too_narrow_for_half_court_with_apron_or_two_access_ramps",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 497.88,
+					"bounds_xz": [
+						121.712,
+						69.573,
+						148.222,
+						113.152
+					],
+					"court_id": "park_court_19",
+					"geometry_candidates": 31.0,
+					"green_id": "green_026",
+					"name": "Neighborhood green 27",
+					"named_parks": [],
+					"reason": "",
+					"status": "covered"
+				},
+				{
+					"area_m2": 477.46,
+					"bounds_xz": [
+						496.909,
+						-140.887,
+						524.133,
+						-88.84
+					],
+					"geometry_candidates": 0.0,
+					"green_id": "green_027",
+					"name": "Neighborhood green 28",
+					"named_parks": [],
+					"reason": "too_narrow_for_half_court_with_apron_or_two_access_ramps",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 463.42,
+					"bounds_xz": [
+						-124.15,
+						180.739,
+						-7.966,
+						189.522
+					],
+					"geometry_candidates": 0.0,
+					"green_id": "green_028",
+					"name": "Neighborhood green 29",
+					"named_parks": [],
+					"reason": "too_narrow_for_half_court_with_apron_or_two_access_ramps",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 443.56,
+					"bounds_xz": [
+						68.498,
+						52.185,
+						85.046,
+						98.876
+					],
+					"geometry_candidates": 0.0,
+					"green_id": "green_029",
+					"name": "Neighborhood green 30",
+					"named_parks": [],
+					"reason": "too_narrow_for_half_court_with_apron_or_two_access_ramps",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 430.87,
+					"bounds_xz": [
+						-192.313,
+						-121.818,
+						-178.281,
+						-89.718
+					],
+					"court_id": "park_court_20",
+					"geometry_candidates": 44.0,
+					"green_id": "green_030",
+					"name": "Neighborhood green 31",
+					"named_parks": [],
+					"reason": "",
+					"status": "covered"
+				},
+				{
+					"area_m2": 429.23,
+					"bounds_xz": [
+						-192.769,
+						-40.029,
+						-179.308,
+						-7.255
+					],
+					"geometry_candidates": 0.0,
+					"green_id": "green_031",
+					"name": "Neighborhood green 32",
+					"named_parks": [],
+					"reason": "too_narrow_for_half_court_with_apron_or_two_access_ramps",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 407.01,
+					"bounds_xz": [
+						5.113,
+						-229.587,
+						100.797,
+						-193.653
+					],
+					"geometry_candidates": 0.0,
+					"green_id": "green_032",
+					"name": "Neighborhood green 33",
+					"named_parks": [],
+					"reason": "too_narrow_for_half_court_with_apron_or_two_access_ramps",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 402.97,
+					"bounds_xz": [
+						-191.572,
+						-200.882,
+						-177.723,
+						-171.336
+					],
+					"court_id": "park_court_21",
+					"geometry_candidates": 27.0,
+					"green_id": "green_033",
+					"name": "Neighborhood green 34",
+					"named_parks": [],
+					"reason": "",
+					"status": "covered"
+				},
+				{
+					"area_m2": 386.88,
+					"bounds_xz": [
+						274.399,
+						-56.064,
+						322.189,
+						-5.851
+					],
+					"geometry_candidates": 0.0,
+					"green_id": "green_034",
+					"name": "Neighborhood green 35",
+					"named_parks": [],
+					"reason": "too_narrow_for_half_court_with_apron_or_two_access_ramps",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 386.72,
+					"bounds_xz": [
+						239.325,
+						56.757,
+						262.433,
+						95.38
+					],
+					"geometry_candidates": 6.0,
+					"green_id": "green_035",
+					"name": "Neighborhood green 36",
+					"named_parks": [],
+					"reason": "terrain_exceeds_1_5_percent_plane_or_80_cm_fill_or_4_degree_access_ramps",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 382.35,
+					"bounds_xz": [
+						162.326,
+						149.286,
+						182.037,
+						187.111
+					],
+					"geometry_candidates": 0.0,
+					"green_id": "green_036",
+					"name": "Neighborhood green 37",
+					"named_parks": [],
+					"reason": "too_narrow_for_half_court_with_apron_or_two_access_ramps",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 357.97,
+					"bounds_xz": [
+						-117.333,
+						-39.266,
+						-96.557,
+						-7.89
+					],
+					"geometry_candidates": 0.0,
+					"green_id": "green_037",
+					"name": "Neighborhood green 38",
+					"named_parks": [],
+					"reason": "too_narrow_for_half_court_with_apron_or_two_access_ramps",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 332.75,
+					"bounds_xz": [
+						239.162,
+						-306.447,
+						335.163,
+						-300.169
+					],
+					"geometry_candidates": 0.0,
+					"green_id": "green_038",
+					"name": "Neighborhood green 39",
+					"named_parks": [],
+					"reason": "too_narrow_for_half_court_with_apron_or_two_access_ramps",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 310.99,
+					"bounds_xz": [
+						5.715,
+						127.09,
+						39.785,
+						145.493
+					],
+					"geometry_candidates": 0.0,
+					"green_id": "green_039",
+					"name": "Neighborhood green 40",
+					"named_parks": [],
+					"reason": "too_narrow_for_half_court_with_apron_or_two_access_ramps",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 304.09,
+					"bounds_xz": [
+						100.943,
+						207.005,
+						151.77,
+						224.171
+					],
+					"geometry_candidates": 0.0,
+					"green_id": "green_040",
+					"name": "Neighborhood green 41",
+					"named_parks": [],
+					"reason": "too_narrow_for_half_court_with_apron_or_two_access_ramps",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 297.37,
+					"bounds_xz": [
+						349.159,
+						-310.612,
+						379.096,
+						-298.39
+					],
+					"geometry_candidates": 0.0,
+					"green_id": "green_041",
+					"name": "Neighborhood green 42",
+					"named_parks": [],
+					"reason": "too_narrow_for_half_court_with_apron_or_two_access_ramps",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 276.87,
+					"bounds_xz": [
+						-144.529,
+						56.046,
+						-121.505,
+						91.83
+					],
+					"geometry_candidates": 0.0,
+					"green_id": "green_042",
+					"name": "Neighborhood green 43",
+					"named_parks": [],
+					"reason": "too_narrow_for_half_court_with_apron_or_two_access_ramps",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 275.56,
+					"bounds_xz": [
+						491.434,
+						-282.77,
+						529.825,
+						-241.459
+					],
+					"geometry_candidates": 0.0,
+					"green_id": "green_043",
+					"name": "Neighborhood green 44",
+					"named_parks": [],
+					"reason": "too_narrow_for_half_court_with_apron_or_two_access_ramps",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 268.13,
+					"bounds_xz": [
+						366.39,
+						-90.691,
+						387.641,
+						-60.523
+					],
+					"geometry_candidates": 0.0,
+					"green_id": "green_044",
+					"name": "Neighborhood green 45",
+					"named_parks": [],
+					"reason": "too_narrow_for_half_court_with_apron_or_two_access_ramps",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 265.51,
+					"bounds_xz": [
+						301.804,
+						-129.425,
+						386.587,
+						-122.34
+					],
+					"geometry_candidates": 0.0,
+					"green_id": "green_045",
+					"name": "Neighborhood green 46",
+					"named_parks": [],
+					"reason": "too_narrow_for_half_court_with_apron_or_two_access_ramps",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 253.18,
+					"bounds_xz": [
+						259.063,
+						-7.335,
+						275.433,
+						29.019
+					],
+					"geometry_candidates": 0.0,
+					"green_id": "green_046",
+					"name": "Neighborhood green 47",
+					"named_parks": [],
+					"reason": "too_narrow_for_half_court_with_apron_or_two_access_ramps",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 251.7,
+					"bounds_xz": [
+						241.135,
+						-232.516,
+						337.258,
+						-226.996
+					],
+					"geometry_candidates": 0.0,
+					"green_id": "green_047",
+					"name": "Neighborhood green 48",
+					"named_parks": [],
+					"reason": "too_narrow_for_half_court_with_apron_or_two_access_ramps",
+					"status": "excluded"
+				}
+			],
+			"green_inventory": {
+				"grass_components": 1298.0,
+				"minimum_apron_footprint_m": [
+					16.0,
+					13.0
+				],
+				"minimum_green_area_m2": 250.0,
+				"minimum_playing_area_m": [
+					12.0,
+					9.0
+				],
+				"minimum_retained_slab_m": [
+					14.0,
+					11.0
+				],
+				"named_parks": [
+					{
+						"area_m2": 265.65,
+						"green_ids": [
+							"green_008"
+						],
+						"name": "Neighborhood playground",
+						"park_index": 0.0
+					},
+					{
+						"area_m2": 161.1,
+						"green_ids": [
+							"green_008"
+						],
+						"name": "Neighborhood pitch",
+						"park_index": 1.0
+					},
+					{
+						"area_m2": 151.23,
+						"green_ids": [
+							"green_001"
+						],
+						"name": "Neighborhood playground",
+						"park_index": 2.0
+					},
+					{
+						"area_m2": 209.53,
+						"green_ids": [
+							"green_001"
+						],
+						"name": "Neighborhood playground",
+						"park_index": 3.0
+					},
+					{
+						"area_m2": 1959.84,
+						"green_ids": [
+							"green_003"
+						],
+						"name": "Community green 1",
+						"park_index": 4.0
+					},
+					{
+						"area_m2": 1946.49,
+						"green_ids": [
+							"green_004"
+						],
+						"name": "Community green 2",
+						"park_index": 5.0
+					},
+					{
+						"area_m2": 1890.15,
+						"green_ids": [
+							"green_000"
+						],
+						"name": "Community green 3",
+						"park_index": 6.0
+					}
+				],
+				"retained_access_ramps_m": {
+					"length_each": [
+						2.5,
+						8.0
+					],
+					"width": 3.0
+				},
+				"small_lawns_omitted": 1250.0
+			},
+			"hoops": 28.0,
+			"max_apron_slope_deg": 3.85653,
+			"max_court_grade": 0.015,
+			"max_fill_m": 0.68092,
+			"placement_limits": {
+				"max_apron_slope_deg": 4.0,
+				"max_court_grade": 0.015,
+				"max_fill_m": 0.8
+			},
+			"removed_vegetation_records": 91.0,
+			"reservation_records_removed": 0.0,
+			"retained_bushes": 324.0,
+			"retained_trees": 1780.0,
+			"road_building_overlap_m2": 0.0,
+			"source_ground_sha256": "3852350e0027eace9a17c093e43fdd9f05ee6795403fe06d089343cc82b8336c",
+			"source_height_method": "exact exported grass triangles",
+			"tree_trunks_removed_from_courts": 29.0,
+			"triangles": 34624.0
+		},
+		"backboard_colliders": 28,
+		"courts": 22,
+		"draw_batches": 19,
+		"enabled": true,
+		"floor_colliders": 22,
+		"hoops": 28,
+		"pole_colliders": 28
+	},
+	"parked_cars": {
+		"active_colliders": 0,
+		"animated_spinner_cars": 0,
+		"attempts": 192,
+		"draw_batches": 7,
+		"far": 37,
+		"far_radius": 180.0,
+		"hidden": 107,
+		"near": 0,
+		"presence_radius": 55.0,
+		"rejected": {
+			"junction": 32,
+			"occupied": 8,
+			"tree_trunk": 8
+		},
+		"street_count": 16,
+		"streets": {
+			"Argonne Drive": 12,
+			"Cator Avenue": 11,
+			"Dumbarton Avenue": 14,
+			"East 38th Street": 13,
+			"East 39th Street": 5,
+			"East 41st Street": 10,
+			"Elkader Road": 11,
+			"Ellerslie Avenue": 5,
+			"Frisby Street": 14,
+			"Greenmount Avenue": 11,
+			"Lowndes Avenue": 3,
+			"North Hill Road": 2,
+			"Pen Lucy Avenue": 1,
+			"Rose Hill Terrace": 8,
+			"Wilsby Avenue": 10,
+			"Wyanoke Avenue": 14
+		},
+		"total": 144,
+		"visible_spinner_cars": 0
+	},
+	"paused_during_sample": false,
+	"physics_components_ms": {
+		"clock": {
+			"max": 0.117,
+			"median": 0.008,
+			"min": 0.005,
+			"p95": 0.072,
+			"p99": 0.082
+		},
+		"combat": {
+			"max": 0.194,
+			"median": 0.014,
+			"min": 0.01,
+			"p95": 0.018,
+			"p99": 0.019
+		},
+		"missions": {
+			"max": 0.008,
+			"median": 0.004,
+			"min": 0.002,
+			"p95": 0.005,
+			"p99": 0.005
+		},
+		"npcs": {
+			"max": 1.938,
+			"median": 0.558,
+			"min": 0.392,
+			"p95": 1.622,
+			"p99": 1.767
+		},
+		"residents": {
+			"max": 0.682,
+			"median": 0.226,
+			"min": 0.153,
+			"p95": 0.341,
+			"p99": 0.528
+		},
+		"traffic": {
+			"max": 4.861,
+			"median": 2.362,
+			"min": 1.785,
+			"p95": 3.026,
+			"p99": 4.152
+		}
+	},
+	"physics_cpu_ms": {
+		"max": 7.794,
+		"median": 6.742,
+		"min": 5.596,
+		"p95": 7.794,
+		"p99": 7.794
+	},
+	"physics_fps": 60.0489761649564,
+	"physics_frames": 1201,
+	"player_distance_m": 75.5084166824818,
+	"player_end": [
+		-5.55500555038452,
+		1.11996138095856,
+		-64.4209518432617
+	],
+	"player_start": [
+		-6.72599983215332,
+		-0.108433023095131,
+		9.99699974060059
+	],
+	"process_cpu_ms": {
+		"max": 14.659,
+		"median": 10.935,
+		"min": 8.36,
+		"p95": 12.871,
+		"p99": 14.659
+	},
+	"quality": "balanced",
+	"render_frame_setup_cpu_ms": {
+		"max": 0.58,
+		"median": 0.017,
+		"min": 0.009,
+		"p95": 0.27,
+		"p99": 0.307
+	},
+	"render_optimizer": {
+		"batch_meshes": 21,
+		"batch_surfaces": 677,
+		"batch_triangles": 1160637,
+		"building_meshes": 383,
+		"building_surfaces": 3868,
+		"building_triangles": 1160637,
+		"cache_hit": true,
+		"cache_saved": false,
+		"collision_nodes_preserved": true,
+		"collision_shapes_after": 387,
+		"collision_shapes_before": 387,
+		"enabled": true,
+		"lod_bias": 1.0,
+		"material_palette": {
+			"cache_builds": 0,
+			"cache_hits": 0,
+			"enabled": false,
+			"merged_surfaces": 0,
+			"palette_materials": 0,
+			"surfaces_after": 0,
+			"surfaces_before": 0
+		},
+		"quality": "balanced",
+		"setup_ms": 236,
+		"shadow_distance": 90.0,
+		"shared_materials": 45,
+		"source_meshes": 387,
+		"source_surfaces": 3881,
+		"visible_surface_budget": 690
+	},
+	"render_scale": 1.0,
+	"rendered_frames": 3654,
+	"requested_resolution": [
+		1920,
+		1080
+	],
+	"residents": {
+		"activation_waits": 0,
+		"actors": {
+			"daily_aisha_bell": {
+				"activity": "home",
+				"blocked": false,
+				"destination": "Home frontage · morning",
+				"distance_walked": 0.0,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_aisha_bell",
+				"moving": false,
+				"name": "Aisha Bell",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(-159.7699, 0.667254, -63.69289)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": true,
+				"route_cursor": 1,
+				"route_size": 1,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 0.0
+			},
+			"daily_andre_foster": {
+				"activity": "work",
+				"blocked": false,
+				"destination": "Delivery handoff",
+				"distance_walked": 23.1053333333333,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_andre_foster",
+				"moving": false,
+				"name": "Andre Foster",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(393.7533, -7.259574, -107.465)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": false,
+				"route_cursor": 23,
+				"route_size": 81,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 0.317730924415547
+			},
+			"daily_calvin_reed": {
+				"activity": "home",
+				"blocked": false,
+				"destination": "Home frontage · morning",
+				"distance_walked": 0.0,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_calvin_reed",
+				"moving": false,
+				"name": "Calvin Reed",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(-114.6555, -0.564736, -6.713852)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": true,
+				"route_cursor": 1,
+				"route_size": 1,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 0.0
+			},
+			"daily_celia_grant": {
+				"activity": "work",
+				"blocked": false,
+				"destination": "Community pantry pickup",
+				"distance_walked": 20.2171666666667,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_celia_grant",
+				"moving": false,
+				"name": "Celia Grant",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(41.76531, -3.469295, 140.8764)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": false,
+				"route_cursor": 21,
+				"route_size": 23,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 1.73290945738679
+			},
+			"daily_devon_clarke": {
+				"activity": "home",
+				"blocked": false,
+				"destination": "Home frontage · morning",
+				"distance_walked": 0.0,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_devon_clarke",
+				"moving": false,
+				"name": "Devon Clarke",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(459.9906, -8.420831, -109.555)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": true,
+				"route_cursor": 1,
+				"route_size": 1,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 0.0
+			},
+			"daily_ernest_cole": {
+				"activity": "work",
+				"blocked": false,
+				"destination": "Street sweeping round",
+				"distance_walked": 27.4375833333334,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_ernest_cole",
+				"moving": false,
+				"name": "Ernest Cole",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(101.435, 0.678124, -253.2808)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": false,
+				"route_cursor": 28,
+				"route_size": 81,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 0.0209711424509088
+			},
+			"daily_estelle_ross": {
+				"activity": "home",
+				"blocked": false,
+				"destination": "Home frontage · morning",
+				"distance_walked": 0.0,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_estelle_ross",
+				"moving": false,
+				"name": "Estelle Ross",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(-109.9742, -0.692426, 5.107661)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": true,
+				"route_cursor": 1,
+				"route_size": 1,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 0.0
+			},
+			"daily_ines_morales": {
+				"activity": "work",
+				"blocked": false,
+				"destination": "Flower cart",
+				"distance_walked": 23.1053333333333,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_ines_morales",
+				"moving": false,
+				"name": "Ines Morales",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(205.3858, -2.862149, -86.57708)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": false,
+				"route_cursor": 23,
+				"route_size": 81,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": -1.54118344895956
+			},
+			"daily_june_harris": {
+				"activity": "home",
+				"blocked": false,
+				"destination": "Home frontage · morning",
+				"distance_walked": 0.0,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_june_harris",
+				"moving": false,
+				"name": "June Harris",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(26.59134, -3.340924, 133.075)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": true,
+				"route_cursor": 1,
+				"route_size": 1,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 0.0
+			},
+			"daily_leon_turner": {
+				"activity": "work",
+				"blocked": false,
+				"destination": "Recycling collection point",
+				"distance_walked": 24.1263808034807,
+				"enabled": true,
+				"fade": 0.244764005236017,
+				"has_target": true,
+				"id": "daily_leon_turner",
+				"moving": true,
+				"name": "Leon Turner",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": true,
+				"position": "(68.60048, 0.979006, -82.61121)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": false,
+				"route_cursor": 25,
+				"route_size": 81,
+				"schedule_transitions": 2,
+				"target": "(67.71123, 1.001803, -82.85433)",
+				"yaw": -1.83767531815724
+			},
+			"daily_luz_santos": {
+				"activity": "work",
+				"blocked": false,
+				"destination": "Market produce table",
+				"distance_walked": 24.5494166666667,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_luz_santos",
+				"moving": false,
+				"name": "Luz Santos",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(257.9384, -3.244328, -70.17019)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": false,
+				"route_cursor": 25,
+				"route_size": 81,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": -3.12246836154305
+			},
+			"daily_marcus_webb": {
+				"activity": "home",
+				"blocked": false,
+				"destination": "Home frontage · morning",
+				"distance_walked": 0.0,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_marcus_webb",
+				"moving": false,
+				"name": "Marcus Webb",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(171.2682, -1.194394, -271.0639)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": true,
+				"route_cursor": 1,
+				"route_size": 1,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 0.0
+			},
+			"daily_miriam_owens": {
+				"activity": "work",
+				"blocked": false,
+				"destination": "Garden advice table",
+				"distance_walked": 22.1005980372429,
+				"enabled": true,
+				"fade": 0.0,
+				"has_target": true,
+				"id": "daily_miriam_owens",
+				"moving": true,
+				"name": "Miriam Owens",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": true,
+				"position": "(5.796212, 0.680575, -31.81888)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": false,
+				"route_cursor": 23,
+				"route_size": 81,
+				"schedule_transitions": 2,
+				"target": "(5.793259, 0.682383, -32.7163)",
+				"yaw": -3.1383018680251
+			},
+			"daily_nadine_brooks": {
+				"activity": "work",
+				"blocked": false,
+				"destination": "Porch plant care",
+				"distance_walked": 19.3829688606784,
+				"enabled": true,
+				"fade": 0.0,
+				"has_target": true,
+				"id": "daily_nadine_brooks",
+				"moving": true,
+				"name": "Nadine Brooks",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": true,
+				"position": "(5.783709, 0.167402, 5.073995)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": false,
+				"route_cursor": 20,
+				"route_size": 81,
+				"schedule_transitions": 2,
+				"target": "(5.79821, 0.180453, 4.449657)",
+				"yaw": 3.11837011240952
+			},
+			"daily_oscar_bennett": {
+				"activity": "home",
+				"blocked": false,
+				"destination": "Home frontage · morning",
+				"distance_walked": 0.0,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_oscar_bennett",
+				"moving": false,
+				"name": "Oscar Bennett",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(269.7247, -3.382661, -71.00017)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": true,
+				"route_cursor": 1,
+				"route_size": 1,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 0.0
+			},
+			"daily_pearl_sutton": {
+				"activity": "work",
+				"blocked": false,
+				"destination": "Seed exchange",
+				"distance_walked": 21.66125,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_pearl_sutton",
+				"moving": false,
+				"name": "Pearl Sutton",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(-94.55907, 2.573757, -144.7836)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": false,
+				"route_cursor": 22,
+				"route_size": 81,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": -1.55173342889082
+			},
+			"daily_ruth_daniels": {
+				"activity": "work",
+				"blocked": false,
+				"destination": "Book exchange",
+				"distance_walked": 23.9994850841363,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_ruth_daniels",
+				"moving": false,
+				"name": "Ruth Daniels",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(-159.1098, -5.878274, 210.8684)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": true,
+				"route_cursor": 25,
+				"route_size": 25,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": -1.57443267440334
+			},
+			"daily_samir_haddad": {
+				"activity": "home",
+				"blocked": false,
+				"destination": "Home frontage · morning",
+				"distance_walked": 0.0,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_samir_haddad",
+				"moving": false,
+				"name": "Samir Haddad",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(-177.815, -1.612222, 20.56987)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": true,
+				"route_cursor": 1,
+				"route_size": 1,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 0.0
+			},
+			"daily_theo_washington": {
+				"activity": "work",
+				"blocked": false,
+				"destination": "Tool lending table",
+				"distance_walked": 25.9935,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_theo_washington",
+				"moving": false,
+				"name": "Theo Washington",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(188.7172, -2.077802, 35.85549)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": false,
+				"route_cursor": 26,
+				"route_size": 70,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 0.0630185700200053
+			},
+			"daily_walter_price": {
+				"activity": "work",
+				"blocked": false,
+				"destination": "Front-step repairs",
+				"distance_walked": 24.5494166666667,
+				"enabled": false,
+				"fade": 1.0,
+				"has_target": false,
+				"id": "daily_walter_price",
+				"moving": false,
+				"name": "Walter Price",
+				"needs_replan": false,
+				"patrol_points": 0,
+				"physical": false,
+				"position": "(308.6834, -6.032976, -200.9192)",
+				"recovering": false,
+				"recovery_count": 0,
+				"route_completed": false,
+				"route_cursor": 25,
+				"route_size": 81,
+				"schedule_transitions": 2,
+				"target": "(0.0, 0.0, 0.0)",
+				"yaw": 1.5985686589509
+			}
+		},
+		"count": 20,
+		"expected": 20,
+		"far": 17,
+		"far_updates": 683,
+		"last_tick_usec": 253,
+		"logical_waits": 0,
+		"max_tick_usec": 679,
+		"near": 3,
+		"near_updates": 2983,
+		"path_builds": 20,
+		"pending_routes": 0,
+		"placement_failures": [],
+		"route_failures": [],
+		"routines_enabled": true
+	},
+	"resolution": [
+		1920,
+		1080
+	],
+	"route_waypoint_reached": 42,
+	"route_waypoint_start": 0,
+	"sample_seconds": 20.000341,
+	"slow_or_event_frames": [
+		{
+			"elapsed_ms": 591.574,
+			"events": {
+				"sky_updates": 1
+			},
+			"frame_ms": 9.614,
+			"gpu_ms": 1.93599998950958,
+			"render_cpu_ms": 2.33500003814697
+		},
+		{
+			"elapsed_ms": 916.113,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 17.404,
+			"gpu_ms": 2.28600001335144,
+			"render_cpu_ms": 2.09699988365173
+		},
+		{
+			"elapsed_ms": 1185.201,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 16.922,
+			"gpu_ms": 1.94099998474121,
+			"render_cpu_ms": 2.84999990463257
+		},
+		{
+			"elapsed_ms": 1196.348,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 11.147,
+			"gpu_ms": 1.93499994277954,
+			"render_cpu_ms": 3.32500004768372
+		},
+		{
+			"elapsed_ms": 1435.549,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 18.727,
+			"gpu_ms": 2.20499992370605,
+			"render_cpu_ms": 2.98600006103516
+		},
+		{
+			"elapsed_ms": 1441.129,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 5.58,
+			"gpu_ms": 1.95500004291534,
+			"render_cpu_ms": 3.19099998474121
+		},
+		{
+			"elapsed_ms": 1679.587,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 13.184,
+			"gpu_ms": 2.19799995422363,
+			"render_cpu_ms": 2.56100010871887
+		},
+		{
+			"elapsed_ms": 2083.295,
+			"events": {
+				"sky_updates": 1
+			},
+			"frame_ms": 8.069,
+			"gpu_ms": 1.96899998188019,
+			"render_cpu_ms": 2.07800006866455
+		},
+		{
+			"elapsed_ms": 2209.266,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 16.774,
+			"gpu_ms": 1.9650000333786,
+			"render_cpu_ms": 2.85500001907349
+		},
+		{
+			"elapsed_ms": 2699.125,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 8.849,
+			"gpu_ms": 1.96099996566772,
+			"render_cpu_ms": 2.50799989700317
+		},
+		{
+			"elapsed_ms": 3582.142,
+			"events": {
+				"sky_updates": 1
+			},
+			"frame_ms": 7.579,
+			"gpu_ms": 1.93400001525879,
+			"render_cpu_ms": 1.91400003433228
+		},
+		{
+			"elapsed_ms": 3706.675,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 14.388,
+			"gpu_ms": 1.92499995231628,
+			"render_cpu_ms": 2.7720000743866
+		},
+		{
+			"elapsed_ms": 3960.003,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 4.773,
+			"gpu_ms": 1.92400002479553,
+			"render_cpu_ms": 2.34699988365173
+		},
+		{
+			"elapsed_ms": 4208.798,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 8.844,
+			"gpu_ms": 1.89900004863739,
+			"render_cpu_ms": 2.42700004577637
+		},
+		{
+			"elapsed_ms": 5092.774,
+			"events": {
+				"sky_updates": 1
+			},
+			"frame_ms": 8.544,
+			"gpu_ms": 1.93099999427795,
+			"render_cpu_ms": 3.08899998664856
+		},
+		{
+			"elapsed_ms": 5229.409,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 13.82,
+			"gpu_ms": 1.92900002002716,
+			"render_cpu_ms": 3.10899996757507
+		},
+		{
+			"elapsed_ms": 5240.235,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 10.826,
+			"gpu_ms": 2.70000004768372,
+			"render_cpu_ms": 3.07599997520447
+		},
+		{
+			"elapsed_ms": 5246.108,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 5.873,
+			"gpu_ms": 1.93900001049042,
+			"render_cpu_ms": 3.05699992179871
+		},
+		{
+			"elapsed_ms": 5466.704,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 9.727,
+			"gpu_ms": 1.94200003147125,
+			"render_cpu_ms": 2.89299988746643
+		},
+		{
+			"elapsed_ms": 5977.272,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 11.31,
+			"gpu_ms": 2.49799990653992,
+			"render_cpu_ms": 1.91100001335144
+		},
+		{
+			"elapsed_ms": 6475.498,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 7.501,
+			"gpu_ms": 2.40599989891052,
+			"render_cpu_ms": 2.49399995803833
+		},
+		{
+			"elapsed_ms": 6579.066,
+			"events": {
+				"sky_updates": 1
+			},
+			"frame_ms": 7.406,
+			"gpu_ms": 1.9099999666214,
+			"render_cpu_ms": 1.97699999809265
+		},
+		{
+			"elapsed_ms": 6735.398,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 17.116,
+			"gpu_ms": 2.62100005149841,
+			"render_cpu_ms": 3.04900002479553
+		},
+		{
+			"elapsed_ms": 6982.622,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 14.807,
+			"gpu_ms": 1.91299998760223,
+			"render_cpu_ms": 2.00200009346008
+		},
+		{
+			"elapsed_ms": 7231.844,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 13.334,
+			"gpu_ms": 2.54399991035461,
+			"render_cpu_ms": 2.16000008583069
+		},
+		{
+			"elapsed_ms": 7487.215,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 14.252,
+			"gpu_ms": 1.90600001811981,
+			"render_cpu_ms": 1.97500002384186
+		},
+		{
+			"elapsed_ms": 7741.833,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 12.685,
+			"gpu_ms": 1.90499997138977,
+			"render_cpu_ms": 2.26099991798401
+		},
+		{
+			"elapsed_ms": 7992.369,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 9.461,
+			"gpu_ms": 2.14100003242493,
+			"render_cpu_ms": 2.04999995231628
+		},
+		{
+			"elapsed_ms": 8083.076,
+			"events": {
+				"sky_updates": 1
+			},
+			"frame_ms": 8.016,
+			"gpu_ms": 1.8860000371933,
+			"render_cpu_ms": 2.07800006866455
+		},
+		{
+			"elapsed_ms": 8245.803,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 8.719,
+			"gpu_ms": 1.89600002765656,
+			"render_cpu_ms": 2.18400001525879
+		},
+		{
+			"elapsed_ms": 8491.251,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 8.846,
+			"gpu_ms": 2.26099991798401,
+			"render_cpu_ms": 2.23099994659424
+		},
+		{
+			"elapsed_ms": 8750.585,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 14.665,
+			"gpu_ms": 1.89499998092651,
+			"render_cpu_ms": 2.14499998092651
+		},
+		{
+			"elapsed_ms": 9002.013,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 13.22,
+			"gpu_ms": 1.87999999523163,
+			"render_cpu_ms": 2.24699997901917
+		},
+		{
+			"elapsed_ms": 9250.033,
+			"events": {
+				"crowd_activations": 1
+			},
+			"frame_ms": 11.288,
+			"gpu_ms": 1.89699995517731,
+			"render_cpu_ms": 2.31900000572205
+		},
+		{
+			"elapsed_ms": 9503.646,
+			"events": {
+				"crowd_activations": 1
+			},
+			"frame_ms": 10.968,
+			"gpu_ms": 1.88999998569489,
+			"render_cpu_ms": 2.49200010299683
+		},
+		{
+			"elapsed_ms": 9583.903,
+			"events": {
+				"sky_updates": 1
+			},
+			"frame_ms": 9.58,
+			"gpu_ms": 2.13499999046326,
+			"render_cpu_ms": 2.14100003242493
+		},
+		{
+			"elapsed_ms": 9759.177,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 3.541,
+			"gpu_ms": 2.13899993896484,
+			"render_cpu_ms": 2.77699995040894
+		},
+		{
+			"elapsed_ms": 10261.521,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 9.974,
+			"gpu_ms": 1.85899996757507,
+			"render_cpu_ms": 2.30200004577637
+		},
+		{
+			"elapsed_ms": 10269.283,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 7.762,
+			"gpu_ms": 1.86600005626678,
+			"render_cpu_ms": 2.50399994850159
+		},
+		{
+			"elapsed_ms": 10511.188,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 7.146,
+			"gpu_ms": 2.1949999332428,
+			"render_cpu_ms": 1.96800005435944
+		},
+		{
+			"elapsed_ms": 11031.01,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 11.007,
+			"gpu_ms": 2.1029999256134,
+			"render_cpu_ms": 2.31800007820129
+		},
+		{
+			"elapsed_ms": 11084.35,
+			"events": {
+				"sky_updates": 1
+			},
+			"frame_ms": 9.814,
+			"gpu_ms": 1.86800003051758,
+			"render_cpu_ms": 2.10500001907349
+		},
+		{
+			"elapsed_ms": 11271.224,
+			"events": {
+				"crowd_activations": 1,
+				"vegetation_builds": 1
+			},
+			"frame_ms": 9.183,
+			"gpu_ms": 1.87399995326996,
+			"render_cpu_ms": 2.20900011062622
+		},
+		{
+			"elapsed_ms": 11538.635,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 14.438,
+			"gpu_ms": 2.22399997711182,
+			"render_cpu_ms": 2.26200008392334
+		},
+		{
+			"elapsed_ms": 11798.118,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 14.202,
+			"gpu_ms": 2.10599994659424,
+			"render_cpu_ms": 2.35899996757507
+		},
+		{
+			"elapsed_ms": 12037.096,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 11.479,
+			"gpu_ms": 2.61199998855591,
+			"render_cpu_ms": 1.97500002384186
+		},
+		{
+			"elapsed_ms": 12046.621,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 9.525,
+			"gpu_ms": 1.86199998855591,
+			"render_cpu_ms": 3.14000010490417
+		},
+		{
+			"elapsed_ms": 12286.974,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 9.24,
+			"gpu_ms": 1.86500000953674,
+			"render_cpu_ms": 1.90400004386902
+		},
+		{
+			"elapsed_ms": 12540.151,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 9.853,
+			"gpu_ms": 1.8400000333786,
+			"render_cpu_ms": 2.62599992752075
+		},
+		{
+			"elapsed_ms": 12584.262,
+			"events": {
+				"sky_updates": 1
+			},
+			"frame_ms": 8.876,
+			"gpu_ms": 1.85099995136261,
+			"render_cpu_ms": 2.05800008773804
+		},
+		{
+			"elapsed_ms": 12791.9,
+			"events": {
+				"crowd_activations": 1,
+				"vegetation_builds": 1
+			},
+			"frame_ms": 9.757,
+			"gpu_ms": 2.18400001525879,
+			"render_cpu_ms": 1.90299999713898
+		},
+		{
+			"elapsed_ms": 13050.792,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 12.644,
+			"gpu_ms": 2.20600008964539,
+			"render_cpu_ms": 1.67799997329712
+		},
+		{
+			"elapsed_ms": 13314.841,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 17.613,
+			"gpu_ms": 1.84800004959106,
+			"render_cpu_ms": 1.86099994182587
+		},
+		{
+			"elapsed_ms": 13326.165,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 11.324,
+			"gpu_ms": 2.18899989128113,
+			"render_cpu_ms": 2.29999995231628
+		},
+		{
+			"elapsed_ms": 13555.804,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 11.728,
+			"gpu_ms": 2.1949999332428,
+			"render_cpu_ms": 2.58299994468689
+		},
+		{
+			"elapsed_ms": 13813.244,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 11.114,
+			"gpu_ms": 1.84300005435944,
+			"render_cpu_ms": 2.66599988937378
+		},
+		{
+			"elapsed_ms": 14078.005,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 17.052,
+			"gpu_ms": 1.83899998664856,
+			"render_cpu_ms": 2.78299999237061
+		},
+		{
+			"elapsed_ms": 14092.894,
+			"events": {
+				"sky_updates": 1
+			},
+			"frame_ms": 9.399,
+			"gpu_ms": 1.84099996089935,
+			"render_cpu_ms": 3.125
+		},
+		{
+			"elapsed_ms": 14323.093,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 16.688,
+			"gpu_ms": 2.07800006866455,
+			"render_cpu_ms": 2.40599989891052
+		},
+		{
+			"elapsed_ms": 14328.924,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 5.831,
+			"gpu_ms": 1.84700000286102,
+			"render_cpu_ms": 3.12599992752075
+		},
+		{
+			"elapsed_ms": 14332.356,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 3.432,
+			"gpu_ms": 1.84200000762939,
+			"render_cpu_ms": 3.21799993515015
+		},
+		{
+			"elapsed_ms": 14575.283,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 13.823,
+			"gpu_ms": 1.85099995136261,
+			"render_cpu_ms": 2.46600008010864
+		},
+		{
+			"elapsed_ms": 14822.898,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 13.642,
+			"gpu_ms": 2.1710000038147,
+			"render_cpu_ms": 2.17000007629395
+		},
+		{
+			"elapsed_ms": 15084.561,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 11.45,
+			"gpu_ms": 1.83000004291534,
+			"render_cpu_ms": 2.43099999427795
+		},
+		{
+			"elapsed_ms": 15323.877,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 10.847,
+			"gpu_ms": 1.83299994468689,
+			"render_cpu_ms": 2.25799989700317
+		},
+		{
+			"elapsed_ms": 15581.428,
+			"events": {
+				"crowd_activations": 1,
+				"sky_updates": 1
+			},
+			"frame_ms": 10.582,
+			"gpu_ms": 2.09400010108948,
+			"render_cpu_ms": 1.92400002479553
+		},
+		{
+			"elapsed_ms": 15847.471,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 5.629,
+			"gpu_ms": 2.15100002288818,
+			"render_cpu_ms": 2.28299999237061
+		},
+		{
+			"elapsed_ms": 16088.814,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 17.562,
+			"gpu_ms": 2.03699994087219,
+			"render_cpu_ms": 1.93299996852875
+		},
+		{
+			"elapsed_ms": 16344.096,
+			"events": {
+				"crowd_activations": 1
+			},
+			"frame_ms": 8.027,
+			"gpu_ms": 1.80299997329712,
+			"render_cpu_ms": 2.09699988365173
+		},
+		{
+			"elapsed_ms": 16840.761,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 9.855,
+			"gpu_ms": 1.79700005054474,
+			"render_cpu_ms": 1.91799998283386
+		},
+		{
+			"elapsed_ms": 16848.639,
+			"events": {
+				"yard_loads": 1
+			},
+			"frame_ms": 7.878,
+			"gpu_ms": 1.79799997806549,
+			"render_cpu_ms": 2.59400010108948
+		},
+		{
+			"elapsed_ms": 17082.153,
+			"events": {
+				"sky_updates": 1
+			},
+			"frame_ms": 6.981,
+			"gpu_ms": 1.85399997234344,
+			"render_cpu_ms": 1.71099996566772
+		},
+		{
+			"elapsed_ms": 17096.947,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 7.33,
+			"gpu_ms": 1.85800004005432,
+			"render_cpu_ms": 1.99500000476837
+		},
+		{
+			"elapsed_ms": 17359.134,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 12.022,
+			"gpu_ms": 1.81599998474121,
+			"render_cpu_ms": 1.93900001049042
+		},
+		{
+			"elapsed_ms": 17848.915,
+			"events": {
+				"crowd_activations": 1
+			},
+			"frame_ms": 7.464,
+			"gpu_ms": 2.28999996185303,
+			"render_cpu_ms": 2.0220000743866
+		},
+		{
+			"elapsed_ms": 18366.279,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 8.695,
+			"gpu_ms": 2.75399994850159,
+			"render_cpu_ms": 2.08999991416931
+		},
+		{
+			"elapsed_ms": 18578.952,
+			"events": {
+				"sky_updates": 1
+			},
+			"frame_ms": 9.774,
+			"gpu_ms": 1.84700000286102,
+			"render_cpu_ms": 1.71099996566772
+		},
+		{
+			"elapsed_ms": 18864.367,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 9.74,
+			"gpu_ms": 1.84599995613098,
+			"render_cpu_ms": 1.99000000953674
+		},
+		{
+			"elapsed_ms": 19109.967,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 7.266,
+			"gpu_ms": 1.84800004959106,
+			"render_cpu_ms": 1.85300004482269
+		},
+		{
+			"elapsed_ms": 19367.155,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 18.972,
+			"gpu_ms": 1.8289999961853,
+			"render_cpu_ms": 1.66100001335144
+		},
+		{
+			"elapsed_ms": 19617.19,
+			"events": {
+				"vegetation_builds": 1
+			},
+			"frame_ms": 11.662,
+			"gpu_ms": 1.81700003147125,
+			"render_cpu_ms": 1.79200005531311
+		}
+	],
+	"stalled_half_second_windows": 0,
+	"startup_ms": 22664,
+	"static_memory_bytes": 825775509.0,
+	"streaming": {
+		"background_loads": 0,
+		"cells": 21,
+		"collision_streaming": false,
+		"enabled": true,
+		"failures": 0,
+		"load_radius": 240.0,
+		"loaded_cells": 17,
+		"loaded_detail_triangles": 999775,
+		"near_cells_missing": 0,
+		"pending": false,
+		"proxy_cells": 4,
+		"quality": "balanced",
+		"released_original_meshes": 383,
+		"total_detail_triangles": 1160637,
+		"unload_radius": 330.0,
+		"unloads": 4
+	},
+	"texture_size": [
+		1920.0,
+		1080.0
+	],
+	"traffic_distance_m": 8732.40589633081,
+	"valid_active_play": true,
+	"vegetation": {
+		"active_vertices": 443628,
+		"active_wind_vertices": 386682,
+		"bushes": 324.0,
+		"cached_cell_meshes": 253,
+		"cached_mesh_variants": 279,
+		"cached_vertices": 516384,
+		"cell_mesh_builds": 292,
+		"cell_mesh_cache_hits": 13,
+		"draw_batches": 252,
+		"enabled": true,
+		"estimated_raw_mesh_bytes": 28917504,
+		"historical_mesh_variants": 26,
+		"historical_raw_mesh_bytes": 4074336,
+		"history_byte_budget": 33554432,
+		"history_evictions": 0,
+		"last_refresh_mesh_builds": 0,
+		"legacy_vegetation_cache": false,
+		"loaded_cells": 253,
+		"loaded_plants": 1455,
+		"max_refresh_mesh_builds": 1,
+		"pending_visual_cells": 0,
+		"shared_meshes": 14,
+		"shared_variants": 7.0,
+		"spatial_cells": 347,
+		"trees": 1780.0,
+		"trunk_colliders": 80,
+		"wind_enabled": true,
+		"wind_shader": true,
+		"wind_time": 22.4,
+		"wind_vertices": 437412
+	},
+	"video_memory_bytes": 509605168,
+	"viewport_gpu_ms": {
+		"max": 3.31299996376038,
+		"median": 2.05100011825562,
+		"min": 1.79200005531311,
+		"p95": 2.62100005149841,
+		"p99": 2.78999996185303
+	},
+	"viewport_render_cpu_ms": {
+		"max": 4.71700000762939,
+		"median": 2.20900011062622,
+		"min": 1.55599999427795,
+		"p95": 2.92400002479553,
+		"p99": 3.3989999294281
+	},
+	"viewport_size": [
+		1920.0,
+		1080.0
+	],
+	"vsync": false,
+	"warmup_frames": 120,
+	"weathering": {
+		"barred_windows": 3545,
+		"collision_groups": 0,
+		"draw_batches": 0,
+		"finish_kinds": {
+			"1": 4,
+			"2": 7,
+			"3": 1,
+			"4": 14,
+			"5": 3,
+			"6": 5
+		},
+		"finish_profile": "legacy",
+		"first_floor_windows": 4422,
+		"glass_panes": 11601,
+		"litter": 4619,
+		"provider": "CityYardDetails",
+		"rough_glass_surfaces": 341,
+		"shared_finishes": 34,
+		"spatial_cells": 172,
+		"weathered_surfaces": 2428,
+		"window_bar_batches": 170,
+		"window_bar_triangles": 7090,
+		"window_setup_ms": 1058
+	},
+	"window_size": [
+		1920,
+		1080
+	],
+	"world_time": {
+		"day_index": 0,
+		"elapsed_seconds": 22.4166666666667,
+		"label": "DAY 1  ·  09:11",
+		"minute_of_day": 551.208333333323,
+		"total_minutes": 551.208333333323
+	},
+	"worst_frame_equivalent_fps": 52.7092557453089,
+	"yard_details": {
+		"active_batches": 31,
+		"active_bin_colliders": 95,
+		"active_cells": 31,
+		"async_loads": 58,
+		"audit": {
+			"bin_road_walk_path_overlap": 0.0,
+			"counts": {
+				"can": 469.0,
+				"cardboard": 909.0,
+				"cup": 951.0,
+				"dumpster": 51.0,
+				"hedge1": 135.0,
+				"hedge2": 140.0,
+				"loose_can": 914.0,
+				"paper": 924.0,
+				"wrapper": 921.0
+			},
+			"court_overlap_m2": 0.0,
+			"court_reserved_records_removed": 0.0,
+			"hedge_homes": 271.0,
+			"hedge_length_m": 741.81,
+			"hedge_reserved_overlap_m2": 0.0,
+			"hedge_rows": 275.0,
+			"litter": 4619.0,
+			"litter_cells": 171.0,
+			"litter_paving_transition_rejections": 68.0,
+			"litter_span_x_m": 774.51,
+			"litter_span_z_m": 573.92,
+			"loose_litter_colliders": 0.0,
+			"seed": 429017.0
+		},
+		"cache_errors": 0,
+		"cache_hits": 172,
+		"cached_cells": 51,
+		"cell_builds": 0,
+		"cells": 172,
+		"enabled": true,
+		"litter_colliders": 0,
+		"max_activation_ms": 0.279,
+		"max_attach_ms": 0.079,
+		"max_cell_build_ms": 0.0,
+		"near_cells_missing": 0,
+		"pending_loads": 0,
+		"records": 5414,
+		"setup_ms": 164,
+		"shared_meshes": 10
+	}
+}

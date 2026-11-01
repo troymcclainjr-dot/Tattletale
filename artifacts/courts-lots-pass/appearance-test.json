@@ -1,0 +1,15 @@
+{
+	"ambient_black": 964,
+	"ambient_skin_tones": 8,
+	"black": 988,
+	"daily_black": 16,
+	"failures": 0,
+	"fixture_batches": 18,
+	"maximum_skin_pixel_error": 0.0,
+	"named_black": 3,
+	"patrol_black": 5,
+	"patrol_skin_surfaces": 3,
+	"population": 1235,
+	"shared_pose_meshes": 3,
+	"visual": "C:/files/projects/Tattletale/godot/../.work/courts-lots-pass/appearance-skin-proof.png"
+}

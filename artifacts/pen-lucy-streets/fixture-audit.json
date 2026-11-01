@@ -1,0 +1,1520 @@
+{
+	"controls_match": true,
+	"crossings": [
+		{
+			"across": "(-0.999883, 0.0, 0.015299)",
+			"forward": "(0.015299, 0.0, 0.999883)",
+			"id": "-12_1536",
+			"landing_a": "(-6.592036, -3.176319, 160.6086)",
+			"landing_b": "(4.306687, -3.170349, 160.4418)",
+			"position": "(-1.142674, -3.184, 160.5252)",
+			"street": "Old York Road",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(0.011203, 0.0, 0.999937)",
+			"forward": "(0.999937, 0.0, -0.011203)",
+			"id": "-15_-1864",
+			"landing_a": "(5.473621, 3.173199, -181.0492)",
+			"landing_b": "(5.351505, 3.177071, -191.9485)",
+			"position": "(5.412563, 3.147, -186.4989)",
+			"street": "Cator Avenue",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(-0.999425, 0.0, -0.033897)",
+			"forward": "(-0.033897, 0.0, 0.999425)",
+			"id": "-1661_-2765",
+			"landing_a": "(-174.5861, 4.835155, -267.0405)",
+			"landing_b": "(-158.1955, 4.742931, -266.4846)",
+			"position": "(-166.3908, 4.789, -266.7626)",
+			"street": "Greenmount Avenue",
+			"stripes": 15,
+			"surface_checked": true,
+			"width": 15.0
+		},
+		{
+			"across": "(0.013225, 0.0, 0.999913)",
+			"forward": "(0.999913, 0.0, -0.013225)",
+			"id": "-1672_-1496",
+			"landing_a": "(-157.3958, 2.447075, -144.2808)",
+			"landing_b": "(-157.5399, 2.64925, -155.1798)",
+			"position": "(-157.4678, 2.368, -149.7303)",
+			"street": "Rose Hill Terrace",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(0.010415, 0.0, 0.999946)",
+			"forward": "(0.999946, 0.0, -0.010415)",
+			"id": "-1675_-2341",
+			"landing_a": "(-157.7418, 4.034161, -228.7683)",
+			"landing_b": "(-157.8553, 4.237183, -239.6677)",
+			"position": "(-157.7985, 4.019, -234.218)",
+			"street": "East 41st Street",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(-0.020539, 0.0, 0.999789)",
+			"forward": "(0.999789, 0.0, 0.020539)",
+			"id": "-1691_-14",
+			"landing_a": "(-159.564, -0.985149, 4.202075)",
+			"landing_b": "(-159.3401, -0.775333, -6.695626)",
+			"position": "(-159.452, -1.177, -1.246776)",
+			"street": "Wyanoke Avenue",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(-0.008518, 0.0, 0.999964)",
+			"forward": "(0.999964, 0.0, 0.008518)",
+			"id": "-1699_1014",
+			"landing_a": "(-160.2227, -3.602074, 108.6744)",
+			"landing_b": "(-160.1, -3.33514, 94.27489)",
+			"position": "(-160.1613, -3.818, 101.4746)",
+			"street": "East 39th Street",
+			"stripes": 13,
+			"surface_checked": true,
+			"width": 13.0
+		},
+		{
+			"across": "(-0.999904, 0.0, 0.013831)",
+			"forward": "(0.013831, 0.0, 0.999904)",
+			"id": "-16_1141",
+			"landing_a": "(-6.864402, -2.623581, 124.3764)",
+			"landing_b": "(4.034555, -2.728405, 124.2256)",
+			"position": "(-1.414923, -2.673, 124.301)",
+			"street": "Old York Road",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(-0.003616, 0.0, 0.999993)",
+			"forward": "(0.999993, 0.0, 0.003616)",
+			"id": "-1709_2167",
+			"landing_a": "(-161.1748, -6.135326, 222.211)",
+			"landing_b": "(-161.1354, -5.93684, 211.3111)",
+			"position": "(-161.1551, -6.381, 216.7611)",
+			"street": "East 38th Street",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(-0.010753, 0.0, -0.999942)",
+			"forward": "(-0.999942, 0.0, 0.010753)",
+			"id": "-21_-2359",
+			"landing_a": "(-9.122201, 3.356007, -241.2769)",
+			"landing_b": "(-9.004994, 3.152134, -230.3776)",
+			"position": "(-9.063598, 3.029, -235.8273)",
+			"street": "East 41st Street",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(0.034818, 0.0, 0.999394)",
+			"forward": "(0.999394, 0.0, -0.034818)",
+			"id": "-24_-2594",
+			"landing_a": "(4.759542, 3.853191, -254.2393)",
+			"landing_b": "(4.380029, 4.077061, -265.1327)",
+			"position": "(4.569786, 3.912, -259.686)",
+			"street": "East 41st Street",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(-0.999974, 0.0, 0.007236)",
+			"forward": "(0.007236, 0.0, 0.999974)",
+			"id": "-2_-864",
+			"landing_a": "(-5.612565, 1.731304, -79.41175)",
+			"landing_b": "(5.287149, 1.874477, -79.49062)",
+			"position": "(-0.162708, 1.877, -79.45119)",
+			"street": "Old York Road",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(0.120972, 0.0, 0.992656)",
+			"forward": "(0.992656, 0.0, -0.120972)",
+			"id": "-8_1991",
+			"landing_a": "(6.800254, -4.625156, 203.7172)",
+			"landing_b": "(5.481664, -4.370029, 192.8973)",
+			"position": "(6.140959, -4.712, 198.3072)",
+			"street": "East 38th Street",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(0.003616, 0.0, -0.999993)",
+			"forward": "(-0.999993, 0.0, -0.003616)",
+			"id": "-8_2173",
+			"landing_a": "(-7.701248, -4.952011, 211.8689)",
+			"landing_b": "(-7.74066, -5.045567, 222.7688)",
+			"position": "(-7.720954, -5.186, 217.3189)",
+			"street": "East 38th Street",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(-0.01905, 0.0, -0.999819)",
+			"forward": "(-0.999819, 0.0, 0.01905)",
+			"id": "-9_-1525",
+			"landing_a": "(-7.909563, 2.715611, -157.7866)",
+			"landing_b": "(-7.701914, 2.541607, -146.8886)",
+			"position": "(-7.805738, 2.328, -152.3376)",
+			"street": "Rose Hill Terrace",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(0.004705, 0.0, -0.999989)",
+			"forward": "(-0.999989, 0.0, -0.004705)",
+			"id": "0_0",
+			"landing_a": "(-6.924279, 0.182846, -5.482642)",
+			"landing_b": "(-6.975567, -0.015682, 5.417238)",
+			"position": "(-6.949923, 0.0, -0.032702)",
+			"street": "Wyanoke Avenue",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(-0.99978, 0.0, 0.020972)",
+			"forward": "(0.020972, 0.0, 0.99978)",
+			"id": "1071_-2633",
+			"landing_a": "(101.824, 0.715122, -256.1952)",
+			"landing_b": "(112.7215, 0.513493, -256.4238)",
+			"position": "(107.2728, 0.603, -256.3095)",
+			"street": "Frisby Street",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(0.999784, 0.0, -0.0208)",
+			"forward": "(-0.0208, 0.0, -0.999784)",
+			"id": "1087_-1887",
+			"landing_a": "(113.9943, 0.019745, -195.8079)",
+			"landing_b": "(103.0966, 0.2262, -195.5811)",
+			"position": "(108.5454, -0.041, -195.6945)",
+			"street": "Frisby Street",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(-0.998615, 0.0, 0.052612)",
+			"forward": "(0.052612, 0.0, 0.998615)",
+			"id": "1089_-65",
+			"landing_a": "(103.8572, -0.293419, 0.704109)",
+			"landing_b": "(114.7421, -0.504047, 0.13064)",
+			"position": "(109.2997, -0.399, 0.417375)",
+			"street": "Frisby Street",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(-0.986949, 0.0, -0.161035)",
+			"forward": "(-0.161035, 0.0, 0.986949)",
+			"id": "1153_1294",
+			"landing_a": "(109.3087, -3.931519, 140.263)",
+			"landing_b": "(117.5991, -3.968204, 141.6156)",
+			"position": "(113.4539, -3.988, 140.9393)",
+			"street": "Frisby Street",
+			"stripes": 6,
+			"surface_checked": true,
+			"width": 7.0
+		},
+		{
+			"across": "(-0.429393, 0.0, 0.903118)",
+			"forward": "(0.903118, 0.0, 0.429393)",
+			"id": "1181_1613",
+			"landing_a": "(122.3898, -4.144836, 170.2437)",
+			"landing_b": "(127.7142, -4.021896, 159.045)",
+			"position": "(125.052, -4.247, 164.6443)",
+			"street": "Ellerslie Avenue",
+			"stripes": 11,
+			"surface_checked": true,
+			"width": 11.0
+		},
+		{
+			"across": "(-0.869895, 0.0, -0.493238)",
+			"forward": "(-0.493238, 0.0, 0.869895)",
+			"id": "1370_1703",
+			"landing_a": "(127.7643, -4.133553, 175.6599)",
+			"landing_b": "(137.2461, -4.01442, 181.0362)",
+			"position": "(132.5052, -4.17, 178.348)",
+			"street": "East 38th Street",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(-0.998021, 0.0, 0.062884)",
+			"forward": "(0.062884, 0.0, 0.998021)",
+			"id": "1917_-111",
+			"landing_a": "(186.6658, -1.874798, -3.813039)",
+			"landing_b": "(197.5443, -1.874798, -4.498471)",
+			"position": "(192.105, -2.025, -4.155755)",
+			"street": "Lowndes Avenue",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(0.998036, 0.0, -0.062644)",
+			"forward": "(-0.062644, 0.0, -0.998036)",
+			"id": "1973_786",
+			"landing_a": "(202.0304, -1.823353, 66.60658)",
+			"landing_b": "(191.1518, -1.835739, 67.28939)",
+			"position": "(196.5911, -1.816, 66.94798)",
+			"street": "Lowndes Avenue",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(-0.999915, 0.0, 0.013019)",
+			"forward": "(0.013019, 0.0, 0.999915)",
+			"id": "2335_-2670",
+			"landing_a": "(228.1409, -3.221371, -259.9876)",
+			"landing_b": "(239.04, -3.420578, -260.1295)",
+			"position": "(233.5905, -3.331, -260.0586)",
+			"street": "Wilsby Avenue",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(0.999912, 0.0, -0.013238)",
+			"forward": "(-0.013238, 0.0, -0.999912)",
+			"id": "2345_-1918",
+			"landing_a": "(239.8405, -3.74107, -198.7945)",
+			"landing_b": "(228.9415, -3.540756, -198.6502)",
+			"position": "(234.391, -3.965, -198.7224)",
+			"street": "Wilsby Avenue",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(-0.999739, 0.0, 0.022836)",
+			"forward": "(0.022836, 0.0, 0.999739)",
+			"id": "2612_-1937",
+			"landing_a": "(255.9182, -4.242336, -186.6244)",
+			"landing_b": "(266.8153, -4.272354, -186.8733)",
+			"position": "(261.3667, -4.288, -186.7488)",
+			"street": "Wilsby Avenue",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(0.999783, 0.0, -0.020837)",
+			"forward": "(-0.020837, 0.0, -0.999783)",
+			"id": "2634_-942",
+			"landing_a": "(268.685, -3.790073, -101.2561)",
+			"landing_b": "(257.7874, -3.583668, -101.0289)",
+			"position": "(263.2362, -3.765, -101.1425)",
+			"street": "Wilsby Avenue",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(0.999938, 0.0, -0.011108)",
+			"forward": "(-0.011108, 0.0, -0.999938)",
+			"id": "2645_-164",
+			"landing_a": "(269.9155, -2.474964, -23.43611)",
+			"landing_b": "(259.0161, -2.434414, -23.31503)",
+			"position": "(264.4658, -2.406, -23.37557)",
+			"street": "Wilsby Avenue",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(0.862722, 0.0, -0.505679)",
+			"forward": "(-0.505679, 0.0, -0.862722)",
+			"id": "2864_255",
+			"landing_a": "(286.6724, -1.846901, 15.21137)",
+			"landing_b": "(277.2687, -1.846901, 20.72327)",
+			"position": "(281.9706, -1.997, 17.96732)",
+			"street": "Wilsby Avenue",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(-0.019656, 0.0, -0.999807)",
+			"forward": "(-0.999807, 0.0, 0.019656)",
+			"id": "3434_-2692",
+			"landing_a": "(336.3142, -6.331886, -274.4774)",
+			"landing_b": "(336.5284, -6.510334, -263.5795)",
+			"position": "(336.4213, -6.713, -269.0284)",
+			"street": "East 41st Street",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(-0.027769, 0.0, -0.999614)",
+			"forward": "(-0.999614, 0.0, 0.027769)",
+			"id": "3453_-1960",
+			"landing_a": "(338.1973, -6.663956, -201.2889)",
+			"landing_b": "(338.5, -6.641716, -190.3931)",
+			"position": "(338.3487, -6.95, -195.841)",
+			"street": "Cator Avenue",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(-0.012459, 0.0, -0.999922)",
+			"forward": "(-0.999922, 0.0, 0.012459)",
+			"id": "3740_-1964",
+			"landing_a": "(366.9326, -7.203465, -201.755)",
+			"landing_b": "(367.0685, -7.287716, -190.8558)",
+			"position": "(367.0005, -7.495, -196.3054)",
+			"street": "Cator Avenue",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(-0.962076, 0.0, 0.27278)",
+			"forward": "(0.27278, 0.0, 0.962076)",
+			"id": "4030_-983",
+			"landing_a": "(399.6315, -6.979, -90.12692)",
+			"landing_b": "(410.1181, -7.130169, -93.10022)",
+			"position": "(404.8748, -7.428, -91.61357)",
+			"street": "Elkader Road",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(0.96221, 0.0, -0.272309)",
+			"forward": "(-0.272309, 0.0, -0.96221)",
+			"id": "4158_-530",
+			"landing_a": "(418.2895, -6.195129, -64.28562)",
+			"landing_b": "(407.8014, -5.901829, -61.31746)",
+			"position": "(413.0454, -5.89, -62.80154)",
+			"street": "Elkader Road",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(-0.938463, 0.0, 0.345379)",
+			"forward": "(0.345379, 0.0, 0.938463)",
+			"id": "4308_-641",
+			"landing_a": "(429.2382, -6.017426, -52.61236)",
+			"landing_b": "(439.4675, -6.181736, -56.37699)",
+			"position": "(434.3528, -6.604, -54.49467)",
+			"street": "North Hill Road",
+			"stripes": 9,
+			"surface_checked": true,
+			"width": 9.5
+		},
+		{
+			"across": "(-0.850712, 0.0, -0.525632)",
+			"forward": "(-0.525632, 0.0, 0.850712)",
+			"id": "5158_-2195",
+			"landing_a": "(505.1259, -12.69567, -215.9274)",
+			"landing_b": "(517.3761, -12.98846, -208.3583)",
+			"position": "(511.251, -13.22, -212.1428)",
+			"street": "Argonne Drive",
+			"stripes": 13,
+			"surface_checked": true,
+			"width": 13.0
+		}
+	],
+	"lamps_and_signals": [
+		{
+			"position": "(-145.262, -0.776914, 4.434793)",
+			"radius": 0.28,
+			"sidewalk_checked": true,
+			"source": "network",
+			"street": "Wyanoke Avenue"
+		},
+		{
+			"position": "(-103.1309, -0.294791, -6.161364)",
+			"radius": 0.28,
+			"sidewalk_checked": true,
+			"source": "network",
+			"street": "Wyanoke Avenue"
+		},
+		{
+			"position": "(-61.16438, -0.182697, 5.203696)",
+			"radius": 0.28,
+			"sidewalk_checked": true,
+			"source": "network",
+			"street": "Wyanoke Avenue"
+		},
+		{
+			"position": "(-19.13611, 0.113942, -5.491067)",
+			"radius": 0.28,
+			"sidewalk_checked": true,
+			"source": "network",
+			"street": "Wyanoke Avenue"
+		},
+		{
+			"position": "(4.146141, -5.024089, 238.4462)",
+			"radius": 0.28,
+			"sidewalk_checked": true,
+			"source": "network",
+			"street": "Old York Road"
+		},
+		{
+			"position": "(-6.212768, -4.124567, 186.3508)",
+			"radius": 0.28,
+			"sidewalk_checked": true,
+			"source": "network",
+			"street": "Old York Road"
+		},
+		{
+			"position": "(4.253708, -3.181416, 160.2475)",
+			"radius": 0.28,
+			"sidewalk_checked": true,
+			"source": "network",
+			"street": "Old York Road"
+		},
+		{
+			"position": "(-6.924334, -2.264265, 102.3187)",
+			"radius": 0.28,
+			"sidewalk_checked": true,
+			"source": "network",
+			"street": "Old York Road"
+		},
+		{
+			"position": "(3.963134, -1.460761, 70.34796)",
+			"radius": 0.28,
+			"sidewalk_checked": true,
+			"source": "network",
+			"street": "Old York Road"
+		},
+		{
+			"position": "(-6.08023, -0.642294, 28.20285)",
+			"radius": 0.28,
+			"sidewalk_checked": true,
+			"source": "network",
+			"street": "Old York Road"
+		},
+		{
+			"position": "(5.355009, 0.458391, -13.66689)",
+			"radius": 0.28,
+			"sidewalk_checked": true,
+			"source": "network",
+			"street": "Old York Road"
+		},
+		{
+			"position": "(4.987946, 2.346577, -97.74114)",
+			"radius": 0.28,
+			"sidewalk_checked": true,
+			"source": "network",
+			"street": "Old York Road"
+		},
+		{
+			"position": "(4.018064, 3.141289, -178.7445)",
+			"radius": 0.28,
+			"sidewalk_checked": true,
+			"source": "network",
+			"street": "Old York Road"
+		},
+		{
+			"position": "(-7.405966, 3.04054, -226.5686)",
+			"radius": 0.28,
+			"sidewalk_checked": true,
+			"source": "network",
+			"street": "Old York Road"
+		},
+		{
+			"position": "(2.82024, 4.111067, -265.8019)",
+			"radius": 0.28,
+			"sidewalk_checked": true,
+			"source": "network",
+			"street": "Old York Road"
+		},
+		{
+			"position": "(24.27971, 0.358839, 3.955464)",
+			"radius": 0.28,
+			"sidewalk_checked": true,
+			"source": "network",
+			"street": "Wyanoke Avenue"
+		},
+		{
+			"position": "(65.55937, 0.654044, -9.335595)",
+			"radius": 0.28,
+			"sidewalk_checked": true,
+			"source": "network",
+			"street": "Wyanoke Avenue"
+		},
+		{
+			"position": "(102.1408, -0.246359, -0.706074)",
+			"radius": 0.28,
+			"sidewalk_checked": true,
+			"source": "network",
+			"street": "Wyanoke Avenue"
+		},
+		{
+			"position": "(149.4072, -1.102172, -14.636)",
+			"radius": 0.28,
+			"sidewalk_checked": true,
+			"source": "network",
+			"street": "Wyanoke Avenue"
+		},
+		{
+			"position": "(198.059, -1.8828, -6.148082)",
+			"radius": 0.28,
+			"sidewalk_checked": true,
+			"source": "network",
+			"street": "Wyanoke Avenue"
+		},
+		{
+			"position": "(233.1684, -2.298614, -19.56496)",
+			"radius": 0.28,
+			"sidewalk_checked": true,
+			"source": "network",
+			"street": "Wyanoke Avenue"
+		},
+		{
+			"axis": "old_york",
+			"lenses": {
+				"Green": "LampGreen:<MeshInstance3D#1011146042455>",
+				"Red": "LampRed:<MeshInstance3D#1011162819686>",
+				"Yellow": "LampYellow:<MeshInstance3D#1011179596900>"
+			},
+			"position": "(5.6, 0.373351, -8.0)",
+			"radius": 0.25,
+			"sidewalk_checked": true
+		},
+		{
+			"axis": "old_york",
+			"lenses": {
+				"Green": "LampGreen:<MeshInstance3D#1012018457690>",
+				"Red": "LampRed:<MeshInstance3D#1012035234942>",
+				"Yellow": "LampYellow:<MeshInstance3D#1012052012157>"
+			},
+			"position": "(-5.6, -0.074927, 8.0)",
+			"radius": 0.25,
+			"sidewalk_checked": true
+		},
+		{
+			"axis": "wyanoke",
+			"lenses": {
+				"Green": "LampGreen:<MeshInstance3D#1012840541302>",
+				"Red": "LampRed:<MeshInstance3D#1012857318538>",
+				"Yellow": "LampYellow:<MeshInstance3D#1012874095753>"
+			},
+			"position": "(8.0, 0.172482, 5.6)",
+			"radius": 0.25,
+			"sidewalk_checked": true
+		},
+		{
+			"axis": "wyanoke",
+			"lenses": {
+				"Green": "LampGreen:<MeshInstance3D#1013662624898>",
+				"Red": "LampRed:<MeshInstance3D#1013679402134>",
+				"Yellow": "LampYellow:<MeshInstance3D#1013696179349>"
+			},
+			"position": "(-8.0, 0.172447, -5.6)",
+			"radius": 0.25,
+			"sidewalk_checked": true
+		}
+	],
+	"landings_clear": true,
+	"roads_clear": true,
+	"sidewalks_clear": true,
+	"signs_face_approach": true,
+	"stops": {
+		"0": {
+			"incoming": "(0.020846, 0.0, 0.999783)",
+			"junction": "2634_-942",
+			"lane": 0,
+			"normal": "(-0.020846, 0.0, -0.999783)",
+			"position": "(257.7603, -3.59868, -104.7291)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Wilsby Avenue"
+		},
+		"1": {
+			"incoming": "(-0.023785, 0.0, -0.999717)",
+			"junction": "2612_-1937",
+			"lane": 1,
+			"normal": "(0.023785, 0.0, 0.999717)",
+			"position": "(266.8555, -4.39482, -183.1784)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Wilsby Avenue"
+		},
+		"102": {
+			"incoming": "(-0.872998, 0.0, -0.487723)",
+			"junction": "1370_1703",
+			"lane": 102,
+			"normal": "(0.872998, 0.0, 0.487723)",
+			"position": "(149.4783, -3.895995, 169.9152)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Ellerslie Avenue"
+		},
+		"105": {
+			"incoming": "(-0.844678, 0.0, 0.535275)",
+			"junction": "1153_1294",
+			"lane": 105,
+			"normal": "(0.844678, 0.0, -0.535275)",
+			"position": "(123.0408, -3.617635, 116.0463)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Argonne Drive"
+		},
+		"106": {
+			"incoming": "(0.956326, 0.0, 0.292302)",
+			"junction": "1370_1703",
+			"lane": 106,
+			"normal": "(-0.956326, 0.0, -0.292302)",
+			"position": "(106.3549, -4.114105, 164.3205)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Ellerslie Avenue"
+		},
+		"107": {
+			"incoming": "(-0.862819, 0.0, -0.505514)",
+			"junction": "445_1464",
+			"lane": 107,
+			"normal": "(0.862819, 0.0, 0.505514)",
+			"position": "(86.27592, -3.642055, 148.2443)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Ellerslie Avenue"
+		},
+		"11": {
+			"incoming": "(-0.427086, 0.0, -0.904211)",
+			"junction": "4158_-530",
+			"lane": 11,
+			"normal": "(0.427086, 0.0, 0.904211)",
+			"position": "(439.4771, -6.203888, -56.41474)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "North Hill Road"
+		},
+		"114": {
+			"incoming": "(0.923921, 0.0, -0.382583)",
+			"junction": "1153_1294",
+			"lane": 114,
+			"normal": "(-0.923921, 0.0, 0.382583)",
+			"position": "(108.7579, -3.946984, 140.8039)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Argonne Drive"
+		},
+		"115": {
+			"incoming": "(-0.956516, 0.0, 0.291681)",
+			"junction": "445_1464",
+			"lane": 115,
+			"normal": "(0.956516, 0.0, -0.291681)",
+			"position": "(95.1246, -3.700546, 130.4754)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Argonne Drive"
+		},
+		"116": {
+			"incoming": "(0.853718, 0.0, -0.520735)",
+			"junction": "1973_786",
+			"lane": 116,
+			"normal": "(-0.853718, 0.0, 0.520735)",
+			"position": "(191.9554, -1.642951, 90.27539)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Argonne Drive"
+		},
+		"118": {
+			"incoming": "(0.858748, 0.0, -0.512398)",
+			"junction": "2864_255",
+			"lane": 118,
+			"normal": "(-0.858748, 0.0, 0.512398)",
+			"position": "(280.8939, -1.619652, 37.0797)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Argonne Drive"
+		},
+		"119": {
+			"incoming": "(-0.857741, 0.0, 0.514082)",
+			"junction": "1973_786",
+			"lane": 119,
+			"normal": "(0.857741, 0.0, -0.514082)",
+			"position": "(202.7837, -1.829679, 67.01788)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Argonne Drive"
+		},
+		"12": {
+			"incoming": "(-0.036528, 0.0, -0.999333)",
+			"junction": "1153_1294",
+			"lane": 12,
+			"normal": "(0.036528, 0.0, 0.999333)",
+			"position": "(117.982, -3.963436, 138.5686)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Frisby Street"
+		},
+		"120": {
+			"incoming": "(0.862299, 0.0, -0.5064)",
+			"junction": "4158_-530",
+			"lane": 120,
+			"normal": "(-0.862299, 0.0, 0.5064)",
+			"position": "(410.2605, -5.342621, -41.42808)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Argonne Drive"
+		},
+		"121": {
+			"incoming": "(-0.854158, 0.0, 0.520014)",
+			"junction": "2864_255",
+			"lane": 121,
+			"normal": "(0.854158, 0.0, -0.520014)",
+			"position": "(291.7632, -1.857094, 13.85162)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Argonne Drive"
+		},
+		"126": {
+			"incoming": "(0.936454, 0.0, 0.350791)",
+			"junction": "-16_1141",
+			"lane": 126,
+			"normal": "(-0.936454, 0.0, -0.350791)",
+			"position": "(-12.70381, -2.554737, 117.5555)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "East 39th Street"
+		},
+		"129": {
+			"incoming": "(-0.99997, 0.0, 0.007756)",
+			"junction": "-1699_1014",
+			"lane": 129,
+			"normal": "(0.99997, 0.0, -0.007756)",
+			"position": "(-159.2668, -3.337679, 94.29526)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "East 39th Street"
+		},
+		"13": {
+			"incoming": "(0.096162, 0.0, 0.995366)",
+			"junction": "1370_1703",
+			"lane": 13,
+			"normal": "(-0.096162, 0.0, -0.995366)",
+			"position": "(109.1689, -3.991234, 147.2182)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Frisby Street"
+		},
+		"130": {
+			"incoming": "(0.999798, 0.0, -0.020102)",
+			"junction": "-1699_1014",
+			"lane": 130,
+			"normal": "(-0.999798, 0.0, 0.020102)",
+			"position": "(-180.3662, -3.931325, 108.5471)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "East 39th Street"
+		},
+		"14": {
+			"incoming": "(-0.020972, 0.0, -0.99978)",
+			"junction": "1071_-2633",
+			"lane": 14,
+			"normal": "(0.020972, 0.0, 0.99978)",
+			"position": "(112.7492, 0.424204, -252.7236)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Frisby Street"
+		},
+		"15": {
+			"incoming": "(0.020971, 0.0, 0.99978)",
+			"junction": "1087_-1887",
+			"lane": 15,
+			"normal": "(-0.020971, 0.0, -0.99978)",
+			"position": "(103.0688, 0.22122, -199.2804)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Frisby Street"
+		},
+		"17": {
+			"incoming": "(0.03369, 0.0, 0.999432)",
+			"junction": "1071_-2633",
+			"lane": 17,
+			"normal": "(-0.03369, 0.0, -0.999432)",
+			"position": "(101.3713, 1.061866, -273.72)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Frisby Street"
+		},
+		"18": {
+			"incoming": "(-0.062961, 0.0, -0.998016)",
+			"junction": "1917_-111",
+			"lane": 18,
+			"normal": "(0.062961, 0.0, 0.998016)",
+			"position": "(197.7269, -1.8828, -0.803059)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Lowndes Avenue"
+		},
+		"19": {
+			"incoming": "(0.062966, 0.0, 0.998016)",
+			"junction": "1973_786",
+			"lane": 19,
+			"normal": "(-0.062966, 0.0, -0.998016)",
+			"position": "(191.2664, -1.830501, 68.33599)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Lowndes Avenue"
+		},
+		"2": {
+			"incoming": "(0.011105, 0.0, 0.999938)",
+			"junction": "2645_-164",
+			"lane": 2,
+			"normal": "(-0.011105, 0.0, -0.999938)",
+			"position": "(259.025, -2.516699, -27.01537)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Wilsby Avenue"
+		},
+		"21": {
+			"incoming": "(-0.999803, 0.0, -0.019839)",
+			"junction": "-1691_-14",
+			"lane": 21,
+			"normal": "(0.999803, 0.0, 0.019839)",
+			"position": "(-158.3951, -0.781801, -6.62793)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Wyanoke Avenue"
+		},
+		"22": {
+			"incoming": "(0.99932, 0.0, -0.036871)",
+			"junction": "1087_-1887",
+			"lane": 22,
+			"normal": "(-0.99932, 0.0, 0.036871)",
+			"position": "(98.24635, 0.307356, -182.9569)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Cator Avenue"
+		},
+		"23": {
+			"incoming": "(-0.999926, 0.0, 0.012199)",
+			"junction": "-15_-1864",
+			"lane": 23,
+			"normal": "(0.999926, 0.0, -0.012199)",
+			"position": "(9.046386, 3.029098, -191.9453)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Cator Avenue"
+		},
+		"24": {
+			"incoming": "(0.999766, 0.0, -0.021641)",
+			"junction": "2345_-1918",
+			"lane": 24,
+			"normal": "(-0.999766, 0.0, 0.021641)",
+			"position": "(223.9523, -3.539912, -186.1447)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Cator Avenue"
+		},
+		"25": {
+			"incoming": "(-0.999606, 0.0, 0.028077)",
+			"junction": "1087_-1887",
+			"lane": 25,
+			"normal": "(0.999606, 0.0, -0.028077)",
+			"position": "(119.1842, -0.083488, -194.4439)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Cator Avenue"
+		},
+		"26": {
+			"incoming": "(0.997421, 0.0, -0.07177)",
+			"junction": "2612_-1937",
+			"lane": 26,
+			"normal": "(-0.997421, 0.0, 0.07177)",
+			"position": "(254.3185, -4.20646, -187.7873)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Cator Avenue"
+		},
+		"27": {
+			"incoming": "(-0.997421, 0.0, 0.071775)",
+			"junction": "2345_-1918",
+			"lane": 27,
+			"normal": "(0.997421, 0.0, -0.071775)",
+			"position": "(241.3724, -3.805693, -197.6837)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Cator Avenue"
+		},
+		"28": {
+			"incoming": "(0.999614, 0.0, -0.02777)",
+			"junction": "3453_-1960",
+			"lane": 28,
+			"normal": "(-0.999614, 0.0, 0.02777)",
+			"position": "(334.8, -6.585353, -190.3403)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Cator Avenue"
+		},
+		"29": {
+			"incoming": "(-0.999614, 0.0, 0.02777)",
+			"junction": "2612_-1937",
+			"lane": 29,
+			"normal": "(0.999614, 0.0, -0.02777)",
+			"position": "(271.7039, -4.466706, -199.3907)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Cator Avenue"
+		},
+		"3": {
+			"incoming": "(-0.01913, 0.0, -0.999817)",
+			"junction": "2634_-942",
+			"lane": 3,
+			"normal": "(0.01913, 0.0, 0.999817)",
+			"position": "(268.9826, -3.602654, -83.64924)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Wilsby Avenue"
+		},
+		"30": {
+			"incoming": "(0.999922, 0.0, -0.01246)",
+			"junction": "3740_-1964",
+			"lane": 30,
+			"normal": "(-0.999922, 0.0, 0.01246)",
+			"position": "(366.0517, -7.284808, -190.8932)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Cator Avenue"
+		},
+		"31": {
+			"incoming": "(-0.999922, 0.0, 0.01246)",
+			"junction": "3453_-1960",
+			"lane": 31,
+			"normal": "(0.999922, 0.0, -0.01246)",
+			"position": "(356.1941, -7.024261, -201.5712)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Cator Avenue"
+		},
+		"32": {
+			"incoming": "(0.952771, 0.0, -0.303689)",
+			"junction": "5158_-2195",
+			"lane": 32,
+			"normal": "(-0.952771, 0.0, 0.303689)",
+			"position": "(504.4331, -12.69874, -216.5806)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Cator Avenue"
+		},
+		"33": {
+			"incoming": "(-0.999672, 0.0, 0.0256)",
+			"junction": "3740_-1964",
+			"lane": 33,
+			"normal": "(0.999672, 0.0, -0.0256)",
+			"position": "(384.4583, -7.733254, -202.0629)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Cator Avenue"
+		},
+		"34": {
+			"incoming": "(0.999993, 0.0, 0.003705)",
+			"junction": "-8_2173",
+			"lane": 34,
+			"normal": "(-0.999993, 0.0, -0.003705)",
+			"position": "(-11.44092, -5.000168, 222.7055)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "East 38th Street"
+		},
+		"35": {
+			"incoming": "(-0.999994, 0.0, -0.003614)",
+			"junction": "-1709_2167",
+			"lane": 35,
+			"normal": "(0.999994, 0.0, 0.003614)",
+			"position": "(-160.1856, -5.939034, 211.3645)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "East 38th Street"
+		},
+		"36": {
+			"incoming": "(0.853087, 0.0, -0.521769)",
+			"junction": "1370_1703",
+			"lane": 36,
+			"normal": "(-0.853087, 0.0, 0.521769)",
+			"position": "(135.9056, -3.964932, 184.612)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "East 38th Street"
+		},
+		"37": {
+			"incoming": "(-0.992666, 0.0, 0.120887)",
+			"junction": "-8_2173",
+			"lane": 37,
+			"normal": "(0.992666, 0.0, -0.120887)",
+			"position": "(9.160993, -4.380908, 192.4991)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "East 38th Street"
+		},
+		"38": {
+			"incoming": "(0.999395, 0.0, -0.034769)",
+			"junction": "1071_-2633",
+			"lane": 38,
+			"normal": "(-0.999395, 0.0, 0.034769)",
+			"position": "(96.67117, 0.818189, -257.491)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "East 41st Street"
+		},
+		"39": {
+			"incoming": "(-0.999393, 0.0, 0.034823)",
+			"junction": "-21_-2359",
+			"lane": 39,
+			"normal": "(0.999393, 0.0, -0.034823)",
+			"position": "(8.079504, 3.945038, -265.2115)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "East 41st Street"
+		},
+		"4": {
+			"incoming": "(0.505273, 0.0, 0.862959)",
+			"junction": "2864_255",
+			"lane": 4,
+			"normal": "(-0.505273, 0.0, -0.862959)",
+			"position": "(276.3265, -1.854462, 19.01229)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Wilsby Avenue"
+		},
+		"40": {
+			"incoming": "(0.99956, 0.0, -0.029669)",
+			"junction": "2335_-2670",
+			"lane": 40,
+			"normal": "(-0.99956, 0.0, 0.029669)",
+			"position": "(223.0149, -3.116516, -261.2944)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "East 41st Street"
+		},
+		"41": {
+			"incoming": "(-0.99956, 0.0, 0.029669)",
+			"junction": "1071_-2633",
+			"lane": 41,
+			"normal": "(0.99956, 0.0, -0.029669)",
+			"position": "(117.6121, 0.65699, -268.9716)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "East 41st Street"
+		},
+		"42": {
+			"incoming": "(0.999807, 0.0, -0.019661)",
+			"junction": "3434_-2692",
+			"lane": 42,
+			"normal": "(-0.999807, 0.0, 0.019661)",
+			"position": "(332.8282, -6.443284, -263.5567)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "East 41st Street"
+		},
+		"43": {
+			"incoming": "(-0.999807, 0.0, 0.019661)",
+			"junction": "2335_-2670",
+			"lane": 43,
+			"normal": "(0.999807, 0.0, -0.019661)",
+			"position": "(244.0418, -3.286045, -272.6153)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "East 41st Street"
+		},
+		"44": {
+			"incoming": "(0.567203, 0.0, 0.823578)",
+			"junction": "5158_-2195",
+			"lane": 44,
+			"normal": "(-0.567203, 0.0, -0.823578)",
+			"position": "(502.9003, -12.76133, -227.1731)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "East 41st Street"
+		},
+		"45": {
+			"incoming": "(-0.999516, 0.0, 0.031122)",
+			"junction": "3434_-2692",
+			"lane": 45,
+			"normal": "(0.999516, 0.0, -0.031122)",
+			"position": "(353.8297, -6.687061, -275.4425)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "East 41st Street"
+		},
+		"46": {
+			"incoming": "(0.999941, 0.0, -0.010845)",
+			"junction": "-21_-2359",
+			"lane": 46,
+			"normal": "(-0.999941, 0.0, 0.010845)",
+			"position": "(-12.70482, 3.215358, -230.3878)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "East 41st Street"
+		},
+		"47": {
+			"incoming": "(-0.999941, 0.0, 0.010841)",
+			"junction": "-1675_-2341",
+			"lane": 47,
+			"normal": "(0.999941, 0.0, -0.010841)",
+			"position": "(-156.9071, 4.210351, -239.6288)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "East 41st Street"
+		},
+		"48": {
+			"incoming": "(-0.999917, 0.0, 0.012889)",
+			"junction": "-1672_-1496",
+			"lane": 48,
+			"normal": "(0.999917, 0.0, -0.012889)",
+			"position": "(-156.5875, 2.633503, -155.1372)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Rose Hill Terrace"
+		},
+		"49": {
+			"incoming": "(0.999819, 0.0, -0.01905)",
+			"junction": "-9_-1525",
+			"lane": 49,
+			"normal": "(-0.999819, 0.0, 0.01905)",
+			"position": "(-11.40221, 2.651608, -146.8681)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Rose Hill Terrace"
+		},
+		"5": {
+			"incoming": "(-0.534544, 0.0, -0.845141)",
+			"junction": "2645_-164",
+			"lane": 5,
+			"normal": "(0.534544, 0.0, 0.845141)",
+			"position": "(271.8737, -2.133296, -9.136449)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Wilsby Avenue"
+		},
+		"50": {
+			"incoming": "(-0.272751, 0.0, -0.962085)",
+			"junction": "4030_-983",
+			"lane": 50,
+			"normal": "(0.272751, 0.0, 0.962085)",
+			"position": "(411.0793, -7.005017, -89.52676)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Elkader Road"
+		},
+		"51": {
+			"incoming": "(0.272851, 0.0, 0.962056)",
+			"junction": "4158_-530",
+			"lane": 51,
+			"normal": "(-0.272851, 0.0, -0.962056)",
+			"position": "(407.7265, -5.936006, -61.76075)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Elkader Road"
+		},
+		"52": {
+			"incoming": "(-0.269979, 0.0, -0.962866)",
+			"junction": "3740_-1964",
+			"lane": 52,
+			"normal": "(0.269979, 0.0, 0.962866)",
+			"position": "(382.0273, -7.686202, -187.5961)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Elkader Road"
+		},
+		"53": {
+			"incoming": "(0.312392, 0.0, 0.949953)",
+			"junction": "4030_-983",
+			"lane": 53,
+			"normal": "(-0.312392, 0.0, -0.949953)",
+			"position": "(394.5214, -7.296121, -106.7298)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Elkader Road"
+		},
+		"54": {
+			"incoming": "(-0.026326, 0.0, -0.999653)",
+			"junction": "3434_-2692",
+			"lane": 54,
+			"normal": "(0.026326, 0.0, 0.999653)",
+			"position": "(349.0475, -6.846188, -258.6609)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Elkader Road"
+		},
+		"55": {
+			"incoming": "(0.026326, 0.0, 0.999653)",
+			"junction": "3453_-1960",
+			"lane": 55,
+			"normal": "(-0.026326, 0.0, -0.999653)",
+			"position": "(339.6142, -6.707367, -206.5381)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Elkader Road"
+		},
+		"57": {
+			"incoming": "(0.033706, 0.0, 0.999432)",
+			"junction": "3434_-2692",
+			"lane": 57,
+			"normal": "(-0.033706, 0.0, -0.999432)",
+			"position": "(337.6132, -6.318644, -279.6269)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Elkader Road"
+		},
+		"6": {
+			"incoming": "(-0.013108, 0.0, -0.999914)",
+			"junction": "2335_-2670",
+			"lane": 6,
+			"normal": "(0.013108, 0.0, 0.999914)",
+			"position": "(239.0381, -3.502802, -256.4297)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Wilsby Avenue"
+		},
+		"7": {
+			"incoming": "(0.013108, 0.0, 0.999914)",
+			"junction": "2345_-1918",
+			"lane": 7,
+			"normal": "(-0.013108, 0.0, -0.999914)",
+			"position": "(228.9431, -3.550873, -202.3513)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Wilsby Avenue"
+		},
+		"76": {
+			"incoming": "(-0.999573, 0.0, 0.029209)",
+			"junction": "2634_-942",
+			"lane": 76,
+			"normal": "(0.999573, 0.0, -0.029209)",
+			"position": "(270.87, -3.845773, -99.81612)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Dumbarton Avenue"
+		},
+		"77": {
+			"incoming": "(0.999563, 0.0, -0.029547)",
+			"junction": "4030_-983",
+			"lane": 77,
+			"normal": "(-0.999563, 0.0, 0.029547)",
+			"position": "(392.4932, -6.96799, -92.58868)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Dumbarton Avenue"
+		},
+		"78": {
+			"incoming": "(-0.999563, 0.0, 0.029558)",
+			"junction": "-2_-864",
+			"lane": 78,
+			"normal": "(0.999563, 0.0, -0.029558)",
+			"position": "(20.26839, 2.111003, -92.40807)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Dumbarton Avenue"
+		},
+		"79": {
+			"incoming": "(0.999661, 0.0, -0.026054)",
+			"junction": "2634_-942",
+			"lane": 79,
+			"normal": "(-0.999661, 0.0, 0.026054)",
+			"position": "(252.8753, -3.446579, -88.51935)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Dumbarton Avenue"
+		},
+		"80": {
+			"incoming": "(0.986906, 0.0, -0.161294)",
+			"junction": "445_1464",
+			"lane": 80,
+			"normal": "(-0.986906, 0.0, 0.161294)",
+			"position": "(21.04692, -3.620159, 155.7132)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Pen Lucy Avenue"
+		},
+		"81": {
+			"incoming": "(-0.98689, 0.0, 0.161397)",
+			"junction": "-12_1536",
+			"lane": 81,
+			"normal": "(0.98689, 0.0, -0.161397)",
+			"position": "(15.74295, -3.30026, 145.6377)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Pen Lucy Avenue"
+		},
+		"82": {
+			"incoming": "(0.937773, 0.0, 0.347249)",
+			"junction": "445_1464",
+			"lane": 82,
+			"normal": "(-0.937773, 0.0, -0.347249)",
+			"position": "(46.00029, -3.357099, 139.7293)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Ellerslie Avenue"
+		},
+		"83": {
+			"incoming": "(-0.937768, 0.0, -0.347262)",
+			"junction": "-16_1141",
+			"lane": 83,
+			"normal": "(0.937768, 0.0, 0.347262)",
+			"position": "(32.45351, -3.09267, 119.4636)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Ellerslie Avenue"
+		},
+		"84": {
+			"incoming": "(-0.052696, 0.0, -0.998611)",
+			"junction": "1089_-65",
+			"lane": 84,
+			"normal": "(0.052696, 0.0, 0.998611)",
+			"position": "(114.8867, -0.598508, 3.827699)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Frisby Street"
+		},
+		"85": {
+			"incoming": "(0.063741, 0.0, 0.997966)",
+			"junction": "1153_1294",
+			"lane": 85,
+			"normal": "(-0.063741, 0.0, -0.997966)",
+			"position": "(111.0282, -3.649133, 119.1807)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Frisby Street"
+		},
+		"86": {
+			"incoming": "(-0.882086, 0.0, -0.471088)",
+			"junction": "445_1464",
+			"lane": 86,
+			"normal": "(0.882086, 0.0, 0.471088)",
+			"position": "(101.3714, -3.830414, 144.021)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Ellerslie Avenue"
+		},
+		"87": {
+			"incoming": "(0.870842, 0.0, 0.491563)",
+			"junction": "1370_1703",
+			"lane": 87,
+			"normal": "(-0.870842, 0.0, -0.491563)",
+			"position": "(114.551, -4.113385, 166.3733)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Ellerslie Avenue"
+		},
+		"88": {
+			"incoming": "(0.538109, 0.0, -0.842875)",
+			"junction": "5158_-2195",
+			"lane": 88,
+			"normal": "(-0.538109, 0.0, 0.842875)",
+			"position": "(516.2756, -12.95519, -206.6219)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Argonne Drive"
+		},
+		"89": {
+			"incoming": "(-0.701746, 0.0, 0.712427)",
+			"junction": "4158_-530",
+			"lane": 89,
+			"normal": "(0.701746, 0.0, -0.712427)",
+			"position": "(433.5573, -6.704069, -76.31285)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Argonne Drive"
+		},
+		"9": {
+			"incoming": "(0.03998, 0.0, 0.9992)",
+			"junction": "2335_-2670",
+			"lane": 9,
+			"normal": "(-0.03998, 0.0, -0.9992)",
+			"position": "(227.6785, -2.872123, -277.4336)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Wilsby Avenue"
+		},
+		"91": {
+			"incoming": "(-0.694913, 0.0, 0.719094)",
+			"junction": "5158_-2195",
+			"lane": 91,
+			"normal": "(0.694913, 0.0, -0.719094)",
+			"position": "(516.7427, -13.19344, -230.7845)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Argonne Drive"
+		},
+		"92": {
+			"incoming": "(0.998214, 0.0, -0.059743)",
+			"junction": "1089_-65",
+			"lane": 92,
+			"normal": "(-0.998214, 0.0, 0.059743)",
+			"position": "(98.62569, -0.191058, -0.495331)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Wyanoke Avenue"
+		},
+		"94": {
+			"incoming": "(0.998373, 0.0, -0.057015)",
+			"junction": "1917_-111",
+			"lane": 94,
+			"normal": "(-0.998373, 0.0, 0.057015)",
+			"position": "(181.3432, -1.88837, -5.092642)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Wyanoke Avenue"
+		},
+		"95": {
+			"incoming": "(-0.998621, 0.0, 0.052504)",
+			"junction": "1089_-65",
+			"lane": 95,
+			"normal": "(0.998621, 0.0, -0.052504)",
+			"position": "(119.2858, -0.378284, -12.47372)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Wyanoke Avenue"
+		},
+		"96": {
+			"incoming": "(0.997398, 0.0, -0.072087)",
+			"junction": "2645_-164",
+			"lane": 96,
+			"normal": "(-0.997398, 0.0, 0.072087)",
+			"position": "(254.3099, -2.16843, -10.2732)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Wyanoke Avenue"
+		},
+		"97": {
+			"incoming": "(-0.997292, 0.0, 0.073547)",
+			"junction": "1917_-111",
+			"lane": 97,
+			"normal": "(0.997292, 0.0, -0.073547)",
+			"position": "(201.8921, -1.8828, -17.25973)",
+			"radius": 0.38,
+			"sidewalk_checked": true,
+			"street": "Wyanoke Avenue"
+		}
+	},
+	"stripes_clear": true,
+	"supported": true
+}

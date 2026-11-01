@@ -1,0 +1,1415 @@
+{
+	"backlots": {
+		"cars": 13,
+		"dumpster_batches": 19,
+		"dumpsters": 20,
+		"enabled": true,
+		"fleet": {
+			"kinds": {
+				"compact": 13
+			},
+			"rejected": [],
+			"requested": 13,
+			"total": 13,
+			"visuals": {
+				"batch_meshes": 12,
+				"batch_surfaces": 109,
+				"labels": 0,
+				"setup_ms": 450,
+				"source_meshes": 65,
+				"source_surfaces": 260,
+				"surface_reduction": 151,
+				"triangles": 41808,
+				"unbatched_surfaces": 0
+			}
+		},
+		"mandatory": {
+			"CatorAcrossGapCar": true,
+			"CatorMarketDumpster": true,
+			"WyanokeBldg219Dumpster": true
+		},
+		"rejected": [],
+		"requested": 33,
+		"source_audit": {
+			"counts": {
+				"compact": 13.0,
+				"dumpster": 20.0
+			},
+			"rejections": {
+				"building": 528.0,
+				"entrance": 156.0,
+				"new_prop": 29.0,
+				"service_lane": 102.0,
+				"spacing": 85.0,
+				"unpaved": 8.0,
+				"yard_or_tree": 55.0
+			},
+			"rules": [
+				"entire footprint on source alley/asphalt",
+				"no public road or sidewalk overlap",
+				"building clearance >=0.22m",
+				"rear door 2.5m approach and front stair corridor clear",
+				"existing bins hedges and tree trunks clear",
+				"cars retain adjacent 2.4m paved lane",
+				"sparse deterministic distribution"
+			],
+			"runtime_repair": {
+				"building_id": "w336329468",
+				"outward_offset_m": 1.65,
+				"reason": "Row_015 imported convex rear wall spans the source footprint notch"
+			}
+		},
+		"total": 33
+	},
+	"captures": [
+		"C:/files/projects/Tattletale/godot/../artifacts/courts-lots-pass/visual/wyanoke-court.png",
+		"C:/files/projects/Tattletale/godot/../artifacts/courts-lots-pass/visual/removed-argonne-court.png",
+		"C:/files/projects/Tattletale/godot/../artifacts/courts-lots-pass/visual/wyanoke-dumpster.png",
+		"C:/files/projects/Tattletale/godot/../artifacts/courts-lots-pass/visual/cator-pointed-shrub.png",
+		"C:/files/projects/Tattletale/godot/../artifacts/courts-lots-pass/visual/cator-dumpster-driveway.png",
+		"C:/files/projects/Tattletale/godot/../artifacts/courts-lots-pass/visual/wyanoke-full-court.png"
+	],
+	"courts": {
+		"arm_colliders": 37,
+		"audit": {
+			"civic_removed": 1,
+			"courts": 21.0,
+			"covered_greens": 21.0,
+			"excluded_greens": 27.0,
+			"full_courts": 17.0,
+			"green_coverage": [
+				{
+					"court_id": "park_court_0",
+					"green_id": "green_000",
+					"reason": "existing_full_court_preserved",
+					"status": "covered"
+				},
+				{
+					"court_id": "park_court_1",
+					"green_id": "green_001",
+					"reason": "existing_full_court_preserved",
+					"status": "covered"
+				},
+				{
+					"area_m2": 3022.72,
+					"bounds_xz": [
+						5.614,
+						2.698,
+						91.367,
+						129.302
+					],
+					"court_id": "park_court_2",
+					"geometry_candidates": 20.0,
+					"green_id": "green_002",
+					"name": "Neighborhood green 3",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 20.0,
+							"length_m": 24.0,
+							"selected": true,
+							"terrain_candidates": 20.0,
+							"width_m": 13.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"court_id": "park_court_3",
+					"green_id": "green_003",
+					"reason": "existing_full_court_preserved",
+					"status": "covered"
+				},
+				{
+					"court_id": "park_court_4",
+					"green_id": "green_004",
+					"reason": "existing_full_court_preserved",
+					"status": "covered"
+				},
+				{
+					"area_m2": 2036.83,
+					"bounds_xz": [
+						-159.765,
+						148.852,
+						-59.223,
+						182.358
+					],
+					"court_id": "park_court_5",
+					"geometry_candidates": 1502.0,
+					"green_id": "green_005",
+					"name": "Neighborhood green 6",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 103.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 103.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 1399.0,
+							"length_m": 24.0,
+							"selected": true,
+							"terrain_candidates": 1399.0,
+							"width_m": 13.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"court_id": "park_court_6",
+					"green_id": "green_006",
+					"reason": "existing_full_court_preserved",
+					"status": "covered"
+				},
+				{
+					"court_id": "park_court_7",
+					"green_id": "green_007",
+					"reason": "existing_full_court_preserved",
+					"status": "covered"
+				},
+				{
+					"area_m2": 1507.66,
+					"bounds_xz": [
+						-79.536,
+						-115.722,
+						-7.418,
+						-88.533
+					],
+					"court_id": "park_court_8",
+					"geometry_candidates": 434.0,
+					"green_id": "green_008",
+					"name": "Neighborhood pitch / Neighborhood playground",
+					"named_parks": [
+						"Neighborhood pitch",
+						"Neighborhood playground"
+					],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 434.0,
+							"length_m": 28.0,
+							"selected": true,
+							"terrain_candidates": 434.0,
+							"width_m": 15.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"area_m2": 1446.8,
+					"bounds_xz": [
+						172.422,
+						-165.029,
+						254.816,
+						-126.727
+					],
+					"court_id": "park_court_9",
+					"geometry_candidates": 616.0,
+					"green_id": "green_009",
+					"name": "Neighborhood green 10",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 133.0,
+							"length_m": 24.0,
+							"selected": false,
+							"terrain_candidates": 133.0,
+							"width_m": 13.0
+						},
+						{
+							"geometry_candidates": 483.0,
+							"length_m": 22.0,
+							"selected": true,
+							"terrain_candidates": 483.0,
+							"width_m": 12.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"area_m2": 1382.61,
+					"bounds_xz": [
+						145.917,
+						-2.774,
+						189.751,
+						95.138
+					],
+					"court_id": "park_court_10",
+					"geometry_candidates": 788.0,
+					"green_id": "green_010",
+					"name": "Neighborhood green 11",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 24.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 13.0
+						},
+						{
+							"geometry_candidates": 36.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 36.0,
+							"width_m": 12.0
+						},
+						{
+							"geometry_candidates": 179.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 179.0,
+							"width_m": 11.0
+						},
+						{
+							"geometry_candidates": 573.0,
+							"length_m": 20.0,
+							"selected": true,
+							"terrain_candidates": 573.0,
+							"width_m": 10.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"area_m2": 1369.43,
+					"bounds_xz": [
+						393.068,
+						-191.588,
+						450.568,
+						-106.145
+					],
+					"court_id": "park_court_11",
+					"geometry_candidates": 244.0,
+					"green_id": "green_011",
+					"name": "Neighborhood green 12",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 24.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 13.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 12.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 11.0
+						},
+						{
+							"geometry_candidates": 20.0,
+							"length_m": 20.0,
+							"selected": false,
+							"terrain_candidates": 20.0,
+							"width_m": 10.0
+						},
+						{
+							"geometry_candidates": 78.0,
+							"length_m": 18.0,
+							"selected": false,
+							"terrain_candidates": 78.0,
+							"width_m": 10.0
+						},
+						{
+							"geometry_candidates": 35.0,
+							"length_m": 11.0,
+							"selected": false,
+							"terrain_candidates": 35.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 111.0,
+							"length_m": 10.0,
+							"selected": true,
+							"terrain_candidates": 111.0,
+							"width_m": 14.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"area_m2": 1223.5,
+					"bounds_xz": [
+						299.42,
+						-34.149,
+						415.559,
+						32.451
+					],
+					"court_id": "park_court_12",
+					"geometry_candidates": 831.0,
+					"green_id": "green_013",
+					"name": "Neighborhood green 14",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 24.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 13.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 12.0
+						},
+						{
+							"geometry_candidates": 72.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 72.0,
+							"width_m": 11.0
+						},
+						{
+							"geometry_candidates": 341.0,
+							"length_m": 20.0,
+							"selected": false,
+							"terrain_candidates": 341.0,
+							"width_m": 10.0
+						},
+						{
+							"geometry_candidates": 377.0,
+							"length_m": 18.0,
+							"selected": false,
+							"terrain_candidates": 377.0,
+							"width_m": 10.0
+						},
+						{
+							"geometry_candidates": 41.0,
+							"length_m": 11.0,
+							"selected": true,
+							"terrain_candidates": 41.0,
+							"width_m": 15.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"area_m2": 1167.84,
+					"bounds_xz": [
+						156.267,
+						-53.734,
+						257.319,
+						-19.836
+					],
+					"court_id": "park_court_13",
+					"geometry_candidates": 19.0,
+					"green_id": "green_014",
+					"name": "Neighborhood green 15",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 24.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 13.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 12.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 11.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 20.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 10.0
+						},
+						{
+							"geometry_candidates": 19.0,
+							"length_m": 18.0,
+							"selected": true,
+							"terrain_candidates": 19.0,
+							"width_m": 10.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"area_m2": 1062.08,
+					"bounds_xz": [
+						-79.894,
+						-56.771,
+						-7.088,
+						-38.445
+					],
+					"court_id": "park_court_14",
+					"geometry_candidates": 80.0,
+					"green_id": "green_015",
+					"name": "Neighborhood green 16",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 80.0,
+							"length_m": 24.0,
+							"selected": true,
+							"terrain_candidates": 80.0,
+							"width_m": 13.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"area_m2": 932.02,
+					"bounds_xz": [
+						7.031,
+						-52.781,
+						61.506,
+						-7.589
+					],
+					"court_id": "park_court_15",
+					"geometry_candidates": 39.0,
+					"green_id": "green_018",
+					"name": "Neighborhood green 19",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 39.0,
+							"length_m": 24.0,
+							"selected": true,
+							"terrain_candidates": 39.0,
+							"width_m": 13.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"area_m2": 814.51,
+					"bounds_xz": [
+						184.546,
+						85.206,
+						253.078,
+						133.722
+					],
+					"court_id": "park_court_16",
+					"geometry_candidates": 21.0,
+					"green_id": "green_019",
+					"name": "Neighborhood green 20",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 24.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 13.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 12.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 11.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 20.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 10.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 18.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 10.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 11.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 10.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 14.0
+						},
+						{
+							"geometry_candidates": 21.0,
+							"length_m": 9.0,
+							"selected": true,
+							"terrain_candidates": 21.0,
+							"width_m": 12.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"court_id": "park_court_17",
+					"green_id": "green_022",
+					"reason": "removed_at_user_request",
+					"status": "excluded"
+				},
+				{
+					"area_m2": 625.76,
+					"bounds_xz": [
+						99.252,
+						-58.326,
+						178.517,
+						-30.677
+					],
+					"court_id": "park_court_18",
+					"geometry_candidates": 36.0,
+					"green_id": "green_023",
+					"name": "Neighborhood green 24",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 24.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 13.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 12.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 11.0
+						},
+						{
+							"geometry_candidates": 9.0,
+							"length_m": 20.0,
+							"selected": false,
+							"terrain_candidates": 9.0,
+							"width_m": 10.0
+						},
+						{
+							"geometry_candidates": 27.0,
+							"length_m": 18.0,
+							"selected": true,
+							"terrain_candidates": 27.0,
+							"width_m": 10.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"area_m2": 497.88,
+					"bounds_xz": [
+						121.712,
+						69.573,
+						148.222,
+						113.152
+					],
+					"court_id": "park_court_19",
+					"geometry_candidates": 39.0,
+					"green_id": "green_026",
+					"name": "Neighborhood green 27",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 24.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 13.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 12.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 11.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 20.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 10.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 18.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 10.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 11.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 5.0,
+							"length_m": 10.0,
+							"selected": false,
+							"terrain_candidates": 5.0,
+							"width_m": 14.0
+						},
+						{
+							"geometry_candidates": 34.0,
+							"length_m": 9.0,
+							"selected": true,
+							"terrain_candidates": 34.0,
+							"width_m": 12.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"area_m2": 430.87,
+					"bounds_xz": [
+						-192.313,
+						-121.818,
+						-178.281,
+						-89.718
+					],
+					"court_id": "park_court_20",
+					"geometry_candidates": 12.0,
+					"green_id": "green_030",
+					"name": "Neighborhood green 31",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 24.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 13.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 12.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 11.0
+						},
+						{
+							"geometry_candidates": 12.0,
+							"length_m": 20.0,
+							"selected": true,
+							"terrain_candidates": 12.0,
+							"width_m": 10.0
+						}
+					],
+					"status": "covered"
+				},
+				{
+					"area_m2": 402.97,
+					"bounds_xz": [
+						-191.572,
+						-200.882,
+						-177.723,
+						-171.336
+					],
+					"court_id": "park_court_21",
+					"geometry_candidates": 6.0,
+					"green_id": "green_033",
+					"name": "Neighborhood green 34",
+					"named_parks": [],
+					"reason": "",
+					"size_attempts": [
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 28.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 15.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 24.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 13.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 12.0
+						},
+						{
+							"geometry_candidates": 0.0,
+							"length_m": 22.0,
+							"selected": false,
+							"terrain_candidates": 0.0,
+							"width_m": 11.0
+						},
+						{
+							"geometry_candidates": 6.0,
+							"length_m": 20.0,
+							"selected": true,
+							"terrain_candidates": 6.0,
+							"width_m": 10.0
+						}
+					],
+					"status": "covered"
+				}
+			],
+			"green_inventory": {
+				"grass_components": 1292.0,
+				"minimum_apron_footprint_m": [
+					16.0,
+					13.0
+				],
+				"minimum_green_area_m2": 250.0,
+				"minimum_playing_area_m": [
+					12.0,
+					9.0
+				],
+				"minimum_retained_slab_m": [
+					14.0,
+					11.0
+				],
+				"named_parks": [
+					{
+						"area_m2": 265.65,
+						"green_ids": [
+							"green_008"
+						],
+						"name": "Neighborhood playground",
+						"park_index": 0.0
+					},
+					{
+						"area_m2": 161.1,
+						"green_ids": [
+							"green_008"
+						],
+						"name": "Neighborhood pitch",
+						"park_index": 1.0
+					},
+					{
+						"area_m2": 151.23,
+						"green_ids": [
+							"green_001"
+						],
+						"name": "Neighborhood playground",
+						"park_index": 2.0
+					},
+					{
+						"area_m2": 209.53,
+						"green_ids": [
+							"green_001"
+						],
+						"name": "Neighborhood playground",
+						"park_index": 3.0
+					},
+					{
+						"area_m2": 1959.84,
+						"green_ids": [
+							"green_003"
+						],
+						"name": "Community green 1",
+						"park_index": 4.0
+					},
+					{
+						"area_m2": 1946.49,
+						"green_ids": [
+							"green_004"
+						],
+						"name": "Community green 2",
+						"park_index": 5.0
+					},
+					{
+						"area_m2": 1890.15,
+						"green_ids": [
+							"green_000"
+						],
+						"name": "Community green 3",
+						"park_index": 6.0
+					}
+				],
+				"retained_access_ramps_m": {
+					"length_each": [
+						2.5,
+						8.0
+					],
+					"width": 3.0
+				},
+				"small_lawns_omitted": 1244.0
+			},
+			"hoops": 38.0,
+			"layout_changes": [
+				{
+					"change": "upgraded_to_full",
+					"id": "park_court_2",
+					"length_m": 24.0,
+					"width_m": 13.0
+				},
+				{
+					"change": "upgraded_to_full",
+					"id": "park_court_5",
+					"length_m": 24.0,
+					"width_m": 13.0
+				},
+				{
+					"change": "upgraded_to_full",
+					"id": "park_court_8",
+					"length_m": 28.0,
+					"width_m": 15.0
+				},
+				{
+					"change": "upgraded_to_full",
+					"id": "park_court_9",
+					"length_m": 22.0,
+					"width_m": 12.0
+				},
+				{
+					"change": "upgraded_to_full",
+					"id": "park_court_10",
+					"length_m": 20.0,
+					"width_m": 10.0
+				},
+				{
+					"change": "half_retained_no_safe_full_fit",
+					"id": "park_court_11"
+				},
+				{
+					"change": "half_retained_no_safe_full_fit",
+					"id": "park_court_12"
+				},
+				{
+					"change": "upgraded_to_full",
+					"id": "park_court_13",
+					"length_m": 18.0,
+					"width_m": 10.0
+				},
+				{
+					"change": "upgraded_to_full",
+					"id": "park_court_14",
+					"length_m": 24.0,
+					"width_m": 13.0
+				},
+				{
+					"change": "upgraded_to_full",
+					"id": "park_court_15",
+					"length_m": 24.0,
+					"width_m": 13.0
+				},
+				{
+					"change": "half_retained_no_safe_full_fit",
+					"id": "park_court_16"
+				},
+				{
+					"change": "removed",
+					"id": "park_court_17"
+				},
+				{
+					"change": "upgraded_to_full",
+					"id": "park_court_18",
+					"length_m": 18.0,
+					"width_m": 10.0
+				},
+				{
+					"change": "half_retained_no_safe_full_fit",
+					"id": "park_court_19"
+				},
+				{
+					"change": "upgraded_to_full",
+					"id": "park_court_20",
+					"length_m": 20.0,
+					"width_m": 10.0
+				},
+				{
+					"change": "upgraded_to_full",
+					"id": "park_court_21",
+					"length_m": 20.0,
+					"width_m": 10.0
+				}
+			],
+			"max_apron_slope_deg": 3.85644,
+			"max_court_grade": 0.015,
+			"max_fill_m": 0.68092,
+			"new_full_court_civic_overlap_m2": 0.0,
+			"placement_limits": {
+				"max_apron_slope_deg": 4.0,
+				"max_court_grade": 0.015,
+				"max_fill_m": 0.8
+			},
+			"removed_vegetation_records": 24.0,
+			"reservation_records_removed": 0.0,
+			"retained_bushes": 288.0,
+			"retained_trees": 1774.0,
+			"road_building_overlap_m2": 0.0,
+			"source_ground_sha256": "c55db8f21bb9fbd8b5d100aef1c4ab4272d59109b58cbd61fa24bb05a6cebf60",
+			"source_height_method": "exact exported grass triangles",
+			"tree_trunks_removed_from_courts": 32.0,
+			"triangles": 45098.0
+		},
+		"backboard_colliders": 37,
+		"courts": 20,
+		"draw_batches": 18,
+		"enabled": true,
+		"floor_colliders": 20,
+		"hoops": 37,
+		"pole_colliders": 37
+	},
+	"crowd": {
+		"active_cells": 75,
+		"actual_park_population": {
+			"Community green 1": 13,
+			"Community green 2": 12,
+			"Community green 3": 20
+		},
+		"cell_activations": 142,
+		"circle_groups": 168,
+		"dead": 0,
+		"destination_population": {
+			"business:Blue Basket Laundry": 7,
+			"business:Cedar Barber": 5,
+			"business:Common Shelf": 14,
+			"business:Corner Pantry": 2,
+			"business:Fresh Fold": 13,
+			"business:Hillside Corner Grocery": 14,
+			"business:Hilltop Foods": 11,
+			"business:Little Skillet": 12,
+			"business:Maple Kitchen": 10,
+			"business:Mend & Stitch": 12,
+			"business:Northside Clippers": 12,
+			"business:Parkway Spirits": 12,
+			"business:Pen Lucy Food Market": 10,
+			"business:Ruth's Mini Mart": 14,
+			"business:Second Chapter": 14,
+			"business:Spin Cycle": 7,
+			"business:Two Sisters Market": 13,
+			"business:Warm Plate": 3,
+			"business:Wilsby Corner Market": 6,
+			"business:York Bottle Shop": 6,
+			"court_edge:park_court_0": 15,
+			"court_edge:park_court_1": 16,
+			"court_edge:park_court_10": 16,
+			"court_edge:park_court_12": 15,
+			"court_edge:park_court_13": 15,
+			"court_edge:park_court_14": 16,
+			"court_edge:park_court_15": 15,
+			"court_edge:park_court_16": 12,
+			"court_edge:park_court_18": 14,
+			"court_edge:park_court_19": 16,
+			"court_edge:park_court_2": 12,
+			"court_edge:park_court_20": 15,
+			"court_edge:park_court_21": 12,
+			"court_edge:park_court_3": 16,
+			"court_edge:park_court_5": 13,
+			"court_edge:park_court_6": 15,
+			"court_edge:park_court_7": 14,
+			"court_edge:park_court_8": 12,
+			"court_edge:park_court_9": 16,
+			"street:Argonne Drive": 26,
+			"street:Cator Avenue": 38,
+			"street:Dumbarton Avenue": 41,
+			"street:East 38th Street": 22,
+			"street:East 39th Street": 5,
+			"street:East 41st Street": 45,
+			"street:Elkader Road": 28,
+			"street:Frisby Street": 21,
+			"street:Greenmount Avenue": 2,
+			"street:Lowndes Avenue": 6,
+			"street:North Hill Road": 2,
+			"street:Old York Road": 24,
+			"street:Rose Hill Terrace": 13,
+			"street:Wilsby Avenue": 49,
+			"street:Wyanoke Avenue": 42
+		},
+		"distribution_fallbacks": 0,
+		"draw_batches": 200,
+		"far_from_intro_route": 875,
+		"identity_failures": [],
+		"identity_relocated": 6,
+		"identity_source": "canonical_legacy_recipe",
+		"name_labels": 0,
+		"near_updates": 0,
+		"neighborhood_distribution": {
+			"bench": 36,
+			"business": 197,
+			"court_edge": 275,
+			"street": 364
+		},
+		"new_group_sizes": [
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			6,
+			2,
+			5,
+			3,
+			7,
+			4,
+			8,
+			2
+		],
+		"occupied_cells": 142,
+		"panic": 0,
+		"panic_budget": 160,
+		"panic_casts": 0,
+		"panic_cowered": 0,
+		"panic_mover_budget": 48,
+		"panic_movers": 0,
+		"panic_replans": 0,
+		"panic_restored": 0,
+		"panic_started": 0,
+		"panic_updates": 0,
+		"park": 36,
+		"park_population": {
+			"Community green 1": 12,
+			"Community green 2": 12,
+			"Community green 3": 12
+		},
+		"porch": 196,
+		"seated": 136,
+		"shared_meshes": 3,
+		"social": 1004,
+		"span_x": 750.249588012695,
+		"span_z": 551.479248046875,
+		"threat_cells": 0,
+		"threat_scanned": 0,
+		"total": 1200,
+		"update_interval": 0.25,
+		"walkers": 126,
+		"walking_updates": 1
+	},
+	"failures": 0,
+	"vegetation": {
+		"active_vertices": 439617,
+		"active_wind_vertices": 368622,
+		"bushes": 371,
+		"cached_cell_meshes": 243,
+		"cached_mesh_variants": 244,
+		"cached_vertices": 442101,
+		"cell_mesh_builds": 244,
+		"cell_mesh_cache_hits": 0,
+		"civic_removed": 41,
+		"draw_batches": 241,
+		"enabled": true,
+		"estimated_raw_mesh_bytes": 24757656,
+		"historical_mesh_variants": 1,
+		"historical_raw_mesh_bytes": 139104,
+		"history_byte_budget": 33554432,
+		"history_evictions": 0,
+		"last_refresh_mesh_builds": 1,
+		"legacy_vegetation_cache": false,
+		"loaded_cells": 243,
+		"loaded_plants": 1377,
+		"max_refresh_mesh_builds": 1,
+		"pending_visual_cells": 3,
+		"playground_removed": 3,
+		"pointed_shrubs": 99,
+		"shared_meshes": 16,
+		"shared_variants": 7.0,
+		"spatial_cells": 346,
+		"trees": 1747,
+		"trunk_colliders": 95,
+		"wind_enabled": true,
+		"wind_shader": true,
+		"wind_time": 0.1,
+		"wind_vertices": 370944
+	}
+}

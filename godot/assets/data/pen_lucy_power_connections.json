@@ -1,0 +1,147 @@
+{
+  "version": 1,
+  "source_sha256": "0be9befc8a65b15cc1ed48fa44b49c5b8bf0565b28235cf2bb1d1d313c4ee552",
+  "spans": [
+    {
+      "a": 22,
+      "b": 131,
+      "min_clearance_m": 8.631
+    },
+    {
+      "a": 149,
+      "b": 158,
+      "min_clearance_m": 8.692
+    },
+    {
+      "a": 0,
+      "b": 6,
+      "min_clearance_m": 8.554
+    },
+    {
+      "a": 45,
+      "b": 46,
+      "min_clearance_m": 8.73
+    },
+    {
+      "a": 10,
+      "b": 120,
+      "min_clearance_m": 8.578
+    },
+    {
+      "a": 152,
+      "b": 177,
+      "min_clearance_m": 8.423
+    },
+    {
+      "a": 148,
+      "b": 151,
+      "min_clearance_m": 8.728
+    },
+    {
+      "a": 175,
+      "b": 177,
+      "min_clearance_m": 8.48
+    },
+    {
+      "a": 149,
+      "b": 159,
+      "min_clearance_m": 8.589
+    },
+    {
+      "a": 140,
+      "b": 157,
+      "min_clearance_m": 8.6
+    },
+    {
+      "a": 83,
+      "b": 84,
+      "min_clearance_m": 8.382
+    },
+    {
+      "a": 146,
+      "b": 169,
+      "min_clearance_m": 8.524
+    },
+    {
+      "a": 119,
+      "b": 150,
+      "min_clearance_m": 8.399
+    },
+    {
+      "a": 51,
+      "b": 73,
+      "min_clearance_m": 8.804
+    },
+    {
+      "a": 144,
+      "b": 146,
+      "min_clearance_m": 8.262
+    },
+    {
+      "a": 2,
+      "b": 3,
+      "min_clearance_m": 8.575
+    },
+    {
+      "a": 153,
+      "b": 155,
+      "min_clearance_m": 8.786
+    },
+    {
+      "a": 14,
+      "b": 16,
+      "min_clearance_m": 8.676
+    },
+    {
+      "a": 32,
+      "b": 34,
+      "min_clearance_m": 8.758
+    },
+    {
+      "a": 155,
+      "b": 157,
+      "min_clearance_m": 8.174
+    },
+    {
+      "a": 154,
+      "b": 156,
+      "min_clearance_m": 8.514
+    },
+    {
+      "a": 152,
+      "b": 174,
+      "min_clearance_m": 8.553
+    },
+    {
+      "a": 19,
+      "b": 21,
+      "min_clearance_m": 8.267
+    },
+    {
+      "a": 12,
+      "b": 13,
+      "min_clearance_m": 8.436
+    },
+    {
+      "a": 35,
+      "b": 36,
+      "min_clearance_m": 8.225
+    },
+    {
+      "a": 7,
+      "b": 8,
+      "min_clearance_m": 8.457
+    },
+    {
+      "a": 170,
+      "b": 172,
+      "min_clearance_m": 8.579
+    }
+  ],
+  "audit": {
+    "added_spans": 27,
+    "isolated_before": 37,
+    "isolated_after": 18,
+    "validation": "Same named street and curb side; <=60m; full exported architecture1.4m buffer;33 exact exported terrain clearance samples>=7.2m"
+  }
+}

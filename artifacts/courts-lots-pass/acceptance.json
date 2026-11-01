@@ -1,0 +1,254 @@
+{
+  "scope": "Full-court layouts, population appearance, dumpsters, pointed shrubs and driveway parking",
+  "desktop_control_used": false,
+  "court_validation": {
+    "courts": 21,
+    "full": 17,
+    "half": 4,
+    "changed": [
+      "park_court_2",
+      "park_court_5",
+      "park_court_8",
+      "park_court_9",
+      "park_court_10",
+      "park_court_13",
+      "park_court_14",
+      "park_court_15",
+      "park_court_18",
+      "park_court_20",
+      "park_court_21"
+    ],
+    "supported_floor_samples": 66444,
+    "min_ground_clearance_m": 0.01087068244933323,
+    "court13": {
+      "id": "park_court_13",
+      "position": [
+        224.486556,
+        -2.075642,
+        -31.051028
+      ],
+      "width_m": 10.0,
+      "length_m": 18.0,
+      "across": [
+        6.123233995736766e-17,
+        0,
+        -1.0
+      ],
+      "along": [
+        -1.0,
+        0,
+        -6.123233995736766e-17
+      ],
+      "hoops": [
+        {
+          "position": [
+            234.20656,
+            -2.20466,
+            -31.05103
+          ],
+          "radius": 0.22,
+          "rim_position": [
+            231.91156,
+            0.8758,
+            -31.05103
+          ]
+        },
+        {
+          "position": [
+            214.76656,
+            -1.94663,
+            -31.05103
+          ],
+          "radius": 0.22,
+          "rim_position": [
+            217.06156,
+            1.07291,
+            -31.05103
+          ]
+        }
+      ]
+    },
+    "failures": []
+  },
+  "appearance": {
+    "ambient_black": 964,
+    "ambient_skin_tones": 8,
+    "black": 988,
+    "daily_black": 16,
+    "failures": 0,
+    "fixture_batches": 18,
+    "maximum_skin_pixel_error": 0.0,
+    "named_black": 3,
+    "patrol_black": 5,
+    "patrol_skin_surfaces": 3,
+    "population": 1235,
+    "shared_pose_meshes": 3,
+    "visual": "C:/files/projects/Tattletale/godot/../.work/courts-lots-pass/appearance-skin-proof.png"
+  },
+  "runtime": {
+    "courts": 20,
+    "hoops": 37,
+    "full_courts": 17,
+    "constrained_half_courts": 3,
+    "pointed_shrubs": 99,
+    "backlots": {
+      "cars": 13,
+      "dumpster_batches": 19,
+      "dumpsters": 20,
+      "enabled": true,
+      "fleet": {
+        "kinds": {
+          "compact": 13
+        },
+        "rejected": [],
+        "requested": 13,
+        "total": 13,
+        "visuals": {
+          "batch_meshes": 12,
+          "batch_surfaces": 109,
+          "labels": 0,
+          "setup_ms": 450,
+          "source_meshes": 65,
+          "source_surfaces": 260,
+          "surface_reduction": 151,
+          "triangles": 41808,
+          "unbatched_surfaces": 0
+        }
+      },
+      "mandatory": {
+        "CatorAcrossGapCar": true,
+        "CatorMarketDumpster": true,
+        "WyanokeBldg219Dumpster": true
+      },
+      "rejected": [],
+      "requested": 33,
+      "source_audit": {
+        "counts": {
+          "compact": 13.0,
+          "dumpster": 20.0
+        },
+        "rejections": {
+          "building": 528.0,
+          "entrance": 156.0,
+          "new_prop": 29.0,
+          "service_lane": 102.0,
+          "spacing": 85.0,
+          "unpaved": 8.0,
+          "yard_or_tree": 55.0
+        },
+        "rules": [
+          "entire footprint on source alley/asphalt",
+          "no public road or sidewalk overlap",
+          "building clearance >=0.22m",
+          "rear door 2.5m approach and front stair corridor clear",
+          "existing bins hedges and tree trunks clear",
+          "cars retain adjacent 2.4m paved lane",
+          "sparse deterministic distribution"
+        ],
+        "runtime_repair": {
+          "building_id": "w336329468",
+          "outward_offset_m": 1.65,
+          "reason": "Row_015 imported convex rear wall spans the source footprint notch"
+        }
+      },
+      "total": 33
+    }
+  },
+  "tests": {
+    "appearance-engine.log": {
+      "pass": 11,
+      "fail": 0,
+      "script_or_shader_errors": 0
+    },
+    "backlot-engine.log": {
+      "pass": 9,
+      "fail": 0,
+      "script_or_shader_errors": 0
+    },
+    "pointed-engine.log": {
+      "pass": 7,
+      "fail": 0,
+      "script_or_shader_errors": 0
+    },
+    "visual-engine.log": {
+      "pass": 19,
+      "fail": 0,
+      "script_or_shader_errors": 0
+    },
+    "parks-final-engine.log": {
+      "pass": 0,
+      "fail": 0,
+      "script_or_shader_errors": 0,
+      "result": []
+    }
+  },
+  "visual_failures": 0,
+  "benchmark": {
+    "delivered_fps": 113.252394356032,
+    "frame_ms": {
+      "max": 30.873,
+      "median": 8.939,
+      "min": 3.213,
+      "p95": 14.124,
+      "p99": 20.233
+    },
+    "viewport_gpu_ms": {
+      "max": 7.14400005340576,
+      "median": 3.98399996757507,
+      "min": 1.99899995326996,
+      "p95": 5.63800001144409,
+      "p99": 6.09899997711182
+    },
+    "viewport_render_cpu_ms": {
+      "max": 8.14099979400635,
+      "median": 3.02900004386902,
+      "min": 1.66499996185303,
+      "p95": 4.27400016784668,
+      "p99": 5.13899993896484
+    },
+    "draw_calls": {
+      "max": 1920.0,
+      "median": 1494.0,
+      "min": 1386.0,
+      "p95": 1673.0,
+      "p99": 1910.0
+    },
+    "valid_active_play": true
+  },
+  "performance_note": "Single 1920x1080 Balanced private-viewport active route. Previous pass showed significant system timing variance; this measurement alone does not establish a causal speedup or unchanged performance.",
+  "agents": {
+    "workers": "Three native GPT-6 Astra high workers: courts, backlots, NPC appearance",
+    "root": "Coordinator model and effort not exposed; integration, pointed shrubs and acceptance"
+  },
+  "source_sha256": {
+    "blender/city/park_courts.py": "0c3b6715f6e974ca811431a50070a293f9eacb81de03c44730e7cb85b1752197",
+    "blender/city/update_courts.py": "f09eba6bf2d86b6e88bb48263f4613763ef4c9b9eaafb4a56c1873ab4f3ab16c",
+    "blender/city/pointed_shrubs.py": "50cf99793b008560fac49453f5595188fc3e19ce4b50778157c640d373c7db01",
+    "blender/city/backlots.py": "265f3fda883ab30ff7bcb84923c3f26017d1da26076f7a237fe5fda17a93b861",
+    "godot/scripts/city/city_population_appearance.gd": "06e8930ae8e54670f9ad1ea0a89f3629b49c209c16d5c4320071a171a7152d4e",
+    "godot/scripts/city/city_crowd.gd": "3e6008628e4216d72cec6dadffb14408e2062753f00cd8627f7b24d294bc9b13",
+    "godot/scripts/city/city_backlot_details.gd": "d868ca058fa9ea963a246241100d5f573df6993988b6b2cc4d683b8c6a69760b",
+    "godot/scripts/city/city_vegetation.gd": "b5e18a49b0180a372179aff267f7e82dae9c0fc3e8c789ca9d1269f7ff0c04a5",
+    "godot/scripts/city/pen_lucy_level.gd": "475596267462126eb64c328e40f134c7be4c229c7869486a9eb1f9e7b8076a03",
+    "godot/assets/data/pen_lucy_backlots.json": "fd2749221edca40703b74f2021a2e283b5ae3537913e100d3596701b18489dab",
+    "godot/assets/data/pen_lucy_civic_build.json": "2218e96e9790f4e9d9dff5db00c4a4d5b74901f9ade7a8ffc614958d14a046e5",
+    "godot/assets/data/pen_lucy_civic_proposals.json": "ea3d511d8950b9b2b481b541064ab7f9cd24f34bfb6b367fe0fee619d558366b",
+    "godot/assets/data/pen_lucy_courts.json": "fd4eb4e45d6f034ab293136bdaf8608e96da42f99284ca8c6fad6487db6f3033",
+    "godot/assets/data/pen_lucy_crowd_recipe.json": "cb1ea6ebf383cd7087aab325ed93f0ba9c7fdd03c28a6e6bbbdcb1f35f13e6b0",
+    "godot/assets/data/pen_lucy_dialogue.json": "c653c790e931439044bc18dd1c9aad7785b07758c317161298460f2e2344c07b",
+    "godot/assets/data/pen_lucy_fire_grounds.json": "300beb8884bb4402733baed990b8b80ce3fb7b045ceba9605daf06792d916549",
+    "godot/assets/data/pen_lucy_hospital_grounds.json": "7ce72ea06987ad74d73b71bb9c4cc1bd9733fc7647bfb75d1d466723d680b8b9",
+    "godot/assets/data/pen_lucy_level.json": "b8777971c20ec4273ab3ff874b61a779180a83521e0138178ff7c4843d907a10",
+    "godot/assets/data/pen_lucy_new_businesses.json": "186220341a8dab826ea461c5810178a7bec0eb8701a60553aadf9482d0e61939",
+    "godot/assets/data/pen_lucy_pointed_shrubs.json": "6a7152d385fbfd3a590019e485a505374e06e3739c8b3bf73ea3aa857eaf9256",
+    "godot/assets/data/pen_lucy_population_appearance.json": "c4c5235b1cd0bffcfd604e8a525bef02a95657e7903a99ad007dd3d993da65fa",
+    "godot/assets/data/pen_lucy_power.json": "0be9befc8a65b15cc1ed48fa44b49c5b8bf0565b28235cf2bb1d1d313c4ee552",
+    "godot/assets/data/pen_lucy_power_connections.json": "d48c718c60469757c9744194d68f622cd0305c17a4952ab07d65dcc6ace6a3cb",
+    "godot/assets/data/pen_lucy_residents.json": "680cd1a635cd1426fce1cc83bb81bff4dbee2d84fb4eec2767d42e1ce4e5be7a",
+    "godot/assets/data/pen_lucy_shrub_growth.json": "72dc2fe9df3ef871f2a79b4a31fee43597ac8ab658d1038a83b62f02e629747c",
+    "godot/assets/data/pen_lucy_street_surfaces.json": "87674a46e243dfab10b77b01c7322d248666974e4ff234969782f0359f3fa8db",
+    "godot/assets/data/pen_lucy_vegetation.json": "fde802859463f1fc5f829eae4681e0d6976f698f34107e7fed36e87377355d97",
+    "godot/assets/data/pen_lucy_window_homes.json": "9089a2423f19324d31441dabea4acfbf0e49b163889206f17764efce3d0f41bc",
+    "godot/assets/data/pen_lucy_yards.json": "91def912507ec7caf0a3ba45ae4fdf408029822b3314f0cacbfb85cd1b57d50e"
+  }
+}

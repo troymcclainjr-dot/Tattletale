@@ -1,0 +1,8 @@
+{
+  "officer": {"start":"start","nodes":{"start":{"speaker":"Officer","lines":["If you have something to report, tell me what you observed. Take your time and check the facts."],"choices":[{"text":"I'll keep that in mind."}]}}},
+  "resident": {"start":"start","nodes":{"start":{"speaker":"Resident","lines":["Good to see you out walking the block."],"choices":[{"text":"See you around."}]}}},
+  "lookout": {"start":"start","nodes":{"start":{"speaker":"Dumbarton witness","lines":["There's always something happening along Old York. Keep your eyes open."],"choices":[{"text":"See you around."}]}}},
+  "gardener": {"start":"start","nodes":{"start":{"speaker":"Gardener","lines":["We're making room for another planting day. Every pair of hands helps."],"choices":[{"text":"Good luck with the garden."}]}}},
+  "organizer": {"start":"start","nodes":{"start":{"speaker":"Organizer","lines":["A neighborhood meeting works best when everyone gets a chance to speak."],"choices":[{"text":"I'll look out for the notice."}]}}},
+  "caretaker": {"start":"start","nodes":{"start":{"speaker":"Caretaker","lines":["Just checking on the porches before evening."],"choices":[{"text":"Take care."}]}}}
+}

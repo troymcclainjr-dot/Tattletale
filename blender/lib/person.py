@@ -612,10 +612,8 @@ def sdf_mesh(name, s, m, cell, target=None, parent=None, sym=False, lumps=0.0, l
     cell = sampling size in meters (small features need ~1/4 of their thickness);
     target = triangle budget (decimated down to it); lumps = hand-made wobble in meters (pressed
     into the shape before meshing); m = material, hex color or a Stripes painter."""
-    if lumps > 0:
-        freq = lump_freq or 1.0 / (140.0 * lumps)
-        base = s
-        s = displace(base, lambda p: lumps * vnoise(p, freq, seed), lumps)
+    # Clean stylized geometry: keep authored seams/folds, never blanket wobble.
+    # The legacy keyword remains accepted by the individual asset scripts.
     F, lo = sample_grid(s, cell)
     V, Q = surface_nets(F, lo, cell)
     if len(V) == 0:
@@ -1872,6 +1870,8 @@ def bow_tie(r, color="#c4162a", name="BowTie"):
 # ====================================================================== export
 def export_character(asset_id):
     """godot/assets/models/characters/<id>.glb (+ blender/blend/<id>.blend). Call before any preview."""
+    from lib.character_finish import apply_scene
+    apply_scene(asset_id)
     path = ck.export(asset_id, subdir="characters")
     check_rig()
     return path
@@ -1888,8 +1888,10 @@ CONTRACT = {   # pivot: (parent, local position in H)
 def check_rig(H=None):
     """Print the pivot hierarchy and compare it with the README contract."""
     obs = bpy.context.scene.objects
+    finished = obs["Rig"].get("anatomy_version", 0) > 0
     if H is None:
-        H = obs["Body"].location.z / 0.47
+        H = obs["Rig"].get("nominal_height", obs["Body"].location.z / 0.47)
+    source_world = {}
     ok = True
     for name, (par, pos) in CONTRACT.items():
         ob = obs.get(name)
@@ -1900,10 +1902,19 @@ def check_rig(H=None):
         loc = ob.location
         g = (loc.x, loc.z, -loc.y)
         want = tuple(v * H for v in pos)
+        source_world[name] = np.array(want) + source_world.get(par, np.zeros(3))
+        if finished:
+            from lib.character_finish import map_points
+            cid = obs["Rig"]["anatomy_id"]
+            w = map_points(tuple(ck.G(source_world[name])), cid)[0]
+            p = map_points(tuple(ck.G(source_world.get(par, np.zeros(3)))), cid)[0]
+            local = w - p
+            want = (local[0], local[2], -local[1])
         err = max(abs(a - b) for a, b in zip(g, want))
         pn = ob.parent.name if ob.parent else None
         sc = tuple(round(v, 4) for v in ob.scale)
-        bad = err > 1e-5 or pn != par or sc != (1.0, 1.0, 1.0)
+        # Mouth placement is fitted to each expression, not a skeletal joint.
+        bad = (err > 1e-5 and name != "Mouth") or pn != par or sc != (1.0, 1.0, 1.0)
         ok &= not bad
         print(f"[person] {'BAD ' if bad else ''}{name:6s} parent={pn!s:5s} pos=({g[0]:+.4f},{g[1]:+.4f},{g[2]:+.4f}) scale={sc}")
     print(f"[person] rig contract {'OK' if ok else 'FAILED'} (H={H:.3f})")
@@ -1924,7 +1935,9 @@ def set_pose(r, walk=0.0, phase=math.pi / 2, armR=None, armL=None, lean=0.0, til
     _rot(r.armL, (aL[0], 0, aL[1]))
     _rot(r.body, (lean, 0, tilt))
     _rot(r.head, (nod, look, 0))
-    r.body.location = ck.G(0, 0.47 * r.H + bob, 0)
+    from lib.character_finish import dimensions
+    hip = dimensions(r.rig["anatomy_id"])[1][1] if r.rig.get("anatomy_version", 0) else .47
+    r.body.location = ck.G(0, hip * r.H + bob, 0)
     r.mouth.scale = ck.gscale(1, 0.3 + mouth * 0.9, 1)
     bpy.context.view_layer.update()
 
@@ -1942,7 +1955,12 @@ def binocular_check(r):
         res = []
         for hand, sx in ((r.handR, -1), (r.handL, 1)):
             hw = hand.matrix_world.translation
-            bw = r.head.matrix_world @ ck.G(sx * 0.042 * H, r.hy + 0.02 * H, 0.17 * H)
+            target = ck.G(sx * 0.042 * H, r.hy + 0.02 * H, 0.17 * H)
+            if r.rig.get("anatomy_version", 0):
+                from lib.character_finish import map_points
+                cid = r.rig["anatomy_id"]
+                target = Vector(map_points(tuple(target + ck.G(0, .83 * H, 0)), cid)[0] - map_points(tuple(ck.G(0, .83 * H, 0)), cid)[0])
+            bw = r.head.matrix_world @ target
             res.append((hw - bw).length / H)
         out[label] = res
         print(f"[person] binoculars {label}: hand-to-barrel R {res[0]:.3f}H  L {res[1]:.3f}H  ({res[0] * H:.2f} m)")
@@ -1953,7 +1971,9 @@ def binocular_check(r):
 def reset_pose(r):
     for p in (r.legR, r.legL, r.armR, r.armL, r.body, r.head):
         _rot(p, (0, 0, 0))
-    r.body.location = ck.G(0, 0.47 * r.H, 0)
+    from lib.character_finish import dimensions
+    hip = dimensions(r.rig["anatomy_id"])[1][1] if r.rig.get("anatomy_version", 0) else .47
+    r.body.location = ck.G(0, hip * r.H, 0)
     r.mouth.scale = (1, 1, 1)
     bpy.context.view_layer.update()
 

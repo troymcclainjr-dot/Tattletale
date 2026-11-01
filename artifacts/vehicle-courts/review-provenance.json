@@ -1,0 +1,10 @@
+{
+  "exit_code": 0,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "init_model": [
+    "claude-opus-5-5"
+  ],
+  "effort_requested": "high"
+}

@@ -1,0 +1,4255 @@
+{
+	"captures": [
+		"C:/files/projects/Tattletale/godot/../artifacts/life-reactions/visual/01-front-lawn.png",
+		"C:/files/projects/Tattletale/godot/../artifacts/life-reactions/visual/02-stop-front.png",
+		"C:/files/projects/Tattletale/godot/../artifacts/life-reactions/visual/03-stop-rear.png",
+		"C:/files/projects/Tattletale/godot/../artifacts/life-reactions/visual/04-house-windows.png",
+		"C:/files/projects/Tattletale/godot/../artifacts/life-reactions/visual/05-power-lines.png",
+		"C:/files/projects/Tattletale/godot/../artifacts/life-reactions/visual/07-flat-tire.png",
+		"C:/files/projects/Tattletale/godot/../artifacts/life-reactions/visual/06-civic-proposals.png"
+	],
+	"failures": 0,
+	"power": {
+		"audit": {
+			"collision_bodies": 0.0,
+			"minimum_wire_ground_clearance_m": 8.182,
+			"placement": "Exact exported sidewalk/ground; reserved entrances, courts, architecture, trees and yard props",
+			"poles": 178.0,
+			"source_geometry": "current .work/city/build/pen_lucy_geom.json",
+			"spans": 110.0,
+			"streets": {
+				"Argonne Drive": 19.0,
+				"Cator Avenue": 17.0,
+				"Dumbarton Avenue": 14.0,
+				"East 38th Street": 11.0,
+				"East 39th Street": 5.0,
+				"East 41st Street": 23.0,
+				"Elkader Road": 8.0,
+				"Ellerslie Avenue": 6.0,
+				"Frisby Street": 8.0,
+				"Greenmount Avenue": 16.0,
+				"Lowndes Avenue": 3.0,
+				"North Hill Road": 1.0,
+				"Old York Road": 17.0,
+				"Pen Lucy Avenue": 1.0,
+				"Rose Hill Terrace": 5.0,
+				"Wilsby Avenue": 9.0,
+				"Wyanoke Avenue": 15.0
+			}
+		},
+		"cells": 64,
+		"collision_bodies": 0,
+		"enabled": true,
+		"per_frame_processing": false,
+		"poles": 178,
+		"setup_ms": 20,
+		"shadow_casters": 0,
+		"spans": 110,
+		"visible_cells": 31,
+		"wire_vertices": 63360
+	},
+	"windows": {
+		"barred_windows": 7527,
+		"collision_groups": 0,
+		"draw_batches": 0,
+		"eligible_house_windows": 9128,
+		"finish_kinds": {
+			"1": 4,
+			"2": 7,
+			"3": 1,
+			"4": 14,
+			"5": 3,
+			"6": 5
+		},
+		"finish_profile": "calibrated",
+		"first_floor_windows": 4205,
+		"glass_panes": 11601,
+		"litter": 4619,
+		"provider": "CityYardDetails",
+		"rough_glass_surfaces": 341,
+		"shared_finishes": 34,
+		"spatial_cells": 172,
+		"unowned_windows": 0,
+		"weathered_surfaces": 2427,
+		"window_bar_batches": 168,
+		"window_bar_triangles": 15054,
+		"window_homes": {
+			"w1498118737": {
+				"barred": 27,
+				"selected": true,
+				"windows": 27
+			},
+			"w1498118738": {
+				"barred": 0,
+				"selected": false,
+				"windows": 8
+			},
+			"w336324408": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336324856": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336324857": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336324858": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336324859": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336324862": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336324863": {
+				"barred": 1,
+				"selected": true,
+				"windows": 1
+			},
+			"w336324865": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336325332": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336325333": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336325334": {
+				"barred": 0,
+				"selected": false,
+				"windows": 15
+			},
+			"w336325335": {
+				"barred": 0,
+				"selected": false,
+				"windows": 7
+			},
+			"w336325770": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336325771": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336325772": {
+				"barred": 1,
+				"selected": true,
+				"windows": 1
+			},
+			"w336325773": {
+				"barred": 2,
+				"selected": true,
+				"windows": 2
+			},
+			"w336325775": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336325793": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336325794": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336325795": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336325796": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336325797": {
+				"barred": 2,
+				"selected": true,
+				"windows": 2
+			},
+			"w336325798": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336325799": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336325800": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336325801": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336326401": {
+				"barred": 23,
+				"selected": true,
+				"windows": 23
+			},
+			"w336326402": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336326403": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336327315": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336327316": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336327317": {
+				"barred": 0,
+				"selected": false,
+				"windows": 12
+			},
+			"w336327318": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336327319": {
+				"barred": 1,
+				"selected": true,
+				"windows": 1
+			},
+			"w336327413": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336327521": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336327522": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336327523": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336327524": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336327525": {
+				"barred": 0,
+				"selected": false,
+				"windows": 2
+			},
+			"w336327526": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336327527": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336327528": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336327597": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336327598": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336327599": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336327600": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336327601": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336327602": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336327603": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336327604": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336327699": {
+				"barred": 2,
+				"selected": true,
+				"windows": 2
+			},
+			"w336327700": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336327701": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336327702": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336327703": {
+				"barred": 0,
+				"selected": false,
+				"windows": 15
+			},
+			"w336327773": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336327774": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336327775": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336327776": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336327777": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336327778": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336328097": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336328098": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336328099": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336328100": {
+				"barred": 0,
+				"selected": false,
+				"windows": 4
+			},
+			"w336328101": {
+				"barred": 0,
+				"selected": false,
+				"windows": 8
+			},
+			"w336328453": {
+				"barred": 2,
+				"selected": true,
+				"windows": 2
+			},
+			"w336328454": {
+				"barred": 2,
+				"selected": true,
+				"windows": 2
+			},
+			"w336328455": {
+				"barred": 2,
+				"selected": true,
+				"windows": 2
+			},
+			"w336328456": {
+				"barred": 2,
+				"selected": true,
+				"windows": 2
+			},
+			"w336328458": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336328479": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336328480": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336328483": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336328496": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336328500": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336328504": {
+				"barred": 0,
+				"selected": false,
+				"windows": 15
+			},
+			"w336328509": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336329001": {
+				"barred": 29,
+				"selected": true,
+				"windows": 29
+			},
+			"w336329082": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336329085": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336329087": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336329089": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336329094": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336329098": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336329102": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336329104": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336329119": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336329168": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336329461": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336329462": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336329463": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336329464": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336329465": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336329466": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336329467": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336329468": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336329675": {
+				"barred": 24,
+				"selected": true,
+				"windows": 24
+			},
+			"w336329696": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336329702": {
+				"barred": 24,
+				"selected": true,
+				"windows": 24
+			},
+			"w336329850": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336329997": {
+				"barred": 25,
+				"selected": true,
+				"windows": 25
+			},
+			"w336330060": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336330061": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336330076": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336330111": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336330112": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336330113": {
+				"barred": 0,
+				"selected": false,
+				"windows": 3
+			},
+			"w336330416": {
+				"barred": 0,
+				"selected": false,
+				"windows": 13
+			},
+			"w336330417": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336330480": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336330566": {
+				"barred": 24,
+				"selected": true,
+				"windows": 24
+			},
+			"w336330736": {
+				"barred": 1,
+				"selected": true,
+				"windows": 1
+			},
+			"w336330737": {
+				"barred": 1,
+				"selected": true,
+				"windows": 1
+			},
+			"w336330738": {
+				"barred": 1,
+				"selected": true,
+				"windows": 1
+			},
+			"w336330739": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336330741": {
+				"barred": 1,
+				"selected": true,
+				"windows": 1
+			},
+			"w336330742": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336330743": {
+				"barred": 1,
+				"selected": true,
+				"windows": 1
+			},
+			"w336330819": {
+				"barred": 0,
+				"selected": false,
+				"windows": 24
+			},
+			"w336330896": {
+				"barred": 0,
+				"selected": false,
+				"windows": 29
+			},
+			"w336330970": {
+				"barred": 32,
+				"selected": true,
+				"windows": 32
+			},
+			"w336331250": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336331251": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336331372": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336331373": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336331493": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336331496": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336331497": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336331501": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336331505": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336331508": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336331512": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336331516": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336331522": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336331996": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336331997": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336332079": {
+				"barred": 0,
+				"selected": false,
+				"windows": 29
+			},
+			"w336332111": {
+				"barred": 23,
+				"selected": true,
+				"windows": 23
+			},
+			"w336332310": {
+				"barred": 0,
+				"selected": false,
+				"windows": 17
+			},
+			"w336332759": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336332760": {
+				"barred": 0,
+				"selected": false,
+				"windows": 13
+			},
+			"w336332788": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336332789": {
+				"barred": 1,
+				"selected": true,
+				"windows": 1
+			},
+			"w336332790": {
+				"barred": 0,
+				"selected": false,
+				"windows": 1
+			},
+			"w336332791": {
+				"barred": 0,
+				"selected": false,
+				"windows": 7
+			},
+			"w336333077": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336333078": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336333173": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336333179": {
+				"barred": 34,
+				"selected": true,
+				"windows": 34
+			},
+			"w336333268": {
+				"barred": 0,
+				"selected": false,
+				"windows": 13
+			},
+			"w336333269": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336333396": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336333397": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336333452": {
+				"barred": 0,
+				"selected": false,
+				"windows": 8
+			},
+			"w336333453": {
+				"barred": 0,
+				"selected": false,
+				"windows": 8
+			},
+			"w336333559": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336333623": {
+				"barred": 0,
+				"selected": false,
+				"windows": 10
+			},
+			"w336333738": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336333756": {
+				"barred": 0,
+				"selected": false,
+				"windows": 2
+			},
+			"w336333758": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336333759": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336333760": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336333761": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336333762": {
+				"barred": 0,
+				"selected": false,
+				"windows": 4
+			},
+			"w336333763": {
+				"barred": 0,
+				"selected": false,
+				"windows": 10
+			},
+			"w336333764": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336333765": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336333766": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336333821": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336333822": {
+				"barred": 33,
+				"selected": true,
+				"windows": 33
+			},
+			"w336333824": {
+				"barred": 35,
+				"selected": true,
+				"windows": 35
+			},
+			"w336333826": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336333827": {
+				"barred": 77,
+				"selected": true,
+				"windows": 77
+			},
+			"w336333828": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336333829": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336333830": {
+				"barred": 19,
+				"selected": true,
+				"windows": 19
+			},
+			"w336333831": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336333832": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336333833": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336333834": {
+				"barred": 52,
+				"selected": true,
+				"windows": 52
+			},
+			"w336333835": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336333877": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336333878": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336333883": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336333884": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336333941": {
+				"barred": 0,
+				"selected": false,
+				"windows": 13
+			},
+			"w336333942": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336333956": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336333957": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336333958": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336333959": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336333960": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336333961": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336333962": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336333963": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336333964": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336333965": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336333966": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336334573": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336334574": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336334575": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336334645": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336334646": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336334647": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336334648": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336334649": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336334650": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336334651": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336334653": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336334654": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336334655": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336334656": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336334657": {
+				"barred": 0,
+				"selected": false,
+				"windows": 11
+			},
+			"w336334694": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336334695": {
+				"barred": 0,
+				"selected": false,
+				"windows": 15
+			},
+			"w336334809": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336334810": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336335178": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336335179": {
+				"barred": 0,
+				"selected": false,
+				"windows": 13
+			},
+			"w336335215": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336335216": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336335334": {
+				"barred": 0,
+				"selected": false,
+				"windows": 14
+			},
+			"w336335335": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336335339": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336335461": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336335462": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336335463": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336335464": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336335465": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336335500": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336335546": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336335547": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336335609": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336335616": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336335668": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336335669": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336335777": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336335778": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336335779": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336335780": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336335998": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336336000": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336336003": {
+				"barred": 0,
+				"selected": false,
+				"windows": 4
+			},
+			"w336336004": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336336005": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336336006": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336336007": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336336008": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336336009": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336336010": {
+				"barred": 0,
+				"selected": false,
+				"windows": 4
+			},
+			"w336336011": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336336012": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336336168": {
+				"barred": 1,
+				"selected": true,
+				"windows": 1
+			},
+			"w336336170": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336336171": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336336172": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336336173": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336336174": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336336175": {
+				"barred": 2,
+				"selected": true,
+				"windows": 2
+			},
+			"w336336582": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336336735": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336336736": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336336914": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336336940": {
+				"barred": 0,
+				"selected": false,
+				"windows": 10
+			},
+			"w336336941": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336337084": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336337101": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336337102": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336337104": {
+				"barred": 23,
+				"selected": true,
+				"windows": 23
+			},
+			"w336337162": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336337165": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336337365": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336337366": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336337434": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336337435": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336337536": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336337537": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336337585": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336337735": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336337757": {
+				"barred": 0,
+				"selected": false,
+				"windows": 22
+			},
+			"w336337806": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336337811": {
+				"barred": 0,
+				"selected": false,
+				"windows": 4
+			},
+			"w336337812": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336337813": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336337814": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336337815": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336337816": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336337817": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336337818": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336337819": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336337820": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336337821": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336337823": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336337825": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336337885": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336337886": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336337970": {
+				"barred": 29,
+				"selected": true,
+				"windows": 29
+			},
+			"w336337972": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336337973": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336337974": {
+				"barred": 0,
+				"selected": false,
+				"windows": 4
+			},
+			"w336337975": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336337977": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336337978": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336337979": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336337980": {
+				"barred": 0,
+				"selected": false,
+				"windows": 10
+			},
+			"w336337981": {
+				"barred": 0,
+				"selected": false,
+				"windows": 4
+			},
+			"w336337982": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336337983": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336337984": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336337985": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336337986": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336338009": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336338015": {
+				"barred": 0,
+				"selected": false,
+				"windows": 14
+			},
+			"w336338016": {
+				"barred": 0,
+				"selected": false,
+				"windows": 12
+			},
+			"w336338017": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336338018": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336338078": {
+				"barred": 0,
+				"selected": false,
+				"windows": 16
+			},
+			"w336338102": {
+				"barred": 28,
+				"selected": true,
+				"windows": 28
+			},
+			"w336338106": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336338107": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336338108": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336338109": {
+				"barred": 0,
+				"selected": false,
+				"windows": 13
+			},
+			"w336338110": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336338135": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336338192": {
+				"barred": 0,
+				"selected": false,
+				"windows": 10
+			},
+			"w336338193": {
+				"barred": 0,
+				"selected": false,
+				"windows": 10
+			},
+			"w336338199": {
+				"barred": 18,
+				"selected": true,
+				"windows": 18
+			},
+			"w336338416": {
+				"barred": 25,
+				"selected": true,
+				"windows": 25
+			},
+			"w336338426": {
+				"barred": 0,
+				"selected": false,
+				"windows": 14
+			},
+			"w336338427": {
+				"barred": 0,
+				"selected": false,
+				"windows": 11
+			},
+			"w336338429": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336338569": {
+				"barred": 27,
+				"selected": true,
+				"windows": 27
+			},
+			"w336338666": {
+				"barred": 0,
+				"selected": false,
+				"windows": 8
+			},
+			"w336338667": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336338668": {
+				"barred": 18,
+				"selected": true,
+				"windows": 18
+			},
+			"w336338669": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336338671": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336338672": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336338673": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336338674": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336338675": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336338676": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336338677": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336338678": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336338815": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336338861": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336338862": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336338963": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336338965": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336339215": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336339216": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336339221": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336339222": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336339223": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336339224": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336339225": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336339226": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336339263": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336339264": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336339487": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336339488": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336339489": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336339490": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336339491": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336339492": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336339493": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336339494": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336339495": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336339496": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336339497": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336339498": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336339499": {
+				"barred": 0,
+				"selected": false,
+				"windows": 3
+			},
+			"w336339500": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336339501": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336339502": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336339503": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336339504": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336339505": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336339507": {
+				"barred": 0,
+				"selected": false,
+				"windows": 7
+			},
+			"w336339508": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336339509": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336339510": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336339511": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336339512": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336339513": {
+				"barred": 0,
+				"selected": false,
+				"windows": 7
+			},
+			"w336339514": {
+				"barred": 0,
+				"selected": false,
+				"windows": 7
+			},
+			"w336339515": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336339634": {
+				"barred": 24,
+				"selected": true,
+				"windows": 24
+			},
+			"w336339661": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336339662": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336339670": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336339681": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336339750": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336339758": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336339759": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336339796": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336339797": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336339798": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336339799": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336339800": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336339801": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336339830": {
+				"barred": 0,
+				"selected": false,
+				"windows": 24
+			},
+			"w336339831": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336339832": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336339833": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336339834": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336339838": {
+				"barred": 36,
+				"selected": true,
+				"windows": 36
+			},
+			"w336339877": {
+				"barred": 25,
+				"selected": true,
+				"windows": 25
+			},
+			"w336340112": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336340482": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336340483": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336340507": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336340508": {
+				"barred": 0,
+				"selected": false,
+				"windows": 16
+			},
+			"w336340590": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336340591": {
+				"barred": 0,
+				"selected": false,
+				"windows": 18
+			},
+			"w336340628": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336340629": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336340699": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336340701": {
+				"barred": 0,
+				"selected": false,
+				"windows": 14
+			},
+			"w336340702": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336340737": {
+				"barred": 26,
+				"selected": true,
+				"windows": 26
+			},
+			"w336340790": {
+				"barred": 20,
+				"selected": true,
+				"windows": 20
+			},
+			"w336340998": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336341013": {
+				"barred": 0,
+				"selected": false,
+				"windows": 10
+			},
+			"w336341065": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336341066": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336341097": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336341119": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336341120": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336341124": {
+				"barred": 19,
+				"selected": true,
+				"windows": 19
+			},
+			"w336341126": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336341132": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336341147": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336341151": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336341156": {
+				"barred": 31,
+				"selected": true,
+				"windows": 31
+			},
+			"w336341201": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336341202": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336341256": {
+				"barred": 21,
+				"selected": true,
+				"windows": 21
+			},
+			"w336341258": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336341259": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336341287": {
+				"barred": 18,
+				"selected": true,
+				"windows": 18
+			},
+			"w336341316": {
+				"barred": 0,
+				"selected": false,
+				"windows": 16
+			},
+			"w336341317": {
+				"barred": 0,
+				"selected": false,
+				"windows": 16
+			},
+			"w336341320": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336341512": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336341513": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336341514": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336341515": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336341580": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336341685": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336341687": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336341688": {
+				"barred": 0,
+				"selected": false,
+				"windows": 8
+			},
+			"w336341689": {
+				"barred": 0,
+				"selected": false,
+				"windows": 7
+			},
+			"w336341736": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336341737": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336341813": {
+				"barred": 24,
+				"selected": true,
+				"windows": 24
+			},
+			"w336341833": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336341890": {
+				"barred": 18,
+				"selected": true,
+				"windows": 18
+			},
+			"w336342013": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336342018": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336342019": {
+				"barred": 24,
+				"selected": true,
+				"windows": 24
+			},
+			"w336342033": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336342034": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336342064": {
+				"barred": 23,
+				"selected": true,
+				"windows": 23
+			},
+			"w336342076": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336342077": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336342137": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336342138": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336342140": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336342141": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336342158": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336342285": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336342287": {
+				"barred": 0,
+				"selected": false,
+				"windows": 15
+			},
+			"w336342304": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336342343": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336342344": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336342345": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336342346": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336342348": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336342349": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336342350": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336342352": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336342353": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336342357": {
+				"barred": 0,
+				"selected": false,
+				"windows": 15
+			},
+			"w336342446": {
+				"barred": 23,
+				"selected": true,
+				"windows": 23
+			},
+			"w336342477": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336342478": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336342621": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336342622": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336342650": {
+				"barred": 0,
+				"selected": false,
+				"windows": 16
+			},
+			"w336342651": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336342678": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336342679": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336342778": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336342893": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336342896": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336342900": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336342901": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336342902": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336342903": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336342904": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336342906": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336342968": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336343009": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336343011": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336343014": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336343019": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336343020": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336343022": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336343097": {
+				"barred": 21,
+				"selected": true,
+				"windows": 21
+			},
+			"w336343109": {
+				"barred": 28,
+				"selected": true,
+				"windows": 28
+			},
+			"w336343124": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336343289": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336343293": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336343546": {
+				"barred": 0,
+				"selected": false,
+				"windows": 4
+			},
+			"w336343547": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336343548": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336343549": {
+				"barred": 18,
+				"selected": true,
+				"windows": 18
+			},
+			"w336343550": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336343551": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336343552": {
+				"barred": 0,
+				"selected": false,
+				"windows": 14
+			},
+			"w336343575": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336343576": {
+				"barred": 0,
+				"selected": false,
+				"windows": 15
+			},
+			"w336343628": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336343631": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336343791": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336343792": {
+				"barred": 0,
+				"selected": false,
+				"windows": 17
+			},
+			"w336343863": {
+				"barred": 0,
+				"selected": false,
+				"windows": 16
+			},
+			"w336343864": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336343890": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336343942": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336343999": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336344004": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336344148": {
+				"barred": 20,
+				"selected": true,
+				"windows": 20
+			},
+			"w336344160": {
+				"barred": 22,
+				"selected": true,
+				"windows": 22
+			},
+			"w336344197": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336344198": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336344273": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336344274": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336344354": {
+				"barred": 0,
+				"selected": false,
+				"windows": 28
+			},
+			"w336344357": {
+				"barred": 21,
+				"selected": true,
+				"windows": 21
+			},
+			"w336344471": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336344472": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336344473": {
+				"barred": 18,
+				"selected": true,
+				"windows": 18
+			},
+			"w336344474": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336344475": {
+				"barred": 2,
+				"selected": true,
+				"windows": 2
+			},
+			"w336344476": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336344478": {
+				"barred": 0,
+				"selected": false,
+				"windows": 4
+			},
+			"w336344480": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336344481": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336344538": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336344539": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336344608": {
+				"barred": 23,
+				"selected": true,
+				"windows": 23
+			},
+			"w336344621": {
+				"barred": 46,
+				"selected": true,
+				"windows": 46
+			},
+			"w336344636": {
+				"barred": 37,
+				"selected": true,
+				"windows": 37
+			},
+			"w336344672": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336344673": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336344705": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336344706": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336344707": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336344708": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336344967": {
+				"barred": 0,
+				"selected": false,
+				"windows": 18
+			},
+			"w336345501": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336345504": {
+				"barred": 0,
+				"selected": false,
+				"windows": 3
+			},
+			"w336345508": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336345512": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336345516": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336345520": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336345522": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336345523": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336345524": {
+				"barred": 25,
+				"selected": true,
+				"windows": 25
+			},
+			"w336345526": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336345527": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336345639": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336345640": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336345641": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336345642": {
+				"barred": 0,
+				"selected": false,
+				"windows": 3
+			},
+			"w336345643": {
+				"barred": 0,
+				"selected": false,
+				"windows": 16
+			},
+			"w336345644": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336345645": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336345646": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336345647": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336345648": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336345649": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336345650": {
+				"barred": 0,
+				"selected": false,
+				"windows": 7
+			},
+			"w336345651": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336345729": {
+				"barred": 0,
+				"selected": false,
+				"windows": 11
+			},
+			"w336345732": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336345734": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336345737": {
+				"barred": 0,
+				"selected": false,
+				"windows": 11
+			},
+			"w336345740": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336345751": {
+				"barred": 0,
+				"selected": false,
+				"windows": 8
+			},
+			"w336345753": {
+				"barred": 19,
+				"selected": true,
+				"windows": 19
+			},
+			"w336345756": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336345758": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336345761": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336345763": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336345764": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336345935": {
+				"barred": 19,
+				"selected": true,
+				"windows": 19
+			},
+			"w336346045": {
+				"barred": 26,
+				"selected": true,
+				"windows": 26
+			},
+			"w336346046": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336346078": {
+				"barred": 26,
+				"selected": true,
+				"windows": 26
+			},
+			"w336346079": {
+				"barred": 20,
+				"selected": true,
+				"windows": 20
+			},
+			"w336346142": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336346230": {
+				"barred": 26,
+				"selected": true,
+				"windows": 26
+			},
+			"w336346231": {
+				"barred": 26,
+				"selected": true,
+				"windows": 26
+			},
+			"w336346349": {
+				"barred": 43,
+				"selected": true,
+				"windows": 43
+			},
+			"w336346409": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336346410": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336346416": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336346418": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336346608": {
+				"barred": 0,
+				"selected": false,
+				"windows": 18
+			},
+			"w336346609": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336346610": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336346611": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336346612": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336346613": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336346614": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336346615": {
+				"barred": 0,
+				"selected": false,
+				"windows": 8
+			},
+			"w336346616": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336346617": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336346658": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336346659": {
+				"barred": 18,
+				"selected": true,
+				"windows": 18
+			},
+			"w336346660": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336346661": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336346662": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336346663": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336346799": {
+				"barred": 30,
+				"selected": true,
+				"windows": 30
+			},
+			"w336346864": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336346875": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336346877": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336346878": {
+				"barred": 0,
+				"selected": false,
+				"windows": 8
+			},
+			"w336346879": {
+				"barred": 0,
+				"selected": false,
+				"windows": 8
+			},
+			"w336346880": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336346881": {
+				"barred": 24,
+				"selected": true,
+				"windows": 24
+			},
+			"w336346882": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336346883": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336346884": {
+				"barred": 19,
+				"selected": true,
+				"windows": 19
+			},
+			"w336346885": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336346886": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336346887": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336346888": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336346889": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336346972": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336346973": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336346986": {
+				"barred": 0,
+				"selected": false,
+				"windows": 29
+			},
+			"w336347034": {
+				"barred": 19,
+				"selected": true,
+				"windows": 19
+			},
+			"w336347144": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336347145": {
+				"barred": 18,
+				"selected": true,
+				"windows": 18
+			},
+			"w336347146": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336347147": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336347148": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336347149": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336347150": {
+				"barred": 0,
+				"selected": false,
+				"windows": 7
+			},
+			"w336347151": {
+				"barred": 0,
+				"selected": false,
+				"windows": 7
+			},
+			"w336347311": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336347312": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336347313": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336347314": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336347315": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336347316": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336347317": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336347318": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336347319": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336347387": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336347388": {
+				"barred": 20,
+				"selected": true,
+				"windows": 20
+			},
+			"w336347420": {
+				"barred": 33,
+				"selected": true,
+				"windows": 33
+			},
+			"w336347503": {
+				"barred": 20,
+				"selected": true,
+				"windows": 20
+			},
+			"w336347587": {
+				"barred": 32,
+				"selected": true,
+				"windows": 32
+			},
+			"w336347717": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336347719": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336347722": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336347725": {
+				"barred": 0,
+				"selected": false,
+				"windows": 14
+			},
+			"w336347728": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336347733": {
+				"barred": 0,
+				"selected": false,
+				"windows": 13
+			},
+			"w336347741": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336347742": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336347882": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336347886": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336347890": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336347891": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336347893": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336347895": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336347901": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336347938": {
+				"barred": 25,
+				"selected": true,
+				"windows": 25
+			},
+			"w336347994": {
+				"barred": 1,
+				"selected": true,
+				"windows": 1
+			},
+			"w336348086": {
+				"barred": 32,
+				"selected": true,
+				"windows": 32
+			},
+			"w336348270": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336348271": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336348272": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336348273": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336348274": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336348366": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336348372": {
+				"barred": 21,
+				"selected": true,
+				"windows": 21
+			},
+			"w336348416": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336348417": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336348541": {
+				"barred": 0,
+				"selected": false,
+				"windows": 19
+			},
+			"w336348594": {
+				"barred": 35,
+				"selected": true,
+				"windows": 35
+			},
+			"w336348686": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336348753": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336348754": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336348755": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336348756": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336348757": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336348758": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336348759": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336348760": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336348761": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336348763": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336348764": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336348804": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336348805": {
+				"barred": 0,
+				"selected": false,
+				"windows": 7
+			},
+			"w336348806": {
+				"barred": 0,
+				"selected": false,
+				"windows": 15
+			},
+			"w336348807": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336348808": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336348815": {
+				"barred": 20,
+				"selected": true,
+				"windows": 20
+			},
+			"w336348840": {
+				"barred": 26,
+				"selected": true,
+				"windows": 26
+			},
+			"w336348851": {
+				"barred": 0,
+				"selected": false,
+				"windows": 4
+			},
+			"w336348852": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336348853": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336348854": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336348856": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336348857": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336348858": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336348859": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336348860": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336348861": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336348931": {
+				"barred": 38,
+				"selected": true,
+				"windows": 38
+			},
+			"w336348946": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336348947": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336349018": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336349023": {
+				"barred": 35,
+				"selected": true,
+				"windows": 35
+			},
+			"w336349082": {
+				"barred": 19,
+				"selected": true,
+				"windows": 19
+			},
+			"w336349144": {
+				"barred": 20,
+				"selected": true,
+				"windows": 20
+			},
+			"w336349160": {
+				"barred": 29,
+				"selected": true,
+				"windows": 29
+			},
+			"w336349333": {
+				"barred": 27,
+				"selected": true,
+				"windows": 27
+			},
+			"w336349367": {
+				"barred": 18,
+				"selected": true,
+				"windows": 18
+			},
+			"w336349368": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336349369": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336349370": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336349371": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336349372": {
+				"barred": 0,
+				"selected": false,
+				"windows": 6
+			},
+			"w336349373": {
+				"barred": 0,
+				"selected": false,
+				"windows": 4
+			},
+			"w336349374": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336349375": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336349383": {
+				"barred": 21,
+				"selected": true,
+				"windows": 21
+			},
+			"w336349391": {
+				"barred": 24,
+				"selected": true,
+				"windows": 24
+			},
+			"w336349392": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336349457": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336349458": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336349460": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336349461": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336349462": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336349463": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336349464": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336349501": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336349504": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336349507": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336349515": {
+				"barred": 23,
+				"selected": true,
+				"windows": 23
+			},
+			"w336349701": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336349702": {
+				"barred": 20,
+				"selected": true,
+				"windows": 20
+			},
+			"w336349703": {
+				"barred": 16,
+				"selected": true,
+				"windows": 16
+			},
+			"w336349708": {
+				"barred": 0,
+				"selected": false,
+				"windows": 11
+			},
+			"w336349709": {
+				"barred": 23,
+				"selected": true,
+				"windows": 23
+			},
+			"w336349738": {
+				"barred": 0,
+				"selected": false,
+				"windows": 25
+			},
+			"w336349803": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336349808": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336349826": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336349827": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336349929": {
+				"barred": 26,
+				"selected": true,
+				"windows": 26
+			},
+			"w336350065": {
+				"barred": 0,
+				"selected": false,
+				"windows": 25
+			},
+			"w336350093": {
+				"barred": 29,
+				"selected": true,
+				"windows": 29
+			},
+			"w336350106": {
+				"barred": 22,
+				"selected": true,
+				"windows": 22
+			},
+			"w336350806": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336350813": {
+				"barred": 18,
+				"selected": true,
+				"windows": 18
+			},
+			"w336351023": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336351024": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336351025": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336351026": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336351027": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336351028": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336351049": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336351050": {
+				"barred": 0,
+				"selected": false,
+				"windows": 15
+			},
+			"w336351071": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336351072": {
+				"barred": 10,
+				"selected": true,
+				"windows": 10
+			},
+			"w336351076": {
+				"barred": 20,
+				"selected": true,
+				"windows": 20
+			},
+			"w336351081": {
+				"barred": 0,
+				"selected": false,
+				"windows": 24
+			},
+			"w336351084": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336351085": {
+				"barred": 18,
+				"selected": true,
+				"windows": 18
+			},
+			"w336351185": {
+				"barred": 20,
+				"selected": true,
+				"windows": 20
+			},
+			"w336351189": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			},
+			"w336351193": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336351253": {
+				"barred": 0,
+				"selected": false,
+				"windows": 7
+			},
+			"w336351254": {
+				"barred": 13,
+				"selected": true,
+				"windows": 13
+			},
+			"w336351451": {
+				"barred": 17,
+				"selected": true,
+				"windows": 17
+			},
+			"w336351452": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336351606": {
+				"barred": 26,
+				"selected": true,
+				"windows": 26
+			},
+			"w336351607": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336351608": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336351617": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336351618": {
+				"barred": 0,
+				"selected": false,
+				"windows": 17
+			},
+			"w336351619": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336351632": {
+				"barred": 0,
+				"selected": false,
+				"windows": 23
+			},
+			"w336351766": {
+				"barred": 4,
+				"selected": true,
+				"windows": 4
+			},
+			"w336351768": {
+				"barred": 9,
+				"selected": true,
+				"windows": 9
+			},
+			"w336351771": {
+				"barred": 0,
+				"selected": false,
+				"windows": 20
+			},
+			"w336351868": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336351869": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336351870": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336351872": {
+				"barred": 0,
+				"selected": false,
+				"windows": 3
+			},
+			"w336351873": {
+				"barred": 0,
+				"selected": false,
+				"windows": 1
+			},
+			"w336351874": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336351875": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336351876": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336351911": {
+				"barred": 0,
+				"selected": false,
+				"windows": 5
+			},
+			"w336351915": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336351919": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336351983": {
+				"barred": 6,
+				"selected": true,
+				"windows": 6
+			},
+			"w336351984": {
+				"barred": 12,
+				"selected": true,
+				"windows": 12
+			},
+			"w336351985": {
+				"barred": 5,
+				"selected": true,
+				"windows": 5
+			},
+			"w336351986": {
+				"barred": 7,
+				"selected": true,
+				"windows": 7
+			},
+			"w336351987": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336351988": {
+				"barred": 3,
+				"selected": true,
+				"windows": 3
+			},
+			"w336352225": {
+				"barred": 0,
+				"selected": false,
+				"windows": 8
+			},
+			"w336352226": {
+				"barred": 11,
+				"selected": true,
+				"windows": 11
+			},
+			"w336352234": {
+				"barred": 15,
+				"selected": true,
+				"windows": 15
+			},
+			"w336352235": {
+				"barred": 14,
+				"selected": true,
+				"windows": 14
+			},
+			"w336352236": {
+				"barred": 20,
+				"selected": true,
+				"windows": 20
+			},
+			"w336352255": {
+				"barred": 0,
+				"selected": false,
+				"windows": 9
+			},
+			"w336352256": {
+				"barred": 0,
+				"selected": false,
+				"windows": 18
+			},
+			"w336352257": {
+				"barred": 8,
+				"selected": true,
+				"windows": 8
+			}
+		},
+		"window_setup_ms": 1032
+	}
+}

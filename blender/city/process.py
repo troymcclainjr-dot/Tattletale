@@ -35,6 +35,9 @@ import kits
 import runtime
 import vegetation
 import street_geometry
+import yards as yard_details
+import park_courts
+import window_homes
 
 T0 = time.time()
 
@@ -53,6 +56,7 @@ SIDEWALK_W = {"primary": 3.2, "secondary": 3.0, "tertiary": 2.6}   # others 2.4
 SERVICE_W = {"alley": 4.0, "driveway": 3.0, "parking_aisle": 6.0}  # other service roads 4.5
 PATHS = {"footway", "path", "pedestrian", "steps", "cycleway"}
 LIFT = {"road": 0.0, "lot": 0.01, "alley": 0.02, "grass": 0.10, "sidewalk": 0.15}  # tops above LiDAR ground
+LIFT.update(yard_soil=0.10, yard_brick=0.10)
 SKIRT = 0.08            # raised zones get an outward skirt down to ground - SKIRT (this is also the curb)
 DICE, CONTEXT_DICE = 4.0, 12.0   # ground meshes are diced into cells so they follow the terrain
 GROUND, NOISE, VEG = 2, {7, 18}, {3, 4, 5}
@@ -269,6 +273,10 @@ def ground_tris(geom, cell, field_aligned=False):
         # lies on one known bounded plane, including narrow boundary slivers.
         pieces = []
         for piece in part:
+            # Fast rectangle clipping may produce self-touching rings where a
+            # tiny garden cutout meets a grid boundary. Repair before overlay.
+            if not piece.is_valid:
+                piece = shapely.make_valid(piece)
             cx, cy = piece.centroid.coords[0]
             qx, qy = math.floor(cx / cell) * cell, math.floor(cy / cell) * cell
             lower = Polygon([(qx, qy), (qx + cell, qy), (qx + cell, qy + cell)])
@@ -782,6 +790,12 @@ def main():
                 b["door_left"] = k % 2 == 0
     rear_headroom_audit = street_geometry.ensure_rear_headroom(site_b, H)
     business_audit = street_geometry.assign_businesses(site_b, cw, H, exposed)
+    # Neighborhood corner shops: exact named Old York sites plus a spread of corner/low stores.
+    # Ids, footprints and meshes are unchanged; civic/new-business sites are excluded.
+    neighborhood_shop_audit = kits.assign_neighborhood_shops(site_b, cw, H, exposed,
+                                                             os.path.join(C.ROOT, "godot", "assets", "data"))
+    log(f"neighborhood shops: {neighborhood_shop_audit['selected']} of {neighborhood_shop_audit['candidates']} candidates; "
+        f"rejected {neighborhood_shop_audit['rejected']}")
     arch_count = {}
     for b in site_b:
         arch_count[b["arch"]] = arch_count.get(b["arch"], 0) + 1
@@ -826,6 +840,7 @@ def main():
             b["kit_rejections"] = dict(P.rejected_sections)
             P.emit(mb)
         objects.append(mb)
+    window_homes.export(site_b, os.path.join(C.ROOT, "godot", "assets", "data", "pen_lucy_window_homes.json"))
     missing_shop_facades = [b["id"] for b in site_b if b.get("business") and "sign_xyz" not in b["business"]]
     if missing_shop_facades:
         raise ValueError("Selected commercial wall did not generate its facade: " + ", ".join(missing_shop_facades))
@@ -854,6 +869,13 @@ def main():
         parks.append({"name": "Community green " + str(index + 1), "kind": "community_green", "poly": green})
     protected_parks = unary_union([p["poly"] for p in parks])
     yards = street_geometry.urban_yards(blds_all, protected_parks, roads, walks, alleys, lot, site)
+    service_lanes = alleys
+    garden_beds, garden_soil, garden_brick, garden_paths, garden_records, garden_audit = yard_details.gardens(
+        site_b, blds_all, roads, walks, alleys, lot, site)
+    yards = yards.difference(garden_beds)
+    garden_paving = garden_paths.difference(unary_union([blds_all, roads, walks, lot, protected_parks])).intersection(site)
+    yards = unary_union([yards, garden_paving])
+    garden_audit["approach_paving_m2"] = round(garden_paving.area, 3)
     entrances = []
     for b in site_b:
         shop = b.get("business", {})
@@ -864,7 +886,11 @@ def main():
         if not path.intersects(protected_parks) and path.intersection(blds_all.buffer(-0.15)).area < 0.05:
             entrances.append(path.difference(unary_union([blds_all, roads, walks])).intersection(site))
     alleys = unary_union([alleys, yards, *entrances])
-    grass = site.difference(unary_union([roads, walks, alleys, lot, cut]))
+    garden_audit["uncovered_approach_m2"] = round(garden_paths.intersection(site).difference(
+        unary_union([alleys, roads, walks, blds_all, protected_parks, lot])).area, 8)
+    if garden_audit["uncovered_approach_m2"] > 0.001:
+        raise ValueError("Front garden approach lacks paved ground")
+    grass = site.difference(unary_union([roads, walks, alleys, lot, cut, garden_soil, garden_brick]))
     residential = [b for b in site_b if b["arch"] in ("row", "row_porch", "detached", "detached_porch")]
     rear_omissions = [{"building_id": b["id"], "source_mesh": b.get("object"), "reason": b.get("rear_door_status", "not_processed"),
                        "address": b["tags"].get("addr:housenumber", "") + " " + b["tags"].get("addr:street", ""),
@@ -888,7 +914,20 @@ def main():
                           "sidewalk_grades": street_geometry.sidewalk_grade_audit(cw, H, walks),
                           "businesses": business_audit, "hardscape_yards_m2": round(yards.area, 2),
                           "protected_parks_m2": round(protected_parks.area, 2), "kits": dict(kits.BUILD_STATS)}
+    construction_audit["front_gardens"] = garden_audit
+    construction_audit["neighborhood_shops"] = neighborhood_shop_audit
+    construction_audit["facade_layout"] = kits.layout_audit()
+    facade_layout = construction_audit["facade_layout"]
+    log(f"facade layout {facade_layout}")
+    if facade_layout["upper_sash_overlapping_porch_roof"]:
+        raise ValueError("An upper sash sits behind its porch roof")
+    if facade_layout["porch_ceiling_below_target"]:
+        raise ValueError("A porch roof leaves less than 2.4m clear above its deck")
     zones = {"road": roads, "sidewalk": walks, "alley": alleys, "lot": lot, "grass": grass}
+    zones.update(yard_soil=garden_soil, yard_brick=garden_brick)
+    ZONE_MAT.update(yard_soil="dirt", yard_brick="brick")
+    SKIRT_MAT.update(yard_soil="dirt", yard_brick="brick")
+    yard_details.export_street_surfaces(zones, os.path.join(C.ROOT, "godot", "assets", "data", "pen_lucy_street_surfaces.json"))
     gmb, curbs = MB("Ground", smooth=True), MB("Curbs")
     zone_area = {}
     against_wall = cut.buffer(0.05)         # skirts along a building wall are hidden inside it; skip them
@@ -960,9 +999,18 @@ def main():
     canopy_candidates = len(trees)
     trees = [tree for tree in trees if not roads.covers(Point(tree[0], tree[1]))]
     log(f"excluded {canopy_candidates - len(trees)} canopy peaks over road pavement")
+    # Court export inventories all grass components, including unnamed greens;
+    # mapped parks provide labels, not a top-three-only placement restriction.
+    court_space, court_audit = park_courts.export(parks, blds_all, zones, H, y0,
+        os.path.join(C.ROOT, "godot", "assets", "data", "pen_lucy_courts.json"), trees=trees)
+    before_courts = len(trees)
+    trees = park_courts.trees_outside_courts(trees, court_space)
+    court_audit["tree_trunks_removed_from_courts"] = before_courts - len(trees)
+    construction_audit["park_courts"] = court_audit
+    log(f"park courts {court_audit}")
     tmb = MB("Trees", smooth=True)
     vegetation_path = os.path.join(C.ROOT, "godot", "assets", "data", "pen_lucy_vegetation.json")
-    vegetation_report = vegetation.build(trees, grass, blds_all, H, y0, tmb, vegetation_path)
+    vegetation_report = vegetation.build(trees, grass.difference(garden_beds).difference(court_space.buffer(1.2)), blds_all, H, y0, tmb, vegetation_path)
     if tmb.tris:
         objects.append(tmb)
     log(f"vegetation {vegetation_report}; fallback trees {tmb.tri_count():,} tris")
@@ -1010,6 +1058,10 @@ def main():
 
     # ---- write everything
     runtime_path, runtime_data = runtime.export(cw, bld, area, site, context, zones, H, y0, o_ll, objects, parks=parks, construction_audit=construction_audit)
+    yard_path = os.path.join(C.ROOT, "godot", "assets", "data", "pen_lucy_yards.json")
+    yard_audit = yard_details.export(site_b, blds_all, dict(zones, service_lanes=service_lanes), garden_paths,
+                                    garden_records, H, y0, runtime_data, yard_path, court_space=court_space)
+    log(f"yard details {yard_audit}")
     log(f"runtime metadata: {len(runtime_data['landmarks'])} landmarks, "
         f"{len(runtime_data['dressing'])} props -> {runtime_path}")
     os.makedirs(C.BUILD, exist_ok=True)
@@ -1017,6 +1069,13 @@ def main():
     out = {"area": C.AREA, "origin_lonlat": o_ll, "origin_elevation_m": y0, "views": views, "closeups": closeups,
            "materials": {k: list(v) for k, v in MATS.items()},
            "objects": [o.build(y0) for o in objects if o.tris]}
+    # Reviewed local paving replaces obsolete grass faces AND their original
+    # dirt/brick skirt finishes, retaining closed geometry and original grades.
+    # Apply on every build so a GLB re-export cannot regress.
+    import surface_repairs
+    construction_audit["source_surface_repairs"] = surface_repairs.apply(out)
+    import alley_surfaces
+    construction_audit["alley_surface_repairs"] = alley_surfaces.apply(out)
     with open(C.GEOM_JSON, "w") as f:
         json.dump(out, f, separators=(",", ":"))
     tris = sum(len(o["faces"]) // 3 for o in out["objects"])
@@ -1038,6 +1097,9 @@ def main():
             "porch_depth_m": round(b["porch"], 2), "porch_height_m": round(b.get("porch_top", 0) - b["ground"], 2) if b["porch"] else 0,
             "rear_depth_m": round(b["rear"], 2), "rear_height_m": round(b.get("rear_top", 0) - b["ground"], 2) if b["rear"] else 0,
             "lidar_points": b["pts"], "flags": b["flags"],
+            "shop_kit": b.get("business", {}).get("kit"), "business": b.get("business", {}).get("name"),
+            "porch_height_surveyed_m": round(b["porch_top_surveyed"] - b["ground"], 2) if "porch_top_surveyed" in b else None,
+            "facade_layout": b.get("facade_layout"),
         }
         feats.append({"type": "Feature", "properties": props,
                       "geometry": mapping(shapely.set_precision(b["ll"], 1e-7))})

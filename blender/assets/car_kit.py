@@ -12,6 +12,34 @@ class P:
         self.__dict__.update(kw)
 
 
+def road_details(B, C, rubber, metal):
+    """Low-cost stamped arch lips and parked wipers; no new materials/pivots.
+
+    Both authored legacy cars keep their exact silhouette and collider envelope.
+    Ribbons follow the shell's analytic sections instead of floating trim boxes.
+    """
+    pieces = []
+    for side in (-1, 1):
+        for axle in B.wheel_x:
+            verts, faces = [], []
+            for k in range(9):
+                x = axle + B.arch_r * math.cos(math.pi * k / 8)
+                section = body_ring(B, x)
+                outer = [p for p in section if p[2] == "side" and p[0] > 0]
+                z, y = outer[0][0], outer[0][1]
+                verts += [(x, y, side * (z + 0.002)), (x, y + 0.016, side * (z + 0.002))]
+                if k:
+                    faces.append((2*k-2, 2*k, 2*k+1, 2*k-1))
+            pieces.append(mesh("ArchLip", verts, faces, [metal], smooth_deg=30))
+    # Follow the windshield rake, offset only enough to avoid coplanar flicker.
+    y0, y1 = C.ys[1] + 0.14, C.ys[1] + 0.19
+    for side in (-1, 1):
+        verts = [(C.xf(y0)+0.018, y0, side*0.10), (C.xf(y1)+0.018, y1, side*0.57),
+                 (C.xf(y1+0.012)+0.018, y1+0.012, side*0.57), (C.xf(y0+0.012)+0.018, y0+0.012, side*0.10)]
+        pieces.append(mesh("Wiper", verts, [(0,1,2,3)], [rubber]))
+    return pieces
+
+
 # ------------------------------------------------------------------ mesh plumbing
 def link(obj):
     bpy.context.scene.collection.objects.link(obj)

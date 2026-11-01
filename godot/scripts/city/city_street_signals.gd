@@ -59,7 +59,7 @@ func setup(level: Node3D) -> void:
 			var lens := Assets.find(model, "Lamp" + color_name) as MeshInstance3D
 			if lens:
 				lenses[color_name] = lens
-		heads.append({"axis": str(placement[2]), "lenses": lenses})
+		heads.append({"axis": str(placement[2]), "lenses": lenses, "position": anchor.position, "radius": 0.25, "sidewalk_checked": true})
 		var body := CityDressing._body(model)
 		CityDressing._solid_pole(body, 0.20, 4.8, Vector3(0, 2.4, 0))
 		CityDressing._solid_box(body, Vector3(0.46, 0.3, 3.5), Vector3(0, 4.5, -1.6))

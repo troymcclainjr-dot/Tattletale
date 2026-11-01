@@ -10,7 +10,7 @@ ck.reset()
 random.seed(17)
 
 PINK = ck.gloss("pink", 0.3)               # JS clay("#e84a9a", .3)
-GLASS = ck.gloss("#1a2230", 0.1)           # JS windows
+GLASS = ck.gloss("#26353e", 0.34)          # opaque, subdued neighborhood glass
 UNDER = ck.clay("#1a1a1c", 0.9)
 TIRE = ck.clay("#121214", 0.5)             # JS wheels
 STEEL = ck.clay("#3a3a3e", 0.75)           # bare wheel where the hubcap fell off
@@ -75,6 +75,15 @@ rear_win = [(max(-1.225, C.xb(y_lo) + C.rc + 0.045), y_lo), (-0.275, y_lo), (-0.
 for s in (-1, 1):
     for nm, pts in (("Front", front_win), ("Rear", rear_win)):
         glazed(f"Window{nm}{'L' if s < 0 else 'R'}", pts, lambda u, v, s=s: (u, v, s * C.hw(v)), (0, KS, s))
+
+# The existing rolled body edge already defines the wheel opening. Do not
+# overlay a contrasting arc on the dented pink panel; retain only the wipers.
+road_details = kit.road_details(B, C, RUBBER, PINK)
+for detail in road_details:
+    if detail.name.startswith("ArchLip"):
+        bpy.data.objects.remove(detail, do_unlink=True)
+    else:
+        parts.append(detail)
 
 # ---------------------------------------------------------------- sides: moldings, handles, mirrors, rust
 mold = kit.rr_profile(0.016, 0.045, 0.007, 1)
@@ -180,7 +189,7 @@ for nm, x, z in (("WheelFL", 1.35, -0.88), ("WheelFR", 1.35, 0.88), ("WheelRL", 
         ck.join([w] + nuts, w.name)
 
 # ---------------------------------------------------------------- assemble
-THIN = ("GrilleBar", "GrilleFrame", "Exhaust", "ExhaustHole", "PomStem", "Ornament", "OrnamentBase", "PlateRim", "MoldingChrome", "Rust")
+THIN = ("GrilleBar", "GrilleFrame", "Exhaust", "ExhaustHole", "PomStem", "Ornament", "OrnamentBase", "PlateRim", "MoldingChrome", "Rust", "Wiper", "ArchLip")
 kit.lumpy_world([o for o in parts if not o.name.startswith(THIN)], 0.0032, 2.2, seed=6)
 kit.tri_report(parts + [heads, tails, pom] + [o for o in root.children_recursive if o.type == "MESH"])
 body = ck.join(parts, "Body")

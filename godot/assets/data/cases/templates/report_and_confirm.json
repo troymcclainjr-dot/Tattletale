@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "template": "report_and_confirm",
+  "about": "Shape of the original dumping case: a neighbor points out a problem, 2-Pack records it, an officer logs it (the problem is cleared once reported), then 2-Pack goes back to confirm the spot is fixed.",
+  "params": {
+    "reporter": "actor id who points it out",
+    "reporter_label": "ledger name",
+    "prop_builder": "satchel|parcel|dumped_bags|tool_caddy|torn_notice|lantern|checkpoint|crate|marker",
+    "prop_title": "tag above the problem, upper case",
+    "route_metres": "number: metres along the neighborhood walk",
+    "prop_radius": "number 0.2..1.0"
+  },
+  "case": {
+    "schema": 1,
+    "kind": "case",
+    "participants": {
+      "reporter": {"actors": ["{reporter}"], "label": "{reporter_label}"},
+      "officer": {"actors": ["@police"], "label": "Officer", "bind": "step", "stand_in_line": "Officer Dan's not on this beat anymore. I'll take it from here."}
+    },
+    "props": {
+      "scene": {"builder": "{prop_builder}", "title": "{prop_title}", "placement": {"route_metres": "{route_metres}", "radius": "{prop_radius}"}, "photo_height": 0.3, "photo_radius": 0.3}
+    },
+    "evidence": {
+      "scene_record": {"kind": "observation", "label": "[draft] What was recorded at the spot"},
+      "cleared": {"kind": "observation", "label": "[draft] The spot is clear"}
+    },
+    "discovery": {"givers": ["reporter"]},
+    "stages": [
+      {"id": "brief", "objectives": [
+        {"id": "brief_reporter", "verb": "talk", "target": "reporter", "objective": "[draft] Hear about the problem", "dialogue": "[draft] What the neighbor saw."}
+      ]},
+      {"id": "record", "objectives": [
+        {"id": "record_scene", "verb": "examine", "target": "prop:scene", "objective": "[draft] Record the problem", "dialogue": "[draft] What 2-Pack records.",
+          "grants": ["scene_record"]}
+      ]},
+      {"id": "report", "objectives": [
+        {"id": "file_report", "verb": "report", "target": "officer", "objective": "[draft] Report it to an officer", "requires_evidence": ["scene_record"],
+          "greeting": "[draft] The officer asks what you found.", "dialogue": "[draft] The officer arranges the fix.", "hide_props": ["prop:scene"]}
+      ]},
+      {"id": "confirm", "objectives": [
+        {"id": "confirm_cleared", "verb": "visit", "location": "prop:scene", "radius": 2.5, "dwell": 1.5, "objective": "[draft] Go back and confirm it is fixed",
+          "grants": ["cleared"], "notice": "[draft] Confirmed."}
+      ]}
+    ],
+    "outcomes": {"resolved": {"rewarded": true, "banner": "SIDEWALK CLEAR"}}
+  }
+}

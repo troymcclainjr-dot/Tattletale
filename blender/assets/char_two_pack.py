@@ -31,9 +31,8 @@ def log(msg):
 
 # ------------------------------------------------------------------ small sdf helpers
 def lumped(s, amount, seed):
-    """The hand-made wobble sdf_mesh(lumps=...) presses in, applied up front so other parts can sit on it."""
-    freq = 1.0 / (140.0 * amount)
-    return displace(s, lambda p: amount * vnoise(p, freq, seed), amount)
+    """Compatibility helper: keep intentional anatomy and remove blanket wobble."""
+    return s
 
 
 def grad(s, pts, h=0.001):

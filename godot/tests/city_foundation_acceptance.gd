@@ -1,0 +1,17 @@
+extends SceneTree
+## Dynamic loader: production autoload globals must exist before fixture parsing.
+func _initialize() -> void:
+	root.unfocusable = true
+	root.position = Vector2i(-10000, -10000)
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	var workspace := ProjectSettings.globalize_path("res://../.work/").replace("\\", "/").simplify_path().to_lower().trim_suffix("/") + "/"
+	var profile := OS.get_user_data_dir().replace("\\", "/").simplify_path().to_lower()
+	if DisplayServer.get_name() == "headless" or not "--offscreen-validation" in OS.get_cmdline_user_args() or not profile.begins_with(workspace):
+		push_error("Foundation acceptance requires a rendered offscreen launch and a project .work private user profile")
+		quit(2)
+		return
+	var runner = load("res://tests/city_foundation_acceptance_runner.gd")
+	if runner == null or not runner.can_instantiate():
+		quit(1)
+		return
+	root.add_child.call_deferred(runner.new())

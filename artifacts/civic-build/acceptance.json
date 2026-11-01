@@ -1,0 +1,236 @@
+{
+  "status": "complete",
+  "date": "2026-10-31",
+  "scope": {
+    "civic_buildings": 4,
+    "new_businesses": {
+      "recording_studios": 1,
+      "liquor_stores": 3,
+      "corner_stores": 4
+    },
+    "preserved_argonne_homes": 22,
+    "building_footprints_on_default_map": 957,
+    "civic_and_new_business_pois": 12,
+    "yellow_ochre_shapes": "basketball courts",
+    "removed_original_meshes": 20,
+    "building_interiors": false,
+    "emergency_dispatch": false,
+    "natural_boundary_construction": false
+  },
+  "models": [
+    {
+      "building": "police",
+      "actual_models": [
+        "claude-opus-5-5"
+      ],
+      "effort": "max",
+      "route": "headless Claude CLI --no-session-persistence",
+      "wall_clock_timeout": null,
+      "completed": true
+    },
+    {
+      "building": "fire",
+      "actual_models": [
+        "claude-opus-5-5"
+      ],
+      "effort": "max",
+      "route": "headless Claude CLI --no-session-persistence",
+      "wall_clock_timeout": null,
+      "completed": true
+    },
+    {
+      "building": "courthouse",
+      "actual_models": [
+        "claude-opus-5-5"
+      ],
+      "effort": "max",
+      "route": "headless Claude CLI --no-session-persistence",
+      "wall_clock_timeout": null,
+      "completed": true
+    }
+  ],
+  "native_workers": {
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "tasks": [
+      "site planning and preservation",
+      "hospital and campus",
+      "map and businesses",
+      "clearance and stable crowd identities",
+      "independent integration/access review"
+    ]
+  },
+  "root_model_effort": "not exposed",
+  "validation": {
+    "final_checks": [
+      {
+        "check": "city_civic_models",
+        "exit": 0,
+        "errors": []
+      },
+      {
+        "check": "city_civic_world",
+        "exit": 0,
+        "errors": []
+      },
+      {
+        "check": "city_civic_render",
+        "exit": 0,
+        "errors": []
+      }
+    ],
+    "visual_review": "All four civic buildings, hospital preservation edge, three storefronts and default map inspected via private offscreen captures. No desktop control used.",
+    "identity": {
+      "failures": [],
+      "status": {
+        "civic_enabled": true,
+        "count": 1200,
+        "failures_to_relocate": [],
+        "identity_source": "canonical_legacy_recipe",
+        "relocated": 25
+      },
+      "suite": "crowd_identity"
+    },
+    "fire_entrance_max_rise_per_half_metre": [
+      0.035,
+      0.045
+    ],
+    "regressions": "Earlier focused same-pass map-cache, clearance, world-save, resident-recovery, crowd-relocation and crowd-cadence tests passed; final-state integration checked separately.",
+    "graphify_update": "PASS:1678nodes,3124edges; AST-only",
+    "diff_check": "PASS"
+  },
+  "geometry": {
+    "police": {
+      "triangles": 11804,
+      "surfaces": 7,
+      "colliders": 24
+    },
+    "fire": {
+      "triangles": 8272,
+      "surfaces": 9,
+      "colliders": 9
+    },
+    "courthouse": {
+      "triangles": 9452,
+      "surfaces": 9,
+      "colliders": 17
+    },
+    "hospital": {
+      "triangles": 8076,
+      "surfaces": 10,
+      "colliders": 24
+    }
+  },
+  "performance": {
+    "scope": "1920x1080 Balanced,4xMSAA,private viewport,20-second identical Old York mission walk route;1200ambient crowd+20daily residents;not an exhaustive all-sites or combat stress benchmark.",
+    "runs": {
+      "control-before": {
+        "fps": 184.247286851232,
+        "median_frame_ms": 4.374,
+        "p95_frame_ms": 9.858,
+        "median_gpu_ms": 2.02999997138977,
+        "median_render_cpu_ms": 1.99399995803833,
+        "median_draw_calls": 1356.0,
+        "valid_active_play": true
+      },
+      "control-after": {
+        "fps": 145.005345603821,
+        "median_frame_ms": 5.823,
+        "p95_frame_ms": 11.189,
+        "median_gpu_ms": 2.16799998283386,
+        "median_render_cpu_ms": 2.52800011634827,
+        "median_draw_calls": 1359.0,
+        "valid_active_play": true
+      },
+      "final": {
+        "fps": 191.764082587331,
+        "median_frame_ms": 4.265,
+        "p95_frame_ms": 9.404,
+        "median_gpu_ms": 2.01799988746643,
+        "median_render_cpu_ms": 1.97599995136261,
+        "median_draw_calls": 1403.0,
+        "valid_active_play": true
+      }
+    },
+    "conclusion": "Final run192FPS; controls varied145-184FPS, so no causal speedup claim. Median GPU remained2.02ms vs2.03-2.17ms controls; median drawcalls1403 vs1356-1359. No rendering regression evident on this route.",
+    "source_provenance": {
+      "flags": [
+        "--private-viewport"
+      ],
+      "sha256": {
+        "godot\\scripts\\city\\city_car_collision.gd": "b174db18f3e2a7e5f6ea05fe8463dfe673d4db77cd234ab4d036e2feacc7c44c",
+        "godot\\scripts\\city\\city_car_models.gd": "2efedd40360161a8a6e84ff9a21bec9b90b6bcad1bc4be0fb72e1666874eb413",
+        "godot\\scripts\\city\\city_civic_businesses.gd": "e05f0be597b3707c9c3bbd9cbdcc23ed631c58a44f1b07b04a2eab93b469cb9a",
+        "godot\\scripts\\city\\city_civic_clearance.gd": "66c232de23759b202f49dcc70fbb6eb86ae1cf19c6f691c854f46b8cd9c7dee9",
+        "godot\\scripts\\city\\city_civic_courthouse.gd": "59a3bf96ab21835a9c8a6aae5cf29d5382148ccf118a9dcc2620ea8c0a74f337",
+        "godot\\scripts\\city\\city_civic_district.gd": "9abbed6fa46cf9d8c0c17daf99189d7563978de12c9be94eb8b7a8e72002b4ef",
+        "godot\\scripts\\city\\city_civic_fire.gd": "c13f56fdd46a3c4aadaa8344e394a9c397a48497a9e6f2afd6ba228ffe1377f9",
+        "godot\\scripts\\city\\city_civic_fire_grounds.gd": "02f38a954f5d41a84895d57979bac54311a7f62c864add147ec5a02ac481f4c9",
+        "godot\\scripts\\city\\city_civic_hospital.gd": "1866bb8f00d9c2665618f2030ccaac1953f22b89d1d645aa0aed5e61e7c38834",
+        "godot\\scripts\\city\\city_civic_hospital_grounds.gd": "2642b82235a547aaaa81fff0bbfaa77db08b3b745613efa65794df165be9953c",
+        "godot\\scripts\\city\\city_civic_mesh_kit.gd": "b279fc501a704962b5e22d84ef8bc387cf5c4191c2041ff448b9f743b9353aac",
+        "godot\\scripts\\city\\city_civic_police.gd": "fb07f6634757bbc7a78966d253e12c480607eb716b08ca8fce91195e0d2ba540",
+        "godot\\scripts\\city\\city_civic_proposals.gd": "534ec6aa05a980c45674413b591aae83bc26f3751f12b198eb2fa97c9e96adb3",
+        "godot\\scripts\\city\\city_combat.gd": "ca8dba9213dfbf0e802f146e6a2096fffd208093be957a5d813be1c2fb813bfc",
+        "godot\\scripts\\city\\city_crowd.gd": "7dab16129b72e498fd118f51326be46d5111820aa55e7efa11d5891283a2cb96",
+        "godot\\scripts\\city\\city_day_night.gd": "aa97dcd5c277d0de74b8484b27117efd26c79cfaa20ade2854f7899eda985888",
+        "godot\\scripts\\city\\city_dialogue.gd": "209acc081ba37cea6e0e46c87076ddd9197fdfaa577cacfd0df7c3f58d2cf709",
+        "godot\\scripts\\city\\city_dialogue_state.gd": "d1e96fb18e92e060175c597126a6408568aada0cbb1a470c5ab82d4fb9ba7dca",
+        "godot\\scripts\\city\\city_dressing.gd": "526971b14547e3962cedfc002f0464edd6a6b4359565a3e6265cb8b90ce289ee",
+        "godot\\scripts\\city\\city_map_geometry.gd": "5d96d43d1c8ed7e4809ec13997dd89710d4a37d140082a837b6779b97eacaa2c",
+        "godot\\scripts\\city\\city_map_overlay.gd": "6014efa9d907ca797799af207a77be72c5778336a4823a0f1c3372d628a61eb7",
+        "godot\\scripts\\city\\city_minimap.gd": "0bede3b87cd436a379f14fd0d996e79c844ab887baa3f46a9a95d46b61e3f32e",
+        "godot\\scripts\\city\\city_missions.gd": "614d6b5fed8fb43f8638916326a042bcf9a10cf5a97438a8a4f86efb297a0002",
+        "godot\\scripts\\city\\city_mission_navigation.gd": "ae1f99913664579b2d43d197e926bf94607ff2ba54578d3db8309c30e852ba80",
+        "godot\\scripts\\city\\city_neighborhood_details.gd": "17484c6dfca0c9c4f5e2661bf6cc861cdb94938420af57a76cf893d129b0471f",
+        "godot\\scripts\\city\\city_npcs.gd": "1ca13f429a2f8843f7ca2489ba18f3feaafc34ab915a53d96c109a5c4b257167",
+        "godot\\scripts\\city\\city_npc_actor.gd": "2a92a13145ba19388eb73a661de3e2e8701cd2c6063c45b42eee903461c9b8ac",
+        "godot\\scripts\\city\\city_parked_cars.gd": "5bced4e928c4b4670ec9fe2669a84482d58c47539bda88049636f7ef8152c675",
+        "godot\\scripts\\city\\city_park_courts.gd": "395b3ad648f8ae3b0f70091e1f879ef0f0e35d8ee799ce6e51c4fd7bf34e2e25",
+        "godot\\scripts\\city\\city_player.gd": "9833d8938c83fa0b389fbfeb515b6cbfc9170642a00a185bd514f017fa06db58",
+        "godot\\scripts\\city\\city_power_grid.gd": "9ac447b81b23910929ffe4ab0a1c1e5ba7662fb89b14d5451e6015c92e055ca5",
+        "godot\\scripts\\city\\city_radar.gd": "5fd5895aba24b28485d5238f80786898abb32b1af8816e526d8688c95aa306aa",
+        "godot\\scripts\\city\\city_render_optimizer.gd": "bb17cb2f4982571560f9f9b9622864610a02ced15a72cbd8b57434eb7d17e836",
+        "godot\\scripts\\city\\city_residents.gd": "fd24d6883c46201a402541effbb1d9a07f0c28810705d991b9669fb73ccc002a",
+        "godot\\scripts\\city\\city_resident_actor.gd": "2ee81c04819fdce8476d77cb996064d0ab9b00c1c5165a91037c2e3f9636f53f",
+        "godot\\scripts\\city\\city_settings.gd": "8430e9f4f584e345f1b5e7e17cee48fe5b16cede582e4c1f02200fd6ddd88a12",
+        "godot\\scripts\\city\\city_streaming.gd": "c960bef7d13b87134be7261f7f345b32620a1856b1bf792c91f31eece8a77c77",
+        "godot\\scripts\\city\\city_street_signals.gd": "4effe840b1130f43bf4e97edecbbbff0fa5b85ad48e903c3c34f77332b7e45df",
+        "godot\\scripts\\city\\city_street_surfaces.gd": "b6dbb368fa7bc2e039e572f138ccc47631f72a25ef494192cb3be600b6ba67b5",
+        "godot\\scripts\\city\\city_theme.gd": "232eaa248446a3bafbb686cc049913b9a8d497e5c44983485a2d6aebeb790422",
+        "godot\\scripts\\city\\city_traffic.gd": "350083189e2fe500cf4ca3031cdc0fc977397bb3c815432170e3751a517edede",
+        "godot\\scripts\\city\\city_traffic_network.gd": "6d789f438c2c2f62e20e2b95ac79fdba6050208706a1e29ebbf037a870cdecf4",
+        "godot\\scripts\\city\\city_vegetation.gd": "9f65655bfe8874ad56768dac6da6ad805d985c24604c01f31009ca190c580c04",
+        "godot\\scripts\\city\\city_vehicle.gd": "0117fdcf4c664b93f0d92eaee29e85ac42336c89f37cba811dad8b6631f6bd45",
+        "godot\\scripts\\city\\city_vehicle_damage.gd": "30982b0ac23f15d89545af067b22b225c95402ac5eb817faac2e7eadfc5c5729",
+        "godot\\scripts\\city\\city_weathering.gd": "6a5ee121fb5e3b10b2291bcb85723f52b275fb9e57197b9685930f36338bdea1",
+        "godot\\scripts\\city\\city_windows.gd": "4012918db4f90f370eb33cf752e39d848e9c124224b88a84678f8f5a23c14e37",
+        "godot\\scripts\\city\\city_world_save.gd": "da2f832bc0d0cdf50c236965170a4b19c0fd4767ae823d335a77edc872b66665",
+        "godot\\scripts\\city\\city_world_time.gd": "97b42ee54462a6cc0c04c942277e6d8576177060c4d5d1627a6c7ccb0001f1d1",
+        "godot\\scripts\\city\\city_yard_details.gd": "74e2bf7a4798e1a231e269e7487a58bb888ee1e6dee381f49116250f3c9843ac",
+        "godot\\scripts\\city\\pen_lucy_level.gd": "3ac21b3b338a31fe68edf35182b1215f662343e2b9fc46d87f5c75258fb2aa39",
+        "godot\\assets\\materials\\city_glass.gdshader": "bc4cd9007ba871ade712363526fb66ebeac14c1f680684f8823d1a8c4a55976d",
+        "godot\\assets\\materials\\city_road_wear.gdshader": "038944389370683c38fb72e89d509b53297db42418de924300172ca414c90dc3",
+        "godot\\assets\\materials\\city_shop_windows.gdshader": "f1d4f7e7ff81fdf32216eac82ba0631a6cf94381a17d079e92382dc8589e6306",
+        "godot\\assets\\materials\\city_surface.gdshader": "0a01e3aa1091476ed69130c303656b61fe98a811a4a83d2e1900038bf4e8a2e5",
+        "godot\\assets\\materials\\city_vegetation_wind.gdshader": "4ed4c6f09ec1c262e2ae4ebb2b236f5bede22c0bc8eb21a158fb820ea445577a",
+        "godot\\assets\\materials\\city_window_bars.gdshader": "fdc8996e812f0c984f77be7a35dc811d392a34a89298beaa61c648ae086ec737",
+        "godot\\assets\\materials\\clay.gdshader": "2919a8758845bdce98262df10cebabef45bb1d00a4e74a76b72a36292b8cfeba",
+        "godot\\tools\\city_life_benchmark_driver.gd": "ceadd2351c1bfc19aa4bda525f138a38688944fe352828db5e7b550a81662c64"
+      }
+    }
+  },
+  "data_sha256": {
+    "godot\\assets\\data\\pen_lucy_civic_build.json": "f682178158ebc7d9d36e6e4e2123e838b700e5fdaeea3b63e176880ee8ae6d82",
+    "godot\\assets\\data\\pen_lucy_new_businesses.json": "186220341a8dab826ea461c5810178a7bec0eb8701a60553aadf9482d0e61939",
+    "godot\\assets\\data\\pen_lucy_fire_grounds.json": "300beb8884bb4402733baed990b8b80ce3fb7b045ceba9605daf06792d916549",
+    "godot\\assets\\data\\pen_lucy_hospital_grounds.json": "7ce72ea06987ad74d73b71bb9c4cc1bd9733fc7647bfb75d1d466723d680b8b9",
+    "godot\\assets\\data\\pen_lucy_crowd_recipe.json": "cb1ea6ebf383cd7087aab325ed93f0ba9c7fdd03c28a6e6bbbdcb1f35f13e6b0"
+  },
+  "boundary_recommendation": [
+    "Rear-yard fences,garage backs and service walls following real block edges",
+    "Low-detail rooftops beyond the boundary to suggest continuous city",
+    "Sparse utility-work closures only after checking traffic terminal paths and turnarounds",
+    "Prioritize narrow courthouse rear service wall and north/south residential edges; retain existing distant invisible fallback for now"
+  ]
+}

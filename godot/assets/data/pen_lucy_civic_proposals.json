@@ -1,0 +1,629 @@
+{
+  "version": 1,
+  "coordinate_system": "metres; x east, y up, z south; yaw radians (0 faces +Z/south, PI north)",
+  "status": "Concept alternatives only; no buildings or mission destinations created",
+  "proposals": [
+    {
+      "service": "police",
+      "street": "Dumbarton Avenue",
+      "position": [
+        127.477,
+        -0.528,
+        -111.33
+      ],
+      "polygon": [
+        [
+          115.778,
+          -100.98
+        ],
+        [
+          115.186,
+          -120.971
+        ],
+        [
+          139.176,
+          -121.681
+        ],
+        [
+          139.767,
+          -101.69
+        ],
+        [
+          115.778,
+          -100.98
+        ]
+      ],
+      "access": [
+        [
+          125.103,
+          -90.101
+        ],
+        [
+          131.101,
+          -90.278
+        ],
+        [
+          130.742,
+          -102.423
+        ],
+        [
+          124.744,
+          -102.246
+        ],
+        [
+          125.103,
+          -90.101
+        ]
+      ],
+      "width": 20.0,
+      "depth": 24.0,
+      "grade_range_m": 0.535,
+      "exported_architecture_overlap_m2": 0.0,
+      "id": "P1",
+      "recommended": true,
+      "title": "Central Dumbarton station",
+      "notes": "North side of Dumbarton Avenue, between Old York Road and Wilsby Avenue. Central patrol base with direct six-metre access; preferred police option.",
+      "status": "PROPOSED ONLY",
+      "building_program": "Compact neighborhood police station",
+      "access_width_m": 6,
+      "existing_buildings_removed": 0,
+      "existing_courts_removed": 0,
+      "conflicts_with": []
+    },
+    {
+      "service": "police",
+      "street": "Old York Road",
+      "position": [
+        -21.335,
+        1.819,
+        -82.494
+      ],
+      "polygon": [
+        [
+          -9.263,
+          -72.581
+        ],
+        [
+          -9.408,
+          -92.58
+        ],
+        [
+          -33.407,
+          -92.407
+        ],
+        [
+          -33.263,
+          -72.407
+        ],
+        [
+          -9.263,
+          -72.581
+        ]
+      ],
+      "access": [
+        [
+          -0.164,
+          -79.647
+        ],
+        [
+          -0.208,
+          -85.647
+        ],
+        [
+          -12.357,
+          -85.559
+        ],
+        [
+          -12.314,
+          -79.559
+        ],
+        [
+          -0.164,
+          -79.647
+        ]
+      ],
+      "width": 20.0,
+      "depth": 24.0,
+      "grade_range_m": 0.939,
+      "exported_architecture_overlap_m2": 0.0,
+      "id": "P2",
+      "recommended": false,
+      "title": "Old York corner alternative",
+      "notes": "West of Old York Road, south of Dumbarton Avenue. Highly legible corner; conflicts with preferred fire site F1.",
+      "status": "PROPOSED ONLY",
+      "building_program": "Compact neighborhood police station",
+      "access_width_m": 6,
+      "existing_buildings_removed": 0,
+      "existing_courts_removed": 0,
+      "conflicts_with": [
+        "F1"
+      ]
+    },
+    {
+      "service": "police",
+      "street": "Argonne Drive",
+      "position": [
+        402.79,
+        -4.646,
+        -8.494
+      ],
+      "polygon": [
+        [
+          407.84,
+          -23.275
+        ],
+        [
+          418.24,
+          -6.192
+        ],
+        [
+          397.739,
+          6.288
+        ],
+        [
+          387.34,
+          -10.796
+        ],
+        [
+          407.84,
+          -23.275
+        ]
+      ],
+      "access": [
+        [
+          388.973,
+          -36.96
+        ],
+        [
+          383.848,
+          -33.841
+        ],
+        [
+          395.547,
+          -14.621
+        ],
+        [
+          400.673,
+          -17.741
+        ],
+        [
+          388.973,
+          -36.96
+        ]
+      ],
+      "width": 20.0,
+      "depth": 24.0,
+      "grade_range_m": 1.046,
+      "exported_architecture_overlap_m2": 0.0,
+      "id": "P3",
+      "recommended": false,
+      "title": "East Argonne alternative",
+      "notes": "Southeast side of Argonne Drive toward Elkader Road and North Hill Road. Strong eastern coverage, farther from the central blocks.",
+      "status": "PROPOSED ONLY",
+      "building_program": "Compact neighborhood police station",
+      "access_width_m": 6,
+      "existing_buildings_removed": 0,
+      "existing_courts_removed": 0,
+      "conflicts_with": []
+    },
+    {
+      "service": "fire",
+      "street": "Old York Road",
+      "position": [
+        -23.381,
+        2.072,
+        -87.256
+      ],
+      "polygon": [
+        [
+          -6.231,
+          -85.885
+        ],
+        [
+          -16.522,
+          -103.034
+        ],
+        [
+          -40.531,
+          -88.626
+        ],
+        [
+          -30.24,
+          -71.477
+        ],
+        [
+          -6.231,
+          -85.885
+        ]
+      ],
+      "access": [
+        [
+          -0.183,
+          -84.647
+        ],
+        [
+          -0.285,
+          -90.646
+        ],
+        [
+          -12.433,
+          -90.441
+        ],
+        [
+          -12.332,
+          -84.442
+        ],
+        [
+          -0.183,
+          -84.647
+        ]
+      ],
+      "width": 20.0,
+      "depth": 28.0,
+      "grade_range_m": 1.411,
+      "exported_architecture_overlap_m2": 0.0,
+      "id": "F1",
+      "recommended": true,
+      "title": "Old York response house",
+      "notes": "Old York Road / Dumbarton Avenue corner. Direct street access and two directions for response. Compact single-bay concept; conflicts with police alternative P2.",
+      "status": "PROPOSED ONLY",
+      "building_program": "Compact single-bay response house",
+      "access_width_m": 6,
+      "existing_buildings_removed": 0,
+      "existing_courts_removed": 0,
+      "conflicts_with": [
+        "P2"
+      ]
+    },
+    {
+      "service": "fire",
+      "street": "Argonne Drive",
+      "position": [
+        292.664,
+        -1.269,
+        51.425
+      ],
+      "polygon": [
+        [
+          276.902,
+          44.527
+        ],
+        [
+          294.077,
+          34.278
+        ],
+        [
+          308.425,
+          58.322
+        ],
+        [
+          291.251,
+          68.571
+        ],
+        [
+          276.902,
+          44.527
+        ]
+      ],
+      "access": [
+        [
+          282.172,
+          27.99
+        ],
+        [
+          277.02,
+          31.065
+        ],
+        [
+          284.451,
+          43.516
+        ],
+        [
+          289.603,
+          40.442
+        ],
+        [
+          282.172,
+          27.99
+        ]
+      ],
+      "width": 20.0,
+      "depth": 28.0,
+      "grade_range_m": 1.232,
+      "exported_architecture_overlap_m2": 0.0,
+      "id": "F2",
+      "recommended": false,
+      "title": "Argonne / Wilsby alternative",
+      "notes": "Southeast side of Argonne Drive by Wilsby Avenue. Direct access toward the main diagonal. Shares this potential lot with hospital alternative H2.",
+      "status": "PROPOSED ONLY",
+      "building_program": "Compact single-bay response house",
+      "access_width_m": 6,
+      "existing_buildings_removed": 0,
+      "existing_courts_removed": 0,
+      "conflicts_with": [
+        "H2"
+      ]
+    },
+    {
+      "service": "fire",
+      "street": "Argonne Drive",
+      "position": [
+        331.34,
+        -2.529,
+        27.981
+      ],
+      "polygon": [
+        [
+          315.518,
+          21.224
+        ],
+        [
+          332.6,
+          10.823
+        ],
+        [
+          347.163,
+          34.738
+        ],
+        [
+          330.08,
+          45.14
+        ],
+        [
+          315.518,
+          21.224
+        ]
+      ],
+      "access": [
+        [
+          320.641,
+          4.641
+        ],
+        [
+          315.516,
+          7.761
+        ],
+        [
+          323.057,
+          20.146
+        ],
+        [
+          328.182,
+          17.026
+        ],
+        [
+          320.641,
+          4.641
+        ]
+      ],
+      "width": 20.0,
+      "depth": 28.0,
+      "grade_range_m": 1.112,
+      "exported_architecture_overlap_m2": 0.0,
+      "id": "F3",
+      "recommended": false,
+      "title": "Mid-Argonne alternative",
+      "notes": "Southeast side of Argonne Drive, east of Wilsby Avenue. Separate open frontage farther along the diagonal. Shares this potential lot with H3.",
+      "status": "PROPOSED ONLY",
+      "building_program": "Compact single-bay response house",
+      "access_width_m": 6,
+      "existing_buildings_removed": 0,
+      "existing_courts_removed": 0,
+      "conflicts_with": [
+        "H3"
+      ]
+    },
+    {
+      "service": "hospital",
+      "street": "Wyanoke Avenue",
+      "position": [
+        43.308,
+        -0.011,
+        20.598
+      ],
+      "polygon": [
+        [
+          30.493,
+          7.34
+        ],
+        [
+          54.45,
+          5.906
+        ],
+        [
+          56.123,
+          33.856
+        ],
+        [
+          32.166,
+          35.29
+        ],
+        [
+          30.493,
+          7.34
+        ]
+      ],
+      "access": [
+        [
+          44.92,
+          -2.69
+        ],
+        [
+          38.93,
+          -2.331
+        ],
+        [
+          39.656,
+          9.797
+        ],
+        [
+          45.645,
+          9.439
+        ],
+        [
+          44.92,
+          -2.69
+        ]
+      ],
+      "width": 24.0,
+      "depth": 28.0,
+      "grade_range_m": 0.764,
+      "exported_architecture_overlap_m2": 0.0,
+      "id": "H1",
+      "recommended": true,
+      "title": "Wyanoke neighborhood hospital",
+      "notes": "South side of Wyanoke Avenue, east of Old York Road. Preferred compact multistorey neighborhood hospital, with direct ambulance access; existing nearby court stays.",
+      "status": "PROPOSED ONLY",
+      "building_program": "Compact 4\u20136 storey neighborhood hospital; no full campus or helipad",
+      "access_width_m": 6,
+      "existing_buildings_removed": 0,
+      "existing_courts_removed": 0,
+      "conflicts_with": []
+    },
+    {
+      "service": "hospital",
+      "street": "Argonne Drive",
+      "position": [
+        294.389,
+        -1.33,
+        50.395
+      ],
+      "polygon": [
+        [
+          276.908,
+          44.529
+        ],
+        [
+          297.513,
+          32.223
+        ],
+        [
+          311.87,
+          56.261
+        ],
+        [
+          291.266,
+          68.568
+        ],
+        [
+          276.908,
+          44.529
+        ]
+      ],
+      "access": [
+        [
+          283.889,
+          26.964
+        ],
+        [
+          278.738,
+          30.041
+        ],
+        [
+          286.173,
+          42.49
+        ],
+        [
+          291.324,
+          39.413
+        ],
+        [
+          283.889,
+          26.964
+        ]
+      ],
+      "width": 24.0,
+      "depth": 28.0,
+      "grade_range_m": 1.482,
+      "exported_architecture_overlap_m2": 0.0,
+      "id": "H2",
+      "recommended": false,
+      "title": "Argonne / Wilsby hospital alternative",
+      "notes": "Southeast side of Argonne Drive by Wilsby Avenue. Compact urban hospital concept with direct diagonal-road access. Mutually exclusive with fire alternative F2.",
+      "status": "PROPOSED ONLY",
+      "building_program": "Compact 4\u20136 storey neighborhood hospital; no full campus or helipad",
+      "access_width_m": 6,
+      "existing_buildings_removed": 0,
+      "existing_courts_removed": 0,
+      "conflicts_with": [
+        "F2"
+      ]
+    },
+    {
+      "service": "hospital",
+      "street": "Argonne Drive",
+      "position": [
+        333.048,
+        -2.568,
+        26.941
+      ],
+      "polygon": [
+        [
+          315.518,
+          21.224
+        ],
+        [
+          336.017,
+          8.742
+        ],
+        [
+          350.579,
+          32.658
+        ],
+        [
+          330.08,
+          45.14
+        ],
+        [
+          315.518,
+          21.224
+        ]
+      ],
+      "access": [
+        [
+          322.349,
+          3.601
+        ],
+        [
+          317.224,
+          6.721
+        ],
+        [
+          324.765,
+          19.106
+        ],
+        [
+          329.89,
+          15.985
+        ],
+        [
+          322.349,
+          3.601
+        ]
+      ],
+      "width": 24.0,
+      "depth": 28.0,
+      "grade_range_m": 1.166,
+      "exported_architecture_overlap_m2": 0.0,
+      "id": "H3",
+      "recommended": false,
+      "title": "Mid-Argonne hospital alternative",
+      "notes": "Southeast side of Argonne Drive east of Wilsby Avenue. Another compact urban envelope. Mutually exclusive with fire alternative F3.",
+      "status": "PROPOSED ONLY",
+      "building_program": "Compact 4\u20136 storey neighborhood hospital; no full campus or helipad",
+      "access_width_m": 6,
+      "existing_buildings_removed": 0,
+      "existing_courts_removed": 0,
+      "conflicts_with": [
+        "F3"
+      ]
+    }
+  ],
+  "notes": [
+    "All nine envelopes and access corridors avoid existing exported architecture, roads (except proposed access crossings), mapped parks and court footprints.",
+    "P1/F1/H1 are a compatible preferred set; other service options may share sites, explicitly listed in conflicts_with.",
+    "Geometric feasibility only: parcel boundaries/ownership are not surveyed here. Existing vegetation and yard dressing would need a later landscape review.",
+    "Hospital options are compact multistorey neighborhood facilities, not large hospital campuses. Fire options are single-bay concepts.",
+    "Envelope dimensions reserve the concept lot; actual building, accessible routes, parking, curb cuts, turning paths, grading and architecture need a separate design pass."
+  ]
+}

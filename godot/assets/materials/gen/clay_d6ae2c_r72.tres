@@ -1,0 +1,11 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://dolul2d6lvnf"]
+
+[ext_resource type="Shader" uid="uid://ucipatddbwth" path="res://assets/materials/clay.gdshader" id="1_50v40"]
+
+[resource]
+resource_name = "clay_d6ae2c_r72"
+render_priority = 0
+shader = ExtResource("1_50v40")
+shader_parameter/albedo = Color(0.8392157, 0.68235296, 0.17254902, 1)
+shader_parameter/roughness = 0.72
+shader_parameter/metallic = null

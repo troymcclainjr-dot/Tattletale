@@ -29,7 +29,7 @@ static func animate_all(dt: float) -> void:
 	if S.mode == "puzzle":
 		tp.pose({"armR": PHONE_AT_EAR, "armL": [-0.6, 0.15], "nod": 0.05})
 	elif S.bino_on:
-		tp.pose({"armR": [-2.45, -0.42], "armL": [-2.45, -0.42]})
+		tp.pose_binoculars()
 	elif lock != null and lock.kind == "rhythm":
 		var hit: bool = lock.next > 0 and fmod(clock - lock.t0, lock.B) < 0.2
 		tp.pose({"armR": [-2.6, 0.5], "armL": [-2.9 if hit else -1.6, 0.3], "lean": -0.05, "mouth": 0.9 if hit else 0.2})
@@ -156,12 +156,9 @@ static func animate_all(dt: float) -> void:
 	if W.baby.visible:
 		var b: Walker = W.baby
 		var br: Puppet = W.baby_rig
-		br.place(b.x, b.z, b.yaw, World.ground_y(b.x, b.z) + 0.12)
-		br.g.rotation.x = 1.15
-		var cr := sin(clock * 7.0)
-		br.pose({"armR": [-1.2 + 0.4 * cr, 0.05], "armL": [-1.2 - 0.4 * cr, 0.05], "nod": -1.0})
-		br.legs[0].rotation.x = -1.3 + 0.3 * cr
-		br.legs[1].rotation.x = -1.3 - 0.3 * cr
+		var ground := World.ground_y(b.x, b.z)
+		br.place(b.x, b.z, b.yaw, ground)
+		br.crawl(clock * 7.0, ground)
 	# Gary: smoking, waving at 2-Pack
 	var gary := G.gary
 	var near := Vector2(P.x + 2.8, P.z - 0.73).length() < 3.2

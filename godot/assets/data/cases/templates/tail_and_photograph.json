@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "template": "tail_and_photograph",
+  "about": "The three.js mail-carrier tail (crimes-stage1.js 'mail'): keep a person in view at a distance without being noticed (being seen resets the count), photograph them twice at least a minute apart, then report. Nonviolent: following never touches anyone.",
+  "params": {
+    "tipster": "actor id who mentions it",
+    "tipster_label": "ledger name",
+    "subject": "actor id to follow",
+    "subject_label": "ledger name",
+    "tail_seconds": "number: seconds to keep them in view"
+  },
+  "case": {
+    "schema": 1,
+    "kind": "case",
+    "participants": {
+      "tipster": {"actors": ["{tipster}"], "label": "{tipster_label}"},
+      "subject": {"actors": ["{subject}"], "label": "{subject_label}"},
+      "officer": {"actors": ["@police"], "label": "Officer", "bind": "step"}
+    },
+    "evidence": {"tail_photos": {"kind": "photo", "label": "[draft] Two photos taken on the tail"}},
+    "discovery": {"givers": ["tipster"]},
+    "stages": [
+      {"id": "tip", "objectives": [
+        {"id": "hear_tip", "verb": "talk", "target": "tipster", "objective": "[draft] Hear the tip", "dialogue": "[draft] The tip."}
+      ]},
+      {"id": "tail", "objective": "[draft] Tail them and take two photos. Stay out of their sight.", "objectives": [
+        {"id": "keep_distance", "verb": "follow", "subject": "subject", "min_distance": 3.0, "max_distance": 16.0, "seconds": "{tail_seconds}", "unseen": true,
+          "view_range": 7.5, "lose_after": 10.0, "objective": "[draft] Keep them in view without being noticed"},
+        {"id": "photograph_subject", "verb": "photo", "subject": "subject", "count": 2, "min_interval_minutes": 1.0, "max_distance": 25.0,
+          "objective": "[draft] Photograph them twice", "grants": ["tail_photos"]}
+      ]},
+      {"id": "report", "objectives": [
+        {"id": "file_report", "verb": "report", "target": "officer", "objective": "[draft] Report it to an officer", "requires_evidence": ["tail_photos"],
+          "greeting": "[draft] The officer asks what you saw.", "dialogue": "[draft] The officer takes the report."}
+      ]}
+    ],
+    "outcomes": {"resolved": {"rewarded": true, "banner": "REPORT FILED"}}
+  }
+}

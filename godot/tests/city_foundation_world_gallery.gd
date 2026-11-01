@@ -1,0 +1,8 @@
+extends SceneTree
+## Root serializes this rendered fixture through tools/godot_run.py.
+func _initialize() -> void:
+	var script := load("res://tests/city_foundation_world_gallery_runner.gd") as Script
+	if script == null or not script.can_instantiate():
+		quit(1)
+		return
+	root.add_child.call_deferred(script.new())

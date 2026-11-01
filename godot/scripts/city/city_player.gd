@@ -18,13 +18,48 @@ var current_speed := 0.0
 var stepped_this_frame := false
 var camera_override: Dictionary = {}
 var orbiting := false
-# Keep held movement stable through orbit/release and automatic camera following.
-# A fresh movement gesture adopts the camera's new bearing.
-var _orbit_movement_yaw := 0.0
-var _orbit_basis_latched := false
+var combat: Node3D
+var phone: Node3D
+var court_activity: Node3D
+# Release of free look while moving swings the view back behind the held travel.
+# When false, travel instead eases toward the view the player left it at.
+var free_look_recenters_view := true
+# Movement is camera-relative: the movement frame is camera_yaw + _basis_offset.
+# Ordinary look keeps the offset, so the mouse steers. Free look and camera
+# assistance turn only the view and accumulate an offset that preserves the held
+# input's world bearing. A new key combination, or idling outside free look, clears it.
+var _basis_offset := 0.0
+var _basis_input := Vector2.ZERO
+var _held_move := Vector2.ZERO
+var _view_returning := false
+# Compatibility for callers that clear the held frame after placing the player.
+var _orbit_basis_latched: bool:
+	get:
+		return orbiting or not is_zero_approx(_basis_offset)
+	set(value):
+		if not value:
+			_clear_basis_offset()
 const STEP_HEIGHT := 0.28
+const GRAVITY := 22.0
+# About 2.37m of foot clearance at 60Hz: reaches every civilian roof and
+# patrol-car lightbar without increasing the curb/stair step allowance.
+const JUMP_SPEED := 10.4
+const JUMP_BUFFER := 0.12
+const COYOTE_TIME := 0.10
+var _jump_buffer := 0.0
+var _coyote_time := 0.0
+var _jump_active := false
+var _landing_pose := 0.0
+var jumps_started := 0
 const STEP_SURFACES := 1 | 2
 const CAMERA_LOOK_GRACE := 0.85
+# Keyboard combinations differ by 45 degrees; analog drift below this keeps the frame.
+const INPUT_REBASE_ANGLE := 0.35
+const FREE_LOOK_RETURN_GAIN := 7.0
+const FREE_LOOK_RETURN_MIN_RATE := 1.2
+const FREE_LOOK_RETURN_MAX_RATE := 6.0
+# 100 degrees: running toward the camera never swings the view around.
+const CAMERA_ASSIST_MAX_ERROR := 1.745
 var _capsule: CollisionShape3D
 var debug_step_reason := "not attempted"
 var _pose_speed := 0.0
@@ -34,7 +69,82 @@ var _camera_last_player_position := Vector3.ZERO
 var _camera_look_grace := 0.0
 var _camera_moving_time := 0.0
 var _camera_boom_length := 0.0
+var _camera_aim_blend := 0.0
 var _camera_collision_shape: SphereShape3D
+
+signal vehicle_impact(speed: float, source: String)
+var vehicle_hits := 0
+var impact_recovery := 0.0
+var impact_cooldown := 0.0
+var _impact_velocity := Vector3.ZERO
+var _impact_duration := 0.0
+
+# Seated in a car (city_driving.gd owns entry/exit). The body rides at the car
+# origin with no collision layer/mask: no walking physics, jumps, floor riding
+# or vehicle impacts. Position-based systems (streaming, presence, radar,
+# missions) keep following it. The chase camera orbits the car instead.
+const CHASE_DISTANCE := 6.2
+const CHASE_PITCH := 0.24
+const CHASE_TARGET_HEIGHT := 1.45
+const CHASE_RECENTER_DELAY := 1.3
+var seated_vehicle: Node3D
+var _seated := false
+var vehicle_orbit_yaw := 0.0
+var vehicle_orbit_pitch := CHASE_PITCH
+var chase_distance := CHASE_DISTANCE
+var _vehicle_view_yaw := 0.0
+var _vehicle_look_idle := 0.0
+var _vehicle_shake := 0.0
+var _vehicle_shake_phase := 0.0
+var _seat_layer := 4
+var _seat_mask := 1 | 2 | 8 | 16
+
+func receive_vehicle_impact(direction: Vector3, hit_speed: float, source := "") -> bool:
+	if not enabled or _seated or get_tree().paused or impact_cooldown > 0.0 or hit_speed < 2.0:
+		return false
+	var away := Vector3(direction.x, 0.0, direction.z).normalized()
+	if away.length_squared() < 0.5:
+		return false
+	# A short non-gory stumble. The full capsule stays solid throughout recovery;
+	# move_and_slide resolves walls, curbs, people and cars on each physics frame.
+	_impact_duration = clampf(0.52 + hit_speed * 0.018, 0.58, 0.82)
+	impact_recovery = _impact_duration
+	impact_cooldown = _impact_duration + 0.65
+	_impact_velocity = away * clampf(hit_speed * 0.48, 2.0, 7.0)
+	_jump_buffer = 0.0
+	_coyote_time = 0.0
+	_jump_active = false
+	yaw = atan2(away.x, away.z)
+	current_speed = 0.0
+	_pose_speed = 0.0
+	_clear_basis_offset()
+	vehicle_hits += 1
+	vehicle_impact.emit(hit_speed, source)
+	return true
+
+func _tick_vehicle_impact(delta: float) -> void:
+	impact_recovery = maxf(0.0, impact_recovery - delta)
+	velocity.x = _impact_velocity.x
+	velocity.z = _impact_velocity.z
+	velocity.y = velocity.y - GRAVITY * delta if not is_on_floor() else -0.5
+	var before := global_position
+	move_and_slide()
+	# Use the solver's surviving horizontal direction, so a wall absorbs the
+	# impulse instead of accumulating force or pushing the capsule through it.
+	_impact_velocity = Vector3(velocity.x, 0.0, velocity.z).move_toward(Vector3.ZERO, delta * 10.0)
+	var displacement := global_position - before
+	displacement.y = 0.0
+	if displacement.length_squared() > 0.000001:
+		yaw = atan2(displacement.x, displacement.z)
+	puppet.g.rotation.y = rotate_toward(puppet.g.rotation.y, yaw, delta * 16.0)
+	var stumble := sin(PI * clampf(impact_recovery / maxf(_impact_duration, 0.001), 0.0, 1.0))
+	puppet.pose({"walk": 0.0, "armR": [-0.6 * stumble, 0.20], "armL": [-0.6 * stumble, -0.20],
+		"lean": -0.30 * stumble, "bob": -0.08 * stumble})
+	if impact_recovery <= 0.0:
+		_impact_velocity = Vector3.ZERO
+		velocity.x = 0.0
+		velocity.z = 0.0
+	update_camera(delta)
 
 func _ready() -> void:
 	collision_layer = 4
@@ -42,6 +152,9 @@ func _ready() -> void:
 	floor_snap_length = 0.5
 	floor_max_angle = deg_to_rad(48.0)
 	floor_stop_on_slope = true
+	# Even a shallow tangential component must slide around a round post. The
+	# default 15-degree wall dead zone pins the capsule between a pole and curb.
+	wall_min_slide_angle = 0.0
 	var capsule := CapsuleShape3D.new()
 	capsule.radius = 0.30
 	capsule.height = 1.72
@@ -64,51 +177,191 @@ func _ready() -> void:
 	update_camera()
 
 func look(relative: Vector2) -> void:
+	if _seated:
+		vehicle_look(relative)
+		return
 	if relative.length_squared() > 0.0001:
 		_camera_look_grace = CAMERA_LOOK_GRACE
-	var yaw_change := -relative.x * mouse_sensitivity
-	camera_yaw += yaw_change
-	if _orbit_basis_latched and not orbiting:
-		_orbit_movement_yaw += yaw_change
+		if _view_returning and not orbiting:
+			_clear_basis_offset()
+	_turn_view(-relative.x * mouse_sensitivity)
 	var vertical := relative.y * mouse_sensitivity * (0.0022 / 0.0024)
-	camera_pitch = clampf(camera_pitch + vertical * (-1.0 if invert_y else 1.0), -0.35, 1.05)
+	var photographing: bool = phone != null and bool(phone.active)
+	camera_pitch = clampf(camera_pitch + vertical * (-1.0 if invert_y else 1.0), -1.35 if photographing else -0.35, 1.35 if photographing else 1.05)
+
+## Ordinary look turns the movement frame with the view, so the mouse steers held
+## input. Free look turns only the view and preserves the frame's world bearing.
+func _turn_view(amount: float) -> void:
+	if absf(amount) > 0.000001 and _view_returning and not orbiting:
+		_clear_basis_offset()
+	camera_yaw += amount
+	if orbiting:
+		_basis_offset = wrapf(_basis_offset - amount, -PI, PI)
 
 func set_orbiting(active: bool) -> void:
 	if active == orbiting:
 		return
-	if active and not _orbit_basis_latched:
-		_orbit_movement_yaw = camera_yaw
-		_orbit_basis_latched = true
 	orbiting = active
 	_camera_look_grace = CAMERA_LOOK_GRACE
+	if active:
+		_view_returning = false
+	elif not enabled or _held_move.length() <= 0.01:
+		# Idle: the chosen view becomes the frame for the next movement.
+		_clear_basis_offset()
+	else:
+		_view_returning = not is_zero_approx(_basis_offset)
+
+func _clear_basis_offset() -> void:
+	_basis_offset = 0.0
+	_view_returning = false
+
+func _update_movement_basis(move: Vector2, delta: float) -> void:
+	var held := enabled and move.length() > 0.01
+	if not held:
+		_basis_input = Vector2.ZERO
+		if not orbiting:
+			_clear_basis_offset()
+	elif orbiting:
+		# Track keys without rebasing while deliberately looking away.
+		_basis_input = move
+	elif _basis_input.length() <= 0.01 or absf(_basis_input.angle_to(move)) > INPUT_REBASE_ANGLE:
+		# A new key combination is read against the view on screen now, dropping
+		# any bearing camera assistance had preserved for the previous one.
+		_clear_basis_offset()
+		_basis_input = move
+		_camera_moving_time = 0.0
+	_held_move = move if held else Vector2.ZERO
+	if _view_returning and held:
+		var rate := clampf(absf(_basis_offset) * FREE_LOOK_RETURN_GAIN, FREE_LOOK_RETURN_MIN_RATE, FREE_LOOK_RETURN_MAX_RATE)
+		var step := clampf(_basis_offset, -rate * delta, rate * delta)
+		if free_look_recenters_view:
+			camera_yaw += step
+		_basis_offset -= step
+		if is_zero_approx(_basis_offset):
+			_clear_basis_offset()
 
 func toggle_view() -> void:
+	if _seated:
+		return # The car has no cabin view; the walking mode is kept for exit.
 	first_person = not first_person
 	puppet.g.visible = not first_person
 	update_camera()
 
+func request_jump() -> bool:
+	if not enabled or _seated or get_tree().paused or impact_recovery > 0.0 or (phone != null and phone.active) or (combat != null and combat.blocks_movement()):
+		return false
+	_jump_buffer = JUMP_BUFFER
+	return true
+
+func is_standing_on_vehicle(vehicle: CollisionObject3D) -> bool:
+	# Seated: floor contacts are stale from before boarding, never a roof ride.
+	if _seated or not is_on_floor() or velocity.y > 0.1:
+		return false
+	for index in get_slide_collision_count():
+		var contact := get_slide_collision(index)
+		if contact.get_collider() == vehicle and contact.get_normal().dot(up_direction) > cos(floor_max_angle):
+			return true
+	return false
+
+func _floor_motion_velocity() -> Vector3:
+	if not is_on_floor():
+		return Vector3.ZERO
+	for index in get_slide_collision_count():
+		var contact := get_slide_collision(index)
+		var body := contact.get_collider()
+		if contact.get_normal().dot(up_direction) > cos(floor_max_angle) and body is CharacterBody3D:
+			# Traffic ticks before us, whereas get_platform_velocity() still holds
+			# last frame's speed while the car is accelerating or braking.
+			return body.velocity
+	return get_platform_velocity()
+
+func reset_jump() -> void:
+	_jump_buffer = 0.0
+	_coyote_time = 0.0
+	_jump_active = false
+	_landing_pose = 0.0
+
+func _unhandled_input(event: InputEvent) -> void:
+	# Dialogue consumes Space before unhandled input; menus disable exploration.
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_SPACE:
+		if request_jump():
+			get_viewport().set_input_as_handled()
+
+var profile_costs := false
+var profile_samples: Array[float] = []
+
+func set_court_activity(activity: Node3D) -> void:
+	court_activity = activity
+
 func _physics_process(delta: float) -> void:
+	var began := Time.get_ticks_usec() if profile_costs else 0
+	_physics_step(delta)
+	if profile_costs:
+		profile_samples.append(float(Time.get_ticks_usec() - began) / 1000.0)
+
+func _physics_step(delta: float) -> void:
+	if _seated:
+		_tick_seated(delta)
+		return
+	if enabled and combat != null and combat.blocks_movement():
+		velocity.x = 0.0
+		velocity.z = 0.0
+		velocity.y = velocity.y - GRAVITY * delta if not is_on_floor() else -0.5
+		move_and_slide()
+		_jump_buffer = 0.0
+		_jump_active = false
+		current_speed = 0.0
+		puppet.pose({"walk": 0.0})
+		combat.apply_player_pose(delta)
+		update_camera(delta)
+		return
+	if not enabled:
+		_jump_buffer = 0.0
+		_coyote_time = 0.0
+		# Freeze passive falls as well as jumps behind menus and dialogue.
+		update_camera(delta)
+		return
+	if enabled:
+		impact_cooldown = maxf(0.0, impact_cooldown - delta)
+	if impact_recovery > 0.0:
+		if enabled:
+			_tick_vehicle_impact(delta)
+		else:
+			update_camera(delta)
+		return
 	var before := global_position
 	var was_grounded := is_on_floor()
+	# CharacterBody carries us with the floor before applying our own velocity.
+	# Capture that support velocity before the solver can switch floor contacts.
+	var support_velocity := _floor_motion_velocity()
+	if enabled and was_grounded and not _jump_active:
+		_coyote_time = COYOTE_TIME
+	else:
+		_coyote_time = maxf(0.0, _coyote_time - delta)
+	var jumped := enabled and _jump_buffer > 0.0 and _coyote_time > 0.0 and not _jump_active
+	_jump_buffer = maxf(0.0, _jump_buffer - delta)
+	if jumped:
+		velocity.y = JUMP_SPEED
+		_jump_buffer = 0.0
+		_coyote_time = 0.0
+		_jump_active = true
+		jumps_started += 1
 	var requested_motion := Vector3.ZERO
 	var move := Vector2.ZERO
 	stepped_this_frame = false
 	_camera_look_grace = maxf(0.0, _camera_look_grace - delta)
-	if enabled:
+	if enabled and (phone == null or not phone.active):
 		move = Input.get_vector("move_left", "move_right", "move_back", "move_forward")
 		var keyboard_turn := (Input.get_action_strength("turn_left") - Input.get_action_strength("turn_right")) * delta * 1.7
-		camera_yaw += keyboard_turn
+		_turn_view(keyboard_turn)
 		if absf(keyboard_turn) > 0.0001:
 			_camera_look_grace = CAMERA_LOOK_GRACE
-		if _orbit_basis_latched and not orbiting:
-			_orbit_movement_yaw += keyboard_turn
-	if not orbiting and (move.length() <= 0.01 or not enabled):
-		_orbit_basis_latched = false
+	_update_movement_basis(move, delta)
 	velocity.x = 0.0
 	velocity.z = 0.0
 	var target_speed := 0.0
 	if move.length() > 0.01:
-		var movement_yaw := _orbit_movement_yaw if _orbit_basis_latched else camera_yaw
+		var movement_yaw := camera_yaw + _basis_offset
 		var direction := Vector3(sin(movement_yaw) * move.y - cos(movement_yaw) * move.x, 0.0, cos(movement_yaw) * move.y + sin(movement_yaw) * move.x).normalized()
 		var wanted := atan2(direction.x, direction.z)
 		var turn_error := absf(angle_difference(yaw, wanted))
@@ -126,8 +379,8 @@ func _physics_process(delta: float) -> void:
 	if current_speed > 0.001 and enabled:
 		var forward := Vector3(sin(yaw), 0.0, cos(yaw))
 		requested_motion = forward * current_speed * delta
-		var curb_top := _walkable_step_top(requested_motion) if was_grounded else {}
-		if was_grounded and (not curb_top.is_empty() or _curb_ahead(requested_motion)):
+		var curb_top := _walkable_step_top(requested_motion) if was_grounded and not _jump_active else {}
+		if was_grounded and not _jump_active and (not curb_top.is_empty() or _curb_ahead(requested_motion)):
 			stepped_this_frame = _try_step(requested_motion, curb_top)
 		if not stepped_this_frame:
 			# Let the full capsule's collision solver remove the into-wall component
@@ -135,8 +388,8 @@ func _physics_process(delta: float) -> void:
 			# caused hard stops on every diagonal facade or porch-post contact.
 			velocity.x = forward.x * current_speed
 			velocity.z = forward.z * current_speed
-	if not is_on_floor():
-		velocity.y -= 22.0 * delta
+	if jumped or not is_on_floor():
+		velocity.y -= GRAVITY * delta
 	else:
 		velocity.y = -0.5
 	if not stepped_this_frame:
@@ -144,13 +397,16 @@ func _physics_process(delta: float) -> void:
 	# A triangle seam can report the same valid floor contact repeatedly and consume
 	# every slide iteration. Project onto the intended direction so diagonal curb
 	# sliding cannot be mistaken for forward progress.
-	var displacement := global_position - before
+	var support_motion := support_velocity * delta if was_grounded and not jumped and not stepped_this_frame else Vector3.ZERO
+	var displacement := global_position - before - support_motion
 	displacement.y = 0.0
 	var horizontal_progress := maxf(0.0, displacement.dot(requested_motion.normalized())) if requested_motion.length() > 0.001 else 0.0
-	if not stepped_this_frame and (was_grounded or is_on_floor()) and requested_motion.length() > 0.001 and horizontal_progress < requested_motion.length() * 0.85:
+	if not _jump_active and not stepped_this_frame and (was_grounded or is_on_floor()) and requested_motion.length() > 0.001 and horizontal_progress < requested_motion.length() * 0.85:
 		var remaining := requested_motion.normalized() * maxf(0.0, requested_motion.length() - horizontal_progress)
 		stepped_this_frame = _try_step(remaining)
-	var travelled := Vector2(global_position.x - before.x, global_position.z - before.z).length()
+	displacement = global_position - before - support_motion
+	displacement.y = 0.0
+	var travelled := displacement.length()
 	if requested_motion.length() > 0.001 and travelled < requested_motion.length() * 0.05:
 		current_speed = 0.0
 	distance_walked += travelled
@@ -166,7 +422,24 @@ func _physics_process(delta: float) -> void:
 		"armR": [-swing - 0.12 * run_blend, 0.08], "armL": [swing - 0.12 * run_blend, 0.08],
 		"lean": lerpf(0.025, 0.12, run_blend) * moving_blend,
 		"bob": absf(sin(puppet.phase)) * lerpf(0.015, 0.028, run_blend) * moving_blend})
-	_update_camera_follow(delta, move, actual_speed, visual_yaw)
+	if _jump_active:
+		if is_on_floor() and not jumped:
+			_jump_active = false
+			_landing_pose = 0.13
+		else:
+			puppet.pose({"walk": 0.0, "armR": [-0.35, 0.23], "armL": [-0.35, 0.23], "lean": 0.045})
+			puppet.legs[0].rotation.x = -0.22
+			puppet.legs[1].rotation.x = -0.12
+	if _landing_pose > 0.0:
+		_landing_pose = maxf(0.0, _landing_pose - delta)
+		puppet.body.position.y -= sin(PI * _landing_pose / 0.13) * 0.055
+	# Follow the body's heading, not a wall slide's displacement: grazing a facade
+	# or pole must not swing the view.
+	if combat != null:
+		combat.apply_player_pose(delta)
+	if is_instance_valid(court_activity):
+		court_activity.apply_player_pose(delta)
+	_update_camera_follow(delta, move, actual_speed, yaw)
 	update_camera(delta)
 
 func _update_camera_follow(delta: float, move: Vector2, actual_speed: float, travel_yaw: float) -> void:
@@ -174,18 +447,18 @@ func _update_camera_follow(delta: float, move: Vector2, actual_speed: float, tra
 		_camera_moving_time = 0.0
 		return
 	_camera_moving_time += delta
-	if first_person or orbiting or not camera_override.is_empty() or _camera_look_grace > 0.0 or _camera_moving_time < 0.75:
+	if first_person or orbiting or (combat != null and combat.aiming) or _view_returning or not camera_override.is_empty() or _camera_look_grace > 0.0 or _camera_moving_time < 0.75:
 		return
 	var error := angle_difference(camera_yaw, travel_yaw)
-	if absf(error) < deg_to_rad(4.0):
+	if absf(error) < deg_to_rad(4.0) or absf(error) > CAMERA_ASSIST_MAX_ERROR:
 		return
-	# Input inactivity gets a grace period; idle views never recenter. Preserve
-	# the held input's world bearing so camera assistance cannot steer the player.
-	if not _orbit_basis_latched:
-		_orbit_movement_yaw = camera_yaw
-		_orbit_basis_latched = true
+	# Input inactivity gets a grace period; idle views never recenter. Only the
+	# view turns: the offset preserves the held input's world bearing, so the
+	# assist converges on the travel direction instead of steering or spiralling.
 	var rate := minf(0.85, absf(error) * 1.8)
-	camera_yaw = rotate_toward(camera_yaw, travel_yaw, delta * rate)
+	var turn := rotate_toward(camera_yaw, travel_yaw, delta * rate) - camera_yaw
+	camera_yaw += turn
+	_basis_offset = wrapf(_basis_offset - turn, -PI, PI)
 
 func _obstacle_motion_clear(from: Transform3D, motion: Vector3, mask: int = 8 | 16) -> bool:
 	var query := PhysicsShapeQueryParameters3D.new()
@@ -362,7 +635,11 @@ func _obstacle_path(obstacle) -> String:
 func update_camera(delta := 0.0) -> void:
 	if camera == null:
 		return
-	camera.fov = clampf(camera_fov, 45.0, 95.0)
+	var aim_target := 1.0 if combat != null and combat.aiming else 0.0
+	_camera_aim_blend = aim_target if delta <= 0.0 else lerpf(_camera_aim_blend, aim_target, 1.0 - exp(-delta * 12.0))
+	if absf(_camera_aim_blend - aim_target) < 0.001:
+		_camera_aim_blend = aim_target
+	camera.fov = clampf(camera_fov - 10.0 * _camera_aim_blend, 45.0, 95.0)
 	if delta <= 0.0 or not _camera_anchor_valid or global_position.distance_to(_camera_last_player_position) > 3.0:
 		_camera_anchor_y = global_position.y
 		_camera_anchor_valid = true
@@ -370,19 +647,32 @@ func update_camera(delta := 0.0) -> void:
 		_camera_anchor_y = lerpf(_camera_anchor_y, global_position.y, 1.0 - exp(-delta * 14.0))
 	_camera_last_player_position = global_position
 	if not camera_override.is_empty():
-		puppet.g.visible = not first_person
+		puppet.g.visible = not first_person and not _seated
 		camera.global_position = camera_override.eye
 		camera.look_at(camera_override.target, Vector3.UP)
+		return
+	if _seated and is_instance_valid(seated_vehicle):
+		_update_vehicle_camera(delta)
 		return
 	var forward := Vector3(sin(camera_yaw), 0.0, cos(camera_yaw))
 	var camera_anchor := Vector3(global_position.x, _camera_anchor_y, global_position.z)
 	var target := camera_anchor + Vector3.UP * 1.50
+	if phone != null and phone.active:
+		puppet.g.hide()
+		camera.fov = phone.photo_fov
+		camera.global_position = camera_anchor + Vector3.UP * 1.64
+		camera.look_at(camera.global_position + forward * cos(camera_pitch) - Vector3.UP * sin(camera_pitch), Vector3.UP)
+		return
 	if first_person:
 		puppet.g.hide()
 		camera.global_position = camera_anchor + Vector3.UP * 1.64
 		camera.look_at(camera.global_position + forward * cos(camera_pitch) - Vector3.UP * sin(camera_pitch), Vector3.UP)
 	else:
-		var boom := -forward * cos(camera_pitch) * 5.2 + Vector3.UP * (sin(camera_pitch) * 5.2 + 0.65)
+		var boom_distance := lerpf(5.2, 3.1, _camera_aim_blend)
+		# +Z is character forward, so its right hand is on local -X. Put the
+		# entire shoulder offset inside the swept boom, never after collision.
+		var right := Vector3(-forward.z, 0.0, forward.x)
+		var boom := -forward * cos(camera_pitch) * boom_distance + Vector3.UP * (sin(camera_pitch) * boom_distance + lerpf(0.65, 0.45, _camera_aim_blend)) + right * (0.78 * _camera_aim_blend)
 		var sweep := PhysicsShapeQueryParameters3D.new()
 		sweep.shape = _camera_collision_shape
 		sweep.transform.origin = target
@@ -405,3 +695,147 @@ func update_camera(delta := 0.0) -> void:
 		puppet.g.visible = desired.distance_to(target) >= 1.65
 		camera.global_position = desired
 		camera.look_at(target, Vector3.UP)
+	if _camera_aim_blend > 0.0:
+		# Smoothly leave the ordinary chase look-at. At full aim the center ray
+		# follows view pitch from beside the head, with the equipped hand visible.
+		var aim_direction := forward * cos(camera_pitch) - Vector3.UP * sin(camera_pitch)
+		var view_direction := (-camera.global_basis.z).slerp(aim_direction, _camera_aim_blend).normalized()
+		camera.look_at(camera.global_position + view_direction, Vector3.UP)
+
+## Seat the explorer in `car` (driving decides when). The view swings from the
+## current walking view to behind the car instead of cutting.
+func enter_vehicle(car: Node3D) -> void:
+	if car == null or _seated:
+		return
+	_seated = true
+	seated_vehicle = car
+	set_orbiting(false)
+	_clear_basis_offset()
+	reset_jump()
+	velocity = Vector3.ZERO
+	current_speed = 0.0
+	_pose_speed = 0.0
+	_seat_layer = collision_layer
+	_seat_mask = collision_mask
+	collision_layer = 0
+	collision_mask = 0
+	puppet.g.visible = false
+	vehicle_orbit_yaw = 0.0
+	vehicle_orbit_pitch = CHASE_PITCH
+	_vehicle_view_yaw = camera_yaw
+	_vehicle_look_idle = 0.0
+	_vehicle_shake = 0.0
+	_camera_boom_length = 0.0
+	follow_vehicle()
+	update_camera()
+
+## Ride at the car origin; driving calls this after every car step.
+func follow_vehicle() -> void:
+	if not _seated or not is_instance_valid(seated_vehicle):
+		return
+	global_position = seated_vehicle.global_position
+	velocity = seated_vehicle.velocity
+	yaw = float(seated_vehicle.get("yaw"))
+	current_speed = 0.0
+
+## Stand at a spot driving verified (door, forced fallback or teleport target).
+func leave_vehicle(at: Vector3, heading: float) -> void:
+	if not _seated:
+		return
+	_seated = false
+	seated_vehicle = null
+	collision_layer = _seat_layer
+	collision_mask = _seat_mask
+	global_position = at
+	velocity = Vector3.ZERO
+	current_speed = 0.0
+	_pose_speed = 0.0
+	reset_jump()
+	set_orbiting(false)
+	_clear_basis_offset()
+	yaw = heading
+	camera_yaw = _vehicle_view_yaw
+	camera_pitch = clampf(vehicle_orbit_pitch, -0.35, 1.05)
+	puppet.g.rotation.y = heading
+	puppet.g.visible = not first_person
+	_camera_anchor_valid = false
+	_camera_boom_length = 0.0
+	_vehicle_shake = 0.0
+	update_camera()
+
+func is_seated() -> bool:
+	return _seated
+
+func vehicle_look(relative: Vector2) -> void:
+	if not _seated:
+		return
+	vehicle_orbit_yaw = wrapf(vehicle_orbit_yaw - relative.x * mouse_sensitivity, -PI, PI)
+	var vertical := relative.y * mouse_sensitivity * (0.0022 / 0.0024)
+	vehicle_orbit_pitch = clampf(vehicle_orbit_pitch + vertical * (-1.0 if invert_y else 1.0), -0.12, 1.0)
+	if relative.length_squared() > 0.0001:
+		_vehicle_look_idle = 0.0
+
+func vehicle_zoom(steps: int) -> void:
+	chase_distance = clampf(chase_distance * pow(1.12, -steps), 4.2, 11.0)
+
+func vehicle_shake(amount: float) -> void:
+	_vehicle_shake = maxf(_vehicle_shake, clampf(amount, 0.0, 1.0))
+
+func _tick_seated(delta: float) -> void:
+	# Driving moves the car and this collider-free body together in the level
+	# tick; here only the chase view follows. Paused views (menus, map, shop,
+	# dialogue, inspector) redraw without advancing recentering or shake.
+	if not is_instance_valid(seated_vehicle):
+		leave_vehicle(global_position, yaw) # Car freed under us (teardown).
+		return
+	_jump_buffer = 0.0
+	_coyote_time = 0.0
+	stepped_this_frame = false
+	update_camera(delta if enabled else 0.0)
+
+func _update_vehicle_camera(delta: float) -> void:
+	var car := seated_vehicle
+	var heading := float(car.get("yaw"))
+	var car_speed := absf(float(car.get("speed")))
+	if delta > 0.0:
+		_vehicle_look_idle += delta
+		# Released orbit drifts back behind a moving car; a stopped car keeps the
+		# view the player chose, like idle walking views.
+		if _vehicle_look_idle > CHASE_RECENTER_DELAY and car_speed > 2.0:
+			vehicle_orbit_yaw = rotate_toward(vehicle_orbit_yaw, 0.0, delta * 1.6)
+			vehicle_orbit_pitch = move_toward(vehicle_orbit_pitch, CHASE_PITCH, delta * 0.5)
+		_vehicle_view_yaw = lerp_angle(_vehicle_view_yaw, heading + vehicle_orbit_yaw, 1.0 - exp(-delta * 6.0))
+		_vehicle_shake = maxf(0.0, _vehicle_shake - delta * 2.5)
+		_vehicle_shake_phase += delta
+	# Radar heading-up and the walking view after exit follow the chase view.
+	camera_yaw = _vehicle_view_yaw
+	yaw = heading
+	puppet.g.visible = false
+	camera.fov = clampf(camera_fov + 7.0 * clampf(car_speed / 24.0, 0.0, 1.0), 45.0, 100.0)
+	var forward := Vector3(sin(_vehicle_view_yaw), 0.0, cos(_vehicle_view_yaw))
+	var target: Vector3 = car.global_position + Vector3.UP * CHASE_TARGET_HEIGHT
+	var boom := -forward * cos(vehicle_orbit_pitch) * chase_distance + Vector3.UP * (sin(vehicle_orbit_pitch) * chase_distance + 0.55)
+	var sweep := PhysicsShapeQueryParameters3D.new()
+	sweep.shape = _camera_collision_shape
+	sweep.transform.origin = target
+	sweep.motion = boom
+	sweep.collision_mask = 1 | 2 | 16
+	sweep.exclude = [get_rid(), (car as CollisionObject3D).get_rid()]
+	var fractions := get_world_3d().direct_space_state.cast_motion(sweep)
+	var safe_length := boom.length()
+	if fractions.size() >= 2 and fractions[0] < 1.0:
+		safe_length = maxf(0.05, safe_length * fractions[0] - 0.04)
+	if delta <= 0.0 or _camera_boom_length <= 0.0 or safe_length < _camera_boom_length:
+		_camera_boom_length = safe_length
+	else:
+		_camera_boom_length = lerpf(_camera_boom_length, safe_length, 1.0 - exp(-delta * 4.0))
+	var eye := target + boom.normalized() * _camera_boom_length
+	if _vehicle_shake > 0.0:
+		var phase := _vehicle_shake_phase
+		eye += Vector3(sin(phase * 47.0), sin(phase * 61.0 + 1.3), sin(phase * 53.0 + 2.1)) * 0.06 * _vehicle_shake
+	camera.global_position = eye
+	# Look over the car along the view, never at a degenerate/vertical target.
+	var look_point := target + forward * 2.5
+	var direction := look_point - eye
+	if direction.length_squared() > 0.0001 and absf(direction.normalized().y) < 0.995:
+		camera.look_at(look_point, Vector3.UP)

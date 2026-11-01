@@ -10,7 +10,12 @@ const GREEN := "#2f4f34"
 const CREAM := "#f4f0e6"
 const WOOD := "#9a7444"
 const RED := "#a83a2a"
+# Measured from the first imported furniture.glb lamp's glow-material vertices,
+# after source_lamp_mesh() subtracts its (-24, 0.16, -0.2) source origin.
+const LAMP_LENS_LOCAL := Vector3(0.0, 4.758, 0.519)
 static var _source_lamp: ArrayMesh
+static var _source_stop: ArrayMesh
+const Surfaces := preload("res://scripts/city/city_street_surfaces.gd")
 
 
 static func build(parent: Node3D, level_data: Dictionary) -> Dictionary:
@@ -18,6 +23,7 @@ static func build(parent: Node3D, level_data: Dictionary) -> Dictionary:
 	var counts: Dictionary = {}
 	var total := 0
 	var skipped := 0
+	var lamp_anchors: Array[Dictionary] = []
 	for value in level_data.get("dressing", []):
 		if not value is Dictionary:
 			skipped += 1
@@ -32,6 +38,16 @@ static func build(parent: Node3D, level_data: Dictionary) -> Dictionary:
 		if not location.is_finite():
 			skipped += 1
 			continue
+		if kind == "lamp":
+			var checked := relocate_fixture(parent, location, 0.28, 5.0)
+			if checked.is_empty():
+				skipped += 1
+				continue
+			location = checked.position
+			var lamp_yaw := float(anchor.get("yaw", 0.0))
+			var lens := location + Basis(Vector3.UP, lamp_yaw) * LAMP_LENS_LOCAL
+			lamp_anchors.append({"position": location, "head_position": lens, "yaw": lamp_yaw,
+				"radius": 0.28, "source": "authored", "sidewalk_checked": true})
 		var prop := Prim.group(root, location.x, location.y, location.z, "%s_%02d" % [kind, total])
 		prop.rotation.y = float(anchor.get("yaw", 0.0))
 		prop.set_meta("dressing_kind", kind)
@@ -52,7 +68,7 @@ static func build(parent: Node3D, level_data: Dictionary) -> Dictionary:
 				_bus_stop(prop, anchor)
 		counts[kind] = int(counts.get(kind, 0)) + 1
 		total += 1
-	return {"root": root, "count": total, "counts": counts, "skipped": skipped}
+	return {"root": root, "count": total, "counts": counts, "skipped": skipped, "lamp_anchors": lamp_anchors}
 
 
 static func _box(parent: Node3D, size: Vector3, center: Vector3, color: String) -> MeshInstance3D:
@@ -249,6 +265,17 @@ static func source_lamp_mesh() -> ArrayMesh:
 ## Ground, building clearance and the full walking-route corridor are checked
 ## before adding a new fixture. Called after the terrain physics frame.
 static func fixture_position(level: Node3D, at: Vector3, radius: float = 0.25, height: float = 5.0, diagnostic: Dictionary = {}) -> Dictionary:
+	if not Surfaces.circle_clear("sidewalk", at, radius + 0.04):
+		diagnostic["reason"] = "outside_sidewalk_footprint"
+		return {}
+	var vegetation = level.get("vegetation")
+	if is_instance_valid(vegetation) and vegetation.has_method("is_trunk_clear") and not vegetation.is_trunk_clear(at, radius + 0.2):
+		diagnostic["reason"] = "tree_trunk"
+		return {}
+	var yards = level.get("yard_details")
+	if is_instance_valid(yards) and yards.has_method("is_clear") and not yards.is_clear(at, radius + 0.1):
+		diagnostic["reason"] = "yard_fixture"
+		return {}
 	var points: Array = level.level_data.get("route", {}).get("points", [])
 	var flat := Vector2(at.x, at.z)
 	for i in range(1, points.size()):
@@ -257,17 +284,28 @@ static func fixture_position(level: Node3D, at: Vector3, radius: float = 0.25, h
 		if Geometry2D.get_closest_point_to_segment(flat, a, b).distance_to(flat) < radius + 0.8:
 			diagnostic["reason"] = "walking_route"
 			return {}
-	var ray := PhysicsRayQueryParameters3D.create(at + Vector3.UP * 3, at - Vector3.UP * 3, 1)
-	ray.hit_back_faces = false
 	var space := level.get_world_3d().direct_space_state
-	var ground := space.intersect_ray(ray)
-	if ground.is_empty():
-		diagnostic["reason"] = "missing_ground"
+	var low := INF
+	var high := -INF
+	for i in 13:
+		var angle := float(i) * TAU / 12.0
+		var sample := at + (Vector3.ZERO if i == 12 else Vector3(cos(angle), 0, sin(angle)) * radius)
+		var ray := PhysicsRayQueryParameters3D.create(sample + Vector3.UP * 4, sample - Vector3.UP * 4, 1)
+		ray.hit_back_faces = false
+		var ground := space.intersect_ray(ray)
+		if ground.is_empty():
+			diagnostic["reason"] = "unsupported_base"
+			return {}
+		if ground.normal.y < 0.9:
+			diagnostic["reason"] = "steep_ground"
+			return {}
+		low = minf(low, ground.position.y)
+		high = maxf(high, ground.position.y)
+	if high - low > 0.065:
+		diagnostic["reason"] = "uneven_base"
 		return {}
-	if ground.normal.y < 0.9:
-		diagnostic["reason"] = "steep_ground"
-		return {}
-	at.y = ground.position.y
+	# Embed the base just below the lowest support sample; no edge hangs in air.
+	at.y = low - 0.008
 	var shape := CylinderShape3D.new()
 	shape.radius = radius
 	shape.height = height
@@ -281,115 +319,207 @@ static func fixture_position(level: Node3D, at: Vector3, radius: float = 0.25, h
 		var collider: Node = hits[0].collider
 		diagnostic["collider"] = str(collider.get_parent().name) if collider.get_parent() else str(collider.name)
 		return {}
-	return {"position": at}
+	return {"position": at, "base_min_y": low, "base_max_y": high, "sidewalk_checked": true}
 
 
-static func build_street_network(level: Node3D) -> Dictionary:
+static func _curb_fixture(level: Node3D, center: Vector3, forward: Vector3, side: Vector3, half_width: float, radius: float, height: float, checks: Dictionary = {}, reserved: Array[Vector3] = [], along_offsets: Array = [0.0, 3.0, -3.0, 6.0, -6.0, 10.0, -10.0, 14.0, -14.0]) -> Dictionary:
+	for along in along_offsets:
+		for gap in [0.65, 0.9, 1.2, 1.5]:
+			var at := center + forward * float(along) + side * (half_width + float(gap))
+			var occupied := false
+			for previous in reserved:
+				if Vector2(at.x - previous.x, at.z - previous.z).length() < 1.2:
+					occupied = true
+					break
+			if occupied:
+				continue
+			var diagnostic: Dictionary = {}
+			var found := fixture_position(level, at, radius, height, diagnostic)
+			checks["attempts"] = int(checks.get("attempts", 0)) + 1
+			if not found.is_empty():
+				return found
+			var reasons: Dictionary = checks.get("reasons", {})
+			var reason := str(diagnostic.get("reason", "unknown"))
+			reasons[reason] = int(reasons.get(reason, 0)) + 1
+			checks["reasons"] = reasons
+	return {}
+
+
+static func relocate_fixture(level: Node3D, desired: Vector3, radius: float, height: float) -> Dictionary:
+	var direct := fixture_position(level, desired, radius, height)
+	if not direct.is_empty():
+		return direct
+	var nearest: Dictionary = {}
+	var best := INF
+	for road in level.level_data.get("roads", []):
+		var points: Array = road.get("points", [])
+		for i in range(1, points.size()):
+			var a: Vector3 = level.vector(points[i - 1])
+			var b: Vector3 = level.vector(points[i])
+			var flat := Geometry2D.get_closest_point_to_segment(Vector2(desired.x, desired.z), Vector2(a.x, a.z), Vector2(b.x, b.z))
+			var distance := flat.distance_to(Vector2(desired.x, desired.z))
+			if distance >= best:
+				continue
+			best = distance
+			var forward := Vector3(b.x - a.x, 0, b.z - a.z).normalized()
+			var side := forward.cross(Vector3.UP)
+			if (desired - Vector3(flat.x, desired.y, flat.y)).dot(side) < 0.0:
+				side = -side
+			nearest = {"center": Vector3(flat.x, desired.y, flat.y), "forward": forward, "side": side, "half": float(road.width) * 0.5}
+	if nearest.is_empty():
+		return {}
+	return _curb_fixture(level, nearest.center, nearest.forward, nearest.side, nearest.half, radius, height)
+
+
+static func build_street_network(level: Node3D, network: RefCounted = null) -> Dictionary:
 	var root := Prim.group(level, 0, 0, 0, "NeighborhoodStreetNetwork")
 	var mesh := source_lamp_mesh()
 	var transforms: Array[Transform3D] = []
-	var signs := 0
+	var lamp_anchors: Array[Dictionary] = []
+	var stop_transforms: Array[Transform3D] = []
 	var sign_anchors: Dictionary = {}
 	var sign_checks: Dictionary = {}
+	var stop_lane_ids: Array[int] = []
+	var reserved: Array[Vector3] = []
 	var rejected := 0
 	for road in level.level_data.get("roads", []):
-		var street := str(road.get("name", ""))
-		var points: Array = road.get("points", [])
-		if points.size() < 2:
+		if str(road.get("name", "")) not in ["Old York Road", "Wyanoke Avenue"] or mesh == null:
 			continue
-		if street in ["Old York Road", "Wyanoke Avenue"] and mesh:
-			var travelled := 0.0
-			var next_lamp := 24.0
-			var ordinal := 0
-			for i in range(1, points.size()):
-				var a: Vector3 = level.vector(points[i - 1])
-				var b: Vector3 = level.vector(points[i])
-				var length := Vector2(b.x - a.x, b.z - a.z).length()
-				while next_lamp <= travelled + length:
-					var point := a.lerp(b, (next_lamp - travelled) / maxf(length, 0.001))
-					var forward := Vector3(b.x - a.x, 0, b.z - a.z).normalized()
-					var side := forward.cross(Vector3.UP) * (1.0 if ordinal % 2 == 0 else -1.0)
-					var anchor := fixture_position(level, point + side * (float(road.width) * 0.5 + 0.85))
-					if not anchor.is_empty():
-						# The source cobra head reaches +Z: aim it back over the curb.
-						var pose := Transform3D(Basis(Vector3.UP, atan2(-side.x, -side.z)), anchor.position)
-						transforms.append(pose)
-						var body := _body(root)
-						body.transform = pose
-						_solid_pole(body, 0.16, 4.8, Vector3(0, 2.4, 0))
-					else:
-						rejected += 1
-					next_lamp += 42.0
-					ordinal += 1
-				travelled += length
-		if street in ["Dumbarton Avenue", "Cator Avenue", "Rose Hill Terrace"]:
-			# These three side streets meet Old York at the endpoint nearest x=0.
-			# Rose Hill approaches from the west; Cator and Dumbarton from the east.
-			var reverse_points := absf(float(points[0][0])) > absf(float(points[-1][0]))
-			var junction: Vector3 = level.vector(points[-1] if reverse_points else points[0])
-			var next: Vector3 = level.vector(points[-2] if reverse_points else points[1])
-			var outward := Vector3(next.x - junction.x, 0, next.z - junction.z).normalized()
-			# Trees and stoops occupy some curb corners. Search a short bounded
-			# approach strip, keeping every candidate on the incoming right curb.
-			var anchor: Dictionary = {}
-			var checks: Dictionary = {"attempts": 0, "reasons": {}, "colliders": []}
-			for along in [11.0, 9.0, 13.0, 15.0, 17.0]:
-				for curb_gap in [0.7, 0.45, 1.0, 1.3]:
-					var location: Vector3 = junction + outward * float(along) - outward.cross(Vector3.UP) * (float(road.width) * 0.5 + float(curb_gap))
-					var diagnostic: Dictionary = {}
-					anchor = fixture_position(level, location, 0.38, 2.8, diagnostic)
-					checks.attempts += 1
-					if not anchor.is_empty():
-						break
-					var reason: String = str(diagnostic.get("reason", "unknown"))
-					checks.reasons[reason] = int(checks.reasons.get(reason, 0)) + 1
-					var collider: String = str(diagnostic.get("collider", ""))
-					if not collider.is_empty() and not checks.colliders.has(collider):
-						checks.colliders.append(collider)
+		var points: Array = road.get("points", [])
+		var travelled := 0.0
+		var next_lamp := 24.0
+		var ordinal := 0
+		for i in range(1, points.size()):
+			var a: Vector3 = level.vector(points[i - 1])
+			var b: Vector3 = level.vector(points[i])
+			var length := Vector2(b.x - a.x, b.z - a.z).length()
+			while next_lamp <= travelled + length:
+				var point := a.lerp(b, (next_lamp - travelled) / maxf(length, 0.001))
+				var forward := Vector3(b.x - a.x, 0, b.z - a.z).normalized()
+				var side := forward.cross(Vector3.UP) * (1.0 if ordinal % 2 == 0 else -1.0)
+				var anchor := _curb_fixture(level, point, forward, side, float(road.width) * 0.5, 0.28, 5.0, {}, reserved)
 				if not anchor.is_empty():
-					break
-			sign_checks[street] = checks
-			if not anchor.is_empty():
-				var prop := Prim.group(root, anchor.position.x, anchor.position.y, anchor.position.z, "SideStreetStop")
-				prop.rotation.y = atan2(outward.x, outward.z)
-				prop.set_meta("dressing_kind", "stop_sign")
-				prop.set_meta("placement", "Interpretive side-street priority at " + street)
-				_stop_sign(prop)
-				sign_anchors[street] = anchor.position
-				signs += 1
-			else:
+					# The source cobra head reaches +Z: aim it back over the curb.
+					var yaw := atan2(-side.x, -side.z)
+					var pose := Transform3D(Basis(Vector3.UP, yaw), anchor.position)
+					transforms.append(pose)
+					reserved.append(anchor.position)
+					lamp_anchors.append({"position": anchor.position, "head_position": pose * LAMP_LENS_LOCAL,
+						"yaw": yaw, "radius": 0.28, "source": "network", "street": str(road.name), "sidewalk_checked": true})
+					var body := _body(root)
+					body.transform = pose
+					_solid_pole(body, 0.16, 4.8, Vector3(0, 2.4, 0))
+				else:
+					rejected += 1
+				next_lamp += 42.0
+				ordinal += 1
+			travelled += length
+	if network != null:
+		for lane in network.lanes:
+			if not bool(lane.enabled) or not bool(lane.stop):
+				continue
+			var path: Array[Vector3] = lane.points
+			var incoming := Vector3(path[-1].x - path[-2].x, 0, path[-1].z - path[-2].z).normalized()
+			var right := incoming.cross(Vector3.UP)
+			var center := path[-1] - right * float(lane.offset) + incoming * 2.35
+			center += incoming * maxf(0.0, float(lane.get("legacy_stop_setback", 0.0)) - float(lane.get("stop_setback", 0.0)))
+			var checks: Dictionary = {}
+			# Keep the closer sign beside its waiting line; broad lamp relocation
+			# could otherwise undo the requested reduction or cross the junction.
+			var anchor := _curb_fixture(level, center, incoming, right, float(lane.width) * 0.5, 0.38, 2.8, checks, reserved, [0.0, 0.5, -0.5, 1.0, -1.0, 1.5, -1.5, -2.0, -3.0])
+			sign_checks[str(lane.id)] = checks
+			if anchor.is_empty():
+				lane.stop = false
 				rejected += 1
-	if not transforms.is_empty():
+				continue
+			var outward := -incoming
+			var pose := Transform3D(Basis(Vector3.UP, atan2(outward.x, outward.z)), anchor.position)
+			var prop := Prim.group(root, anchor.position.x, anchor.position.y, anchor.position.z, "ApproachStop_%d" % int(lane.id))
+			prop.basis = pose.basis
+			prop.set_meta("dressing_kind", "stop_sign")
+			prop.set_meta("stop_lane_id", int(lane.id))
+			prop.set_meta("placement", "Stop control on " + str(lane.street))
+			_stop_sign(prop, false)
+			stop_transforms.append(pose)
+			reserved.append(anchor.position)
+			stop_lane_ids.append(int(lane.id))
+			sign_anchors[str(lane.id)] = {"position": anchor.position, "normal": outward, "incoming": incoming,
+				"street": str(lane.street), "junction": str(lane.to), "lane": int(lane.id), "radius": 0.38, "sidewalk_checked": true,
+				"legacy_setback": float(lane.get("legacy_stop_setback", 0.0)),
+				"target_setback": float(lane.get("stop_setback", 0.0)),
+				"actual_setback": (Vector3(lane.get("junction_point", center)) - Vector3(anchor.position)).dot(incoming)}
+	var batches := 0
+	for group in [{"mesh": mesh, "poses": transforms, "name": "OriginalStreetlampInstances"},
+		{"mesh": _stop_sign_mesh(), "poses": stop_transforms, "name": "StopSignInstances"}]:
+		if group.poses.is_empty() or group.mesh == null:
+			continue
 		var instances := MultiMesh.new()
 		instances.transform_format = MultiMesh.TRANSFORM_3D
-		instances.mesh = mesh
-		instances.instance_count = transforms.size()
-		for i in transforms.size():
-			instances.set_instance_transform(i, transforms[i])
+		instances.mesh = group.mesh
+		instances.instance_count = group.poses.size()
+		for i in group.poses.size():
+			instances.set_instance_transform(i, group.poses[i])
 		var batch := MultiMeshInstance3D.new()
-		batch.name = "OriginalStreetlampInstances"
+		batch.name = group.name
 		batch.multimesh = instances
 		root.add_child(batch)
-	return {"street_lamps": transforms.size(), "stop_signs": signs, "stop_anchors": sign_anchors, "stop_placement_checks": sign_checks,
-		"fixture_batches": 1 if not transforms.is_empty() else 0, "rejected_fixtures": rejected}
+		batches += 1
+	return {"street_lamps": transforms.size(), "lamp_anchors": lamp_anchors,
+		"stop_signs": stop_transforms.size(), "stop_anchors": sign_anchors, "stop_lane_ids": stop_lane_ids,
+		"stop_placement_checks": sign_checks, "fixture_batches": batches, "rejected_fixtures": rejected,
+		"pavement": Surfaces.get_status()}
 
 
-static func _stop_sign(parent: Node3D) -> void:
-	_cylinder(parent, 0.045, 2.7, Vector3(0, 1.35, 0), IRON)
-	# There is no stop-sign asset in the original model set. Native octagonal
-	# geometry complements the imported fixtures without a texture or point light.
-	for layer in 2:
+static func _stop_sign_mesh() -> ArrayMesh:
+	if _source_stop:
+		return _source_stop
+	var pole := CylinderMesh.new()
+	pole.top_radius = 0.045
+	pole.bottom_radius = 0.045
+	pole.height = 2.7
+	pole.radial_segments = 10
+	var parts := [[pole, Transform3D(Basis.IDENTITY, Vector3(0, 1.35, -0.10)), Color(IRON)]]
+	# Solid galvanized back plate, with paint only on the approach-facing (+Z)
+	# face. The rear-mounted pole never intersects the front lettering.
+	var plate_rotation := Basis(Vector3.RIGHT, PI / 2) * Basis(Vector3.UP, PI / 8)
+	for layer in [[0.39, 0.05, 0.0, "#777f80"], [0.39, 0.004, 0.027, CREAM], [0.35, 0.004, 0.031, RED]]:
 		var face := CylinderMesh.new()
-		face.top_radius = 0.39 if layer == 0 else 0.35
+		face.top_radius = float(layer[0])
 		face.bottom_radius = face.top_radius
-		face.height = 0.045 if layer == 0 else 0.052
+		face.height = float(layer[1])
 		face.radial_segments = 8
-		var plate := Prim.M(face, ClayLib.clay(CREAM if layer == 0 else RED), 0, 2.3, 0, parent)
-		plate.rotation.x = PI / 2
-		plate.rotation.z = PI / 8
+		parts.append([face, Transform3D(plate_rotation, Vector3(0, 2.3, float(layer[2]))), Color(layer[3])])
+	var surface := SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for part in parts:
+		var arrays: Array = part[0].get_mesh_arrays()
+		var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+		var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+		var pose: Transform3D = part[1]
+		for index in arrays[Mesh.ARRAY_INDEX]:
+			surface.set_color(part[2])
+			surface.set_normal(pose.basis * normals[index])
+			surface.add_vertex(pose * vertices[index])
+	var material := StandardMaterial3D.new()
+	material.vertex_color_use_as_albedo = true
+	material.vertex_color_is_srgb = true
+	material.roughness = 0.9
+	surface.set_material(material)
+	_source_stop = surface.commit()
+	return _source_stop
+
+
+static func _stop_sign(parent: Node3D, visual := true) -> void:
+	if visual:
+		var mesh := MeshInstance3D.new()
+		mesh.mesh = _stop_sign_mesh()
+		parent.add_child(mesh)
 	var label := Prim.label("STOP", 0.55, 0.22, CREAM, "mono")
-	label.position = Vector3(0, 2.3, 0.032)
+	label.position = Vector3(0, 2.3, 0.038)
+	label.double_sided = false
+	label.no_depth_test = false
+	label.visibility_range_end = 55.0
 	parent.add_child(label)
 	var body := _body(parent)
-	_solid_pole(body, 0.065, 2.7, Vector3(0, 1.35, 0))
+	_solid_pole(body, 0.065, 2.7, Vector3(0, 1.35, -0.10))
 	_solid_box(body, Vector3(0.78, 0.78, 0.06), Vector3(0, 2.3, 0))

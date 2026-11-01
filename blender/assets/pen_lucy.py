@@ -18,6 +18,9 @@ import config as C
 
 ck.reset()
 geom = json.load(open(C.GEOM_JSON))
+# Verify offline partition before export; Blender needs no Shapely install.
+import alley_surfaces
+alley_surfaces.verify_staged(geom)
 mats = {k: ck.mat(kind, hx, rough) for k, (kind, hx, rough) in geom["materials"].items()}
 
 col = bpy.data.collections.new("PenLucy")

@@ -1,0 +1,80 @@
+{
+  "city_combat_smoke": {
+    "passed": true,
+    "checks": 42,
+    "seconds": 25.72
+  },
+  "city_world_save_smoke": {
+    "passed": true,
+    "checks": 77,
+    "seconds": 38.33
+  },
+  "city_crowd_relocation_smoke": {
+    "passed": true,
+    "checks": 15,
+    "seconds": 4.13
+  },
+  "city_crowd_cadence_smoke": {
+    "passed": true,
+    "checks": 13,
+    "seconds": 8.21
+  },
+  "city_resident_recovery_smoke": {
+    "passed": true,
+    "checks": 11,
+    "seconds": 44.4
+  },
+  "city_residents_smoke": {
+    "passed": true,
+    "checks": 201,
+    "seconds": 25.15
+  },
+  "city_ui_smoke": {
+    "passed": true,
+    "checks": 82,
+    "seconds": 20.72
+  },
+  "city_life_smoke": {
+    "passed": true,
+    "checks": 326,
+    "seconds": 58.01
+  },
+  "city_combat_reactions_smoke": {
+    "passed": true,
+    "checks": 70,
+    "seconds": 71.71
+  },
+  "vehicle-damage": {
+    "checks": 36,
+    "passed": true
+  },
+  "vehicle-impact": {
+    "checks": 35,
+    "passed": true
+  },
+  "vehicle-jump": {
+    "checks": 33,
+    "passed": true
+  },
+  "vehicle-precision": {
+    "checks": 46,
+    "passed": true
+  },
+  "visual-details": {
+    "checks": 8,
+    "passed": true
+  },
+  "visual-final": {
+    "checks": 16,
+    "passed": true
+  },
+  "power": {
+    "passed": true
+  },
+  "limits": [
+    "Headless UI checks retain renderer-dependent skips.",
+    "Asset import emitted a Safe Save editor warning; subsequent real GPU captures confirmed reimport.",
+    "Visual acceptance uses a private target; no desktop control.",
+    "NPC death registry persists at the next successful stable-ground checkpoint. Primitive crowd IDs need migration if future content regenerates their ordering."
+  ]
+}

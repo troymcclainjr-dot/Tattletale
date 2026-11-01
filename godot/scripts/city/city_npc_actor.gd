@@ -3,6 +3,7 @@ extends CharacterBody3D
 
 const ACTOR_LAYER := 8
 const ACTOR_MASK := 1 | 2 | 4 | 8 | 16
+const RenderLOD := preload("res://scripts/city/city_npc_render_lod.gd")
 var actor_id := ""
 var display_name := "Neighbor"
 var cast_id := "mama"
@@ -10,6 +11,17 @@ var level: Node3D
 var puppet: Puppet
 var yaw := 0.0
 var enabled := true
+## Combat temporarily owns physical movement; daily routes and mission identities survive.
+var combat_override := false:
+	set(value):
+		combat_override = value
+		if value and render_detail != null:
+			render_detail.force_full()
+## A short, collision-checked bicycle sidestep preserves daily target/revision.
+var bicycle_override := false
+## Permanent for this world slot. A dead identity can never be re-enabled; the
+## combat provider owns its corpse visibility and the persisted death registry.
+var dead := false
 var speed := 1.15
 var moving := false
 var blocked := false
@@ -20,11 +32,23 @@ var has_target := false
 var patrol_points: Array[Vector3] = []
 var patrol_index := 0
 var manual_target := false
+var target_revision := 0
 var capsule: CollisionShape3D
 var _wait := 1.0
 var _clock := 0.0
 var _speech_remaining := 0.0
 var _speech_label: Label3D
+var _walking_ray := PhysicsRayQueryParameters3D.new()
+var render_detail: Node
+var _pose_updated := true
+
+func walking_ground_at(point: Vector3) -> Dictionary:
+	# Walking is already constrained to a 22 cm step. Avoid the placement ray's
+	# full 180 m span and its per-footfall query allocation.
+	_walking_ray.from = point + Vector3.UP * 1.5
+	_walking_ray.to = point - Vector3.UP * 1.5
+	_walking_ray.collision_mask = 1
+	return get_world_3d().direct_space_state.intersect_ray(_walking_ray)
 
 func build(owner_level: Node3D, identity: String, character: String, label: String) -> void:
 	level = owner_level
@@ -57,8 +81,21 @@ func build(owner_level: Node3D, identity: String, character: String, label: Stri
 	_speech_label.visibility_range_begin = 2.5
 	_speech_label.hide()
 	add_child(_speech_label)
+	# Daily residents and promoted crowd replace the initial rig, and patrols
+	# recolor it immediately after build. Capture that final appearance once.
+	_setup_render_detail.call_deferred()
+
+func _setup_render_detail() -> void:
+	if render_detail != null or puppet == null or not is_inside_tree() or actor_id.begins_with("crowd_"):
+		return
+	if not RenderLOD.enabled or "--no-npc-render-lod" in OS.get_cmdline_user_args():
+		return
+	render_detail = RenderLOD.new()
+	add_child(render_detail)
+	render_detail.setup(self)
 
 func set_target(destination: Vector3, manual := true) -> void:
+	target_revision += 1
 	target = destination
 	has_target = true
 	manual_target = manual
@@ -67,6 +104,7 @@ func set_target(destination: Vector3, manual := true) -> void:
 	_wait = 0.0
 
 func set_patrol(points: Array[Vector3]) -> void:
+	target_revision += 1
 	patrol_points = points.duplicate()
 	patrol_index = 0
 	manual_target = false
@@ -77,8 +115,23 @@ func speak(text: String, seconds := 4.0) -> void:
 	_speech_label.text = text
 	_speech_remaining = maxf(0.1, seconds)
 	_speech_label.show()
+	if render_detail != null:
+		render_detail.force_full()
 
 func set_enabled(value: bool) -> void:
+	if has_meta("police_custody_completed") and not dead:
+		# Mission/schedule activation cannot rematerialize a taken-in identity.
+		enabled = false
+		visible = false
+		collision_layer = 0
+		collision_mask = 0
+		return
+	if dead:
+		# Missions, residents LOD and save restore all route through here.
+		enabled = false
+		collision_layer = 0
+		collision_mask = 0
+		return
 	enabled = value
 	visible = value
 	collision_layer = ACTOR_LAYER if value else 0
@@ -86,12 +139,32 @@ func set_enabled(value: bool) -> void:
 	velocity = Vector3.ZERO
 	moving = false
 
+## Called once by combat. The body stays visible as a corpse until combat fades it.
+func mark_dead() -> void:
+	dead = true
+	set_meta("city_dead", true)
+	if has_meta("combat_controlled"):
+		remove_meta("combat_controlled")
+	enabled = false
+	combat_override = true
+	collision_layer = 0
+	collision_mask = 0
+	velocity = Vector3.ZERO
+	moving = false
+	has_target = false
+	blocked = false
+	_speech_remaining = 0.0
+	if _speech_label != null:
+		_speech_label.hide()
+
 func tick(delta: float) -> void:
-	if not enabled or puppet == null:
+	if not enabled or puppet == null or combat_override:
 		return
 	_clock += delta
 	_speech_remaining = maxf(0.0, _speech_remaining - delta)
 	_speech_label.visible = _speech_remaining > 0.0
+	if bicycle_override:
+		return
 	moving = false
 	velocity = Vector3.ZERO
 	var before := global_position
@@ -115,7 +188,7 @@ func tick(delta: float) -> void:
 			# Complete the turn before taking a forward step. No backwards/sideways slide.
 			if absf(angle_difference(yaw, wanted)) < 0.035:
 				var horizontal := Vector3(sin(yaw), 0.0, cos(yaw)) * minf(speed * delta, offset.length())
-				var ground: Dictionary = level.ground_at(global_position + horizontal)
+				var ground: Dictionary = walking_ground_at(global_position + horizontal)
 				if ground.is_empty() or ground.normal.y < cos(deg_to_rad(45.0)):
 					blocked = true
 				else:
@@ -146,7 +219,9 @@ func tick(delta: float) -> void:
 		_wait = 1.5
 	puppet.g.rotation.y = yaw
 	puppet.phase += travelled * 3.5
-	puppet.pose({"walk": 0.40 if moving else 0.0, "bob": absf(sin(puppet.phase)) * 0.018 if moving else sin(_clock * 1.4) * 0.004, "mouth": (0.15 + absf(sin(_clock * 12.0)) * 0.45) if _speech_remaining > 0.0 else 0.0})
+	_pose_updated = render_detail == null or render_detail.animation_due(delta)
+	if _pose_updated:
+		puppet.pose({"walk": 0.40 if moving else 0.0, "bob": absf(sin(puppet.phase)) * 0.018 if moving else sin(_clock * 1.4) * 0.004, "mouth": (0.15 + absf(sin(_clock * 12.0)) * 0.45) if _speech_remaining > 0.0 else 0.0})
 
 func get_status() -> Dictionary:
-	return {"id": actor_id, "enabled": enabled, "position": global_position, "yaw": yaw, "moving": moving, "blocked": blocked, "has_target": has_target, "target": target, "distance_walked": distance_walked, "patrol_points": patrol_points.size()}
+	return {"id": actor_id, "enabled": enabled, "dead": dead, "position": global_position, "yaw": yaw, "moving": moving, "blocked": blocked, "has_target": has_target, "target": target, "distance_walked": distance_walked, "patrol_points": patrol_points.size()}

@@ -1,0 +1,209 @@
+{
+  "version": 1,
+  "about": "Tattletale 2-Pack progression data: money, the two independent reputation tracks, shop stock and prices, action rules, authored unlocks and role-based perception. scripts/city/city_progression.gd only interprets this file, so tune every number here. Requirements are expressions such as \"gangsta>=respected and not snitch>=known\". Observers are story roles (neighbor, street, police, clerk), never appearance or demographic attributes. Heat lives in law; weapons and ammunition live in combat. Relationships are per authored contact, decisions record one durable option each (\"after\" orders them), errands pay through one shared durable cooldown, and reactions add contact lines by requirement such as \"choice:petals_call:report\" or \"rel:ines>=friendly\".",
+  "money": {"starting": 500, "max": 9999999},
+  "new_game": {"strict_starting_inventory": true, "starter_weapons": ["fists"]},
+  "limits": {"history": 48, "once_keys": 256, "flags": 128, "stack": 999, "purchase_count": 100000, "action_count": 1000000, "cooldown_entries": 256},
+  "gates": {"block_downed": true, "block_combat": true, "block_driving": true, "block_recovering": true, "block_wanted": true, "require_open_shop": true},
+  "tracks": {
+    "snitch": {
+      "label": "Snitch", "min": 0, "max": 100, "start": 0,
+      "tiers": [
+        {"id": "unknown", "at": 0, "label": "Unknown"},
+        {"id": "nosy", "at": 15, "label": "Nosy neighbor"},
+        {"id": "known", "at": 35, "label": "Known snitch"},
+        {"id": "notorious", "at": 65, "label": "Certified tattletale"}
+      ]
+    },
+    "gangsta": {
+      "label": "Gangsta", "min": 0, "max": 100, "start": 0,
+      "tiers": [
+        {"id": "unknown", "at": 0, "label": "Unknown"},
+        {"id": "noticed", "at": 15, "label": "Talked about"},
+        {"id": "respected", "at": 35, "label": "Respected"},
+        {"id": "feared", "at": 65, "label": "Street legend"}
+      ]
+    }
+  },
+  "items": {
+    "pistol": {"kind": "weapon", "weapon": "pistol", "label": "Pistol", "price": 250, "description": "Semi-automatic sidearm, handed over with one loaded magazine.", "hint": "Press 2 to equip.", "action": "buy_weapon"},
+    "uzi": {"kind": "weapon", "weapon": "uzi", "label": "Uzi", "price": 650, "description": "Compact automatic, handed over with one loaded magazine.", "hint": "Press 3 to equip.", "requires": "unlock:counter_uzi", "locked": "Kept under the counter for customers the block talks about.", "action": "buy_weapon"},
+    "ak47": {"kind": "weapon", "weapon": "ak47", "label": "AK47", "price": 1200, "description": "Automatic rifle, handed over with one loaded magazine.", "hint": "Press 4 to equip.", "requires": "unlock:counter_ak47", "locked": "Only brought out for customers with real street respect.", "action": "buy_weapon"},
+    "ammo_pistol": {"kind": "ammo", "weapon": "pistol", "label": "Pistol ammunition", "rounds": 24, "price": 30, "description": "Two magazines' worth: 24 rounds."},
+    "ammo_uzi": {"kind": "ammo", "weapon": "uzi", "label": "Uzi ammunition", "rounds": 60, "price": 45, "description": "Two magazines' worth: 60 rounds."},
+    "ammo_ak47": {"kind": "ammo", "weapon": "ak47", "label": "AK47 ammunition", "rounds": 60, "price": 75, "description": "Two magazines' worth: 60 rifle rounds."},
+    "cannabis": {"kind": "goods", "label": "Cannabis", "quantity": 1, "max": 12, "price": 35, "description": "One sealed pouch for your stash. Inventory item only."}
+  },
+  "shops": {
+    "gun": {"label": "Gun counter", "clerk_role": "clerk", "items": ["pistol", "uzi", "ak47", "ammo_pistol", "ammo_uzi", "ammo_ak47"]},
+    "weed": {"label": "Cannabis counter", "clerk_role": "clerk", "items": ["cannabis"]}
+  },
+  "pricing": {
+    "min_percent": -50,
+    "max_percent": 100,
+    "modifiers": [
+      {"id": "street_respect", "label": "Street respect", "shops": ["gun", "weed"], "requires": "gangsta>=respected", "percent": -10},
+      {"id": "snitch_tax", "label": "Snitch tax", "shops": ["gun", "weed"], "requires": "snitch>=known", "percent": 15}
+    ]
+  },
+  "unlocks": {
+    "counter_uzi": {"label": "Uzi brought out from under the counter", "requires": "gangsta>=noticed"},
+    "counter_ak47": {"label": "AK47 brought out from the back room", "requires": "gangsta>=respected"},
+    "reliable_reporter": {"label": "Officers treat your reports as reliable", "requires": "snitch>=known"},
+    "two_faced": {"label": "The block can't decide whose side you're on", "requires": "snitch>=known and gangsta>=respected"}
+  },
+  "actions": {
+    "case_resolved": {"label": "Resolved a neighborhood case", "deltas": {"snitch": 6}, "once": true},
+    "case_reported": {"label": "Took a neighborhood case to the officer", "deltas": {"snitch": 10}, "once": true},
+    "report_to_police": {"label": "Reported an infraction to the police", "deltas": {"snitch": 4}, "cooldown": 120.0, "window": {"seconds": 600.0, "max": 3}},
+    "street_assault": {"label": "Threw hands in front of the block", "deltas": {"gangsta": 1}, "cooldown": 8.0, "window": {"seconds": 60.0, "max": 5}, "requires_witness": true},
+    "street_shooting": {"label": "Fired shots in the street", "deltas": {"gangsta": 2}, "cooldown": 20.0, "window": {"seconds": 60.0, "max": 3}, "requires_witness": true},
+    "street_stomp": {"label": "Finished a downed fighter", "deltas": {"gangsta": 4}, "window": {"seconds": 60.0, "max": 4}, "requires_witness": true},
+    "buy_weapon": {"label": "Bought a weapon over the counter", "deltas": {"gangsta": 3}, "once": true},
+    "dialogue_own_it": {"label": "Owned the snitch reputation", "deltas": {"snitch": 2}},
+    "dialogue_vouch_street": {"label": "Vouched for the block", "deltas": {"gangsta": 2}},
+    "dialogue_deny_snitching": {"label": "Swore off snitching", "deltas": {"snitch": -3}, "once": true, "requires": "snitch>=nosy", "set_flags": ["swore_off"]},
+    "buy_round": {"label": "Bought the corner a round of sodas", "deltas": {"gangsta": 1}, "money": -15, "cooldown": 300.0, "limit": 5, "notice": "Sodas for the corner. -$15."},
+    "petals_call_report": {"label": "Told Officer Dan about Ines's flower cart", "deltas": {"snitch": 8}, "relations": {"dan": 15, "ines": -20, "malik": -10}, "once": true},
+    "petals_call_protect": {"label": "Stood up for Ines's flower cart", "deltas": {"gangsta": 8}, "relations": {"ines": 20, "malik": 10, "dan": -10}, "once": true},
+    "petals_call_negotiate": {"label": "Offered to broker a vendor permit", "deltas": {"snitch": 3, "gangsta": 3}, "relations": {"ines": 10, "dan": 5, "organizer": 5}, "once": true},
+    "petals_call_intimidate": {"label": "Charged Ines a corner fee", "deltas": {"gangsta": 10}, "relations": {"ines": -35, "malik": 5}, "money": 120, "once": true, "notice": "Ines counts out $120 without looking at you."},
+    "petals_part_done": {"label": "Finished a part of the flower cart story", "once": true},
+    "petals_report_done": {"label": "Filed the flower cart report", "deltas": {"snitch": 6}, "relations": {"dan": 10, "malik": -5}, "once": true},
+    "petals_protect_done": {"label": "Kept the flower cart off Officer Dan's list", "deltas": {"gangsta": 6}, "relations": {"ines": 10, "malik": 10, "dan": -10}, "money": 40, "once": true, "notice": "Ines presses $40 of sunflower money into your hand."},
+    "petals_negotiate_done": {"label": "Got the flower cart's permit moving", "deltas": {"snitch": 3, "gangsta": 3}, "relations": {"ines": 10, "dan": 10, "organizer": 10}, "once": true},
+    "petals_intimidate_done": {"label": "Kept the corner fee quiet", "deltas": {"gangsta": 6}, "relations": {"dan": -10, "malik": 10}, "once": true},
+    "petals_final_report_amends": {"label": "Helped Ines refile her permit", "deltas": {"snitch": 2}, "relations": {"ines": 40, "organizer": 10}, "once": true},
+    "petals_final_report_firm": {"label": "Stood by the report", "deltas": {"snitch": 6}, "relations": {"dan": 10, "ines": -25}, "money": 50, "once": true, "notice": "Officer Dan's watch commendation comes with a $50 stipend."},
+    "petals_final_protect_amends": {"label": "Walked Ines's permit to Officer Dan", "deltas": {"gangsta": -2}, "relations": {"dan": 25, "ines": 5}, "once": true},
+    "petals_final_protect_firm": {"label": "Kept the corner covered", "deltas": {"gangsta": 6}, "relations": {"malik": 10, "ines": 20, "dan": -15}, "once": true},
+    "petals_final_negotiate_amends": {"label": "Turned down Ines's thank-you money", "deltas": {"snitch": 2, "gangsta": 2}, "relations": {"ines": 15, "organizer": 10}, "once": true},
+    "petals_final_negotiate_firm": {"label": "Took a consulting fee on flower sales", "deltas": {"gangsta": 3}, "relations": {"ines": -20}, "money": 75, "once": true, "notice": "Ines pays your $75 consulting fee. Middleman life."},
+    "petals_final_intimidate_amends": {"label": "Paid back the corner fee", "deltas": {"gangsta": -4}, "relations": {"ines": 35, "dan": 15}, "money": -120, "once": true, "notice": "You hand Ines her $120 back."},
+    "petals_final_intimidate_firm": {"label": "Raised the corner fee", "deltas": {"gangsta": 8}, "relations": {"ines": -30, "dan": -20}, "money": 80, "once": true, "notice": "Ines pays another $80. Dumbarton goes quiet when you walk by."},
+    "petals_closed": {"label": "The flower cart story ended without Ines", "once": true, "set_flags": ["petals_closed"]}
+  },
+  "offenses": {
+    "assault": {"action": "street_assault", "key": "victim"},
+    "shooting": {"action": "street_shooting", "key": "none"},
+    "stomp": {"action": "street_stomp", "key": "victim"}
+  },
+  "cases": {
+    "money_per_point": 1.0,
+    "money_overrides": {},
+    "max_reward": 100000,
+    "default_action": "case_resolved",
+    "actions": {"parcel_report": "case_reported", "dumping": "case_reported", "porch_light": "case_reported",
+      "petals_word": "petals_part_done", "petals_report": "petals_report_done", "petals_protect": "petals_protect_done",
+      "petals_negotiate": "petals_negotiate_done", "petals_intimidate": "petals_intimidate_done", "petals_end_report": "petals_part_done",
+      "petals_end_protect": "petals_part_done", "petals_end_negotiate": "petals_part_done", "petals_end_intimidate": "petals_part_done"}
+  },
+  "relationships": {
+    "min": -100, "max": 100, "start": 0,
+    "tiers": [
+      {"id": "hostile", "at": -100, "label": "Hostile"},
+      {"id": "wary", "at": -40, "label": "Wary"},
+      {"id": "neutral", "at": -10, "label": "Neutral"},
+      {"id": "friendly", "at": 15, "label": "Friendly"},
+      {"id": "loyal", "at": 45, "label": "Loyal"}
+    ],
+    "contacts": {
+      "ines": {"label": "Ines Morales", "actors": ["daily_ines_morales"]},
+      "dan": {"label": "Officer Dan", "actors": ["officer"]},
+      "malik": {"label": "Malik", "actors": ["lookout"]},
+      "organizer": {"label": "Block organizer", "actors": ["organizer"]}
+    }
+  },
+  "decisions": {
+    "petals_call": {"label": "What 2-Pack did about Ines's flower cart", "options": {
+      "report": {"label": "Reported the cart to Officer Dan", "action": "petals_call_report"},
+      "protect": {"label": "Protected the cart", "action": "petals_call_protect"},
+      "negotiate": {"label": "Brokered a vendor permit", "action": "petals_call_negotiate"},
+      "intimidate": {"label": "Charged Ines a corner fee", "action": "petals_call_intimidate"}
+    }},
+    "petals_final": {"label": "How the flower cart story ended", "options": {
+      "report_amends": {"label": "Snitch with a heart", "action": "petals_final_report_amends", "after": {"petals_call": "report"}},
+      "report_firm": {"label": "By the book", "action": "petals_final_report_firm", "after": {"petals_call": "report"}},
+      "protect_amends": {"label": "Paper armor", "action": "petals_final_protect_amends", "after": {"petals_call": "protect"}},
+      "protect_firm": {"label": "Dumbarton's protector", "action": "petals_final_protect_firm", "after": {"petals_call": "protect"}},
+      "negotiate_amends": {"label": "Block broker", "action": "petals_final_negotiate_amends", "after": {"petals_call": "negotiate"}},
+      "negotiate_firm": {"label": "Middleman", "action": "petals_final_negotiate_firm", "after": {"petals_call": "negotiate"}},
+      "intimidate_amends": {"label": "Changed tune", "action": "petals_final_intimidate_amends", "after": {"petals_call": "intimidate"}, "requires": "money>=120"},
+      "intimidate_firm": {"label": "Petal tax collector", "action": "petals_final_intimidate_firm", "after": {"petals_call": "intimidate"}}
+    }}
+  },
+  "errands": {
+    "cooldown_seconds": 120,
+    "max_payout": 200,
+    "variants": {
+      "delivery": {"label": "Block delivery", "payout": 45},
+      "flowers": {"label": "Flower delivery for Ines", "payout": 65, "requires": "rel:ines>=friendly and not flag:petals_closed"},
+      "watch": {"label": "Watch walk for Officer Dan", "payout": 55, "requires": "rel:dan>=friendly"},
+      "corner": {"label": "Soda run for the corner", "payout": 55, "requires": "rel:malik>=friendly"}
+    }
+  },
+  "reactions": [
+    {"id": "ines_report_amends", "actors": ["daily_ines_morales"], "requires": "choice:petals_final:report_amends", "line": "Permit's on the cart now, snitch. ...Thanks for walking it in."},
+    {"id": "ines_report_firm", "actors": ["daily_ines_morales"], "requires": "choice:petals_final:report_firm", "line": "Stay on your side of the street, neighborhood watch."},
+    {"id": "ines_protect_amends", "actors": ["daily_ines_morales"], "requires": "choice:petals_final:protect_amends", "line": "Permit's legit now. You still get the good sunflowers."},
+    {"id": "ines_protect_firm", "actors": ["daily_ines_morales"], "requires": "choice:petals_final:protect_firm", "line": "My bodyguard! Sunflowers on the house, 2-Pack."},
+    {"id": "ines_negotiate_amends", "actors": ["daily_ines_morales"], "requires": "choice:petals_final:negotiate_amends", "line": "First licensed vendor on Dumbarton, thanks to you."},
+    {"id": "ines_negotiate_firm", "actors": ["daily_ines_morales"], "requires": "choice:petals_final:negotiate_firm", "line": "Ten percent, 2-Pack. The sunflowers remember."},
+    {"id": "ines_intimidate_amends", "actors": ["daily_ines_morales"], "requires": "choice:petals_final:intimidate_amends", "line": "You paid it back. I didn't think you would."},
+    {"id": "ines_intimidate_firm", "actors": ["daily_ines_morales"], "requires": "choice:petals_final:intimidate_firm", "line": "Here's your fee. Please just keep walking."},
+    {"id": "ines_reported", "actors": ["daily_ines_morales"], "requires": "choice:petals_call:report", "line": "Here comes the neighborhood watch. Hide the sunflowers."},
+    {"id": "ines_protected", "actors": ["daily_ines_morales"], "requires": "choice:petals_call:protect", "line": "Nobody's touched my cart since you stepped in, 2-Pack."},
+    {"id": "ines_negotiated", "actors": ["daily_ines_morales"], "requires": "choice:petals_call:negotiate", "line": "Who knew the neighborhood watch could broker a deal?"},
+    {"id": "ines_intimidated", "actors": ["daily_ines_morales"], "requires": "choice:petals_call:intimidate", "line": "I paid. What else do you want?"},
+    {"id": "ines_worried", "actors": ["daily_ines_morales"], "requires": "not choice:petals_call and not flag:petals_closed", "line": "Sunflowers, two dollars! If the city lets me keep selling them."},
+    {"id": "dan_suspicious", "actors": ["officer"], "requires": "rel:dan<=-10", "line": "Funny how nobody on Dumbarton sees anything when you're around, 2-Pack."},
+    {"id": "dan_watch", "actors": ["officer"], "requires": "rel:dan>=friendly", "line": "Good reports lately, 2-Pack. The watch walk is yours if you want the stipend."},
+    {"id": "malik_closed", "actors": ["lookout"], "requires": "flag:petals_closed", "line": "Ines's cart is still chained to the fence. Nobody sells sunflowers on Dumbarton now."},
+    {"id": "malik_cold", "actors": ["lookout"], "requires": "rel:malik<=-10", "line": "Careful what you say near 2-Pack. Dan hears all of it."},
+    {"id": "malik_respect", "actors": ["lookout"], "requires": "rel:malik>=friendly", "line": "The corner remembers who stood up. The soda run is yours if you want it."},
+    {"id": "malik_hint", "actors": ["lookout"], "requires": "not choice:petals_call", "line": "Ines on Dumbarton is worried about her flower cart. Somebody called it in."},
+    {"id": "organizer_broker", "actors": ["organizer"], "requires": "rel:organizer>=friendly", "line": "The block association could use more neighbors who fix things instead of just reporting them."}
+  ],
+  "migration": {"credit_reputation": true, "credit_money": false},
+  "perception": {
+    "roles": ["neighbor", "street", "police", "clerk"],
+    "rules": [
+      {"id": "street_two_faced", "roles": ["street"], "requires": "unlock:two_faced", "attitude": "conflicted", "label": "Two-faced", "line": "Rhymes about the corner, reports to the officer. Pick a side, 2-Pack."},
+      {"id": "street_snitch", "roles": ["street"], "requires": "snitch>=known", "attitude": "guarded", "label": "Known snitch", "line": "Lower your voice. 2-Pack's been talking to the officer again."},
+      {"id": "street_respect", "roles": ["street"], "requires": "gangsta>=respected", "attitude": "respectful", "label": "Respected", "line": "Respect, 2-Pack. The block's been talking about you."},
+      {"id": "street_nosy", "roles": ["street"], "requires": "snitch>=nosy", "attitude": "wary", "label": "Nosy", "line": "You've been asking a lot of questions lately."},
+      {"id": "neighbor_feared", "roles": ["neighbor"], "requires": "gangsta>=feared", "attitude": "nervous", "label": "Street legend", "line": "Oh. 2-Pack. We don't want any trouble."},
+      {"id": "neighbor_grateful", "roles": ["neighbor"], "requires": "snitch>=known", "attitude": "grateful", "label": "Block watchdog", "line": "Thanks for keeping an eye on the block, 2-Pack."},
+      {"id": "neighbor_uneasy", "roles": ["neighbor"], "requires": "gangsta>=respected", "attitude": "uneasy", "label": "Rough reputation", "line": "People say you've been in some fights lately."},
+      {"id": "police_watchful", "roles": ["police"], "requires": "gangsta>=feared", "attitude": "watchful", "label": "Person of interest", "line": "We've had reports about you, 2-Pack. Keep it calm."},
+      {"id": "police_reliable", "roles": ["police"], "requires": "unlock:reliable_reporter", "attitude": "cooperative", "label": "Reliable reporter", "line": "Good reports lately. Keep sticking to the facts."},
+      {"id": "clerk_two_faced", "roles": ["clerk"], "requires": "unlock:two_faced", "attitude": "amused", "label": "Two-faced regular", "line": "Street discount, snitch tax. It about evens out, 2-Pack."},
+      {"id": "clerk_snitch", "roles": ["clerk"], "requires": "snitch>=known", "attitude": "guarded", "label": "Known snitch", "line": "Word travels fast. Snitch tax applies."},
+      {"id": "clerk_respect", "roles": ["clerk"], "requires": "gangsta>=respected", "attitude": "respectful", "label": "Respected regular", "line": "Respect. Street discount's on."},
+      {"id": "default", "roles": ["*"], "requires": "", "attitude": "neutral", "label": "Unknown", "line": ""}
+    ]
+  },
+  "actor_roles": {
+    "default": "neighbor",
+    "actors": {"officer": "police", "lookout": "street", "resident": "neighbor", "gardener": "neighbor", "organizer": "neighbor", "caretaker": "neighbor", "ambient_mailman": "neighbor"},
+    "prefixes": {"patrol_officer_": "police"}
+  },
+  "dialogue_examples": {
+    "lookout_reputation": {
+      "start": "start",
+      "nodes": {
+        "start": {"speaker": "Dumbarton witness", "lines": ["Folks on Old York keep asking me whose side you're on."], "choices": [
+          {"text": "I report what I see. That's the job.", "condition": "not used:lookout_side", "hook": {"kind": "progression", "action": "dialogue_own_it", "once": "lookout_side"}, "next": "owned"},
+          {"text": "I'm with the block. Always.", "condition": "not used:lookout_side", "hook": {"kind": "progression", "action": "dialogue_vouch_street", "once": "lookout_side"}, "next": "vouched"},
+          {"text": "I'm done snitching. For real this time.", "condition": "snitch>=nosy and not flag:swore_off", "hook": {"kind": "progression", "action": "dialogue_deny_snitching"}, "next": "denied"},
+          {"text": "Sodas for the corner, on me.", "condition": "money>=15", "hook": {"kind": "progression", "action": "buy_round"}, "next": "round"},
+          {"text": "Another time."}
+        ]},
+        "owned": {"speaker": "Dumbarton witness", "lines": ["Honest, at least. Some folks will respect that. Some won't."]},
+        "vouched": {"speaker": "Dumbarton witness", "lines": ["Good to hear. I'll pass it along."]},
+        "denied": {"speaker": "Dumbarton witness", "lines": ["Sure, 2-Pack. We'll see."]},
+        "round": {"speaker": "Dumbarton witness", "lines": ["Cold sodas? Now that's a reputation."]}
+      }
+    }
+  }
+}

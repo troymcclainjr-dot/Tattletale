@@ -244,15 +244,29 @@ def export(cw, buildings, area, site, context, zones, height, origin_y, origin_l
         return [round(float(xyz[0]), 4), round(float(xyz[2]) - origin_y, 4), round(-float(xyz[1]), 4)]
     def normal(xy):
         return [round(float(xy[0]), 6), 0.0, round(-float(xy[1]), 6)]
-    business_records, rear_records, stair_records = [], [], []
+    business_records, rear_records, stair_records, facade_records = [], [], [], []
     for b in buildings:
         common = {"building_id": b["id"], "source_mesh": b.get("object", "")}
+        bay = b.get("upper_bay")
+        if bay:
+            facade_records.append({**common, "kind": "upper_bay", "street": b.get("tags", {}).get("addr:street", ""),
+                                   "family": bay.get("family", "rose_hill"),
+                                   "position": actual(bay["xyz"]), "normal": normal(bay["normal_xy"]),
+                                   "width_m": round(bay["width_m"], 3), "depth_m": bay["depth_m"],
+                                   "base_y": round(bay["base_z"] - origin_y, 4),
+                                   "top_y": round(bay["top_z"] - origin_y, 4), "variant": bay["variant"],
+                                   "storey_height_m": round(bay["storey_height_m"], 4),
+                                   "porch_clearance_m": round(bay["porch_clearance_m"], 4)})
         shop = b.get("business", {})
         if "sign_xyz" in shop:
             business_records.append({**common, "name": shop["name"], "type": shop["type"], "subtitle": shop["subtitle"],
                                      "sign_position": actual(shop["sign_xyz"]), "front_position": actual(shop["sign_xyz"]),
                                      "door_position": actual(shop["door_xyz"]), "sign_width": round(shop["sign_width"], 3),
                                      "normal": normal(shop["normal_xy"])})
+            if shop.get("kit"):
+                # Neighborhood shop kits: built geometry only; runtime adds the sign text.
+                business_records[-1].update(kit=shop["kit"], storeys=shop["storeys"], entry=shop["entry"],
+                                            sign_text_color=shop["sign_text_color"], parapet=bool(shop["parapet"]))
         rear = b.get("rear_door")
         if rear:
             rear_records.append({**common, "position": actual(rear["xyz"]), "normal": normal(rear["normal_xy"])})
@@ -278,11 +292,14 @@ def export(cw, buildings, area, site, context, zones, height, origin_y, origin_l
         "terrain_extent": {"min": [round(minx, 3), float(sample[:, 1].min()), round(-maxn, 3)],
                            "max": [round(maxx, 3), float(sample[:, 1].max()), round(-minn, 3)]},
         "dressing": dressing, "businesses": business_records, "parks": park_records,
-        "rear_doors": rear_records, "porch_stairs": stair_records, "construction_audit": construction_audit or {},
+        "rear_doors": rear_records, "porch_stairs": stair_records, "facade_details": facade_records,
+        "construction_audit": construction_audit or {},
         "placement_notes": "Landmarks/spawn lie on actual generated sidewalks. Decorative fixtures are fictional; widths are processing defaults unless OSM supplies width. Route crosses side streets. Terrain extent is a bounding box; use site_boundary for playable area.",
     }
     output = os.path.join(C.ROOT, "godot", "assets", "data", "pen_lucy_level.json")
     os.makedirs(os.path.dirname(output), exist_ok=True)
-    with open(output, "w", encoding="utf-8") as f:
+    temporary = output + ".tmp"
+    with open(temporary, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, separators=(",", ":"))
+    os.replace(temporary, output)
     return output, payload

@@ -57,6 +57,9 @@ func key(code: int) -> void:
 	await frames(2)
 
 func capture_state(expected: int, label: String) -> void:
+	if level != null and level.offscreen_validation:
+		check(Input.mouse_mode == Input.MOUSE_MODE_VISIBLE, label + ": offscreen validation leaves host pointer visible")
+		return
 	if DisplayServer.get_name() == "headless":
 		skip(label + ": headless backend cannot establish OS capture (Input.mouse_mode=%d)" % Input.mouse_mode)
 	else:
@@ -90,6 +93,10 @@ func _run() -> void:
 		check(false, "neighborhood initializes within bounded frame count")
 		_finish()
 		return
+	var phone_help := false
+	for label in level._settings.find_children("*", "Label", true, false):
+		phone_help = phone_help or ("O  Open photo folder" in str(label.text) and "F5  Save progress" in str(label.text))
+	check(phone_help, "Controls documents phone folder and checkpoint keys")
 	_saved_values = level._settings.values.duplicate(true)
 	check(true, "one neighborhood instance initialized")
 	level.resume_exploring()
@@ -149,14 +156,18 @@ func _map_and_pause() -> void:
 			has_case_board = has_case_board or "case board" in content or "take selected case" in content
 	check(not has_case_board, "Esc contains no case selector")
 	await key(KEY_ESCAPE)
-	level._notification(NOTIFICATION_WM_WINDOW_FOCUS_OUT)
-	await frames(2)
-	check(level.paused and level._menu.visible, "focus loss opens paused settings")
-	level._notification(NOTIFICATION_WM_WINDOW_FOCUS_IN)
-	await frames(2)
-	check(level.paused, "focus return waits for explicit resume")
-	await key(KEY_ESCAPE)
-	check(not level.paused, "explicit resume closes focus-loss pause")
+	if level.offscreen_validation:
+		level._notification(NOTIFICATION_WM_WINDOW_FOCUS_OUT)
+		check(not level.paused, "offscreen validation ignores OS focus without capturing host input")
+	else:
+		level._notification(NOTIFICATION_WM_WINDOW_FOCUS_OUT)
+		await frames(2)
+		check(level.paused and level._menu.visible, "focus loss opens paused settings")
+		level._notification(NOTIFICATION_WM_WINDOW_FOCUS_IN)
+		await frames(2)
+		check(level.paused, "focus return waits for explicit resume")
+		await key(KEY_ESCAPE)
+		check(not level.paused, "explicit resume closes focus-loss pause")
 
 func _layout() -> void:
 	var size := get_viewport().get_visible_rect().size
@@ -172,7 +183,7 @@ func _layout() -> void:
 		var position_: Vector2 = label.global_position
 		if position_.x < size.x * 0.4 and position_.y < size.y * 0.4:
 			left_labels.append(str(label.name))
-		if position_.x < size.x * 0.4 and position_.y > size.y * 0.6:
+		if position_.x < size.x * 0.4 and position_.y > size.y * 0.6 and str(label.name) != "RadarAttribution":
 			bottom_help = true
 	check(left_labels.size() == 1 and left_labels[0] == "FrameRate", "top-left contains only FPS")
 	check(not bottom_help, "bottom-left help clutter is absent")
@@ -186,10 +197,16 @@ func _layout() -> void:
 	check(absf(mapped.x) < 0.01 and mapped.y < 0, "radar rotates camera direction to top")
 	var old_heading: float = level.player.camera_yaw
 	var redraws: int = radar.redraw_count
+	var geographic_builds: int = radar.geography.build_count
+	var aligned := true
 	for i in 8:
 		level.player.camera_yaw += 0.04
 		radar._process(0.001)
+		var world_point := Vector2(ahead.x, ahead.z)
+		aligned = aligned and (radar.geography.transform * world_point).distance_to(radar._map(ahead)) < 0.01
 	check(radar.redraw_count == redraws + 8, "radar redraws every turn sample without the old 80ms delay")
+	check(aligned, "cached geography stays aligned with live markers through camera turns")
+	check(radar.geography.build_count == geographic_builds, "camera turns do not rebuild static map drawing")
 	level.player.camera_yaw = old_heading
 	check(radar._roads.size() == level.level_data.roads.size(), "map caches all real street geometry")
 	var right := InputEventMouseButton.new()
@@ -209,6 +226,17 @@ func _layout() -> void:
 func _settings_checks() -> void:
 	level.pause_exploring()
 	var settings: Control = level._settings
+	check(settings.get_node("SettingsBackground").color == Color.BLACK, "settings uses a black background")
+	var tabs: TabContainer = settings.find_children("*", "TabContainer", true, false)[0]
+	for index in tabs.get_tab_count():
+		tabs.current_tab = index
+		await frames(2)
+		for slider in tabs.get_current_tab_control().find_children("*", "HSlider", true, false):
+			check(absf(slider.size.x - slider.get_parent().size.x * 0.5) <= 1.0 and slider.custom_minimum_size.x == 120.0, "settings slider occupies half its responsive track: " + str(slider.name))
+			check(slider.get_theme_stylebox("slider").get_minimum_size().y >= 6.0 and slider.get_theme_stylebox("grabber_area").get_minimum_size().y >= 6.0, "settings slider has a visible six-pixel rail: " + str(slider.name))
+			var value: Label = slider.get_parent().get_node("SliderValue")
+			check(absf(value.position.x - slider.get_rect().end.x - 12.0) <= 1.0, "settings value sits beside the shortened rail: " + str(slider.name))
+	tabs.current_tab = 0
 	settings._change("sensitivity", 1.75)
 	settings._change("invert_y", true)
 	check(is_equal_approx(level.player.mouse_sensitivity, 0.0042) and level.player.invert_y, "sensitivity and inversion apply to real player")
@@ -288,9 +316,37 @@ func _offers() -> void:
 	_wall = null
 	await frames(3)
 	await key(KEY_E)
-	check(level.missions.active_id == "lost_satchel" and level.missions.stage == 1, "nearby E naturally starts case and completes first conversation")
-	check(not level._menu.visible and not level.paused, "natural case start needs no menu")
+	check(level._dialogue.state.active and level.missions.active_id.is_empty() and level.missions.stage == 0, "nearby E opens text without starting/advancing case")
+	check(level.paused and not level.player.enabled, "conversation captures movement")
+	var offer_score: int = level.missions.score
+	await key(KEY_M)
+	check(level._dialogue.state.active and not level._map_overlay.visible, "dialogue captures M before map")
+	await key(KEY_ESCAPE)
+	check(not level._dialogue.state.active and not level.paused and not level._menu.visible, "Esc closes conversation before settings")
+	check(level.missions.active_id.is_empty() and level.missions.score == offer_score, "closing offer changes no progress or reward")
+	await key(KEY_E)
+	var decline: Button = level._dialogue.replies.get_child(1)
+	decline.pressed.emit()
+	await frames(1)
+	check(not level._dialogue.state.active and level.missions.active_id.is_empty(), "mouse reply callback can decline without starting case")
+	await key(KEY_E)
+	await key(KEY_ENTER)
+	check(level.missions.active_id == "lost_satchel" and level.missions.stage == 0, "explicit offer choice starts case without advancing it")
+	check(level.mission_navigation.active_id == "lost_satchel" and not level.mission_navigation.route.is_empty(), "accepted case sets shared mission route and destination")
+	await key(KEY_E)
+	check(level._dialogue.state.active and level.missions.stage == 0, "E previews current case line without progress")
+	var exact: String = level.missions._steps[0].dialogue
+	check(level._dialogue.state.current().text == exact, "conversation preserves authored case line verbatim")
+	var jumps_before: int = level.player.jumps_started
+	await key(KEY_SPACE)
+	check(not level._dialogue.state.active and level.missions.stage == 1, "Space confirms one case step and resumes")
+	check(level.player.jumps_started == jumps_before, "Space confirmation is consumed by dialogue and never triggers a jump")
+	check(level.mission_navigation.stage == 1 and level.mission_navigation.target.distance_to(level.missions._target_position()) < 0.01, "case stage updates shared map destination")
+	check(not level.missions.commit_dialogue_action({"kind": "case_step", "id": "lost_satchel", "stage": 0}), "stale step callback rejected")
+	check(level.missions.stage == 1 and level.missions.score == offer_score, "replayed callback changes no progress/reward")
+	check(not level._menu.visible and not level.paused, "conversation completion resumes without settings")
 	level.missions.cancel_case()
+	check(level.mission_navigation.route.is_empty() and level.mission_navigation.active_id.is_empty(), "cancel clears shared full-map and minimap guidance")
 
 func _finish() -> void:
 	if _finished:

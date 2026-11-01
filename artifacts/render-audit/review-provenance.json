@@ -1,0 +1,28 @@
+{
+  "review": {
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "effort_requested": "high",
+    "success": true,
+    "read_only": true,
+    "session_persistence": false
+  },
+  "shader_worker": {
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "effort_requested": "max",
+    "route": "Claude CLI --no-session-persistence",
+    "terminal_status": "1800-second timeout after source/test writes; no final result event",
+    "source_files_written": [
+      "C:/files/projects/Tattletale/godot/assets/materials/city_surface.gdshader",
+      "C:/files/projects/Tattletale/godot/assets/materials/city_glass.gdshader",
+      "C:/files/projects/Tattletale/godot/assets/materials/city_road_wear.gdshader",
+      "C:/files/projects/Tattletale/godot/scripts/city/city_weathering.gd",
+      "C:/files/projects/Tattletale/godot/tests/city_material_fidelity_smoke.gd",
+      "C:/files/projects/Tattletale/godot/tests/city_material_fidelity_smoke_runner.gd"
+    ],
+    "integration": "Root corrected profile reporting and renderer color-space guard; root validated and authored implementation report"
+  }
+}

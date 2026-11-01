@@ -1,9 +1,12 @@
 extends Node3D
+const CivicClearance := preload("res://scripts/city/city_civic_clearance.gd")
+const Appearance := preload("res://scripts/city/city_population_appearance.gd")
 ## Neighborhood residents are independent of the original block's G simulation.
 ## Call setup after terrain physics is registered; tick only during unpaused physics.
 
 const Actor := preload("res://scripts/city/city_npc_actor.gd")
 const Crowd := preload("res://scripts/city/city_crowd.gd")
+const REQUIRED_CONTACTS := ["resident", "lookout", "officer", "gardener", "organizer", "caretaker"]
 var crowd: Node3D
 var level: Node3D
 var actors: Dictionary = {}
@@ -60,6 +63,8 @@ func setup(owner_level: Node3D) -> void:
 			patrol_count += 1
 		if patrol_count >= 6:
 			break
+	if patrol_count < 6:
+		push_error("Neighborhood patrol placement incomplete: %d of 6" % patrol_count)
 	crowd = Crowd.new()
 	add_child(crowd)
 	crowd.setup(level, self)
@@ -72,11 +77,17 @@ func tick(delta: float) -> void:
 		crowd.tick(delta)
 
 func get_actor(id: String) -> Node3D:
-	return actors.get(id)
+	if actors.has(id):
+		return actors[id]
+	if level != null and level.get("residents") != null:
+		return level.residents.get_actor(id)
+	return null
 
 func get_actor_position(id: String) -> Vector3:
 	var actor: Node3D = get_actor(id)
-	return actor.global_position if actor != null else Vector3.INF
+	if actor == null or actor.get_meta("city_dead", false) or actor.get_meta("police_custody", false) or actor.get_meta("police_custody_completed", false):
+		return Vector3.INF
+	return actor.global_position
 
 func actor_position(id: String) -> Vector3:
 	return get_actor_position(id)
@@ -110,15 +121,16 @@ func get_status() -> Dictionary:
 		if actors[id].moving:
 			moving_count += 1
 	var crowd_status: Dictionary = crowd.get_status() if crowd != null else {}
+	var resident_status: Dictionary = level.residents.get_status() if level != null and level.get("residents") != null else {}
 	var patrolling := 0
 	for id in actors:
 		if str(id).begins_with("patrol_officer_") and actors[id].patrol_points.size() >= 2:
 			patrolling += 1
-	return {"count": actors.size() + int(crowd_status.get("total", 0)), "physical_actors": actors.size(), "foot_patrols": patrolling, "crowd": crowd_status, "moving": moving_count, "elapsed": _elapsed, "actors": details, "placement_failures": placement_failures.duplicate()}
+	return {"count": actors.size() + int(crowd_status.get("total", 0)) + int(resident_status.get("count", 0)), "physical_actors": actors.size(), "foot_patrols": patrolling, "crowd": crowd_status, "daily_residents": resident_status, "moving": moving_count, "elapsed": _elapsed, "actors": details, "placement_failures": placement_failures.duplicate()}
 
 func _spawn(id: String, character: String, label: String, desired: Vector3, walking: bool) -> void:
 	var found := find_safe_position(desired, 0.28)
-	if not found.ok and walking:
+	if not found.ok and (walking or CivicClearance.blocked(level, desired, 0.30)):
 		# Some northern porch fronts fill the entire spare sidewalk strip.
 		# Use another surveyed stretch instead of weakening physical clearance.
 		for metres in [75.0, 24.0, 205.0, 110.0]:
@@ -127,11 +139,21 @@ func _spawn(id: String, character: String, label: String, desired: Vector3, walk
 				break
 	if not found.ok:
 		placement_failures.append(id)
-		push_warning("No clear sidewalk position for neighborhood actor: " + id)
+		if id in REQUIRED_CONTACTS:
+			push_error("No clear sidewalk position for required mission contact: " + id)
+		else:
+			# Patrols may legitimately retry another street before the final
+			# six-patrol check in setup; do not fail on a recoverable attempt.
+			push_warning("No clear sidewalk position for neighborhood actor: " + id)
 		return
 	var actor := Actor.new()
 	add_child(actor)
 	actor.build(level, id, character, label)
+	var appearance := Appearance.profile(id)
+	actor.set_meta("population_appearance", appearance)
+	if bool(appearance.get("apply_skin", false)) and id.begins_with("patrol_officer_"):
+		var changed := Appearance.apply_patrol_skin(actor.puppet.g, Color(str(Cast.LOOKS[character].skin)), Color(str(appearance.skin)))
+		actor.set_meta("appearance_skin_surfaces", changed)
 	actor.global_position = found.position
 	actor.yaw = PI * 0.5
 	actor.puppet.g.rotation.y = actor.yaw
@@ -166,6 +188,14 @@ func find_safe_position(desired: Vector3, radius := 0.45) -> Dictionary:
 	return {"ok": false, "position": desired}
 
 func _safe_candidate(point: Vector3, radius: float, exclude: Array[RID] = []) -> Dictionary:
+	if CivicClearance.blocked(level, point, radius + 0.10):
+		return {}
+	if level.get("park_furniture") != null and not level.park_furniture.is_clear(point, radius):
+		return {}
+	if level.get("park_courts") != null and not level.park_courts.is_clear(point, radius + 0.10):
+		return {}
+	if level.get("yard_details") != null and not level.yard_details.is_clear(point, radius + 0.10):
+		return {}
 	if not stair_approach_clear(point, radius + 0.65):
 		return {}
 	if level.vegetation != null and level.vegetation.has_method("is_trunk_clear") and not level.vegetation.is_trunk_clear(point, radius + 0.1):

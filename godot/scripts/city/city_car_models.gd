@@ -3,8 +3,15 @@ extends RefCounted
 ## Restrained, game-scale interpretations of older everyday vehicles. Native +Z
 ## forward; every prototype fits the existing traffic collision envelope.
 ## Original geometry, no badges or copied manufacturer meshes/textures.
+## KINDS stays the legacy trio so existing traffic/parked/fleet selection is
+## unchanged until integration opts in; CATALOG_KINDS (city_car_catalog.gd /
+## city_car_mesh_kit.gd) adds six more through the same prototype()/make() API.
 
+const Catalog := preload("res://scripts/city/city_car_catalog.gd")
+const Kit := preload("res://scripts/city/city_car_mesh_kit.gd")
 const KINDS := ["box_sedan", "compact", "minivan"]
+const CATALOG_KINDS := ["hatchback", "midsize_sedan", "long_sedan", "pickup", "cargo_van", "compact_suv"]
+const ALL_KINDS := ["box_sedan", "compact", "minivan", "hatchback", "midsize_sedan", "long_sedan", "pickup", "cargo_van", "compact_suv"]
 const PALETTE := ["526577", "c6bdab", "516558", "834b46", "7c8992", "444a50"]
 const REFERENCES := {
 	"box_sedan": "https://news.chevrolet.com/content/dam/company/no_search/heritage-archive-docs/vehicle-information-kits/chevrolet/1986-Chevrolet-Caprice.pdf",
@@ -14,13 +21,20 @@ static var _cache: Dictionary = {}
 static var _materials: Dictionary = {}
 static var _paint_materials: Dictionary = {}
 
+static func has_kind(kind: String) -> bool:
+	return ALL_KINDS.has(kind)
+
 static func dimensions(kind: String) -> Vector3:
+	if Catalog.has_kind(kind):
+		return Catalog.dimensions(kind)
 	match kind:
 		"compact": return Vector3(1.75, 1.39, 4.38)
 		"minivan": return Vector3(1.96, 1.72, 4.58)
 	return Vector3(1.96, 1.48, 4.64)
 
 static func wheel_radius(kind: String) -> float:
+	if Catalog.has_kind(kind):
+		return Catalog.wheel_radius(kind)
 	return 0.31 if kind == "compact" else 0.34
 
 static func paint_color(index: int) -> Color:
@@ -57,8 +71,10 @@ static func _material(id: String) -> StandardMaterial3D:
 static func _paint(index: int) -> Material:
 	var key := posmod(index, PALETTE.size())
 	if not _paint_materials.has(key):
+		# One shared material per colour for every kind. Vertex colour stays on:
+		# catalog shells carry shade multipliers (two-tone, cladding, dust), and
+		# legacy shells have no colour array, which the renderer reads as white.
 		var material: StandardMaterial3D = _material("paint").duplicate()
-		material.vertex_color_use_as_albedo = false
 		material.albedo_color = paint_color(key)
 		_paint_materials[key] = material
 	return _paint_materials[key]
@@ -77,6 +93,11 @@ static func _quad(groups: Dictionary, id: String, a: Vector3, b: Vector3, c: Vec
 	for point in [a, b, c, a, c, d]:
 		builder.set_normal(normal)
 		builder.add_vertex(point)
+	if id == "glass":
+		_surface(groups, "trim")
+		var center := (a + b + c + d) * 0.25
+		var outward := Vector3(signf(center.x), 0.1, 0) if absf(center.x) > 0.50 else Vector3(0, 0.2, signf(center.z))
+		Kit._gasket(groups, [a, b, c, d], outward, 0.016)
 
 static func _box(groups: Dictionary, id: String, size: Vector3, at: Vector3, basis: Basis = Basis.IDENTITY) -> void:
 	var mesh := BoxMesh.new()
@@ -160,15 +181,20 @@ static func _body(kind: String) -> ArrayMesh:
 			taper = end_factor * end_factor * 0.16
 			droop = end_factor * end_factor * 0.14
 		var width := half * (1.0 - taper)
-		var upper := belt - droop
+		# A long gentle hood fall meets the rounded nose, rather than a flat
+		# plank with a sudden end bevel. The windscreen seat remains unchanged.
+		var hood_base := 1.25 if kind == "compact" else (1.82 if kind == "minivan" else 1.10)
+		var hood_drop := (0.035 if kind == "box_sedan" else 0.05) * clampf((z - hood_base) / (length - hood_base), 0.0, 1.0)
+		var upper := belt - droop - hood_drop
 		var bottom := 0.25
 		for wheel_z in [-axle, axle]:
 			var offset := absf(z - wheel_z)
 			if offset < 0.40:
 				bottom = maxf(bottom, radius + sqrt(maxf(0.0, 0.40 * 0.40 - offset * offset)))
+		var shoulder := maxf(upper - 0.075, bottom + 0.050)
 		rings.append([Vector3(-width * 0.92, bottom, z), Vector3(-width, bottom + 0.035, z),
-			Vector3(-width, upper - 0.075, z), Vector3(-width * 0.95, upper, z),
-			Vector3(width * 0.95, upper, z), Vector3(width, upper - 0.075, z),
+			Vector3(-width, shoulder, z), Vector3(-width * 0.95, upper, z),
+			Vector3(width * 0.95, upper, z), Vector3(width, shoulder, z),
 			Vector3(width, bottom + 0.035, z), Vector3(width * 0.92, bottom, z)])
 	_loft(groups, rings)
 	var roof_front := 0.43 if kind != "minivan" else 0.75
@@ -185,7 +211,8 @@ static func _body(kind: String) -> ArrayMesh:
 	var cabin: Array = []
 	# The upper body is a tapered greenhouse with a low, nearly flat roof.
 	for item in [[base_rear, belt + 0.015, base_width], [roof_rear, roof_y - 0.035, roof_width],
-		[roof_front, roof_y, roof_width], [base_front, belt + 0.015, base_width]]:
+		[lerpf(roof_rear, roof_front, 0.55), roof_y, roof_width],
+		[roof_front, roof_y - 0.012, roof_width], [base_front, belt + 0.015, base_width]]:
 		var z := float(item[0])
 		var top := float(item[1])
 		var width := float(item[2])
@@ -253,43 +280,54 @@ static func _body(kind: String) -> ArrayMesh:
 			_box(groups, "seam", Vector3(0.008, lamp_height * 0.78, 0.008), Vector3(side * half * 0.67 + float(division), lamp_y, length + 0.029))
 		_box(groups, "amber", Vector3(0.05, lamp_height * 0.85, 0.028), Vector3(side * half * (0.82 if kind == "compact" else 0.92), lamp_y, length - 0.035))
 		if kind == "minivan":
-			_box(groups, "tail", Vector3(0.14, 0.46, 0.045), Vector3(side * half * 0.85, 1.03, -length + 0.015))
+			# The upper tailgate slopes inward, so tall vertical slabs float
+			# behind it. Keep lenses seated in the solid lower rear quarters.
+			_box(groups, "tail", Vector3(0.15, 0.24, 0.020), Vector3(side * half * 0.72, 0.72, -length - 0.006))
 		else:
 			_box(groups, "tail", Vector3(0.40, 0.13, 0.035), Vector3(side * half * 0.68, belt - 0.19, -length - 0.01))
+	_legacy_panel_details(groups, kind, half, length, axle, radius, belt, base_front, roof_front, roof_y)
 	return _finish(groups)
 
-static func _wheel(kind: String, segments: int = 20) -> ArrayMesh:
+static func _legacy_panel_details(groups: Dictionary, kind: String, half: float, length: float, axle: float, radius: float, belt: float, base_front: float, roof_front: float, roof_y: float) -> void:
+	for side in [-1.0, 1.0]:
+		# Narrow stamped arch lips, following the existing fender opening.
+		for wheel_z in [-axle, axle]:
+			var offsets := [-0.40, -0.32, -0.18, 0.0, 0.18, 0.32, 0.40]
+			for step in 6:
+				var a: float = offsets[step]
+				var b: float = offsets[step + 1]
+				var y0 := radius + sqrt(maxf(0.0, 0.16 - a * a)) + 0.035
+				var y1 := radius + sqrt(maxf(0.0, 0.16 - b * b)) + 0.035
+				var z0: float = float(wheel_z) + a
+				var z1: float = float(wheel_z) + b
+				_quad(groups, "trim", Vector3(side * (half + 0.001), y0, z0), Vector3(side * (half + 0.001), y1, z1),
+					Vector3(side * (half + 0.001), y1 + 0.012, z1), Vector3(side * (half + 0.001), y0 + 0.012, z0))
+		# Hood seam and a restrained pressed crease, both following its fall.
+		var start := base_front + 0.05
+		var end := length - 0.30
+		var drop := (0.035 if kind == "box_sedan" else 0.05) * (end - base_front) / (length - base_front)
+		_quad(groups, "seam", Vector3(side * half * 0.66, belt + 0.003, start), Vector3(side * half * 0.66, belt - drop + 0.003, end),
+			Vector3(side * half * 0.66 + 0.007, belt - drop + 0.003, end), Vector3(side * half * 0.66 + 0.007, belt + 0.003, start))
+		var low := Vector3(side * 0.12, lerpf(belt + 0.015, roof_y, 0.18), lerpf(base_front, roof_front, 0.18) + 0.022)
+		var high := Vector3(side * half * 0.55, lerpf(belt + 0.015, roof_y, 0.25), lerpf(base_front, roof_front, 0.25) + 0.022)
+		_quad(groups, "trim", low, high, high + Vector3(0, 0.012, 0), low + Vector3(0, 0.012, 0))
+		# A separate lens inset makes the mirror read at walking distance.
+		_box(groups, "metal", Vector3(0.072, 0.065, 0.004), Vector3(side * (half + 0.015), belt + 0.11, base_front - 0.257))
+	if kind == "minivan":
+		# Sliding-door runner and tailgate shut line distinguish the van body.
+		for side in [-1.0, 1.0]:
+			_box(groups, "trim", Vector3(0.012, 0.018, 1.58), Vector3(side * (half + 0.008), belt - 0.06, -0.90))
+		_box(groups, "trim", Vector3(0.24, 0.035, 0.016), Vector3(0, 0.86, -length - 0.01))
+
+static func _wheel(kind: String, segments: int = 16) -> ArrayMesh:
+	# The same shoulder/sidewall construction as the expanded catalog. Keeping
+	# local X as axle leaves steering, punctures and decorative hubs untouched.
 	var groups: Dictionary = {}
-	var radius := wheel_radius(kind)
-	var profile := [Vector2(-0.105, radius * 0.70), Vector2(-0.105, radius * 0.86), Vector2(-0.075, radius),
-		Vector2(0.075, radius), Vector2(0.105, radius * 0.86), Vector2(0.105, radius * 0.70)]
-	for i in range(1, profile.size()):
-		for j in segments:
-			var a := float(j) * TAU / segments
-			var b := float(j + 1) * TAU / segments
-			var p: Vector2 = profile[i - 1]
-			var q: Vector2 = profile[i]
-			_quad(groups, "tire", Vector3(p.x, sin(a) * p.y, cos(a) * p.y), Vector3(q.x, sin(a) * q.y, cos(a) * q.y),
-				Vector3(q.x, sin(b) * q.y, cos(b) * q.y), Vector3(p.x, sin(b) * p.y, cos(b) * p.y))
-	var hub := CylinderMesh.new()
-	hub.top_radius = radius * 0.70
-	hub.bottom_radius = radius * 0.70
-	hub.height = 0.22
-	hub.radial_segments = segments
-	_append_primitive(groups, "trim" if kind == "box_sedan" else "metal", hub, Transform3D(Basis(Vector3.FORWARD, PI * 0.5), Vector3.ZERO))
+	var style := {"rim": "metal", "hub": "metal", "slots": "trim", "slot_count": 7}
 	if kind == "box_sedan":
-		for side in [-1.0, 1.0]:
-			for j in segments:
-				var a := float(j) * TAU / segments
-				var b := float(j + 1) * TAU / segments
-				_quad(groups, "metal", Vector3(side * 0.112, sin(a) * 0.205, cos(a) * 0.205), Vector3(side * 0.112, sin(a) * 0.235, cos(a) * 0.235),
-					Vector3(side * 0.112, sin(b) * 0.235, cos(b) * 0.235), Vector3(side * 0.112, sin(b) * 0.205, cos(b) * 0.205))
-	if kind != "box_sedan" and segments > 8:
-		for side in [-1.0, 1.0]:
-			for spoke in 7:
-				var angle := float(spoke) * TAU / 7.0
-				_box(groups, "trim", Vector3(0.006, 0.045, radius * 0.35), Vector3(side * 0.113, sin(angle) * radius * 0.40, cos(angle) * radius * 0.40), Basis(Vector3.RIGHT, -angle))
-	return _finish(groups)
+		style = {"rim": "metal", "hub": "trim", "slots": "trim", "slot_count": 8}
+	Kit._tire(groups, Transform3D.IDENTITY, wheel_radius(kind), 0.105, segments, style, segments > 8)
+	return _materialize(groups)
 
 static func _spinner() -> ArrayMesh:
 	var groups: Dictionary = {}
@@ -300,23 +338,34 @@ static func _spinner() -> ArrayMesh:
 			rotation * Vector3(0, -0.012, 0.225), rotation * Vector3(0, -0.035, 0.045))
 	return _finish(groups, false)
 
+## Assigns the shared materials to material-free kit groups, then finishes.
+static func _materialize(groups: Dictionary, lods := true) -> ArrayMesh:
+	for id in groups:
+		var builder: SurfaceTool = groups[id]
+		builder.set_material(_material(str(id)))
+	return _finish(groups, lods)
+
 static func prototype(kind: String) -> Dictionary:
-	if not KINDS.has(kind):
+	if not ALL_KINDS.has(kind):
 		kind = "compact"
 	if _cache.has(kind):
 		return _cache[kind]
-	var body := _body(kind)
-	var wheel := _wheel(kind)
+	var catalog := Catalog.has_kind(kind)
+	var body := _materialize(Kit.body(kind)) if catalog else _body(kind)
+	var wheel := _materialize(Kit.wheel(kind, Kit.NEAR_SEGMENTS)) if catalog else _wheel(kind)
 	var spinner := _spinner() if kind == "box_sedan" else null
-	var width := dimensions(kind).x
-	var axle := 1.28 if kind == "compact" else 1.40
 	var wheel_poses: Array[Transform3D] = []
-	for side in [-1.0, 1.0]:
-		for z in [axle, -axle]:
-			wheel_poses.append(Transform3D(Basis.IDENTITY, Vector3(side * (width * 0.5 - 0.065), wheel_radius(kind), z)))
+	if catalog:
+		wheel_poses = Catalog.wheel_poses(kind)
+	else:
+		var width := dimensions(kind).x
+		var axle := 1.28 if kind == "compact" else 1.40
+		for side in [-1.0, 1.0]:
+			for z in [axle, -axle]:
+				wheel_poses.append(Transform3D(Basis.IDENTITY, Vector3(side * (width * 0.5 - 0.065), wheel_radius(kind), z)))
 	var combined: Dictionary = {}
 	var far_combined: Dictionary = {}
-	var far_wheel := _wheel(kind, 8)
+	var far_wheel := _materialize(Kit.wheel(kind, Kit.FAR_SEGMENTS), false) if catalog else _wheel(kind, 8)
 	for surface in body.get_surface_count():
 		var material := body.surface_get_material(surface)
 		var id := material.resource_name.trim_prefix("city_vehicle_")
@@ -335,7 +384,10 @@ static func prototype(kind: String) -> Dictionary:
 	for surface in parked.get_surface_count():
 		triangles += parked.surface_get_array_index_len(surface) / 3
 	var data := {"body": body, "wheel": wheel, "spinner": spinner, "wheel_poses": wheel_poses,
-		"parked": parked, "far_parked": far_parked, "triangles": triangles, "dimensions": dimensions(kind), "reference": REFERENCES[kind]}
+		"parked": parked, "far_parked": far_parked, "triangles": triangles, "dimensions": dimensions(kind),
+		"reference": Catalog.reference_description(kind) if catalog else REFERENCES[kind],
+		"label": Catalog.label(kind) if catalog else kind, "catalog": catalog,
+		"surfaces": parked.get_surface_count()}
 	_cache[kind] = data
 	return data
 

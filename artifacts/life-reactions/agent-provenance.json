@@ -1,0 +1,31 @@
+{
+  "opus": {
+    "actual_models": [
+      "claude-opus-5-5"
+    ],
+    "effort_requested": "high",
+    "route": "Claude CLI --no-session-persistence",
+    "initial_attempt": "Sandbox transport repeatedly failed before model output; network-enabled retry succeeded",
+    "runner_postprocessing": "Completed worker, then receipt formatter hit a string-message AttributeError; recovered from original JSONL",
+    "root_integration": "Root validated, corrected fixture typed arrays, added displaced-crowd threat/presence fix, save/mission integration and stricter death version validation"
+  },
+  "opus_completed": true,
+  "native_workers": [
+    {
+      "model": "gpt-6-astra",
+      "effort": "high",
+      "task": "vehicle damage/panic and roof animation; independent integration/crowd review"
+    },
+    {
+      "model": "gpt-6-astra",
+      "effort": "high",
+      "task": "lawn/sign/window fixes"
+    },
+    {
+      "model": "gpt-6-astra",
+      "effort": "high",
+      "task": "power grid and civic-site proposals"
+    }
+  ],
+  "root": "Integration, tests, visual acceptance, profiling; model/effort not exposed"
+}

@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "template": "return_property",
+  "about": "Shape of the original lost_satchel case and the crimes-stage1.js 'follow the money' pickup: a neighbor describes lost property, 2-Pack recovers it along the walk and hands it back. The item is carried visibly between pickup and return.",
+  "params": {
+    "owner": "actor id of the owner",
+    "owner_label": "ledger name of the owner",
+    "item_builder": "satchel|parcel|dumped_bags|tool_caddy|torn_notice|lantern|checkpoint|crate|marker",
+    "item_title": "tag above the item, upper case",
+    "route_metres": "number: metres along the neighborhood walk",
+    "item_radius": "number 0.2..1.0"
+  },
+  "case": {
+    "schema": 1,
+    "kind": "case",
+    "participants": {"owner": {"actors": ["{owner}"], "label": "{owner_label}"}},
+    "props": {
+      "item": {"builder": "{item_builder}", "title": "{item_title}", "solid": true, "placement": {"route_metres": "{route_metres}", "radius": "{item_radius}"},
+        "photo_height": 0.2, "photo_radius": 0.3}
+    },
+    "evidence": {"item_found": {"kind": "item", "label": "[draft] The recovered item"}},
+    "discovery": {"givers": ["owner"]},
+    "stages": [
+      {"id": "brief", "objectives": [
+        {"id": "brief_owner", "verb": "talk", "target": "owner", "objective": "[draft] Ask about what was lost", "dialogue": "[draft] The owner describes it."}
+      ]},
+      {"id": "recover", "objectives": [
+        {"id": "pick_up", "verb": "collect", "target": "prop:item", "objective": "[draft] Find it along the walk", "dialogue": "[draft] 2-Pack recognizes it.",
+          "grants": ["item_found"]}
+      ]},
+      {"id": "return", "objectives": [
+        {"id": "hand_back", "verb": "deliver", "target": "owner", "item": "prop:item", "objective": "[draft] Return it to its owner", "dialogue": "[draft] The owner thanks you."}
+      ]}
+    ],
+    "outcomes": {"resolved": {"rewarded": true, "banner": "PROPERTY RETURNED"}}
+  }
+}

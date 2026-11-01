@@ -1,7 +1,7 @@
 extends Node
 ## Keep terrain/collision authoritative while detailed building render resources
 ## stream independently. Distance hysteresis protects camera turns and cell edges.
-const CACHE_VERSION := 1
+const CACHE_VERSION := 2
 const CACHE_ROOT := "user://city_stream_cache"
 const SOURCE_PATH := "res://assets/models/city/pen_lucy.glb"
 var level: Node3D
@@ -20,6 +20,9 @@ var _released_sources := 0
 var _loads := 0
 var _unloads := 0
 var _ready_stream := false
+var _detail_render_focus := Vector3.ZERO
+var _detail_physics_focus := Vector3.ZERO
+var _capture_details := false
 
 func _exit_tree() -> void:
 	# Consume an outstanding request when the level closes. Normal play never waits
@@ -37,6 +40,8 @@ func setup(owner_level: Node3D, render_optimizer: Node, detail_providers: Array[
 		return
 	var stats: Dictionary = optimizer.get_stats()
 	var signature: String = optimizer._cache_signature(int(stats.building_surfaces), int(stats.building_triangles)) + "|stream:" + str(CACHE_VERSION)
+	# Consolidated CUSTOM0 palette geometry must never load from legacy cells.
+	signature += "|" + optimizer.palette_cache_signature()
 	for material_source in ["res://scripts/city/city_weathering.gd", "res://scripts/city/city_windows.gd", "res://assets/materials/city_surface.gdshader", "res://assets/materials/city_glass.gdshader"]:
 		signature += "|" + str(FileAccess.get_modified_time(material_source))
 	_directory = CACHE_ROOT.path_join(signature.sha256_text().substr(0, 24))
@@ -51,6 +56,7 @@ func setup(owner_level: Node3D, render_optimizer: Node, detail_providers: Array[
 		if not child is MeshInstance3D or child.mesh == null:
 			continue
 		var instance: MeshInstance3D = child
+		optimizer.rebind_shared_materials(instance)
 		var path := _directory.path_join(str(instance.name) + ".scn")
 		# The cache includes the city-specific material overrides applied before setup.
 		if not FileAccess.file_exists(path):
@@ -107,6 +113,10 @@ func _make_proxy(chunk: MeshInstance3D, sources: Array) -> MeshInstance3D:
 
 func set_quality(preset: String) -> void:
 	quality = preset if preset in ["low", "balanced", "high"] else "balanced"
+	if optimizer != null and optimizer.quality != quality:
+		# The optimizer owns chunk LOD/culling and sun settings; this manager owns
+		# only residency distances. Its callback re-enters with matching quality.
+		optimizer.set_quality(quality)
 	load_distance = {"low": 175.0, "balanced": 240.0, "high": 320.0}[quality]
 	unload_distance = load_distance + 90.0
 	for record in records:
@@ -114,8 +124,8 @@ func set_quality(preset: String) -> void:
 			_apply_quality(record.node)
 
 func _apply_quality(instance: MeshInstance3D) -> void:
-	instance.lod_bias = {"low": 0.65, "balanced": 1.0, "high": 1.5}[quality]
-	instance.visibility_range_end = 0.0
+	if optimizer != null:
+		optimizer.apply_chunk_quality(instance)
 
 func _process(delta: float) -> void:
 	# Detail presence must still run when building batching/cache is unavailable.
@@ -131,15 +141,28 @@ func _distance_to_bounds(point: Vector3, bounds: AABB) -> float:
 	var closest := Vector2(clampf(point.x, bounds.position.x, bounds.end.x), clampf(point.z, bounds.position.z, bounds.end.z))
 	return Vector2(point.x, point.z).distance_to(closest)
 
-func _refresh(initial: bool) -> void:
+func _refresh(initial: bool, refresh_details := true) -> void:
 	if level.player == null:
 		return
 	var point: Vector3 = level.player.global_position
 	# Automated captures and the overview camera request detail around their view,
 	# without ever changing the physical player's collision neighborhood.
 	var render_point := point
-	if not level.player.camera_override.is_empty():
+	var detail_point := point
+	var capture_details: bool = not level.player.camera_override.is_empty()
+	if capture_details:
 		render_point = level.player.camera_override.get("target", point)
+		# Detail distance/LOD follows the actual camera, not a far look-at target.
+		detail_point = level.player.camera_override.get("eye", render_point)
+	var inspector = level.get("inspector")
+	if inspector != null and inspector.active:
+		point = inspector.streaming_focus()
+		render_point = point
+		detail_point = point
+		capture_details = false
+	_detail_render_focus = detail_point
+	_detail_physics_focus = point
+	_capture_details = capture_details
 	var desired := -1
 	var priority := INF
 	for i in records.size():
@@ -165,9 +188,16 @@ func _refresh(initial: bool) -> void:
 		else:
 			records[desired].failed = true
 			push_warning("City cell load request failed: " + path)
+	if not refresh_details:
+		return
 	for provider in providers:
 		if is_instance_valid(provider) and provider.has_method("set_presence"):
-			provider.set_presence(point, 55.0, 180.0 if quality != "low" else 135.0)
+			var far_radius := 180.0 if quality != "low" else 135.0
+			if capture_details and provider.has_method("set_capture_presence"):
+				provider.set_capture_presence(point, detail_point, 55.0, far_radius)
+			else:
+				# These providers only cull visuals; their collision stays permanent.
+				provider.set_presence(detail_point if capture_details else point, 55.0, far_radius)
 
 func _poll_load() -> void:
 	if _pending.is_empty():
@@ -177,6 +207,7 @@ func _poll_load() -> void:
 		var scene = ResourceLoader.load_threaded_get(_pending)
 		if scene is PackedScene:
 			var instance: MeshInstance3D = scene.instantiate()
+			optimizer.rebind_shared_materials(instance)
 			optimizer.batch_root.add_child(instance)
 			_apply_quality(instance)
 			records[_pending_index].node = instance
@@ -186,7 +217,10 @@ func _poll_load() -> void:
 			records[_pending_index].failed = true
 		_pending = ""
 		_pending_index = -1
-		_refresh(false)
+		# Advance the next building request immediately. Detail presence keeps its
+		# regular cadence (or explicit refresh_now), so a completed load cannot
+		# repeat provider scans or spend another vegetation mesh budget this frame.
+		_refresh(false, false)
 	elif status == ResourceLoader.THREAD_LOAD_FAILED or status == ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
 		records[_pending_index].failed = true
 		push_warning("City cell background load failed: " + _pending)
@@ -206,6 +240,9 @@ func get_status() -> Dictionary:
 	var focus: Vector3 = level.player.global_position if level != null and level.player != null else Vector3.ZERO
 	if level != null and level.player != null and not level.player.camera_override.is_empty():
 		focus = level.player.camera_override.get("target", focus)
+	var inspector = level.get("inspector") if level != null else null
+	if inspector != null and inspector.active:
+		focus = inspector.streaming_focus()
 	for record in records:
 		total_triangles += int(record.triangles)
 		if is_instance_valid(record.node):
@@ -215,7 +252,18 @@ func get_status() -> Dictionary:
 			failures += 1
 		if not is_instance_valid(record.node) and _distance_to_bounds(focus, record.bounds) < load_distance:
 			missing_near += 1
-	return {"enabled": _ready_stream, "cells": records.size(), "loaded_cells": active,
+	var detail_pending := 0
+	var detail_missing := 0
+	if _capture_details:
+		for provider in providers:
+			if not is_instance_valid(provider):
+				continue
+			var status: Dictionary = provider.get_stats() if provider.has_method("get_stats") else (provider.get_status() if provider.has_method("get_status") else {})
+			detail_pending += int(status.get("pending_visual_cells", 0)) + int(status.get("pending_loads", 0))
+			detail_missing += int(status.get("near_cells_missing", 0))
+	return {"enabled": _ready_stream, "cells": records.size(),
+		"capture_details": _capture_details, "detail_render_focus": _detail_render_focus, "detail_physics_focus": _detail_physics_focus,
+		"detail_pending": detail_pending, "detail_missing": detail_missing, "loaded_cells": active,
 		"proxy_cells": records.size() - active, "loaded_detail_triangles": triangles,
 		"total_detail_triangles": total_triangles, "released_original_meshes": _released_sources,
 		"background_loads": _loads, "unloads": _unloads, "pending": not _pending.is_empty(),

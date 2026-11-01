@@ -34,18 +34,23 @@ func _run() -> void:
 		return
 	check(level.npcs != null and level.traffic != null and level.missions != null, "all three neighborhood systems initialize")
 	check(level.npcs.actors.size() >= 6, "mission contacts and ambient neighbors exist")
-	for id in ["resident", "lookout", "officer"]:
+	for id in ["resident", "lookout", "officer", "gardener", "organizer", "caretaker"]:
 		check(level.npcs.get_actor(id) != null, "mission contact " + id)
-	check(level.traffic.vehicles.size() >= 2, "two-way street traffic exists")
+	check(int(level.npcs.get_status().foot_patrols) == 6, "all six foot patrols placed")
+	check(level.traffic.vehicles.size() >= 80, "neighborhood traffic bootstrap populates at least80 vehicles")
 	check((level.player.collision_mask & 24) == 24, "player collides with neighbors and cars")
 	check(int(level.weathering_report.get("shared_finishes", 0)) > 5, "city has shared weathered surface finishes")
-	var eligible: int = level.weathering_report.get("first_floor_windows", 0)
+	var eligible: int = level.weathering_report.get("eligible_house_windows", 0)
 	var barred: int = level.weathering_report.get("barred_windows", 0)
-	check(eligible > 100 and float(barred) / eligible > 0.74 and float(barred) / eligible < 0.86, "roughly eighty percent of measured ground-floor windows have bars")
+	check(eligible > 100 and float(barred) / eligible > 0.74 and float(barred) / eligible < 0.86, "roughly eighty percent of measured house windows have bars")
+	var consistent_homes := true
+	for home in level.weathering_report.get("window_homes", {}).values():
+		consistent_homes = consistent_homes and int(home.barred) == (int(home.windows) if home.selected else 0)
+	check(consistent_homes, "each house uses one treatment for all measured windows")
 	check(int(level.weathering_report.get("window_bar_triangles", -1)) == barred * 2, "window grilles cost only two triangles each")
 	check(int(level.weathering_report.get("rough_glass_surfaces", 0)) > 0, "shiny glass is replaced with shared dusty glass")
 	check(int(level.weathering_report.get("litter", 0)) >= 30, "decorative roadside litter populates neighborhood walk")
-	check(level.get_node("RoadsideLitter").find_children("*", "CollisionObject3D", true, false).is_empty(), "all decorative trash is non-blocking")
+	_check_litter_provider(level)
 	check(int(level.weathering_report.get("draw_batches", 0)) < int(level.weathering_report.get("litter", 0)), "litter shares draw batches")
 	print("[city_life] weathering ", level.weathering_report)
 	var rendering: Dictionary = level.render_optimizer.get_stats()
@@ -97,6 +102,44 @@ func _run() -> void:
 	check(G.built and G.S.mode == "title", "original game remains available after neighborhood cases")
 	check(get_tree().current_scene.find_children("StreetTraffic", "", true, false).is_empty(), "traffic does not leak into original scene")
 	_finish()
+
+func _check_litter_provider(level: Node) -> void:
+	var provider: Node3D = level.get("yard_details")
+	check(provider != null, "streamed yard/litter provider exists")
+	if provider == null:
+		return
+	var status: Dictionary = provider.get_status()
+	var loose_kinds := ["paper", "wrapper", "cardboard", "loose_can", "cup"]
+	var loose_count := 0
+	var loose_without_collision := true
+	for record in provider.records:
+		if str(record.kind) in loose_kinds:
+			loose_count += 1
+			loose_without_collision = loose_without_collision and is_zero_approx(float(record.radius))
+	check(loose_count >= 30 and loose_count == int(status.get("audit", {}).get("litter", -1)) and loose_count == int(level.weathering_report.get("litter", -1)), "actual loose records match yard audit and weathering report")
+	check(loose_without_collision and int(status.get("audit", {}).get("loose_litter_colliders", -1)) == 0 and int(status.get("litter_colliders", -1)) == 0, "every loose litter record has zero collision radius")
+	var expected_bins: Array[Vector3] = []
+	var only_bins_request_collision := true
+	for cell in provider._cells.values():
+		if not is_instance_valid(cell.node):
+			continue
+		for index in cell.indices:
+			var record: Dictionary = provider.records[index]
+			if float(record.radius) > 0.0:
+				only_bins_request_collision = only_bins_request_collision and str(record.kind) in ["can", "dumpster"]
+				expected_bins.append(record.position)
+	check(only_bins_request_collision, "only rigid cans and dumpsters request live yard colliders")
+	var colliders := provider.find_children("*", "CollisionObject3D", true, false)
+	var actual_bins_only := true
+	for body in colliders:
+		var matches_bin := false
+		for at in expected_bins:
+			if body.global_position.distance_to(at) < 0.001:
+				matches_bin = true
+		actual_bins_only = actual_bins_only and matches_bin and body.get_meta("yard_bin", false) == true and body.collision_layer == 2 and not body.find_children("*", "CollisionShape3D", true, false).is_empty()
+	check(not expected_bins.is_empty() and colliders.size() == expected_bins.size() and colliders.size() == int(status.get("active_bin_colliders", -1)), "loaded solid-bin records match actual physics bodies")
+	check(actual_bins_only, "all live yard physics bodies belong to solid bins; loose trash has no body")
+	check(str(level.weathering_report.get("provider", "")) == "CityYardDetails" and level.get_node_or_null("RoadsideLitter") == null, "litter uses single streamed provider without duplicate legacy nodes")
 
 func exercise_collisions(level: Node) -> void:
 	level.resume_exploring()
@@ -276,6 +319,7 @@ func exercise_cases(level: Node) -> void:
 			if str(status.get("active_id", "")).is_empty():
 				break
 			target = level.vector(status.get("target_position"))
+			_check_case_guidance(level, status)
 			# Stand next to the physical target rather than inside a clue or NPC.
 			if id == "lost_satchel":
 				if not await walk_to_target(level, target):
@@ -285,7 +329,14 @@ func exercise_cases(level: Node) -> void:
 				var standing := target + Vector3(0, 0, 1.7)
 				level._place_player(standing, PI)
 			await frames(4)
-			var advanced: bool = level.interact()
+			var before_stage: int = level.missions.stage
+			var opened: bool = level.interact()
+			var advanced := false
+			if opened and level._dialogue.state.active:
+				check(level.missions.stage == before_stage, "opening case dialogue does not advance " + id)
+				# Explicitly accept the displayed step, as the player's E/Enter action does.
+				level._dialogue.state.choose(0)
+				advanced = not level._dialogue.state.active and (level.missions.completed_ids.has(id) or level.missions.stage == before_stage + 1)
 			if not advanced:
 				print("[city_life] interaction refused ", status, " player=", level.player.position)
 				progressed = false
@@ -297,8 +348,40 @@ func exercise_cases(level: Node) -> void:
 		var score := int(status.get("score", 0))
 		check(score > prior_score, "case rewards points once: " + id)
 		check(not level.missions.start_case(id), "completed case cannot reward twice: " + id)
+		check(level.mission_navigation.active_id.is_empty() and level.mission_navigation.route.is_empty(), "completed case clears both maps' navigation: " + id)
 		prior_score = score
 	check(int(level.missions.get_status().get("completed", 0)) == cases.size(), "all neighborhood cases resolved")
+
+func _check_case_guidance(level: Node, status: Dictionary) -> void:
+	# Exercise the production UI refresh rather than bypassing it with a forced
+	# test-only navigation rebuild. This runs before each legitimate walk/approach.
+	level._update_ui()
+	var navigation: RefCounted = level.mission_navigation
+	var label := "%s stage %d" % [str(status.active_id), int(status.stage)]
+	var destination: Vector3 = level.vector(status.target_position)
+	check(navigation.active_id == str(status.active_id) and navigation.stage == int(status.stage) and navigation.target.distance_to(destination) < 0.01, "current-stage destination matches mission: " + label)
+	var path: PackedVector3Array = navigation.route
+	var route_exists := path.size() >= 2
+	check(route_exists, "current mission stage has a reachable street/walk route: " + label)
+	if route_exists:
+		# A mobile mail-carrier target can move up to the route cache's 2m
+		# refresh threshold; fixed contacts/clues must retain exact endpoints.
+		var action: Dictionary = level.missions._steps[int(status.stage)]
+		var moving := str(action.target) == "ambient_mailman"
+		check(path[-1].distance_to(destination) <= (2.1 if moving else 0.02), "route ends at current destination within moving-target cache tolerance: " + label)
+		var finite := true
+		var clear := true
+		for i in path.size():
+			finite = finite and path[i].is_finite()
+			if i > 0:
+				clear = clear and level._navigation_clear_link(path[i - 1], path[i])
+		check(finite and clear, "all guidance segments are finite and avoid solid world geometry: " + label)
+	var full_map: Control = level._map_overlay.map
+	var radar: Control = level._radar.map
+	var full_point: Vector2 = full_map._map(navigation.target)
+	var radar_point: Vector2 = radar._marker(radar._map(navigation.target), true)
+	var radar_radius: float = minf(radar.size.x, radar.size.y) * 0.5 - 15.0
+	check(full_point.is_finite() and radar_point.is_finite() and radar_point.distance_to(radar.size * 0.5) <= radar_radius + 0.01, "both map destination projections are valid and radar stays on its rim: " + label)
 
 func walk_to_target(level: Node, target: Vector3) -> bool:
 	var points: Array = level.level_data.route.points

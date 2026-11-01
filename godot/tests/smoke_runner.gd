@@ -29,7 +29,25 @@ func _process(_d: float) -> void:
 		var t0 := Time.get_ticks_msec()
 		_run_all()
 		print("[smoke] %d passed, %d failed (%.1f s game time, %d ms real)" % [passes, fails, G.clock, Time.get_ticks_msec() - t0])
-		get_tree().quit(fails)
+		_finish.call_deferred()
+
+
+func _finish() -> void:
+	# The suite advances hours of game time in one process callback. Stop and
+	# release its audio before quitting, then let the audio thread consume the
+	# stop commands in real time rather than counting uncapped headless frames.
+	Audio.set_paused(false)
+	if is_instance_valid(Audio._music):
+		Audio._music.stop()
+		Audio._music.stream = null
+	for voice in Audio._voices:
+		voice.stop()
+		voice.stream = null
+	Audio._sfx.clear()
+	var audio_deadline := Time.get_ticks_msec() + 150
+	while Time.get_ticks_msec() < audio_deadline:
+		await get_tree().process_frame
+	get_tree().quit(fails)
 
 
 # ------------------------------------------------------------------ helpers

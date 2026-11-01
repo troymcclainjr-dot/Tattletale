@@ -1,0 +1,98 @@
+{
+  "city_vehicle_precision_smoke": {
+    "passed": 46,
+    "failed": 0,
+    "script_errors": 0,
+    "explicit_skips": 0
+  },
+  "city_vehicle_impact_smoke": {
+    "passed": 35,
+    "failed": 0,
+    "script_errors": 0,
+    "explicit_skips": 0
+  },
+  "city_traffic_optimization_smoke": {
+    "passed": 12,
+    "failed": 0,
+    "script_errors": 0,
+    "explicit_skips": 0
+  },
+  "city_vehicle_jump_smoke": {
+    "passed": 32,
+    "failed": 0,
+    "script_errors": 0,
+    "explicit_skips": 0
+  },
+  "city_jump_smoke": {
+    "passed": 15,
+    "failed": 0,
+    "script_errors": 0,
+    "explicit_skips": 0
+  },
+  "city_traffic_network_smoke": {
+    "passed": 29,
+    "failed": 0,
+    "script_errors": 0,
+    "explicit_skips": 0
+  },
+  "city_courts_smoke": {
+    "passed": 188,
+    "failed": 0,
+    "script_errors": 0,
+    "explicit_skips": 0
+  },
+  "city_crowd_motion_smoke": {
+    "passed": 10,
+    "failed": 0,
+    "script_errors": 0,
+    "explicit_skips": 1
+  },
+  "city_yard_smoke": {
+    "passed": 19,
+    "failed": 0,
+    "script_errors": 0,
+    "explicit_skips": 0
+  },
+  "city_cars_smoke": {
+    "passed": 34,
+    "failed": 0,
+    "script_errors": 0,
+    "explicit_skips": 1
+  },
+  "city_life_smoke": {
+    "passed": 325,
+    "failed": 0,
+    "script_errors": 0,
+    "explicit_skips": 0
+  },
+  "city_ui_smoke": {
+    "passed": 84,
+    "failed": 0,
+    "script_errors": 0,
+    "explicit_skips": 1
+  },
+  "city_mission_navigation_smoke": {
+    "passed": 9,
+    "failed": 0,
+    "script_errors": 0,
+    "explicit_skips": 0
+  },
+  "city_movement_smoke": {
+    "passed": 114,
+    "failed": 0,
+    "script_errors": 0,
+    "explicit_skips": 0
+  },
+  "city_streaming_smoke": {
+    "passed": 19,
+    "failed": 0,
+    "script_errors": 0,
+    "explicit_skips": 0
+  },
+  "smoke": {
+    "passed": 197,
+    "failed": 0,
+    "script_errors": 0,
+    "explicit_skips": 0
+  }
+}

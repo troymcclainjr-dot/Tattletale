@@ -49,7 +49,7 @@ func _run() -> void:
 	var wheel_before := wheel.transform
 	var spinner_before := spinner.transform
 	Models.animate_spinners(sedan, 0.8)
-	check(wheel.transform == wheel_before and spinner.transform != spinner_before, "spinner hubs rotate independently of stationary wheels")
+	check(wheel.transform == wheel_before and spinner.transform != spinner_before, "moving-car model can rotate decorative hubs independently of tires")
 	sedan.queue_free()
 	get_tree().change_scene_to_file("res://scenes/city/pen_lucy.tscn")
 	await frames(4)
@@ -70,9 +70,25 @@ func _run() -> void:
 		_finish()
 		return
 	var status: Dictionary = parking.get_status()
-	check(int(status.total) >= 36, "parked cars populate the neighborhood")
+	check(int(status.total) == 216 and is_equal_approx(float(status.increase_percent),50.0), "216 validated parked cars provide the requested50% increase")
+	check(status.kinds.size()==Models.ALL_KINDS.size(), "all nine vehicle kinds appear in actual neighborhood parking")
 	check(int(status.street_count) >= 8, "parking covers many real streets")
-	check(int(status.draw_batches) <= 7, "parked fleet shares bounded near/far/spinner batches")
+	check(int(status.draw_batches) <= Models.ALL_KINDS.size()*2+1, "parked fleet shares bounded near/far/spinner batches")
+	check(int(status.animated_spinner_cars) == 0 and not parking.has_method("tick"), "parked fleet has no animated hubs or per-frame ticker")
+	var parked_traffic_checked := false
+	for car in level.traffic.vehicles:
+		if car._spinners.is_empty():
+			continue
+		var state_before: String = car.state
+		var phase_before: float = car._spinner_phase
+		var hub_before: Transform3D = car._spinners[0].transform
+		car.state = "parked"
+		car.tick(0.25)
+		check(is_equal_approx(car._spinner_phase, phase_before) and car._spinners[0].transform == hub_before, "traffic hubs freeze when their vehicle parks")
+		car.state = state_before
+		parked_traffic_checked = true
+		break
+	check(parked_traffic_checked, "traffic includes a spinner-equipped car for parked-state coverage")
 	var spacing_clear := true
 	var supported := true
 	var extent := AABB()
@@ -105,7 +121,7 @@ func _run() -> void:
 		var pose: Transform3D = first.pose
 		parking.set_presence(pose.origin, 55, 180)
 		var active: StaticBody3D = first.body
-		check(active.collision_layer == 2, "near parked cars retain physical collision regardless of view")
+		check(active.collision_layer == (2 | 16), "near parked cars retain obstacle and vehicle-shot collision regardless of view")
 		if DisplayServer.get_name() != "headless":
 			var submitted_instances := 0
 			for batch in parking._batches.values():
@@ -113,14 +129,15 @@ func _run() -> void:
 			var active_status: Dictionary = parking.get_status()
 			check(submitted_instances == int(active_status.near) + int(active_status.far), "only nearby and mid-distance cars occupy visible GPU instance prefixes")
 		var count_before: int = parking.records.size()
-		check(not parking._spinner_records.is_empty(), "nearby spinner hubs enter the update set")
+		check(not parking._spinner_records.is_empty() and int(parking.get_status().visible_spinner_cars) <= 6, "nearby stationary hubs stay visible within the batch cap")
 		if DisplayServer.get_name() == "headless":
 			print("[city_cars] SKIP GPU spinner readback: headless dummy renderer returns identity; rerun graphically for this check")
 		elif not parking._spinner_records.is_empty():
 			var hub_before: Transform3D = parking._spinner_batch.multimesh.get_instance_transform(0)
-			parking.tick(0.25)
+			await frames(8)
+			parking.set_presence(pose.origin, 55, 180)
 			var hub_after: Transform3D = parking._spinner_batch.multimesh.get_instance_transform(0)
-			check(hub_before.basis != hub_after.basis and hub_before.origin.is_equal_approx(hub_after.origin) and parking._spinner_records.size() <= 6, "near parked spinners animate with bounded updates")
+			check(hub_before.is_equal_approx(hub_after), "parked hubs retain their exact pose across elapsed frames and presence refreshes")
 		parking.set_presence(Vector3(2000, 0, 2000), 55, 180)
 		status = parking.get_status()
 		check(int(status.active_colliders) == 0 and int(status.hidden) == count_before, "distant parked fleet deactivates geometry and colliders")

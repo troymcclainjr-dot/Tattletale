@@ -1,0 +1,62 @@
+[
+  {
+    "check": "city_civic_models",
+    "exit": 0,
+    "errors": [],
+    "sources": {
+      "godot\\scripts\\city\\city_civic_businesses.gd": "e05f0be597b3707c9c3bbd9cbdcc23ed631c58a44f1b07b04a2eab93b469cb9a",
+      "godot\\scripts\\city\\city_civic_clearance.gd": "66c232de23759b202f49dcc70fbb6eb86ae1cf19c6f691c854f46b8cd9c7dee9",
+      "godot\\scripts\\city\\city_civic_courthouse.gd": "59a3bf96ab21835a9c8a6aae5cf29d5382148ccf118a9dcc2620ea8c0a74f337",
+      "godot\\scripts\\city\\city_civic_district.gd": "9abbed6fa46cf9d8c0c17daf99189d7563978de12c9be94eb8b7a8e72002b4ef",
+      "godot\\scripts\\city\\city_civic_fire.gd": "c13f56fdd46a3c4aadaa8344e394a9c397a48497a9e6f2afd6ba228ffe1377f9",
+      "godot\\scripts\\city\\city_civic_fire_grounds.gd": "02f38a954f5d41a84895d57979bac54311a7f62c864add147ec5a02ac481f4c9",
+      "godot\\scripts\\city\\city_civic_hospital.gd": "1866bb8f00d9c2665618f2030ccaac1953f22b89d1d645aa0aed5e61e7c38834",
+      "godot\\scripts\\city\\city_civic_hospital_grounds.gd": "2642b82235a547aaaa81fff0bbfaa77db08b3b745613efa65794df165be9953c",
+      "godot\\scripts\\city\\city_civic_mesh_kit.gd": "b279fc501a704962b5e22d84ef8bc387cf5c4191c2041ff448b9f743b9353aac",
+      "godot\\scripts\\city\\city_civic_police.gd": "fb07f6634757bbc7a78966d253e12c480607eb716b08ca8fce91195e0d2ba540",
+      "godot\\scripts\\city\\city_civic_proposals.gd": "534ec6aa05a980c45674413b591aae83bc26f3751f12b198eb2fa97c9e96adb3",
+      "godot\\assets\\data\\pen_lucy_fire_grounds.json": "300beb8884bb4402733baed990b8b80ce3fb7b045ceba9605daf06792d916549",
+      "godot\\assets\\data\\pen_lucy_hospital_grounds.json": "7ce72ea06987ad74d73b71bb9c4cc1bd9733fc7647bfb75d1d466723d680b8b9"
+    }
+  },
+  {
+    "check": "city_civic_world",
+    "exit": 0,
+    "errors": [],
+    "sources": {
+      "godot\\scripts\\city\\city_civic_businesses.gd": "e05f0be597b3707c9c3bbd9cbdcc23ed631c58a44f1b07b04a2eab93b469cb9a",
+      "godot\\scripts\\city\\city_civic_clearance.gd": "66c232de23759b202f49dcc70fbb6eb86ae1cf19c6f691c854f46b8cd9c7dee9",
+      "godot\\scripts\\city\\city_civic_courthouse.gd": "59a3bf96ab21835a9c8a6aae5cf29d5382148ccf118a9dcc2620ea8c0a74f337",
+      "godot\\scripts\\city\\city_civic_district.gd": "9abbed6fa46cf9d8c0c17daf99189d7563978de12c9be94eb8b7a8e72002b4ef",
+      "godot\\scripts\\city\\city_civic_fire.gd": "c13f56fdd46a3c4aadaa8344e394a9c397a48497a9e6f2afd6ba228ffe1377f9",
+      "godot\\scripts\\city\\city_civic_fire_grounds.gd": "02f38a954f5d41a84895d57979bac54311a7f62c864add147ec5a02ac481f4c9",
+      "godot\\scripts\\city\\city_civic_hospital.gd": "1866bb8f00d9c2665618f2030ccaac1953f22b89d1d645aa0aed5e61e7c38834",
+      "godot\\scripts\\city\\city_civic_hospital_grounds.gd": "2642b82235a547aaaa81fff0bbfaa77db08b3b745613efa65794df165be9953c",
+      "godot\\scripts\\city\\city_civic_mesh_kit.gd": "b279fc501a704962b5e22d84ef8bc387cf5c4191c2041ff448b9f743b9353aac",
+      "godot\\scripts\\city\\city_civic_police.gd": "fb07f6634757bbc7a78966d253e12c480607eb716b08ca8fce91195e0d2ba540",
+      "godot\\scripts\\city\\city_civic_proposals.gd": "534ec6aa05a980c45674413b591aae83bc26f3751f12b198eb2fa97c9e96adb3",
+      "godot\\assets\\data\\pen_lucy_fire_grounds.json": "300beb8884bb4402733baed990b8b80ce3fb7b045ceba9605daf06792d916549",
+      "godot\\assets\\data\\pen_lucy_hospital_grounds.json": "7ce72ea06987ad74d73b71bb9c4cc1bd9733fc7647bfb75d1d466723d680b8b9"
+    }
+  },
+  {
+    "check": "city_civic_render",
+    "exit": 0,
+    "errors": [],
+    "sources": {
+      "godot\\scripts\\city\\city_civic_businesses.gd": "e05f0be597b3707c9c3bbd9cbdcc23ed631c58a44f1b07b04a2eab93b469cb9a",
+      "godot\\scripts\\city\\city_civic_clearance.gd": "66c232de23759b202f49dcc70fbb6eb86ae1cf19c6f691c854f46b8cd9c7dee9",
+      "godot\\scripts\\city\\city_civic_courthouse.gd": "59a3bf96ab21835a9c8a6aae5cf29d5382148ccf118a9dcc2620ea8c0a74f337",
+      "godot\\scripts\\city\\city_civic_district.gd": "9abbed6fa46cf9d8c0c17daf99189d7563978de12c9be94eb8b7a8e72002b4ef",
+      "godot\\scripts\\city\\city_civic_fire.gd": "c13f56fdd46a3c4aadaa8344e394a9c397a48497a9e6f2afd6ba228ffe1377f9",
+      "godot\\scripts\\city\\city_civic_fire_grounds.gd": "02f38a954f5d41a84895d57979bac54311a7f62c864add147ec5a02ac481f4c9",
+      "godot\\scripts\\city\\city_civic_hospital.gd": "1866bb8f00d9c2665618f2030ccaac1953f22b89d1d645aa0aed5e61e7c38834",
+      "godot\\scripts\\city\\city_civic_hospital_grounds.gd": "2642b82235a547aaaa81fff0bbfaa77db08b3b745613efa65794df165be9953c",
+      "godot\\scripts\\city\\city_civic_mesh_kit.gd": "b279fc501a704962b5e22d84ef8bc387cf5c4191c2041ff448b9f743b9353aac",
+      "godot\\scripts\\city\\city_civic_police.gd": "fb07f6634757bbc7a78966d253e12c480607eb716b08ca8fce91195e0d2ba540",
+      "godot\\scripts\\city\\city_civic_proposals.gd": "534ec6aa05a980c45674413b591aae83bc26f3751f12b198eb2fa97c9e96adb3",
+      "godot\\assets\\data\\pen_lucy_fire_grounds.json": "300beb8884bb4402733baed990b8b80ce3fb7b045ceba9605daf06792d916549",
+      "godot\\assets\\data\\pen_lucy_hospital_grounds.json": "7ce72ea06987ad74d73b71bb9c4cc1bd9733fc7647bfb75d1d466723d680b8b9"
+    }
+  }
+]

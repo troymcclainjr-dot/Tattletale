@@ -2,6 +2,8 @@ extends Node
 ## Production fleet acceptance: sustained full-scene near physics, followed by
 ## accelerated distant simulation and isolated reservation regressions.
 
+const Vehicle := preload("res://scripts/city/city_vehicle.gd")
+
 var passes := 0
 var fails := 0
 
@@ -35,7 +37,7 @@ func _run() -> void:
 	await frames(2)
 	var traffic: Node3D = level.traffic
 	var initial: Dictionary = traffic.get_status()
-	check(int(initial.total) >= 68 and int(initial.total) <= 76, "roughly72 moving cars initialized")
+	check(int(initial.total) == 90, "ninety moving cars initialize without relaxing spawn clearance")
 	check(int(initial.streets) >= 10, "cars distributed across at least ten streets")
 	check(int(initial.spawn_streets.get("Old York Road", 0)) >= 8, "OldYork retains at least eight cars")
 	var lane_counts: Dictionary = {}
@@ -53,12 +55,21 @@ func _run() -> void:
 	check(int(initial.police) >= 3, "original patrol car asset reused by at least three moving police")
 	check(int(initial.network.lanes) >= 60, "directed lanes cover the real road network")
 	var speeds_ok := true
+	var cautious_police := true
+	var aggressive := 0
 	var distant := 0
 	for car in traffic.vehicles:
-		speeds_ok = speeds_ok and car.cruise_speed >= 8.0 and car.cruise_speed <= 11.0
+		if car.driver_style == "aggressive":
+			aggressive += 1
+			speeds_ok = speeds_ok and car.cruise_speed >= 12.0 and car.cruise_speed <= 15.0
+		else:
+			speeds_ok = speeds_ok and car.cruise_speed >= 8.0 and car.cruise_speed <= 10.5
+		cautious_police = cautious_police and (not car.is_police or car.driver_style == "cautious")
 		if car.global_position.distance_to(level.player.global_position) > 100:
 			distant += int(not car.near_physics and car.collision_layer == 0)
-	check(speeds_ok, "urban cruise targets are 8–11 meters per second")
+	check(speeds_ok, "cautious urban speeds are8–10.5m/s and aggressive speeds12–15m/s")
+	check(aggressive >= 12 and aggressive <= 18, "a deterministic minority of drivers is aggressive")
+	check(cautious_police, "all police drivers retain cautious braking")
 	check(distant >= 10, "distant cars retain simulation without active body colliders")
 	await _check_near_flow(level, traffic)
 	# Accelerate simulation using the same production methods, deliberately using
@@ -105,7 +116,16 @@ func _run() -> void:
 	check(traffic.junction_transfers >= 20, "cars transfer through junctions onto subsequent streets")
 	check(late_progressed >= traffic.vehicles.size() / 2 and traffic.junction_transfers - late_transfers >= 4, "movement and junction transfers continue during final15seconds")
 	check(finite_queues == 0, "no car parks at the end of a finite route")
-	check(max_route_points < 220, "completed route prefixes are discarded")
+	# One incoming lane, one connector and one outgoing lane are the maximum
+	# retained trip. Derive the bound from actual sampling rather than making
+	# smoother curves fail an unrelated hard-coded vertex count.
+	var largest_lane := 0
+	var largest_connector := 0
+	for lane in traffic.network.lanes:
+		largest_lane = maxi(largest_lane, lane.points.size())
+	for connector in traffic.network._connector_cache.values():
+		largest_connector = maxi(largest_connector, connector.size())
+	check(max_route_points <= largest_lane * 2 + largest_connector, "completed prefixes stay bounded to two lanes and one connector")
 	check(overlaps == 0, "same-direction cars maintain body separation in distant simulation")
 	var reasons: Dictionary = {}
 	for car in traffic.vehicles:
@@ -184,6 +204,15 @@ func _run() -> void:
 		second.leader_distance = INF
 		traffic.control_distance(first, 0.1)
 		check(traffic.reservations.get(zone) == first and first.route.size() > 2, "first approach reserves and receives connected route")
+		var outgoing_points: Array[Vector3] = traffic.network.lanes[first.lane_id].points
+		var release_point: Vector3 = first.route[first.connector_end_index]
+		var exit_clearance := 0.0
+		for index in range(1, outgoing_points.size()):
+			exit_clearance += Vector2(outgoing_points[index].x - outgoing_points[index - 1].x, outgoing_points[index].z - outgoing_points[index - 1].z).length()
+			if outgoing_points[index].is_equal_approx(release_point):
+				break
+		check(exit_clearance >= Vehicle.BODY_SIZE.z * 0.5 + 0.5,
+			"reservation release target leaves rear-bumper clearance independent of waypoint density")
 		var wait_distance: float = traffic.control_distance(second, 0.1)
 		check(wait_distance < 0.1 and second.reservation_id == "", "conflicting approach cannot enter occupied junction")
 		for frame in 900:

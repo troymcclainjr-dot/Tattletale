@@ -10,7 +10,7 @@ random.seed(9)
 
 BLACK = ck.gloss("#141418", 0.35)          # JS body
 WHITE = ck.gloss("#f4f2ee", 0.35)          # JS door band + cabin
-GLASS = ck.gloss("#1a2230", 0.1)           # JS windows
+GLASS = ck.gloss("#26353e", 0.34)          # opaque, subdued neighborhood glass
 UNDER = ck.clay("#1a1a1c", 0.9)
 TIRE = ck.clay("#121214", 0.5)             # JS wheels
 STEEL = ck.clay("#2a2a2e", 0.6)
@@ -78,8 +78,19 @@ rear_win = [(max(-1.25, C.xb(y_lo) + C.rc + 0.03), y_lo), (-0.25, y_lo), (-0.25,
 for s in (-1, 1):
     for nm, pts in (("Front", front_win), ("Rear", rear_win)):
         outline = kit.rounded_poly(pts, 0.045)
+        parts.append(kit.surface_slab(f"WindowSeal{nm}{s}",
+                                      kit.rounded_poly(kit.offset_poly(pts, 0.014), 0.055),
+                                      lambda u, v, s=s: (u, v, s * C.hw(v)), (0, KS, s), RUBBER, 0.002, -0.003))
         parts.append(kit.surface_slab(f"Window{nm}{'L' if s < 0 else 'R'}", outline,
                                       lambda u, v, s=s: (u, v, s * C.hw(v)), (0, KS, s), GLASS))
+
+# Blackout B-pillars and a modest door molding give the working cruiser its
+# own silhouette breaks without changing the collision shell or wheel mounts.
+for s in (-1, 1):
+    pillar = [(-0.235, 1.30), (-0.065, 1.30), (-0.065, 1.78), (-0.235, 1.78)]
+    parts.append(kit.surface_slab("PillarTrim", pillar, lambda u, v, s=s: (u, v, s*C.hw(v)), (0, KS, s), RUBBER, 0.005, -0.002))
+    parts.append(ck.box(1.74, 0.038, 0.016, (-0.02, 0.57, s*0.954), RUBBER, name="DoorMolding"))
+parts += kit.road_details(B, C, RUBBER, BLACK)
 
 # ---------------------------------------------------------------- doors: lettering, star, handles
 for s in (-1, 1):
@@ -175,7 +186,7 @@ for nm, x, z in (("WheelFL", 1.4, -0.9), ("WheelFR", 1.4, 0.9), ("WheelRL", -1.4
     kit.attach(w, piv)
 
 # ---------------------------------------------------------------- assemble
-THIN = ("Antenna", "AntennaTip", "SpotStalk", "SpotMount", "GrilleBar", "GrilleFrame", "Exhaust", "ExhaustHole")
+THIN = ("Antenna", "AntennaTip", "SpotStalk", "SpotMount", "GrilleBar", "GrilleFrame", "Exhaust", "ExhaustHole", "Wiper", "ArchLip", "WindowSeal", "PillarTrim")
 kit.lumpy_world([o for o in parts if not o.name.startswith(THIN)], 0.0028, 2.4, seed=3)
 kit.lumpy_world([red, blue], 0.0015, 4.0, seed=8)
 kit.tri_report(parts + [heads, red, blue] + [o for o in root.children_recursive if o.type == "MESH"])

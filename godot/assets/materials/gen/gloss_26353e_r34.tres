@@ -1,0 +1,11 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://cgkyggmvvj8t0"]
+
+[ext_resource type="Shader" uid="uid://ucipatddbwth" path="res://assets/materials/clay.gdshader" id="1_alruu"]
+
+[resource]
+resource_name = "gloss_26353e_r34"
+render_priority = 0
+shader = ExtResource("1_alruu")
+shader_parameter/albedo = Color(0.14901961, 0.20784314, 0.24313726, 1)
+shader_parameter/roughness = 0.34
+shader_parameter/metallic = null

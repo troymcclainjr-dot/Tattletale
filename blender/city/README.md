@@ -58,6 +58,14 @@ have formstone or painted fronts. Trim, door and awning colors vary. Doors alter
 so neighbors mirror each other. End units and rear walls get windows wherever no other building
 touches the wall.
 
+Rose Hill Terrace has 24 second-floor projecting sash bays across four rows. The
+street-specific kit replaces that floor's flat window grid with a three-sided bay
+and one sash above the door. Three independently seeded variants vary projection,
+width and white/cream/gray cladding without changing existing ground-floor details.
+Closed shells, pane frames and wrapping cornices sit above porch roofs, reuse the
+existing material palette, and stay in the building meshes for native LOD/batching.
+`facade_details` in runtime metadata records positions and clearances for validation.
+
 Kit parts are boxes with 45° edge cuts (28 triangles, 12 for a plain box), smooth shaded so they
 have clean beveled edges under the shared surface shader. They're generated in numpy inside `process.py`
 rather than with claykit primitives, because about 40,000 parts would take Blender far too long one
@@ -97,7 +105,11 @@ heights with zero measured error. Twelve footprint repairs eliminate all buildin
 intrusions found by the source audit. These are generated playability grades, not a claim
 that every paved elevation matches the unmodified survey.
 
-The service yards use 91,002.54 m² of hardscape. Seven mapped parks and greens retain
+The service yards use 84,194.84 m² of hardscape. Front gardens restore 9,242.50 m²
+of small beds across 654 homes, with dry soil patches, occasional brick edging and
+1.68 m concrete approaches to the stairs. Beds are cut out of the ground zones
+before triangulation and clipped against all footprints, sidewalks, roads and
+entrance paths. A minority of homes retain their paved front patios. Seven mapped parks and greens retain
 6,584.02 m² of grass, including polygon holes where appropriate. Commercial fronts belong to
 18 generated building kits rather than runtime storefront overlays. These ground and
 building treatments are interpretations of the mapped neighborhood, not surveyed materials.
@@ -163,8 +175,8 @@ token) or the owners' own photos.
 
 The playable build filters inferred tree trunk centers that fall inside mapped road pavement.
 Canopy peaks can overhang a street even when the real trunk is elsewhere. The current pass
-rejects 66 roadway peaks and retains 1,812 trees. Four tree variants use branching, irregular
-clustered crowns; three shrub variants add 440 untended bushes on mapped grass. Each variant
+rejects 68 roadway peaks and retains 1,809 trees after three trunks inside new basketball courts are removed. Four tree variants use branching, irregular
+clustered crowns; three shrub variants add 386 untended bushes on mapped grass outside the dedicated front hedges and courts. Each variant
 has near/far meshes: 14 shared meshes total. Tree meshes use 372 triangles nearby and 92 far
 away; shrub meshes use 136 and 80. Placement records support trunk clearance checks even
 when a distant cell's physics is unloaded. Road and route clearance are audited during generation.
@@ -198,6 +210,27 @@ stairs use verified structural treads, wall contact preserves tangential movemen
 chase camera gently follows sustained travel after a look grace period while leaving idle
 and held-orbit views alone. See `../../godot/README.md` for full controls and runtime tests.
 
+`yards.py` exports `godot/assets/data/pen_lucy_yards.json`: 275 continuous hedge rows,
+469 metal cans extracted from the original port's furniture asset, 51 matching
+dumpsters, and 4,619 loose litter pieces across 171 spatial cells. Bins reserve
+rear/side-wall sites outside service lanes, roads, sidewalks and doorway corridors.
+`city_yard_details.gd` merges each resident 48 m cell into one vertex-color surface
+and unloads it beyond 130 m (105 m visible loading radius). Indexed cell meshes
+are cached to disk during initial setup and loaded asynchronously, with 150 m
+prefetch and 170 m cache release distances; travel never rebuilds geometry.
+Only bins receive physics;
+all loose litter is decorative and non-blocking. Placement reservations remain
+available after unloading. Front beds are excluded from the general shrub scatter
+to avoid double planting. `test_yards.py` covers source clipping and original-can
+winding; `city_yard_smoke.gd` checks imported support surfaces, stair clearance,
+cell draw surfaces, collider ownership and unloading/reloading.
+
+`park_courts.py` fits two small half-courts into existing park polygons, exports
+batched paint/hoops and separate floor collision in `pen_lucy_courts.json`, and excludes
+three overlapping trees. Slabs use at most 1.5% grade with gentle grounded aprons.
+`process.py` also exports exact sidewalk/road polygons with holes into
+`pen_lucy_street_surfaces.json` for runtime lamp, stop-sign and crosswalk validation.
+
 ## Licenses
 
 - OpenStreetMap data © OpenStreetMap contributors, ODbL. A game that shows the map needs the credit
@@ -205,3 +238,15 @@ and held-orbit views alone. See `../../godot/README.md` for full controls and ru
   under ODbL.
 - USGS 3DEP LiDAR is public domain.
 - Google Maps / Street View / 3D Tiles are not used (their terms don't allow it).
+
+`park_courts.py` fits two compact neighborhood practice half-courts into community
+greens: 14 � 10 m at 1.5% planar fall and 12 � 9 m at 1% fall. Their 2.5 m
+aprons connect to the unchanged ground at less than 4� slope, with a maximum
+12.1 cm supported fill. `pen_lucy_courts.json` supplies one painted mesh per court,
+backboards, 3.05 m rims and nets. Court support collision remains resident; only
+hoop poles add blocking prop collision. All 1,809 remaining tree trunks and all
+generic bushes clear the courts. Empty court selections leave vegetation intact,
+and source export checks reject invalid counts/clearance before atomic publication.
+
+`pen_lucy_street_surfaces.json` exports exact road and sidewalk polygons, including
+holes, clipped to 64 m tiles for bounded runtime fixture placement checks.

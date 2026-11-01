@@ -1,0 +1,2285 @@
+{
+  "version": 1,
+  "residents": [
+    {
+      "id": "daily_nadine_brooks",
+      "name": "Nadine Brooks",
+      "age": 54,
+      "street": "Old York Road",
+      "fraction": 0.42,
+      "side": 1,
+      "speed": 0.91,
+      "appearance": {
+        "h": 1.7,
+        "skin": "#6e4228",
+        "top": "#ba633b",
+        "pants": "#293646",
+        "shoes": "#292522",
+        "hair": "#24201b",
+        "style": "bun",
+        "glasses": false,
+        "mustache": false
+      },
+      "dialogue": [
+        "Morning light tells me which plants need water."
+      ],
+      "about": "I tend porch planters in the morning, visit the green after work, and turn in early.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 390,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 480,
+          "activity": "work",
+          "label": "Porch plant care"
+        },
+        {
+          "minute": 960,
+          "activity": "leisure",
+          "label": "Old York Road · neighborhood visit"
+        },
+        {
+          "minute": 1120,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1320,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_calvin_reed",
+      "name": "Calvin Reed",
+      "age": 42,
+      "street": "Wyanoke Avenue",
+      "fraction": 0.322,
+      "side": -1,
+      "speed": 0.975,
+      "appearance": {
+        "h": 1.87,
+        "skin": "#a87550",
+        "top": "#467a96",
+        "pants": "#524338",
+        "shoes": "#e6dfce",
+        "hair": "#6b5141",
+        "style": "short",
+        "glasses": false,
+        "mustache": true
+      },
+      "dialogue": [
+        "A quiet bicycle usually means somebody has looked after it."
+      ],
+      "about": "My repair stand opens late. After the last wheel, I take a long walk before supper.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 420,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 555,
+          "activity": "work",
+          "label": "Bicycle repair stand"
+        },
+        {
+          "minute": 1035,
+          "activity": "leisure",
+          "label": "Wyanoke Avenue · neighborhood visit"
+        },
+        {
+          "minute": 1190,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1380,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_ines_morales",
+      "name": "Ines Morales",
+      "age": 36,
+      "street": "Dumbarton Avenue",
+      "fraction": 0.434,
+      "side": 1,
+      "speed": 1.04,
+      "appearance": {
+        "h": 1.62,
+        "skin": "#c68e62",
+        "top": "#b89538",
+        "pants": "#41464b",
+        "shoes": "#40352d",
+        "hair": "#c3c0b6",
+        "style": "bob",
+        "glasses": false,
+        "mustache": false
+      },
+      "dialogue": [
+        "I save the sunflowers for the people who need a bright spot."
+      ],
+      "about": "Flowers first, lunch outside, then a stop by the neighborhood gathering spot.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 360,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 450,
+          "activity": "work",
+          "label": "Flower cart"
+        },
+        {
+          "minute": 900,
+          "activity": "leisure",
+          "label": "Dumbarton Avenue · neighborhood visit"
+        },
+        {
+          "minute": 1080,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1290,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_walter_price",
+      "name": "Walter Price",
+      "age": 68,
+      "street": "Cator Avenue",
+      "fraction": 0.546,
+      "side": -1,
+      "speed": 1.105,
+      "appearance": {
+        "h": 1.78,
+        "skin": "#805238",
+        "top": "#6d8e72",
+        "pants": "#3d354e",
+        "shoes": "#292522",
+        "hair": "#493d31",
+        "style": "bald",
+        "glasses": true,
+        "mustache": false
+      },
+      "dialogue": [
+        "Measure twice. Then ask whether the step was level to begin with."
+      ],
+      "about": "I mend front steps before the heat, watch the afternoon game, and head home for the radio.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 330,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 435,
+          "activity": "work",
+          "label": "Front-step repairs"
+        },
+        {
+          "minute": 825,
+          "activity": "leisure",
+          "label": "Cator Avenue · neighborhood visit"
+        },
+        {
+          "minute": 1050,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1260,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_aisha_bell",
+      "name": "Aisha Bell",
+      "age": 29,
+      "street": "Greenmount Avenue",
+      "fraction": 0.658,
+      "side": 1,
+      "speed": 1.17,
+      "appearance": {
+        "h": 1.74,
+        "skin": "#563626",
+        "top": "#985ea4",
+        "pants": "#293646",
+        "shoes": "#e6dfce",
+        "hair": "#24201b",
+        "style": "bun",
+        "glasses": false,
+        "mustache": false
+      },
+      "dialogue": [
+        "A notice only helps if people can read it from the sidewalk."
+      ],
+      "about": "I staff the neighborhood notice table, catch up with friends, and read late at home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 450,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 600,
+          "activity": "work",
+          "label": "Community notice table"
+        },
+        {
+          "minute": 1080,
+          "activity": "leisure",
+          "label": "Greenmount Avenue · neighborhood visit"
+        },
+        {
+          "minute": 1200,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1410,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_ernest_cole",
+      "name": "Ernest Cole",
+      "age": 61,
+      "street": "Frisby Street",
+      "fraction": 0.77,
+      "side": -1,
+      "speed": 1.235,
+      "appearance": {
+        "h": 1.82,
+        "skin": "#b0805c",
+        "top": "#87654d",
+        "pants": "#524338",
+        "shoes": "#40352d",
+        "hair": "#6b5141",
+        "style": "short",
+        "glasses": false,
+        "mustache": true
+      },
+      "dialogue": [
+        "You learn a block by sweeping it slowly."
+      ],
+      "about": "I sweep early, spend a while outside after lunch, then get home before the evening rush.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 300,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 390,
+          "activity": "work",
+          "label": "Street sweeping round"
+        },
+        {
+          "minute": 780,
+          "activity": "leisure",
+          "label": "Frisby Street · neighborhood visit"
+        },
+        {
+          "minute": 990,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1230,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_june_harris",
+      "name": "June Harris",
+      "age": 47,
+      "street": "Ellerslie Avenue",
+      "fraction": 0.21,
+      "side": 1,
+      "speed": 1.3,
+      "appearance": {
+        "h": 1.66,
+        "skin": "#d5a279",
+        "top": "#bd556f",
+        "pants": "#41464b",
+        "shoes": "#292522",
+        "hair": "#c3c0b6",
+        "style": "long",
+        "glasses": false,
+        "mustache": false
+      },
+      "dialogue": [
+        "That loose button is one good stitch away from behaving."
+      ],
+      "about": "I mend clothes at the frontage table and take my evening stroll before going home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 465,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 570,
+          "activity": "work",
+          "label": "Mending table"
+        },
+        {
+          "minute": 1020,
+          "activity": "leisure",
+          "label": "Ellerslie Avenue · neighborhood visit"
+        },
+        {
+          "minute": 1170,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1365,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_marcus_webb",
+      "name": "Marcus Webb",
+      "age": 33,
+      "street": "East 41st Street",
+      "fraction": 0.322,
+      "side": -1,
+      "speed": 0.91,
+      "appearance": {
+        "h": 1.9,
+        "skin": "#6e4228",
+        "top": "#457f83",
+        "pants": "#3d354e",
+        "shoes": "#e6dfce",
+        "hair": "#493d31",
+        "style": "short",
+        "glasses": false,
+        "mustache": false
+      },
+      "dialogue": [
+        "Everybody has rhythm. Some people just need a quieter count-in."
+      ],
+      "about": "My lessons start after breakfast. I walk to clear my head afterward, then practice at home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 510,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 690,
+          "activity": "work",
+          "label": "Music lesson meeting point"
+        },
+        {
+          "minute": 1140,
+          "activity": "leisure",
+          "label": "East 41st Street · neighborhood visit"
+        },
+        {
+          "minute": 1260,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1430,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_pearl_sutton",
+      "name": "Pearl Sutton",
+      "age": 72,
+      "street": "Rose Hill Terrace",
+      "fraction": 0.434,
+      "side": 1,
+      "speed": 0.975,
+      "appearance": {
+        "h": 1.58,
+        "skin": "#a87550",
+        "top": "#8d799a",
+        "pants": "#293646",
+        "shoes": "#40352d",
+        "hair": "#24201b",
+        "style": "bun",
+        "glasses": true,
+        "mustache": false
+      },
+      "dialogue": [
+        "Take a few seeds. Leave a little patience."
+      ],
+      "about": "Seed exchange in the morning, a visit to my neighbors after lunch, home before dark.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 375,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 510,
+          "activity": "work",
+          "label": "Seed exchange"
+        },
+        {
+          "minute": 855,
+          "activity": "leisure",
+          "label": "Rose Hill Terrace · neighborhood visit"
+        },
+        {
+          "minute": 1065,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1275,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_andre_foster",
+      "name": "Andre Foster",
+      "age": 39,
+      "street": "Elkader Road",
+      "fraction": 0.546,
+      "side": -1,
+      "speed": 1.04,
+      "appearance": {
+        "h": 1.84,
+        "skin": "#c68e62",
+        "top": "#b27737",
+        "pants": "#524338",
+        "shoes": "#292522",
+        "hair": "#6b5141",
+        "style": "bald",
+        "glasses": false,
+        "mustache": true
+      },
+      "dialogue": [
+        "I double-check the address before I ring the bell."
+      ],
+      "about": "My deliveries start early. I stop for a chat once the route is finished.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 345,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 465,
+          "activity": "work",
+          "label": "Delivery handoff"
+        },
+        {
+          "minute": 945,
+          "activity": "leisure",
+          "label": "Elkader Road · neighborhood visit"
+        },
+        {
+          "minute": 1110,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1305,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_luz_santos",
+      "name": "Luz Santos",
+      "age": 44,
+      "street": "Wilsby Avenue",
+      "fraction": 0.658,
+      "side": 1,
+      "speed": 1.105,
+      "appearance": {
+        "h": 1.64,
+        "skin": "#805238",
+        "top": "#4c739e",
+        "pants": "#41464b",
+        "shoes": "#e6dfce",
+        "hair": "#c3c0b6",
+        "style": "bob",
+        "glasses": false,
+        "mustache": false
+      },
+      "dialogue": [
+        "The best tomato is the one you actually let ripen."
+      ],
+      "about": "I set out produce early, rest in the afternoon, and get home to cook.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 315,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 405,
+          "activity": "work",
+          "label": "Market produce table"
+        },
+        {
+          "minute": 870,
+          "activity": "leisure",
+          "label": "Wilsby Avenue · neighborhood visit"
+        },
+        {
+          "minute": 1020,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1245,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_theo_washington",
+      "name": "Theo Washington",
+      "age": 57,
+      "street": "Lowndes Avenue",
+      "fraction": 0.77,
+      "side": -1,
+      "speed": 1.17,
+      "appearance": {
+        "h": 1.8,
+        "skin": "#563626",
+        "top": "#7b8149",
+        "pants": "#3d354e",
+        "shoes": "#40352d",
+        "hair": "#493d31",
+        "style": "short",
+        "glasses": true,
+        "mustache": false
+      },
+      "dialogue": [
+        "Bring the tool back clean and we are already friends."
+      ],
+      "about": "I run the tool table, visit the block after closing, and keep my evenings quiet.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 435,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 540,
+          "activity": "work",
+          "label": "Tool lending table"
+        },
+        {
+          "minute": 1050,
+          "activity": "leisure",
+          "label": "Lowndes Avenue · neighborhood visit"
+        },
+        {
+          "minute": 1185,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1350,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_ruth_daniels",
+      "name": "Ruth Daniels",
+      "age": 65,
+      "street": "East 38th Street",
+      "fraction": 0.21,
+      "side": 1,
+      "speed": 1.235,
+      "appearance": {
+        "h": 1.6,
+        "skin": "#b0805c",
+        "top": "#b46d89",
+        "pants": "#293646",
+        "shoes": "#292522",
+        "hair": "#24201b",
+        "style": "bun",
+        "glasses": true,
+        "mustache": false
+      },
+      "dialogue": [
+        "This one has a good ending. I will not spoil it."
+      ],
+      "about": "I sort the book exchange, read outdoors in the afternoon, and head home with a new story.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 405,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 525,
+          "activity": "work",
+          "label": "Book exchange"
+        },
+        {
+          "minute": 930,
+          "activity": "leisure",
+          "label": "East 38th Street · neighborhood visit"
+        },
+        {
+          "minute": 1095,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1295,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_devon_clarke",
+      "name": "Devon Clarke",
+      "age": 26,
+      "street": "Argonne Drive",
+      "fraction": 0.322,
+      "side": -1,
+      "speed": 1.3,
+      "appearance": {
+        "h": 1.88,
+        "skin": "#d5a279",
+        "top": "#9e6546",
+        "pants": "#524338",
+        "shoes": "#e6dfce",
+        "hair": "#6b5141",
+        "style": "short",
+        "glasses": false,
+        "mustache": false
+      },
+      "dialogue": [
+        "Clean windows make the whole street look awake."
+      ],
+      "about": "My washing round starts after breakfast. I meet friends afterward and turn in late.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 480,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 615,
+          "activity": "work",
+          "label": "Window washing round"
+        },
+        {
+          "minute": 1110,
+          "activity": "leisure",
+          "label": "Argonne Drive · neighborhood visit"
+        },
+        {
+          "minute": 1230,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1400,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_celia_grant",
+      "name": "Celia Grant",
+      "age": 51,
+      "street": "Pen Lucy Avenue",
+      "fraction": 0.434,
+      "side": 1,
+      "speed": 0.91,
+      "appearance": {
+        "h": 1.72,
+        "skin": "#6e4228",
+        "top": "#57866d",
+        "pants": "#41464b",
+        "shoes": "#40352d",
+        "hair": "#c3c0b6",
+        "style": "long",
+        "glasses": false,
+        "mustache": false
+      },
+      "dialogue": [
+        "A little extra in the bag can make somebody else dinner."
+      ],
+      "about": "I help with pantry pickups, visit the open space, and make supper at home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 355,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 495,
+          "activity": "work",
+          "label": "Community pantry pickup"
+        },
+        {
+          "minute": 885,
+          "activity": "leisure",
+          "label": "Pen Lucy Avenue · neighborhood visit"
+        },
+        {
+          "minute": 1075,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1285,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_oscar_bennett",
+      "name": "Oscar Bennett",
+      "age": 46,
+      "street": "Underwood Road",
+      "fraction": 0.546,
+      "side": -1,
+      "speed": 0.975,
+      "appearance": {
+        "h": 1.76,
+        "skin": "#a87550",
+        "top": "#717fa1",
+        "pants": "#3d354e",
+        "shoes": "#292522",
+        "hair": "#493d31",
+        "style": "short",
+        "glasses": false,
+        "mustache": true
+      },
+      "dialogue": [
+        "A good pair of shoes deserves a second season."
+      ],
+      "about": "I open the shoe stand later than most, stretch my legs afterward, then go home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 495,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 660,
+          "activity": "work",
+          "label": "Shoe care stand"
+        },
+        {
+          "minute": 1125,
+          "activity": "leisure",
+          "label": "Underwood Road · neighborhood visit"
+        },
+        {
+          "minute": 1245,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1420,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_miriam_owens",
+      "name": "Miriam Owens",
+      "age": 59,
+      "street": "Old York Road",
+      "fraction": 0.48,
+      "side": 1,
+      "speed": 1.04,
+      "appearance": {
+        "h": 1.69,
+        "skin": "#c68e62",
+        "top": "#a95841",
+        "pants": "#293646",
+        "shoes": "#e6dfce",
+        "hair": "#24201b",
+        "style": "bob",
+        "glasses": true,
+        "mustache": false
+      },
+      "dialogue": [
+        "Too much water can be just as unkind as too little."
+      ],
+      "about": "I answer garden questions, take an afternoon walk, and look after my own plants at home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 385,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 505,
+          "activity": "work",
+          "label": "Garden advice table"
+        },
+        {
+          "minute": 915,
+          "activity": "leisure",
+          "label": "Old York Road · neighborhood visit"
+        },
+        {
+          "minute": 1105,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1315,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_leon_turner",
+      "name": "Leon Turner",
+      "age": 31,
+      "street": "Dumbarton Avenue",
+      "fraction": 0.77,
+      "side": -1,
+      "speed": 1.105,
+      "appearance": {
+        "h": 1.92,
+        "skin": "#805238",
+        "top": "#437b90",
+        "pants": "#524338",
+        "shoes": "#40352d",
+        "hair": "#6b5141",
+        "style": "short",
+        "glasses": false,
+        "mustache": false
+      },
+      "dialogue": [
+        "The clean cardboard goes here. It saves everyone a second trip."
+      ],
+      "about": "I help at the collection point early and spend the afternoon catching up around the block.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 325,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 440,
+          "activity": "work",
+          "label": "Recycling collection point"
+        },
+        {
+          "minute": 840,
+          "activity": "leisure",
+          "label": "Dumbarton Avenue · neighborhood visit"
+        },
+        {
+          "minute": 1010,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1255,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_estelle_ross",
+      "name": "Estelle Ross",
+      "age": 63,
+      "street": "Wyanoke Avenue",
+      "fraction": 0.55,
+      "side": 1,
+      "speed": 1.17,
+      "appearance": {
+        "h": 1.56,
+        "skin": "#563626",
+        "top": "#957349",
+        "pants": "#41464b",
+        "shoes": "#292522",
+        "hair": "#c3c0b6",
+        "style": "bun",
+        "glasses": true,
+        "mustache": false
+      },
+      "dialogue": [
+        "Every front step has heard a story worth keeping."
+      ],
+      "about": "I collect neighborhood stories, take a slow walk after work, and write them down at home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 455,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 585,
+          "activity": "work",
+          "label": "Neighborhood history table"
+        },
+        {
+          "minute": 1005,
+          "activity": "leisure",
+          "label": "Wyanoke Avenue · neighborhood visit"
+        },
+        {
+          "minute": 1160,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1340,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_samir_haddad",
+      "name": "Samir Haddad",
+      "age": 40,
+      "street": "Greenmount Avenue",
+      "fraction": 0.322,
+      "side": -1,
+      "speed": 1.235,
+      "appearance": {
+        "h": 1.81,
+        "skin": "#b0805c",
+        "top": "#6e6592",
+        "pants": "#3d354e",
+        "shoes": "#e6dfce",
+        "hair": "#493d31",
+        "style": "short",
+        "glasses": false,
+        "mustache": true
+      },
+      "dialogue": [
+        "That watch is not slow. It is asking for a little attention."
+      ],
+      "about": "I repair watches through the afternoon, visit the block afterward, then put my feet up at home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 470,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 630,
+          "activity": "work",
+          "label": "Watch repair stand"
+        },
+        {
+          "minute": 1095,
+          "activity": "leisure",
+          "label": "Greenmount Avenue · neighborhood visit"
+        },
+        {
+          "minute": 1215,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1395,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_simone_avery",
+      "name": "Simone Avery",
+      "age": 26,
+      "street": "Old York Road",
+      "fraction": 0.26,
+      "side": -1,
+      "speed": 0.94,
+      "appearance": {
+        "h": 1.72,
+        "skin": "#482b20",
+        "top": "#52677d",
+        "pants": "#242d3b",
+        "shoes": "#d3cab8",
+        "hair": "#211b1a",
+        "style": "short",
+        "glasses": false,
+        "mustache": false,
+        "roster_id": "b17",
+        "roster_index": 20
+      },
+      "dialogue": [
+        "I like finding the small details people walk past."
+      ],
+      "about": "I spend part of my day on book repair table, then take a neighborhood walk before heading home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 365,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 475,
+          "activity": "work",
+          "label": "Book repair table"
+        },
+        {
+          "minute": 940,
+          "activity": "leisure",
+          "label": "Old York Road · neighborhood visit"
+        },
+        {
+          "minute": 1140,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1330,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_malcolm_ellis",
+      "name": "Malcolm Ellis",
+      "age": 33,
+      "street": "Wyanoke Avenue",
+      "fraction": 0.347,
+      "side": 1,
+      "speed": 0.987,
+      "appearance": {
+        "h": 1.86,
+        "skin": "#563626",
+        "top": "#a56c42",
+        "pants": "#353841",
+        "shoes": "#614b3b",
+        "hair": "#201918",
+        "style": "bun",
+        "glasses": false,
+        "mustache": true,
+        "roster_id": "b18",
+        "roster_index": 21
+      },
+      "dialogue": [
+        "There is always another project waiting on my table."
+      ],
+      "about": "I spend part of my day on radio repair bench, then take a neighborhood walk before heading home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 368,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 486,
+          "activity": "work",
+          "label": "Radio repair bench"
+        },
+        {
+          "minute": 947,
+          "activity": "leisure",
+          "label": "Wyanoke Avenue · neighborhood visit"
+        },
+        {
+          "minute": 1144,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1333,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_tessa_monroe",
+      "name": "Tessa Monroe",
+      "age": 40,
+      "street": "Dumbarton Avenue",
+      "fraction": 0.434,
+      "side": -1,
+      "speed": 1.034,
+      "appearance": {
+        "h": 1.75,
+        "skin": "#65412e",
+        "top": "#799381",
+        "pants": "#354551",
+        "shoes": "#403538",
+        "hair": "#241a19",
+        "style": "ponytail",
+        "glasses": false,
+        "mustache": false,
+        "roster_id": "b19",
+        "roster_index": 22
+      },
+      "dialogue": [
+        "A walk helps me think through the next thing I am making."
+      ],
+      "about": "I spend part of my day on community noticeboard, then take a neighborhood walk before heading home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 371,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 497,
+          "activity": "work",
+          "label": "Community noticeboard"
+        },
+        {
+          "minute": 954,
+          "activity": "leisure",
+          "label": "Dumbarton Avenue · neighborhood visit"
+        },
+        {
+          "minute": 1148,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1336,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_darius_coleman",
+      "name": "Darius Coleman",
+      "age": 47,
+      "street": "Cator Avenue",
+      "fraction": 0.521,
+      "side": 1,
+      "speed": 1.081,
+      "appearance": {
+        "h": 1.88,
+        "skin": "#754b34",
+        "top": "#b7a485",
+        "pants": "#314657",
+        "shoes": "#9c8060",
+        "hair": "#211a16",
+        "style": "short",
+        "glasses": false,
+        "mustache": false,
+        "roster_id": "b20",
+        "roster_index": 23
+      },
+      "dialogue": [
+        "I try to leave time for a neighborhood visit."
+      ],
+      "about": "I spend part of my day on sketching storefronts, then take a neighborhood walk before heading home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 374,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 508,
+          "activity": "work",
+          "label": "Sketching storefronts"
+        },
+        {
+          "minute": 961,
+          "activity": "leisure",
+          "label": "Cator Avenue · neighborhood visit"
+        },
+        {
+          "minute": 1152,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1339,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_yvette_freeman",
+      "name": "Yvette Freeman",
+      "age": 54,
+      "street": "Greenmount Avenue",
+      "fraction": 0.608,
+      "side": -1,
+      "speed": 1.128,
+      "appearance": {
+        "h": 1.73,
+        "skin": "#8a5a3c",
+        "top": "#8f3c56",
+        "pants": "#3b3548",
+        "shoes": "#d3cab8",
+        "hair": "#b7aaa0",
+        "style": "bun",
+        "glasses": false,
+        "mustache": false,
+        "roster_id": "b21",
+        "roster_index": 24
+      },
+      "dialogue": [
+        "I like finding the small details people walk past."
+      ],
+      "about": "I spend part of my day on seed exchange, then take a neighborhood walk before heading home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 377,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 519,
+          "activity": "work",
+          "label": "Seed exchange"
+        },
+        {
+          "minute": 968,
+          "activity": "leisure",
+          "label": "Greenmount Avenue · neighborhood visit"
+        },
+        {
+          "minute": 1156,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1342,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_ellis_chandler",
+      "name": "Ellis Chandler",
+      "age": 61,
+      "street": "Frisby Street",
+      "fraction": 0.695,
+      "side": 1,
+      "speed": 1.175,
+      "appearance": {
+        "h": 1.82,
+        "skin": "#9b6849",
+        "top": "#24656b",
+        "pants": "#4e4850",
+        "shoes": "#614b3b",
+        "hair": "#1b1918",
+        "style": "ponytail",
+        "glasses": false,
+        "mustache": true,
+        "roster_id": "b22",
+        "roster_index": 25
+      },
+      "dialogue": [
+        "There is always another project waiting on my table."
+      ],
+      "about": "I spend part of my day on camera repair desk, then take a neighborhood walk before heading home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 380,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 530,
+          "activity": "work",
+          "label": "Camera repair desk"
+        },
+        {
+          "minute": 975,
+          "activity": "leisure",
+          "label": "Frisby Street · neighborhood visit"
+        },
+        {
+          "minute": 1160,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1345,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_nia_lawson",
+      "name": "Nia Lawson",
+      "age": 27,
+      "street": "Ellerslie Avenue",
+      "fraction": 0.26,
+      "side": -1,
+      "speed": 1.222,
+      "appearance": {
+        "h": 1.71,
+        "skin": "#b0805c",
+        "top": "#515a87",
+        "pants": "#41444c",
+        "shoes": "#403538",
+        "hair": "#2c211c",
+        "style": "short",
+        "glasses": false,
+        "mustache": false,
+        "roster_id": "b23",
+        "roster_index": 26
+      },
+      "dialogue": [
+        "A walk helps me think through the next thing I am making."
+      ],
+      "about": "I spend part of my day on textile mending table, then take a neighborhood walk before heading home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 383,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 541,
+          "activity": "work",
+          "label": "Textile mending table"
+        },
+        {
+          "minute": 982,
+          "activity": "leisure",
+          "label": "Ellerslie Avenue · neighborhood visit"
+        },
+        {
+          "minute": 1164,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1348,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_warren_miles",
+      "name": "Warren Miles",
+      "age": 34,
+      "street": "East 41st Street",
+      "fraction": 0.347,
+      "side": 1,
+      "speed": 1.269,
+      "appearance": {
+        "h": 1.84,
+        "skin": "#c68e62",
+        "top": "#596749",
+        "pants": "#544637",
+        "shoes": "#9c8060",
+        "hair": "#42342c",
+        "style": "bun",
+        "glasses": false,
+        "mustache": true,
+        "roster_id": "b24",
+        "roster_index": 27
+      },
+      "dialogue": [
+        "I try to leave time for a neighborhood visit."
+      ],
+      "about": "I spend part of my day on neighborhood history notes, then take a neighborhood walk before heading home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 386,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 552,
+          "activity": "work",
+          "label": "Neighborhood history notes"
+        },
+        {
+          "minute": 989,
+          "activity": "leisure",
+          "label": "East 41st Street · neighborhood visit"
+        },
+        {
+          "minute": 1168,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1351,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_camille_porter",
+      "name": "Camille Porter",
+      "age": 41,
+      "street": "Rose Hill Terrace",
+      "fraction": 0.434,
+      "side": -1,
+      "speed": 0.94,
+      "appearance": {
+        "h": 1.77,
+        "skin": "#563626",
+        "top": "#b88b39",
+        "pants": "#35445c",
+        "shoes": "#d3cab8",
+        "hair": "#211b19",
+        "style": "ponytail",
+        "glasses": false,
+        "mustache": false,
+        "roster_id": "b25",
+        "roster_index": 28
+      },
+      "dialogue": [
+        "I like finding the small details people walk past."
+      ],
+      "about": "I spend part of my day on music lesson planning, then take a neighborhood walk before heading home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 389,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 563,
+          "activity": "work",
+          "label": "Music lesson planning"
+        },
+        {
+          "minute": 996,
+          "activity": "leisure",
+          "label": "Rose Hill Terrace · neighborhood visit"
+        },
+        {
+          "minute": 1172,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1354,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_jonah_bishop",
+      "name": "Jonah Bishop",
+      "age": 48,
+      "street": "Elkader Road",
+      "fraction": 0.521,
+      "side": 1,
+      "speed": 0.987,
+      "appearance": {
+        "h": 1.87,
+        "skin": "#482b20",
+        "top": "#743e48",
+        "pants": "#4b5664",
+        "shoes": "#614b3b",
+        "hair": "#1b191a",
+        "style": "short",
+        "glasses": false,
+        "mustache": true,
+        "roster_id": "b26",
+        "roster_index": 29
+      },
+      "dialogue": [
+        "There is always another project waiting on my table."
+      ],
+      "about": "I spend part of my day on bicycle wheel checks, then take a neighborhood walk before heading home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 392,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 574,
+          "activity": "work",
+          "label": "Bicycle wheel checks"
+        },
+        {
+          "minute": 1003,
+          "activity": "leisure",
+          "label": "Elkader Road · neighborhood visit"
+        },
+        {
+          "minute": 1176,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1357,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_alana_reid",
+      "name": "Alana Reid",
+      "age": 55,
+      "street": "Wilsby Avenue",
+      "fraction": 0.608,
+      "side": -1,
+      "speed": 1.034,
+      "appearance": {
+        "h": 1.74,
+        "skin": "#754b34",
+        "top": "#377b83",
+        "pants": "#433a4c",
+        "shoes": "#403538",
+        "hair": "#30221d",
+        "style": "bun",
+        "glasses": false,
+        "mustache": false,
+        "roster_id": "b27",
+        "roster_index": 30
+      },
+      "dialogue": [
+        "A walk helps me think through the next thing I am making."
+      ],
+      "about": "I spend part of my day on garden labels, then take a neighborhood walk before heading home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 395,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 585,
+          "activity": "work",
+          "label": "Garden labels"
+        },
+        {
+          "minute": 1010,
+          "activity": "leisure",
+          "label": "Wilsby Avenue · neighborhood visit"
+        },
+        {
+          "minute": 1180,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1360,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_desmond_hayes",
+      "name": "Desmond Hayes",
+      "age": 62,
+      "street": "Lowndes Avenue",
+      "fraction": 0.695,
+      "side": 1,
+      "speed": 1.081,
+      "appearance": {
+        "h": 1.81,
+        "skin": "#8a5a3c",
+        "top": "#66798a",
+        "pants": "#524d40",
+        "shoes": "#9c8060",
+        "hair": "#332a25",
+        "style": "ponytail",
+        "glasses": false,
+        "mustache": true,
+        "roster_id": "b28",
+        "roster_index": 31
+      },
+      "dialogue": [
+        "I try to leave time for a neighborhood visit."
+      ],
+      "about": "I spend part of my day on wooden toy repair, then take a neighborhood walk before heading home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 398,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 596,
+          "activity": "work",
+          "label": "Wooden toy repair"
+        },
+        {
+          "minute": 1017,
+          "activity": "leisure",
+          "label": "Lowndes Avenue · neighborhood visit"
+        },
+        {
+          "minute": 1184,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1363,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_marisol_benton",
+      "name": "Marisol Benton",
+      "age": 28,
+      "street": "East 38th Street",
+      "fraction": 0.26,
+      "side": -1,
+      "speed": 1.128,
+      "appearance": {
+        "h": 1.7,
+        "skin": "#65412e",
+        "top": "#b76349",
+        "pants": "#374951",
+        "shoes": "#d3cab8",
+        "hair": "#31231e",
+        "style": "short",
+        "glasses": false,
+        "mustache": false,
+        "roster_id": "b29",
+        "roster_index": 32
+      },
+      "dialogue": [
+        "I like finding the small details people walk past."
+      ],
+      "about": "I spend part of my day on ceramic glazing notes, then take a neighborhood walk before heading home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 401,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 607,
+          "activity": "work",
+          "label": "Ceramic glazing notes"
+        },
+        {
+          "minute": 1024,
+          "activity": "leisure",
+          "label": "East 38th Street · neighborhood visit"
+        },
+        {
+          "minute": 1188,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1366,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_quentin_shaw",
+      "name": "Quentin Shaw",
+      "age": 35,
+      "street": "Argonne Drive",
+      "fraction": 0.347,
+      "side": 1,
+      "speed": 1.175,
+      "appearance": {
+        "h": 1.85,
+        "skin": "#9b6849",
+        "top": "#60465f",
+        "pants": "#3e4850",
+        "shoes": "#614b3b",
+        "hair": "#221b19",
+        "style": "bun",
+        "glasses": false,
+        "mustache": false,
+        "roster_id": "b30",
+        "roster_index": 33
+      },
+      "dialogue": [
+        "There is always another project waiting on my table."
+      ],
+      "about": "I spend part of my day on model railway workshop, then take a neighborhood walk before heading home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 404,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 618,
+          "activity": "work",
+          "label": "Model railway workshop"
+        },
+        {
+          "minute": 1031,
+          "activity": "leisure",
+          "label": "Argonne Drive · neighborhood visit"
+        },
+        {
+          "minute": 1192,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1369,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_imani_fletcher",
+      "name": "Imani Fletcher",
+      "age": 42,
+      "street": "Pen Lucy Avenue",
+      "fraction": 0.434,
+      "side": -1,
+      "speed": 1.222,
+      "appearance": {
+        "h": 1.78,
+        "skin": "#b0805c",
+        "top": "#7c854b",
+        "pants": "#3f4650",
+        "shoes": "#403538",
+        "hair": "#25201d",
+        "style": "ponytail",
+        "glasses": false,
+        "mustache": false,
+        "roster_id": "b31",
+        "roster_index": 34
+      },
+      "dialogue": [
+        "A walk helps me think through the next thing I am making."
+      ],
+      "about": "I spend part of my day on flower arrangements, then take a neighborhood walk before heading home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 407,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 629,
+          "activity": "work",
+          "label": "Flower arrangements"
+        },
+        {
+          "minute": 1038,
+          "activity": "leisure",
+          "label": "Pen Lucy Avenue · neighborhood visit"
+        },
+        {
+          "minute": 1196,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1372,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_hugo_sterling",
+      "name": "Hugo Sterling",
+      "age": 49,
+      "street": "Underwood Road",
+      "fraction": 0.521,
+      "side": 1,
+      "speed": 1.269,
+      "appearance": {
+        "h": 1.83,
+        "skin": "#c68e62",
+        "top": "#c8bca6",
+        "pants": "#444f59",
+        "shoes": "#9c8060",
+        "hair": "#a49b90",
+        "style": "short",
+        "glasses": false,
+        "mustache": true,
+        "roster_id": "b32",
+        "roster_index": 35
+      },
+      "dialogue": [
+        "I try to leave time for a neighborhood visit."
+      ],
+      "about": "I spend part of my day on archive cataloging, then take a neighborhood walk before heading home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 410,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 640,
+          "activity": "work",
+          "label": "Archive cataloging"
+        },
+        {
+          "minute": 1045,
+          "activity": "leisure",
+          "label": "Underwood Road · neighborhood visit"
+        },
+        {
+          "minute": 1200,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1375,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_elena_vega",
+      "name": "Elena Vega",
+      "age": 56,
+      "street": "Old York Road",
+      "fraction": 0.608,
+      "side": -1,
+      "speed": 0.94,
+      "appearance": {
+        "h": 1.72,
+        "skin": "#bf885f",
+        "top": "#486e9b",
+        "pants": "#48474e",
+        "shoes": "#d3cab8",
+        "hair": "#35221c",
+        "style": "bun",
+        "glasses": false,
+        "mustache": false,
+        "roster_id": "h03",
+        "roster_index": 36
+      },
+      "dialogue": [
+        "I like finding the small details people walk past."
+      ],
+      "about": "I spend part of my day on printmaking sketches, then take a neighborhood walk before heading home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 413,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 651,
+          "activity": "work",
+          "label": "Printmaking sketches"
+        },
+        {
+          "minute": 1052,
+          "activity": "leisure",
+          "label": "Old York Road · neighborhood visit"
+        },
+        {
+          "minute": 1204,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1378,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_rafael_ortiz",
+      "name": "Rafael Ortiz",
+      "age": 63,
+      "street": "Dumbarton Avenue",
+      "fraction": 0.695,
+      "side": 1,
+      "speed": 0.987,
+      "appearance": {
+        "h": 1.86,
+        "skin": "#ab7552",
+        "top": "#85614e",
+        "pants": "#344556",
+        "shoes": "#614b3b",
+        "hair": "#211b17",
+        "style": "ponytail",
+        "glasses": false,
+        "mustache": true,
+        "roster_id": "h04",
+        "roster_index": 37
+      },
+      "dialogue": [
+        "There is always another project waiting on my table."
+      ],
+      "about": "I spend part of my day on cooking class preparation, then take a neighborhood walk before heading home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 416,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 662,
+          "activity": "work",
+          "label": "Cooking class preparation"
+        },
+        {
+          "minute": 1059,
+          "activity": "leisure",
+          "label": "Dumbarton Avenue · neighborhood visit"
+        },
+        {
+          "minute": 1208,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1381,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_clara_whitmore",
+      "name": "Clara Whitmore",
+      "age": 29,
+      "street": "Wyanoke Avenue",
+      "fraction": 0.26,
+      "side": -1,
+      "speed": 1.034,
+      "appearance": {
+        "h": 1.76,
+        "skin": "#e8b99b",
+        "top": "#738b73",
+        "pants": "#424958",
+        "shoes": "#403538",
+        "hair": "#985c37",
+        "style": "short",
+        "glasses": false,
+        "mustache": false,
+        "roster_id": "w03",
+        "roster_index": 38
+      },
+      "dialogue": [
+        "A walk helps me think through the next thing I am making."
+      ],
+      "about": "I spend part of my day on map illustration, then take a neighborhood walk before heading home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 419,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 673,
+          "activity": "work",
+          "label": "Map illustration"
+        },
+        {
+          "minute": 1066,
+          "activity": "leisure",
+          "label": "Wyanoke Avenue · neighborhood visit"
+        },
+        {
+          "minute": 1212,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1384,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    },
+    {
+      "id": "daily_graham_mercer",
+      "name": "Graham Mercer",
+      "age": 36,
+      "street": "Greenmount Avenue",
+      "fraction": 0.347,
+      "side": 1,
+      "speed": 1.081,
+      "appearance": {
+        "h": 1.88,
+        "skin": "#d6a17e",
+        "top": "#384e68",
+        "pants": "#62574a",
+        "shoes": "#9c8060",
+        "hair": "#887663",
+        "style": "bun",
+        "glasses": false,
+        "mustache": false,
+        "roster_id": "w04",
+        "roster_index": 39
+      },
+      "dialogue": [
+        "I try to leave time for a neighborhood visit."
+      ],
+      "about": "I spend part of my day on lamp restoration, then take a neighborhood walk before heading home.",
+      "schedule": [
+        {
+          "minute": 0,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        },
+        {
+          "minute": 422,
+          "activity": "home",
+          "label": "Home frontage · morning"
+        },
+        {
+          "minute": 684,
+          "activity": "work",
+          "label": "Lamp restoration"
+        },
+        {
+          "minute": 1073,
+          "activity": "leisure",
+          "label": "Greenmount Avenue · neighborhood visit"
+        },
+        {
+          "minute": 1216,
+          "activity": "home",
+          "label": "Home frontage · evening"
+        },
+        {
+          "minute": 1387,
+          "activity": "sleep",
+          "label": "Home frontage · resting"
+        }
+      ]
+    }
+  ]
+}

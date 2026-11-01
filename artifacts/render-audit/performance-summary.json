@@ -1,0 +1,350 @@
+{
+  "hardware": "NVIDIA RTX 3070 Ti, Godot4.7.2 Forward+ Vulkan",
+  "conditions": "1920x1080, Balanced, 100% render scale, uncapped/VSync off, 20s active collision walk, live clock, mission minimap route, unchanged population",
+  "source_hashes_match": true,
+  "runs": [
+    {
+      "run": "legacy-a",
+      "fps": 182.69688501811,
+      "frame_median_ms": 4.585,
+      "frame_p95_ms": 9.361,
+      "frame_max_ms": 18.972,
+      "gpu_median_ms": 2.05100011825562,
+      "render_cpu_median_ms": 2.20900011062622,
+      "draw_median": 1583.0,
+      "palette": {
+        "cache_builds": 0,
+        "cache_hits": 0,
+        "enabled": false,
+        "merged_surfaces": 0,
+        "palette_materials": 0,
+        "surfaces_after": 0,
+        "surfaces_before": 0
+      },
+      "vram_mib": 485.9973602294922,
+      "gpu_tail_clock_mhz_range": [
+        1950.0,
+        1950.0
+      ],
+      "valid": true
+    },
+    {
+      "run": "shader-a",
+      "fps": 183.220877041594,
+      "frame_median_ms": 4.536,
+      "frame_p95_ms": 9.31,
+      "frame_max_ms": 18.351,
+      "gpu_median_ms": 2.09800004959106,
+      "render_cpu_median_ms": 2.19199991226196,
+      "draw_median": 1582.0,
+      "palette": {
+        "cache_builds": 0,
+        "cache_hits": 0,
+        "enabled": false,
+        "merged_surfaces": 0,
+        "palette_materials": 0,
+        "surfaces_after": 0,
+        "surfaces_before": 0
+      },
+      "vram_mib": 485.9973602294922,
+      "gpu_tail_clock_mhz_range": [
+        1965.0,
+        1965.0
+      ],
+      "valid": true
+    },
+    {
+      "run": "final-a",
+      "fps": 172.466239733572,
+      "frame_median_ms": 5.009,
+      "frame_p95_ms": 10.088,
+      "frame_max_ms": 22.451,
+      "gpu_median_ms": 2.14499998092651,
+      "render_cpu_median_ms": 2.1470000743866,
+      "draw_median": 1342.0,
+      "palette": {
+        "cache_builds": 21,
+        "cache_hits": 0,
+        "enabled": true,
+        "merged_surfaces": 360,
+        "palette_materials": 4,
+        "setup_ms": 3929,
+        "surfaces_after": 317,
+        "surfaces_before": 677
+      },
+      "vram_mib": 494.1186218261719,
+      "gpu_tail_clock_mhz_range": [
+        1890.0,
+        1965.0
+      ],
+      "valid": true
+    },
+    {
+      "run": "legacy-b",
+      "fps": 178.73006266151,
+      "frame_median_ms": 4.541,
+      "frame_p95_ms": 9.893,
+      "frame_max_ms": 20.564,
+      "gpu_median_ms": 2.05699992179871,
+      "render_cpu_median_ms": 2.17799997329712,
+      "draw_median": 1581.0,
+      "palette": {
+        "cache_builds": 0,
+        "cache_hits": 0,
+        "enabled": false,
+        "merged_surfaces": 0,
+        "palette_materials": 0,
+        "surfaces_after": 0,
+        "surfaces_before": 0
+      },
+      "vram_mib": 485.9591064453125,
+      "gpu_tail_clock_mhz_range": [
+        1800.0,
+        1980.0
+      ],
+      "valid": true
+    },
+    {
+      "run": "shader-b",
+      "fps": 184.394191582965,
+      "frame_median_ms": 4.492,
+      "frame_p95_ms": 9.217,
+      "frame_max_ms": 21.817,
+      "gpu_median_ms": 2.11899995803833,
+      "render_cpu_median_ms": 2.18899989128113,
+      "draw_median": 1584.0,
+      "palette": {
+        "cache_builds": 0,
+        "cache_hits": 0,
+        "enabled": false,
+        "merged_surfaces": 0,
+        "palette_materials": 0,
+        "surfaces_after": 0,
+        "surfaces_before": 0
+      },
+      "vram_mib": 485.9591064453125,
+      "gpu_tail_clock_mhz_range": [
+        1965.0,
+        1980.0
+      ],
+      "valid": true
+    },
+    {
+      "run": "final-b",
+      "fps": 200.482487854686,
+      "frame_median_ms": 4.078,
+      "frame_p95_ms": 9.011,
+      "frame_max_ms": 18.705,
+      "gpu_median_ms": 2.15899991989136,
+      "render_cpu_median_ms": 1.94400000572205,
+      "draw_median": 1341.0,
+      "palette": {
+        "cache_builds": 18,
+        "cache_hits": 3,
+        "enabled": true,
+        "merged_surfaces": 360,
+        "palette_materials": 4,
+        "setup_ms": 3601,
+        "surfaces_after": 317,
+        "surfaces_before": 677
+      },
+      "vram_mib": 494.1186218261719,
+      "gpu_tail_clock_mhz_range": [
+        1965.0,
+        1965.0
+      ],
+      "valid": true
+    },
+    {
+      "run": "final-c",
+      "fps": 211.790427072696,
+      "frame_median_ms": 3.887,
+      "frame_p95_ms": 8.567,
+      "frame_max_ms": 19.958,
+      "gpu_median_ms": 2.15400004386902,
+      "render_cpu_median_ms": 1.87800002098084,
+      "draw_median": 1340.0,
+      "palette": {
+        "cache_builds": 0,
+        "cache_hits": 21,
+        "enabled": true,
+        "merged_surfaces": 360,
+        "palette_materials": 4,
+        "setup_ms": 309,
+        "surfaces_after": 317,
+        "surfaces_before": 677
+      },
+      "vram_mib": 494.1186218261719,
+      "gpu_tail_clock_mhz_range": [
+        1950.0,
+        1965.0
+      ],
+      "valid": true
+    },
+    {
+      "run": "shader-c",
+      "fps": 184.078573254073,
+      "frame_median_ms": 4.512,
+      "frame_p95_ms": 9.272,
+      "frame_max_ms": 18.602,
+      "gpu_median_ms": 2.10999989509583,
+      "render_cpu_median_ms": 2.18700003623962,
+      "draw_median": 1585.0,
+      "palette": {
+        "cache_builds": 0,
+        "cache_hits": 0,
+        "enabled": false,
+        "merged_surfaces": 0,
+        "palette_materials": 0,
+        "surfaces_after": 0,
+        "surfaces_before": 0
+      },
+      "vram_mib": 485.9591064453125,
+      "gpu_tail_clock_mhz_range": [
+        1965.0,
+        1965.0
+      ],
+      "valid": true
+    }
+  ],
+  "excluded_runs": [
+    {
+      "run": "fast-plants-no-palette",
+      "reason": "Vulkan device loss during startup; no metrics accepted"
+    }
+  ],
+  "notes": [
+    "final-a built 21 palette meshes; final-b hit 3 and rebuilt 18; final-c hit all 21. Shader-default fingerprint defect subsequently fixed; final private-AA repeats each hit all 21.",
+    "GPU timing excludes presentation, render CPU excludes simulation; frame times are wall clock.",
+    "120 warmup frames plus1.3seconds after initial screenshot; direct component timers and event-frame counters.",
+    "Intermediate baseline-live/current-no-palette use earlier source states, not controlled shader/batching comparisons.",
+    "The first cold-cache final-a result remains visible; do not report all final runs as200+FPS.",
+    "Two hidden-window Vulkan startup device losses matched NVIDIA event 153. Root cause unproven. Initial private-viewport diagnostics lacking MSAA are excluded from playable performance claims."
+  ],
+  "private_aa_validation": {
+    "source_hashes_match": true,
+    "runs": [
+      {
+        "run": "private-aa-final-a",
+        "fps": 217.539958971324,
+        "frame_ms": {
+          "max": 18.577,
+          "median": 3.749,
+          "min": 2.225,
+          "p95": 8.433,
+          "p99": 10.304
+        },
+        "gpu_ms": {
+          "max": 3.10899996757507,
+          "median": 2.11100006103516,
+          "min": 1.86800003051758,
+          "p95": 2.56100010871887,
+          "p99": 2.76600003242493
+        },
+        "render_cpu_ms": {
+          "max": 3.69099998474121,
+          "median": 1.83000004291534,
+          "min": 1.37199997901917,
+          "p95": 2.3510000705719,
+          "p99": 2.73799991607666
+        },
+        "draw_median": 1340.0,
+        "palette": {
+          "cache_builds": 0,
+          "cache_hits": 21,
+          "enabled": true,
+          "merged_surfaces": 360,
+          "palette_materials": 4,
+          "setup_ms": 307,
+          "surfaces_after": 317,
+          "surfaces_before": 677
+        },
+        "private_viewport": true,
+        "viewport_msaa_3d": 2,
+        "valid": true
+      },
+      {
+        "run": "private-aa-shader",
+        "fps": 192.342671744207,
+        "frame_ms": {
+          "max": 22.869,
+          "median": 4.287,
+          "min": 2.499,
+          "p95": 9.114,
+          "p99": 11.273
+        },
+        "gpu_ms": {
+          "max": 3.11800003051758,
+          "median": 2.0460000038147,
+          "min": 1.84800004959106,
+          "p95": 2.58500003814697,
+          "p99": 2.80699992179871
+        },
+        "render_cpu_ms": {
+          "max": 4.76399993896484,
+          "median": 2.08800005912781,
+          "min": 1.54100000858307,
+          "p95": 2.83699989318848,
+          "p99": 3.35800004005432
+        },
+        "draw_median": 1584.0,
+        "palette": {
+          "cache_builds": 0,
+          "cache_hits": 0,
+          "enabled": false,
+          "merged_surfaces": 0,
+          "palette_materials": 0,
+          "surfaces_after": 0,
+          "surfaces_before": 0
+        },
+        "private_viewport": true,
+        "viewport_msaa_3d": 2,
+        "valid": true
+      },
+      {
+        "run": "private-aa-final-b",
+        "fps": 215.983693231161,
+        "frame_ms": {
+          "max": 18.568,
+          "median": 3.759,
+          "min": 2.136,
+          "p95": 8.688,
+          "p99": 11.059
+        },
+        "gpu_ms": {
+          "max": 3.19300007820129,
+          "median": 2.08999991416931,
+          "min": 1.86699998378754,
+          "p95": 2.60199999809265,
+          "p99": 2.77600002288818
+        },
+        "render_cpu_ms": {
+          "max": 4.16099977493286,
+          "median": 1.80299997329712,
+          "min": 1.32500004768372,
+          "p95": 2.48099994659424,
+          "p99": 2.94700002670288
+        },
+        "draw_median": 1340.0,
+        "palette": {
+          "cache_builds": 0,
+          "cache_hits": 21,
+          "enabled": true,
+          "merged_surfaces": 360,
+          "palette_materials": 4,
+          "setup_ms": 310,
+          "surfaces_after": 317,
+          "surfaces_before": 677
+        },
+        "private_viewport": true,
+        "viewport_msaa_3d": 2,
+        "valid": true
+      }
+    ],
+    "scope": "Separate private-render-target cohort after cache-default fingerprint fix; copied playable 4x MSAA. Do not pool absolute FPS with main-window runs."
+  },
+  "excluded_failed_runs": [
+    "fast-plants-no-palette",
+    "cache-fixed-a"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "product": "Tattletale 2-Pack — Pen Lucy",
+  "channel": "unsigned-release-candidate",
+  "platform": "Windows x86_64",
+  "renderer": "Forward+ / Vulkan",
+  "engine_template": "4.7.2.stable",
+  "main_scene": "res://scenes/city/pen_lucy.tscn",
+  "source_main_scene": "res://scenes/main.tscn",
+  "inspector_key": "F6",
+  "notices": [
+    {"component": "OpenStreetMap", "license": "ODbL-1.0", "source": "blender/city/README.md#licenses", "url": "https://www.openstreetmap.org/copyright"},
+    {"component": "USGS 3DEP LiDAR", "license": "Public domain per city source notes", "source": "blender/city/README.md#licenses"},
+    {"component": "Bungee", "license": "OFL-1.1", "source": "godot/assets/fonts/bungee-OFL.txt"},
+    {"component": "Barlow Condensed", "license": "OFL-1.1", "source": "godot/assets/fonts/barlowcondensed-OFL.txt"},
+    {"component": "Courier Prime", "license": "OFL-1.1", "source": "godot/assets/fonts/courierprime-OFL.txt"},
+    {"component": "Godot Engine", "license": "MIT and bundled dependency licenses", "source": "Engine.get_license_text/get_license_info/get_copyright_info on exported runtime"}
+  ],
+  "map_data_sources": [
+    "blender/city/data/pen_lucy_buildings.geojson",
+    "blender/city/data/pen_lucy_area.geojson",
+    "godot/assets/data/pen_lucy_level.json",
+    "godot/assets/data/pen_lucy_window_homes.json",
+    "godot/assets/data/pen_lucy_street_surfaces.json"
+  ],
+  "acceptance": "Export and isolated packaged-runtime boot must pass; this source manifest alone does not claim a successful build."
+}

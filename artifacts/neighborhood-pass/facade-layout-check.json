@@ -1,0 +1,36 @@
+{
+  "profiles_checked": 836,
+  "upper_storeys_checked": 883,
+  "failures": [],
+  "repaired_blind_upper_ids": [
+    "w336333963",
+    "w336335461",
+    "w336335462",
+    "w336335463",
+    "w336335464",
+    "w336335465",
+    "w336335777",
+    "w336336006",
+    "w336336395",
+    "w336339498",
+    "w336343016",
+    "w336343549",
+    "w336346658",
+    "w336346659",
+    "w336346660",
+    "w336346663",
+    "w336346881",
+    "w336347313",
+    "w336348762",
+    "w336350813",
+    "w336351189"
+  ],
+  "min_porch_ceiling_m": 2.4,
+  "min_roof_to_sill_m": 0.14,
+  "main_eaves_and_storey_counts_unchanged": true,
+  "row173_922_argonne_rear_upper_glass_triangles": 12,
+  "rear_upper_glass_world_y": [
+    -5.534,
+    -4.27
+  ]
+}

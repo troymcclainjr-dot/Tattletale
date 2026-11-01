@@ -1,0 +1,169 @@
+{
+  "measured_baseline_accepted_cars": 144,
+  "target_accepted_cars": 216,
+  "increase_percent": 50,
+  "roads": [
+    {
+      "street": "Ellerslie Avenue",
+      "width_m": 7.0,
+      "mode": "none",
+      "length_m": 56.27,
+      "clear_carriageway_m": 7.0
+    },
+    {
+      "street": "Frisby Street",
+      "width_m": 7.0,
+      "mode": "none",
+      "length_m": 32.85,
+      "clear_carriageway_m": 7.0
+    },
+    {
+      "street": "Cator Avenue",
+      "width_m": 9.5,
+      "mode": "single",
+      "length_m": 523.8,
+      "clear_carriageway_m": 7.16
+    },
+    {
+      "street": "Dumbarton Avenue",
+      "width_m": 9.5,
+      "mode": "single",
+      "length_m": 403.37,
+      "clear_carriageway_m": 7.16
+    },
+    {
+      "street": "East 38th Street",
+      "width_m": 9.5,
+      "mode": "single",
+      "length_m": 316.07,
+      "clear_carriageway_m": 7.16
+    },
+    {
+      "street": "East 41st Street",
+      "width_m": 9.5,
+      "mode": "single",
+      "length_m": 705.48,
+      "clear_carriageway_m": 7.16
+    },
+    {
+      "street": "Elkader Road",
+      "width_m": 9.5,
+      "mode": "single",
+      "length_m": 267.58,
+      "clear_carriageway_m": 7.16
+    },
+    {
+      "street": "Frisby Street",
+      "width_m": 9.5,
+      "mode": "single",
+      "length_m": 255.76,
+      "clear_carriageway_m": 7.16
+    },
+    {
+      "street": "Lowndes Avenue",
+      "width_m": 9.5,
+      "mode": "single",
+      "length_m": 89.9,
+      "clear_carriageway_m": 7.16
+    },
+    {
+      "street": "North Hill Road",
+      "width_m": 9.5,
+      "mode": "single",
+      "length_m": 45.92,
+      "clear_carriageway_m": 7.16
+    },
+    {
+      "street": "Old York Road",
+      "width_m": 9.5,
+      "mode": "none",
+      "length_m": 566.77,
+      "clear_carriageway_m": 9.5
+    },
+    {
+      "street": "Pen Lucy Avenue",
+      "width_m": 9.5,
+      "mode": "single",
+      "length_m": 67.59,
+      "clear_carriageway_m": 7.16
+    },
+    {
+      "street": "Rose Hill Terrace",
+      "width_m": 9.5,
+      "mode": "single",
+      "length_m": 166.34,
+      "clear_carriageway_m": 7.16
+    },
+    {
+      "street": "Underwood Road",
+      "width_m": 9.5,
+      "mode": "single",
+      "length_m": 12.41,
+      "clear_carriageway_m": 7.16
+    },
+    {
+      "street": "Wilsby Avenue",
+      "width_m": 9.5,
+      "mode": "single",
+      "length_m": 345.21,
+      "clear_carriageway_m": 7.16
+    },
+    {
+      "street": "Wyanoke Avenue",
+      "width_m": 9.5,
+      "mode": "single",
+      "length_m": 434.22,
+      "clear_carriageway_m": 7.16
+    },
+    {
+      "street": "Ellerslie Avenue",
+      "width_m": 11.0,
+      "mode": "both",
+      "length_m": 102.95,
+      "clear_carriageway_m": 6.32
+    },
+    {
+      "street": "Argonne Drive",
+      "width_m": 13.0,
+      "mode": "both",
+      "length_m": 648.45,
+      "clear_carriageway_m": 8.32
+    },
+    {
+      "street": "East 39th Street",
+      "width_m": 13.0,
+      "mode": "both",
+      "length_m": 215.34,
+      "clear_carriageway_m": 8.32
+    },
+    {
+      "street": "Ellerslie Avenue",
+      "width_m": 13.0,
+      "mode": "both",
+      "length_m": 70.15,
+      "clear_carriageway_m": 8.32
+    },
+    {
+      "street": "Greenmount Avenue",
+      "width_m": 15.0,
+      "mode": "both",
+      "length_m": 540.89,
+      "clear_carriageway_m": 10.32
+    }
+  ],
+  "source_routing_nodes": 48,
+  "source_directed_edges": 132,
+  "source_strongly_connected_components": 1,
+  "source_component_sizes": [
+    48
+  ],
+  "removed_directions": 0,
+  "source_connectivity_preserved": true,
+  "engine_grounded_connectivity": "root fixture pending",
+  "narrow_9_5m_moving_centres": [
+    0.9,
+    -2.3
+  ],
+  "narrow_parked_centre": 3.47,
+  "narrow_parked_to_moving_envelope_gap_m": 0.45
+}

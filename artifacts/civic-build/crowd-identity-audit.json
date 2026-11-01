@@ -1,0 +1,14 @@
+{
+  "recipe_sha256": "cb1ea6ebf383cd7087aab325ed93f0ba9c7fdd03c28a6e6bbbdcb1f35f13e6b0",
+  "source_level_sha256": "ab23b5b42a4ce52f683b67ba315b2576ae866c0462a1cb1d8431b62bc90f4d35",
+  "count": 1200,
+  "first": "crowd_0",
+  "last": "crowd_1199",
+  "capture": "--no-civic-district --export-crowd-recipe; before first simulation tick",
+  "baseline_capture": "PASS 1200, no failures",
+  "provisional_civic_bootstrap": "PASS 1200 canonical IDs,25 relocated,0 placement failures; three model scripts pending, requires final full-geometry rerun",
+  "save_policy": "Keep existing death registry unchanged; each ordinal remains its original birth anchor; future births append, never regenerate/reorder this canonical recipe.",
+  "unchanged_city_control": "PASS:1200canonicalIDs,0relocated,0placementfailures;normal --no-civic-district without export",
+  "implementation": "Runtime appends every canonical ordinal exactly once, retains birth anchor/activity/pose and index-driven appearance, validates current geometry, relocates affected slots while reserving all original birth/path anchors, and never resets the death registry. Missing/corrupt recipe fails closed rather than regenerating IDs.",
+  "final_full_geometry_status": "PASS: all four civic models and graded fire grounds present; 1200 canonical IDs,25 relocated,0 placement failures. Subsequent police edits reduced decorative trim only; final world placement/render checks pass."
+}

@@ -1,0 +1,35 @@
+TATTLETALE 2-PACK — PEN LUCY
+Credits and third-party notices
+
+NEIGHBORHOOD MAP DATA
+© OpenStreetMap contributors
+OpenStreetMap data is available under the Open Database License (ODbL) 1.0:
+https://www.openstreetmap.org/copyright
+https://opendatacommons.org/licenses/odbl/1-0/
+The standalone package includes map-derived-data.zip containing the source
+building/area GeoJSON and the map-derived runtime geometry databases.
+Source attribution: blender/city/README.md, “Licenses”.
+
+TERRAIN
+USGS 3DEP LiDAR. The project's city-source notes identify this data as public
+domain. Source: blender/city/README.md, “Licenses”.
+
+FONTS — SIL OPEN FONT LICENSE 1.1
+Bungee: Copyright 2023 The Bungee Project Authors
+https://github.com/djrrb/Bungee
+Barlow Condensed: Copyright 2017 The Barlow Project Authors
+https://github.com/jpt/barlow
+Courier Prime: Copyright 2015 The Courier Prime Project Authors
+https://github.com/quoteunquoteapps/CourierPrime
+Exact font license texts and the checked-in source manifest are included in
+the package's notices folder. Sources: godot/assets/fonts/*-OFL.txt and SOURCES.json.
+
+ENGINE
+Godot Engine — MIT license. https://godotengine.org/license/
+The standalone package's notices folder includes the exact engine license,
+third-party copyright records, and license texts reported by its shipped
+Godot export template. These notices do not license the original game content.
+
+ORIGINAL GAME CONTENT
+No additional license grant for original game code or artwork is supplied by
+this third-party notice. Third-party licenses apply to their named components.

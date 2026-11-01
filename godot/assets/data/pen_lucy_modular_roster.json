@@ -1,0 +1,1686 @@
+{
+  "version": 2,
+  "authoring_note": "Forty explicit fictional adult appearances: original IDs/order retained, twenty appended (16 Black, 2 Hispanic, 2 White). Morphology, clothing and palettes are authored independently of behavior. Hispanic is the requested roster category, not an assertion that ethnicity and race are exclusive.",
+  "appearances": [
+    {
+      "id": "b01",
+      "identity_group": "Black",
+      "label": "deep brown crew cut",
+      "skin": "#482b20",
+      "top": "#284f62",
+      "pants": "#263044",
+      "hair": "#191718",
+      "shoes": "#d8d2c4",
+      "accent": "#d19a4e",
+      "width": 1.0,
+      "depth": 0.94,
+      "face_width": 1.0,
+      "height": 1.76,
+      "hair_style": 0,
+      "garment_style": 2,
+      "beard": 0,
+      "face_shape": [
+        0.91,
+        0.92,
+        0.92,
+        0.94
+      ],
+      "face_detail": [
+        -0.004,
+        0.88,
+        0.94,
+        0.0
+      ],
+      "hair_shape": [
+        0.94,
+        0.9,
+        0.95,
+        0
+      ],
+      "tailoring": [
+        0.94,
+        0.94,
+        0.96,
+        0
+      ]
+    },
+    {
+      "id": "b02",
+      "identity_group": "Black",
+      "label": "aubergine cardigan and bun",
+      "skin": "#563626",
+      "top": "#77516b",
+      "pants": "#303c46",
+      "hair": "#231a17",
+      "shoes": "#4b302a",
+      "accent": "#ddaa7b",
+      "width": 0.91,
+      "depth": 0.94,
+      "face_width": 0.96,
+      "height": 1.65,
+      "hair_style": 2,
+      "garment_style": 4,
+      "beard": 0,
+      "face_shape": [
+        1.04,
+        0.85,
+        1.03,
+        1.05
+      ],
+      "face_detail": [
+        -0.002,
+        0.915,
+        0.975,
+        0.0
+      ],
+      "hair_shape": [
+        0.975,
+        0.945,
+        0.99,
+        0
+      ],
+      "tailoring": [
+        0.965,
+        0.975,
+        0.98,
+        0
+      ]
+    },
+    {
+      "id": "b03",
+      "identity_group": "Black",
+      "label": "cobalt hoodie and short curls",
+      "skin": "#65412e",
+      "top": "#3157a3",
+      "pants": "#4b4542",
+      "hair": "#151616",
+      "shoes": "#e5e0d5",
+      "accent": "#e9b64e",
+      "width": 1.08,
+      "depth": 1.02,
+      "face_width": 1.05,
+      "height": 1.83,
+      "hair_style": 1,
+      "garment_style": 1,
+      "beard": 0,
+      "face_shape": [
+        1.11,
+        1.08,
+        0.87,
+        1.02
+      ],
+      "face_detail": [
+        0.0,
+        0.95,
+        1.01,
+        0.0
+      ],
+      "hair_shape": [
+        0.93,
+        0.82,
+        0.94,
+        0
+      ],
+      "tailoring": [
+        0.99,
+        1.01,
+        1.0,
+        0
+      ]
+    },
+    {
+      "id": "b04",
+      "identity_group": "Black",
+      "label": "terracotta blouse and bob",
+      "skin": "#754b34",
+      "top": "#ba633b",
+      "pants": "#303b47",
+      "hair": "#221918",
+      "shoes": "#5c3e33",
+      "accent": "#c4b184",
+      "width": 0.97,
+      "depth": 1.05,
+      "face_width": 1.02,
+      "height": 1.68,
+      "hair_style": 3,
+      "garment_style": 2,
+      "beard": 0,
+      "face_shape": [
+        0.9,
+        1.0,
+        1.08,
+        0.96
+      ],
+      "face_detail": [
+        0.002,
+        0.985,
+        1.045,
+        0.0
+      ],
+      "hair_shape": [
+        1.045,
+        1.035,
+        0.95,
+        0
+      ],
+      "tailoring": [
+        1.015,
+        0.94,
+        1.02,
+        0
+      ]
+    },
+    {
+      "id": "b05",
+      "identity_group": "Black",
+      "label": "sage jacket and close crop",
+      "skin": "#8a5a3c",
+      "top": "#647956",
+      "pants": "#293945",
+      "hair": "#1c1918",
+      "shoes": "#574b3c",
+      "accent": "#c7b590",
+      "width": 1.16,
+      "depth": 1.14,
+      "face_width": 1.08,
+      "height": 1.78,
+      "hair_style": 0,
+      "garment_style": 3,
+      "beard": 1,
+      "face_shape": [
+        1.14,
+        1.14,
+        1.05,
+        0.98
+      ],
+      "face_detail": [
+        0.004,
+        1.02,
+        0.94,
+        0.0
+      ],
+      "hair_shape": [
+        0.94,
+        1.08,
+        0.99,
+        0
+      ],
+      "tailoring": [
+        0.94,
+        0.975,
+        1.04,
+        0
+      ]
+    },
+    {
+      "id": "b06",
+      "identity_group": "Black",
+      "label": "mustard knit and long locs",
+      "skin": "#9b6849",
+      "top": "#b58b36",
+      "pants": "#2f343e",
+      "hair": "#31211b",
+      "shoes": "#352b28",
+      "accent": "#e2d1a4",
+      "width": 0.92,
+      "depth": 0.96,
+      "face_width": 0.95,
+      "height": 1.72,
+      "hair_style": 4,
+      "garment_style": 0,
+      "beard": 0,
+      "face_shape": [
+        0.94,
+        0.9,
+        1.16,
+        1.09
+      ],
+      "face_detail": [
+        -0.004,
+        1.055,
+        0.975,
+        0.0
+      ],
+      "hair_shape": [
+        0.975,
+        0.9,
+        1.03,
+        0
+      ],
+      "tailoring": [
+        0.965,
+        1.01,
+        0.96,
+        0
+      ]
+    },
+    {
+      "id": "b07",
+      "identity_group": "Black",
+      "label": "cream shirt and silver cropped hair",
+      "skin": "#b0805c",
+      "top": "#d6cbb8",
+      "pants": "#535b69",
+      "hair": "#99968d",
+      "shoes": "#6c4d3b",
+      "accent": "#71908d",
+      "width": 1.09,
+      "depth": 1.09,
+      "face_width": 1.03,
+      "height": 1.7,
+      "hair_style": 0,
+      "garment_style": 2,
+      "beard": 1,
+      "face_shape": [
+        1.07,
+        1.04,
+        0.93,
+        0.92
+      ],
+      "face_detail": [
+        -0.002,
+        1.09,
+        1.01,
+        0.0
+      ],
+      "hair_shape": [
+        1.01,
+        0.945,
+        0.95,
+        0
+      ],
+      "tailoring": [
+        0.99,
+        0.94,
+        0.98,
+        0
+      ]
+    },
+    {
+      "id": "b08",
+      "identity_group": "Black",
+      "label": "teal dress and braided crown",
+      "skin": "#c68e62",
+      "top": "#397b7e",
+      "pants": "#34464b",
+      "hair": "#30201a",
+      "shoes": "#46322e",
+      "accent": "#d4a763",
+      "width": 0.94,
+      "depth": 1.04,
+      "face_width": 0.98,
+      "height": 1.67,
+      "hair_style": 5,
+      "garment_style": 5,
+      "beard": 0,
+      "face_shape": [
+        0.96,
+        1.12,
+        0.97,
+        1.07
+      ],
+      "face_detail": [
+        0.0,
+        0.88,
+        1.045,
+        0.0
+      ],
+      "hair_shape": [
+        1.045,
+        0.99,
+        0.99,
+        0
+      ],
+      "tailoring": [
+        1.015,
+        0.975,
+        1.0,
+        0
+      ]
+    },
+    {
+      "id": "b09",
+      "identity_group": "Black",
+      "label": "brick zip jacket and rounded afro",
+      "skin": "#563626",
+      "top": "#933e35",
+      "pants": "#313d50",
+      "hair": "#1b1717",
+      "shoes": "#c4b39a",
+      "accent": "#ded2b3",
+      "width": 1.04,
+      "depth": 0.96,
+      "face_width": 1.04,
+      "height": 1.79,
+      "hair_style": 1,
+      "garment_style": 3,
+      "beard": 0,
+      "face_shape": [
+        1.1,
+        0.94,
+        1.13,
+        1.03
+      ],
+      "face_detail": [
+        0.002,
+        0.915,
+        0.94,
+        0.0
+      ],
+      "hair_shape": [
+        1.03,
+        1.0,
+        1.02,
+        0
+      ],
+      "tailoring": [
+        0.94,
+        1.01,
+        1.02,
+        0
+      ]
+    },
+    {
+      "id": "b10",
+      "identity_group": "Black",
+      "label": "indigo cardigan and ponytail",
+      "skin": "#482b20",
+      "top": "#4c547f",
+      "pants": "#66645a",
+      "hair": "#171717",
+      "shoes": "#463b35",
+      "accent": "#bd9267",
+      "width": 0.9,
+      "depth": 0.92,
+      "face_width": 0.96,
+      "height": 1.61,
+      "hair_style": 6,
+      "garment_style": 4,
+      "beard": 0,
+      "face_shape": [
+        0.89,
+        0.87,
+        0.92,
+        0.95
+      ],
+      "face_detail": [
+        0.004,
+        0.95,
+        0.975,
+        0.0
+      ],
+      "hair_shape": [
+        0.975,
+        1.08,
+        0.95,
+        0
+      ],
+      "tailoring": [
+        0.965,
+        0.94,
+        1.04,
+        0
+      ]
+    },
+    {
+      "id": "b11",
+      "identity_group": "Black",
+      "label": "forest polo and neat beard",
+      "skin": "#754b34",
+      "top": "#35664e",
+      "pants": "#655444",
+      "hair": "#211c19",
+      "shoes": "#2e2725",
+      "accent": "#d7c9aa",
+      "width": 1.13,
+      "depth": 1.1,
+      "face_width": 1.08,
+      "height": 1.85,
+      "hair_style": 0,
+      "garment_style": 2,
+      "beard": 1,
+      "face_shape": [
+        1.13,
+        1.1,
+        1.12,
+        1.0
+      ],
+      "face_detail": [
+        -0.004,
+        0.985,
+        1.01,
+        0.0
+      ],
+      "hair_shape": [
+        1.01,
+        0.9,
+        0.99,
+        0
+      ],
+      "tailoring": [
+        0.99,
+        0.975,
+        0.96,
+        0
+      ]
+    },
+    {
+      "id": "b12",
+      "identity_group": "Black",
+      "label": "rose top and tall natural hair",
+      "skin": "#8a5a3c",
+      "top": "#ae6975",
+      "pants": "#3d475a",
+      "hair": "#241916",
+      "shoes": "#d9d2c3",
+      "accent": "#ebc585",
+      "width": 0.96,
+      "depth": 1.0,
+      "face_width": 1.0,
+      "height": 1.74,
+      "hair_style": 1,
+      "garment_style": 0,
+      "beard": 0,
+      "face_shape": [
+        0.98,
+        0.95,
+        1.04,
+        1.1
+      ],
+      "face_detail": [
+        -0.002,
+        1.02,
+        1.045,
+        0.0
+      ],
+      "hair_shape": [
+        0.94,
+        1.28,
+        0.96,
+        0
+      ],
+      "tailoring": [
+        1.015,
+        1.01,
+        0.98,
+        0
+      ]
+    },
+    {
+      "id": "b13",
+      "identity_group": "Black",
+      "label": "navy work shirt and bald head",
+      "skin": "#65412e",
+      "top": "#34475c",
+      "pants": "#5f6658",
+      "hair": "#292221",
+      "shoes": "#6d5140",
+      "accent": "#a8b3b3",
+      "width": 1.19,
+      "depth": 1.14,
+      "face_width": 1.1,
+      "height": 1.8,
+      "hair_style": 7,
+      "garment_style": 2,
+      "beard": 1,
+      "face_shape": [
+        1.16,
+        1.15,
+        0.96,
+        0.96
+      ],
+      "face_detail": [
+        0.0,
+        1.055,
+        0.94,
+        0.0
+      ],
+      "hair_shape": [
+        0.94,
+        0.99,
+        0.95,
+        0
+      ],
+      "tailoring": [
+        0.94,
+        0.94,
+        1.0,
+        0
+      ]
+    },
+    {
+      "id": "b14",
+      "identity_group": "Black",
+      "label": "ochre cardigan and silver bun",
+      "skin": "#9b6849",
+      "top": "#a78245",
+      "pants": "#3f4e4b",
+      "hair": "#aba69c",
+      "shoes": "#4c3a30",
+      "accent": "#d7c7ac",
+      "width": 1.01,
+      "depth": 1.07,
+      "face_width": 1.01,
+      "height": 1.6,
+      "hair_style": 2,
+      "garment_style": 4,
+      "beard": 0,
+      "face_shape": [
+        1.02,
+        0.98,
+        1.1,
+        1.04
+      ],
+      "face_detail": [
+        0.002,
+        1.09,
+        0.975,
+        0.0
+      ],
+      "hair_shape": [
+        0.975,
+        1.035,
+        0.99,
+        0
+      ],
+      "tailoring": [
+        0.965,
+        0.975,
+        1.02,
+        0
+      ]
+    },
+    {
+      "id": "b15",
+      "identity_group": "Black",
+      "label": "plum hoodie and tied locs",
+      "skin": "#b0805c",
+      "top": "#654b73",
+      "pants": "#333a43",
+      "hair": "#35251e",
+      "shoes": "#e1dad0",
+      "accent": "#d5ac6d",
+      "width": 1.01,
+      "depth": 0.96,
+      "face_width": 0.98,
+      "height": 1.82,
+      "hair_style": 4,
+      "garment_style": 1,
+      "beard": 0,
+      "face_shape": [
+        0.93,
+        1.08,
+        0.93,
+        1.06
+      ],
+      "face_detail": [
+        0.004,
+        0.88,
+        1.01,
+        0.0
+      ],
+      "hair_shape": [
+        1.01,
+        1.08,
+        1.03,
+        0
+      ],
+      "tailoring": [
+        0.99,
+        1.01,
+        1.04,
+        0
+      ]
+    },
+    {
+      "id": "b16",
+      "identity_group": "Black",
+      "label": "coral blouse and short bob",
+      "skin": "#c68e62",
+      "top": "#bd7866",
+      "pants": "#444f60",
+      "hair": "#4b2d20",
+      "shoes": "#735242",
+      "accent": "#e4c68e",
+      "width": 0.95,
+      "depth": 0.97,
+      "face_width": 0.94,
+      "height": 1.69,
+      "hair_style": 3,
+      "garment_style": 2,
+      "beard": 0,
+      "face_shape": [
+        0.95,
+        0.89,
+        1.06,
+        0.92
+      ],
+      "face_detail": [
+        -0.004,
+        0.915,
+        1.045,
+        0.0
+      ],
+      "hair_shape": [
+        1.045,
+        0.9,
+        0.95,
+        0
+      ],
+      "tailoring": [
+        1.015,
+        0.94,
+        0.96,
+        0
+      ]
+    },
+    {
+      "id": "h01",
+      "identity_group": "Hispanic",
+      "label": "denim jacket and dark swept hair",
+      "skin": "#c48e64",
+      "top": "#476a85",
+      "pants": "#464341",
+      "hair": "#221c18",
+      "shoes": "#87715b",
+      "accent": "#c9b393",
+      "width": 1.08,
+      "depth": 1.03,
+      "face_width": 1.02,
+      "height": 1.77,
+      "hair_style": 0,
+      "garment_style": 3,
+      "beard": 1,
+      "face_shape": [
+        1.08,
+        1.04,
+        1.16,
+        1.04
+      ],
+      "face_detail": [
+        -0.002,
+        0.95,
+        0.94,
+        0.0
+      ],
+      "hair_shape": [
+        0.94,
+        0.945,
+        0.99,
+        0
+      ],
+      "tailoring": [
+        0.94,
+        0.975,
+        0.98,
+        0
+      ]
+    },
+    {
+      "id": "h02",
+      "identity_group": "Hispanic",
+      "label": "olive blouse and braid",
+      "skin": "#a87550",
+      "top": "#85885b",
+      "pants": "#3e414c",
+      "hair": "#302119",
+      "shoes": "#5e4034",
+      "accent": "#d7b17e",
+      "width": 0.94,
+      "depth": 0.98,
+      "face_width": 0.97,
+      "height": 1.64,
+      "hair_style": 5,
+      "garment_style": 2,
+      "beard": 0,
+      "face_shape": [
+        0.92,
+        0.94,
+        1.02,
+        1.07
+      ],
+      "face_detail": [
+        0.0,
+        0.985,
+        0.975,
+        0.0
+      ],
+      "hair_shape": [
+        0.975,
+        0.99,
+        1.03,
+        0
+      ],
+      "tailoring": [
+        0.965,
+        1.01,
+        1.0,
+        0
+      ]
+    },
+    {
+      "id": "w01",
+      "identity_group": "White",
+      "label": "burgundy knit and sandy hair",
+      "skin": "#e8b48a",
+      "top": "#7e4651",
+      "pants": "#3b4f62",
+      "hair": "#9b7446",
+      "shoes": "#56463a",
+      "accent": "#d4bc93",
+      "width": 1.1,
+      "depth": 1.06,
+      "face_width": 1.02,
+      "height": 1.81,
+      "hair_style": 0,
+      "garment_style": 0,
+      "beard": 1,
+      "face_shape": [
+        1.11,
+        1.0,
+        1.09,
+        0.96
+      ],
+      "face_detail": [
+        0.002,
+        1.02,
+        1.01,
+        0.0
+      ],
+      "hair_shape": [
+        1.01,
+        1.035,
+        0.95,
+        0
+      ],
+      "tailoring": [
+        0.99,
+        0.94,
+        1.02,
+        0
+      ]
+    },
+    {
+      "id": "w02",
+      "identity_group": "White",
+      "label": "blue cardigan and copper ponytail",
+      "skin": "#ecc0a0",
+      "top": "#647da3",
+      "pants": "#565246",
+      "hair": "#97542e",
+      "shoes": "#594336",
+      "accent": "#d6c6a3",
+      "width": 0.95,
+      "depth": 0.97,
+      "face_width": 0.96,
+      "height": 1.68,
+      "hair_style": 6,
+      "garment_style": 4,
+      "beard": 0,
+      "face_shape": [
+        0.96,
+        0.88,
+        1.14,
+        1.02
+      ],
+      "face_detail": [
+        0.004,
+        1.055,
+        1.045,
+        0.0
+      ],
+      "hair_shape": [
+        1.045,
+        1.08,
+        0.99,
+        0
+      ],
+      "tailoring": [
+        1.015,
+        0.975,
+        1.04,
+        0
+      ]
+    },
+    {
+      "id": "b17",
+      "identity_group": "Black",
+      "label": "ink varsity jacket / sculpted high fade",
+      "skin": "#482b20",
+      "top": "#52677d",
+      "pants": "#242d3b",
+      "hair": "#211b1a",
+      "shoes": "#d3cab8",
+      "accent": "#d4ba8c",
+      "width": 0.97,
+      "depth": 0.94,
+      "face_width": 0.94,
+      "height": 1.72,
+      "hair_style": 9,
+      "garment_style": 6,
+      "beard": 0,
+      "face_shape": [
+        0.96,
+        1.12,
+        0.97,
+        1.07
+      ],
+      "face_detail": [
+        -0.005,
+        0.9,
+        0.92,
+        0.0
+      ],
+      "hair_shape": [
+        0.92,
+        0.88,
+        0.94,
+        0
+      ],
+      "tailoring": [
+        0.93,
+        0.94,
+        0.94,
+        0
+      ]
+    },
+    {
+      "id": "b18",
+      "identity_group": "Black",
+      "label": "copper waistcoat / side part",
+      "skin": "#563626",
+      "top": "#a56c42",
+      "pants": "#353841",
+      "hair": "#201918",
+      "shoes": "#614b3b",
+      "accent": "#9ab8ba",
+      "width": 1.1,
+      "depth": 0.968,
+      "face_width": 0.975,
+      "height": 1.86,
+      "hair_style": 8,
+      "garment_style": 7,
+      "beard": 1,
+      "face_shape": [
+        1.1,
+        0.94,
+        1.13,
+        1.03
+      ],
+      "face_detail": [
+        -0.0025,
+        0.94,
+        0.955,
+        0.0
+      ],
+      "hair_shape": [
+        0.96,
+        0.925,
+        0.975,
+        0
+      ],
+      "tailoring": [
+        0.95,
+        0.965,
+        0.96,
+        0
+      ]
+    },
+    {
+      "id": "b19",
+      "identity_group": "Black",
+      "label": "sage tunic / angled pixie",
+      "skin": "#65412e",
+      "top": "#799381",
+      "pants": "#354551",
+      "hair": "#241a19",
+      "shoes": "#403538",
+      "accent": "#cbb9ca",
+      "width": 0.92,
+      "depth": 0.996,
+      "face_width": 1.01,
+      "height": 1.75,
+      "hair_style": 11,
+      "garment_style": 8,
+      "beard": 0,
+      "face_shape": [
+        0.89,
+        0.87,
+        0.92,
+        0.95
+      ],
+      "face_detail": [
+        0.0,
+        0.98,
+        0.99,
+        0.0
+      ],
+      "hair_shape": [
+        1.0,
+        0.97,
+        1.01,
+        0
+      ],
+      "tailoring": [
+        0.97,
+        0.99,
+        0.98,
+        0
+      ]
+    },
+    {
+      "id": "b20",
+      "identity_group": "Black",
+      "label": "sand overshirt / swept crown",
+      "skin": "#754b34",
+      "top": "#b7a485",
+      "pants": "#314657",
+      "hair": "#211a16",
+      "shoes": "#9c8060",
+      "accent": "#e3d5b5",
+      "width": 1.13,
+      "depth": 1.024,
+      "face_width": 1.045,
+      "height": 1.88,
+      "hair_style": 10,
+      "garment_style": 2,
+      "beard": 0,
+      "face_shape": [
+        1.13,
+        1.1,
+        1.12,
+        1.0
+      ],
+      "face_detail": [
+        0.0025,
+        1.02,
+        1.025,
+        0.0
+      ],
+      "hair_shape": [
+        1.04,
+        1.015,
+        1.045,
+        0
+      ],
+      "tailoring": [
+        0.99,
+        1.015,
+        1.0,
+        0
+      ]
+    },
+    {
+      "id": "b21",
+      "identity_group": "Black",
+      "label": "cranberry dress / close silver crop",
+      "skin": "#8a5a3c",
+      "top": "#8f3c56",
+      "pants": "#3b3548",
+      "hair": "#b7aaa0",
+      "shoes": "#d3cab8",
+      "accent": "#d4ba8c",
+      "width": 1.01,
+      "depth": 1.052,
+      "face_width": 1.08,
+      "height": 1.73,
+      "hair_style": 0,
+      "garment_style": 5,
+      "beard": 0,
+      "face_shape": [
+        0.98,
+        0.95,
+        1.04,
+        1.1
+      ],
+      "face_detail": [
+        0.005,
+        1.06,
+        1.06,
+        0.0
+      ],
+      "hair_shape": [
+        1.08,
+        1.06,
+        0.94,
+        0
+      ],
+      "tailoring": [
+        1.01,
+        0.94,
+        1.02,
+        0
+      ]
+    },
+    {
+      "id": "b22",
+      "identity_group": "Black",
+      "label": "petrol varsity / compact natural",
+      "skin": "#9b6849",
+      "top": "#24656b",
+      "pants": "#4e4850",
+      "hair": "#1b1918",
+      "shoes": "#614b3b",
+      "accent": "#9ab8ba",
+      "width": 1.06,
+      "depth": 1.08,
+      "face_width": 0.94,
+      "height": 1.82,
+      "hair_style": 1,
+      "garment_style": 6,
+      "beard": 1,
+      "face_shape": [
+        1.16,
+        1.15,
+        0.96,
+        0.96
+      ],
+      "face_detail": [
+        -0.005,
+        1.1,
+        0.92,
+        0.0
+      ],
+      "hair_shape": [
+        0.93,
+        0.82,
+        0.95,
+        0
+      ],
+      "tailoring": [
+        0.93,
+        0.965,
+        1.04,
+        0
+      ]
+    },
+    {
+      "id": "b23",
+      "identity_group": "Black",
+      "label": "indigo tunic / gathered bun",
+      "skin": "#b0805c",
+      "top": "#515a87",
+      "pants": "#41444c",
+      "hair": "#2c211c",
+      "shoes": "#403538",
+      "accent": "#cbb9ca",
+      "width": 0.96,
+      "depth": 0.94,
+      "face_width": 0.975,
+      "height": 1.71,
+      "hair_style": 2,
+      "garment_style": 8,
+      "beard": 0,
+      "face_shape": [
+        1.02,
+        0.98,
+        1.1,
+        1.04
+      ],
+      "face_detail": [
+        -0.0025,
+        0.9,
+        0.955,
+        0.0
+      ],
+      "hair_shape": [
+        0.96,
+        0.88,
+        1.01,
+        0
+      ],
+      "tailoring": [
+        0.95,
+        0.99,
+        0.94,
+        0
+      ]
+    },
+    {
+      "id": "b24",
+      "identity_group": "Black",
+      "label": "moss waistcoat / bare scalp",
+      "skin": "#c68e62",
+      "top": "#596749",
+      "pants": "#544637",
+      "hair": "#42342c",
+      "shoes": "#9c8060",
+      "accent": "#e3d5b5",
+      "width": 1.15,
+      "depth": 0.968,
+      "face_width": 1.01,
+      "height": 1.84,
+      "hair_style": 7,
+      "garment_style": 7,
+      "beard": 1,
+      "face_shape": [
+        0.93,
+        1.08,
+        0.93,
+        1.06
+      ],
+      "face_detail": [
+        0.0,
+        0.94,
+        0.99,
+        0.0
+      ],
+      "hair_shape": [
+        1.0,
+        0.925,
+        1.045,
+        0
+      ],
+      "tailoring": [
+        0.97,
+        1.015,
+        0.96,
+        0
+      ]
+    },
+    {
+      "id": "b25",
+      "identity_group": "Black",
+      "label": "ochre jacket / angular bob",
+      "skin": "#563626",
+      "top": "#b88b39",
+      "pants": "#35445c",
+      "hair": "#211b19",
+      "shoes": "#d3cab8",
+      "accent": "#d4ba8c",
+      "width": 0.98,
+      "depth": 0.996,
+      "face_width": 1.045,
+      "height": 1.77,
+      "hair_style": 3,
+      "garment_style": 3,
+      "beard": 0,
+      "face_shape": [
+        0.95,
+        0.89,
+        1.06,
+        0.92
+      ],
+      "face_detail": [
+        0.0025,
+        0.98,
+        1.025,
+        0.0
+      ],
+      "hair_shape": [
+        1.04,
+        0.97,
+        0.94,
+        0
+      ],
+      "tailoring": [
+        0.99,
+        0.94,
+        0.98,
+        0
+      ]
+    },
+    {
+      "id": "b26",
+      "identity_group": "Black",
+      "label": "maroon knit / tapered high fade",
+      "skin": "#482b20",
+      "top": "#743e48",
+      "pants": "#4b5664",
+      "hair": "#1b191a",
+      "shoes": "#614b3b",
+      "accent": "#9ab8ba",
+      "width": 1.03,
+      "depth": 1.024,
+      "face_width": 1.08,
+      "height": 1.87,
+      "hair_style": 9,
+      "garment_style": 0,
+      "beard": 1,
+      "face_shape": [
+        1.08,
+        1.04,
+        1.16,
+        1.04
+      ],
+      "face_detail": [
+        0.005,
+        1.02,
+        1.06,
+        0.0
+      ],
+      "hair_shape": [
+        1.08,
+        1.015,
+        0.975,
+        0
+      ],
+      "tailoring": [
+        1.01,
+        0.965,
+        1.0,
+        0
+      ]
+    },
+    {
+      "id": "b27",
+      "identity_group": "Black",
+      "label": "peacock tunic / long braids",
+      "skin": "#754b34",
+      "top": "#377b83",
+      "pants": "#433a4c",
+      "hair": "#30221d",
+      "shoes": "#403538",
+      "accent": "#cbb9ca",
+      "width": 0.93,
+      "depth": 1.052,
+      "face_width": 0.94,
+      "height": 1.74,
+      "hair_style": 5,
+      "garment_style": 8,
+      "beard": 0,
+      "face_shape": [
+        0.92,
+        0.94,
+        1.02,
+        1.07
+      ],
+      "face_detail": [
+        -0.005,
+        1.06,
+        0.92,
+        0.0
+      ],
+      "hair_shape": [
+        0.92,
+        1.06,
+        1.01,
+        0
+      ],
+      "tailoring": [
+        0.93,
+        0.99,
+        1.02,
+        0
+      ]
+    },
+    {
+      "id": "b28",
+      "identity_group": "Black",
+      "label": "slate collared shirt / side part",
+      "skin": "#8a5a3c",
+      "top": "#66798a",
+      "pants": "#524d40",
+      "hair": "#332a25",
+      "shoes": "#9c8060",
+      "accent": "#e3d5b5",
+      "width": 1.08,
+      "depth": 1.08,
+      "face_width": 0.975,
+      "height": 1.81,
+      "hair_style": 8,
+      "garment_style": 2,
+      "beard": 1,
+      "face_shape": [
+        1.11,
+        1.0,
+        1.09,
+        0.96
+      ],
+      "face_detail": [
+        -0.0025,
+        1.1,
+        0.955,
+        0.0
+      ],
+      "hair_shape": [
+        0.96,
+        1.105,
+        1.045,
+        0
+      ],
+      "tailoring": [
+        0.95,
+        1.015,
+        1.04,
+        0
+      ]
+    },
+    {
+      "id": "b29",
+      "identity_group": "Black",
+      "label": "paprika cardigan / swept pixie",
+      "skin": "#65412e",
+      "top": "#b76349",
+      "pants": "#374951",
+      "hair": "#31231e",
+      "shoes": "#d3cab8",
+      "accent": "#d4ba8c",
+      "width": 0.95,
+      "depth": 0.94,
+      "face_width": 1.01,
+      "height": 1.7,
+      "hair_style": 11,
+      "garment_style": 4,
+      "beard": 0,
+      "face_shape": [
+        0.96,
+        0.88,
+        1.14,
+        1.02
+      ],
+      "face_detail": [
+        0.0,
+        0.9,
+        0.99,
+        0.0
+      ],
+      "hair_shape": [
+        1.0,
+        0.88,
+        0.94,
+        0
+      ],
+      "tailoring": [
+        0.97,
+        0.94,
+        0.94,
+        0
+      ]
+    },
+    {
+      "id": "b30",
+      "identity_group": "Black",
+      "label": "plum varsity / shoulder locs",
+      "skin": "#9b6849",
+      "top": "#60465f",
+      "pants": "#3e4850",
+      "hair": "#221b19",
+      "shoes": "#614b3b",
+      "accent": "#9ab8ba",
+      "width": 1.11,
+      "depth": 0.968,
+      "face_width": 1.045,
+      "height": 1.85,
+      "hair_style": 4,
+      "garment_style": 6,
+      "beard": 0,
+      "face_shape": [
+        0.91,
+        0.92,
+        0.92,
+        0.94
+      ],
+      "face_detail": [
+        0.0025,
+        0.94,
+        1.025,
+        0.0
+      ],
+      "hair_shape": [
+        1.04,
+        0.925,
+        0.975,
+        0
+      ],
+      "tailoring": [
+        0.99,
+        0.965,
+        0.96,
+        0
+      ]
+    },
+    {
+      "id": "b31",
+      "identity_group": "Black",
+      "label": "olive dress / high natural crown",
+      "skin": "#b0805c",
+      "top": "#7c854b",
+      "pants": "#3f4650",
+      "hair": "#25201d",
+      "shoes": "#403538",
+      "accent": "#cbb9ca",
+      "width": 0.99,
+      "depth": 0.996,
+      "face_width": 1.08,
+      "height": 1.78,
+      "hair_style": 1,
+      "garment_style": 5,
+      "beard": 0,
+      "face_shape": [
+        1.04,
+        0.85,
+        1.03,
+        1.05
+      ],
+      "face_detail": [
+        0.005,
+        0.98,
+        1.06,
+        0.0
+      ],
+      "hair_shape": [
+        0.96,
+        1.22,
+        0.96,
+        0
+      ],
+      "tailoring": [
+        1.01,
+        0.99,
+        0.98,
+        0
+      ]
+    },
+    {
+      "id": "b32",
+      "identity_group": "Black",
+      "label": "cream waistcoat / silver swept crown",
+      "skin": "#c68e62",
+      "top": "#c8bca6",
+      "pants": "#444f59",
+      "hair": "#a49b90",
+      "shoes": "#9c8060",
+      "accent": "#e3d5b5",
+      "width": 1.07,
+      "depth": 1.024,
+      "face_width": 0.94,
+      "height": 1.83,
+      "hair_style": 10,
+      "garment_style": 7,
+      "beard": 1,
+      "face_shape": [
+        1.11,
+        1.08,
+        0.87,
+        1.02
+      ],
+      "face_detail": [
+        -0.005,
+        1.02,
+        0.92,
+        0.0
+      ],
+      "hair_shape": [
+        0.92,
+        1.015,
+        1.045,
+        0
+      ],
+      "tailoring": [
+        0.93,
+        1.015,
+        1.0,
+        0
+      ]
+    },
+    {
+      "id": "h03",
+      "identity_group": "Hispanic",
+      "label": "blue tunic / long ponytail",
+      "skin": "#bf885f",
+      "top": "#486e9b",
+      "pants": "#48474e",
+      "hair": "#35221c",
+      "shoes": "#d3cab8",
+      "accent": "#d4ba8c",
+      "width": 0.94,
+      "depth": 1.052,
+      "face_width": 0.975,
+      "height": 1.72,
+      "hair_style": 6,
+      "garment_style": 8,
+      "beard": 0,
+      "face_shape": [
+        0.9,
+        1.0,
+        1.08,
+        0.96
+      ],
+      "face_detail": [
+        -0.0025,
+        1.06,
+        0.955,
+        0.0
+      ],
+      "hair_shape": [
+        0.96,
+        1.06,
+        0.94,
+        0
+      ],
+      "tailoring": [
+        0.95,
+        0.94,
+        1.02,
+        0
+      ]
+    },
+    {
+      "id": "h04",
+      "identity_group": "Hispanic",
+      "label": "umber varsity / swept part",
+      "skin": "#ab7552",
+      "top": "#85614e",
+      "pants": "#344556",
+      "hair": "#211b17",
+      "shoes": "#614b3b",
+      "accent": "#9ab8ba",
+      "width": 1.09,
+      "depth": 1.08,
+      "face_width": 1.01,
+      "height": 1.86,
+      "hair_style": 8,
+      "garment_style": 6,
+      "beard": 1,
+      "face_shape": [
+        1.14,
+        1.14,
+        1.05,
+        0.98
+      ],
+      "face_detail": [
+        0.0,
+        1.1,
+        0.99,
+        0.0
+      ],
+      "hair_shape": [
+        1.0,
+        1.105,
+        0.975,
+        0
+      ],
+      "tailoring": [
+        0.97,
+        0.965,
+        1.04,
+        0
+      ]
+    },
+    {
+      "id": "w03",
+      "identity_group": "White",
+      "label": "sage dress / copper pixie",
+      "skin": "#e8b99b",
+      "top": "#738b73",
+      "pants": "#424958",
+      "hair": "#985c37",
+      "shoes": "#403538",
+      "accent": "#cbb9ca",
+      "width": 0.97,
+      "depth": 0.94,
+      "face_width": 1.045,
+      "height": 1.76,
+      "hair_style": 11,
+      "garment_style": 5,
+      "beard": 0,
+      "face_shape": [
+        0.94,
+        0.9,
+        1.16,
+        1.09
+      ],
+      "face_detail": [
+        0.0025,
+        0.9,
+        1.025,
+        0.0
+      ],
+      "hair_shape": [
+        1.04,
+        0.88,
+        1.01,
+        0
+      ],
+      "tailoring": [
+        0.99,
+        0.99,
+        0.94,
+        0
+      ]
+    },
+    {
+      "id": "w04",
+      "identity_group": "White",
+      "label": "navy waistcoat / ash swept crown",
+      "skin": "#d6a17e",
+      "top": "#384e68",
+      "pants": "#62574a",
+      "hair": "#887663",
+      "shoes": "#9c8060",
+      "accent": "#e3d5b5",
+      "width": 1.12,
+      "depth": 0.968,
+      "face_width": 1.08,
+      "height": 1.88,
+      "hair_style": 10,
+      "garment_style": 7,
+      "beard": 0,
+      "face_shape": [
+        1.07,
+        1.04,
+        0.93,
+        0.92
+      ],
+      "face_detail": [
+        0.005,
+        0.94,
+        1.06,
+        0.0
+      ],
+      "hair_shape": [
+        1.08,
+        0.925,
+        1.045,
+        0
+      ],
+      "tailoring": [
+        1.01,
+        1.015,
+        0.96,
+        0
+      ]
+    }
+  ]
+}
