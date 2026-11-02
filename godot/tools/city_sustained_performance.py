@@ -33,7 +33,8 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "godot"
 WORK = ROOT / ".work" / "five-priorities-20261101" / "performance"
-HARNESS = ("tests/city_sustained_performance.gd", "tests/city_sustained_performance_runner.gd")
+HARNESS = ("tests/city_sustained_performance.gd", "tests/city_sustained_performance_runner.gd",
+           "tests/city_steady_endurance.gd", "tests/city_steady_endurance_runner.gd")
 SAFE_NAME = re.compile(r"^[a-zA-Z0-9_-]{1,40}$")
 
 
@@ -99,12 +100,25 @@ def run(options):
     if manifest(source) != record["staged_manifest"]:
         raise ValueError("Frozen snapshot changed; refusing incomparable run")
     life = options.fixture == "life"
-    if not ((5 <= options.seconds <= 30) if life else (180 <= options.seconds <= 300)):
-        raise ValueError("Life diagnostic samples must be 5–30 seconds; sustained samples 180–300 seconds")
+    transitions = options.fixture == "transitions"
+    steady = options.fixture == "steady"
+    minimum, maximum = (5, 30) if life else ((32, 120) if transitions else ((60, 900) if steady else (180, 900)))
+    if not minimum <= options.seconds <= maximum:
+        raise ValueError("Life samples require 5–30s, transition diagnostics32–120s, steady60–900s, traversal180–900s")
+    resolution_match = re.fullmatch(r"(\d{3,4})x(\d{3,4})", options.resolution)
+    if not resolution_match:
+        raise ValueError("Use an explicit WIDTHxHEIGHT render resolution")
+    width, height = map(int, resolution_match.groups())
+    if not (640 <= width <= 7680 and 480 <= height <= 4320):
+        raise ValueError("Render resolution must be640–7680 by480–4320")
+    if life and options.resolution != "1280x720":
+        raise ValueError("The existing life fixture is fixed at1280x720; use steady/traversal for another resolution")
     if options.profile_vehicle and not options.profile_city:
         raise ValueError("--profile-vehicle requires --profile-city")
     if not life and (options.profile_city or options.profile_vehicle):
         raise ValueError("Existing query profiler belongs to --fixture life; sustained fixture is unchanged")
+    if life and options.profile_transitions:
+        raise ValueError("--profile-transitions requires the sustained district traversal fixture")
     launch = module("sustained_no_focus", ROOT / ".work" / "pacifist-foundation" / "run_render_validation.py")
     launch.SOURCE = source
     launch.WORK = WORK / options.name
@@ -124,13 +138,20 @@ def run(options):
     output = WORK / options.name / run_id
     output.mkdir(parents=True)
     profiler_flags = (["--profile-city"] if options.profile_city else []) + (["--profile-vehicle"] if options.profile_vehicle else [])
+    if options.profile_transitions or transitions:
+        profiler_flags.append("--profile-transitions")
+    if transitions:
+        profiler_flags.append("--transition-probe")
     if life:
         args = ["--resolution", "1280x720", "--script", "res://tools/city_life_benchmark.gd", "--",
                 "--offscreen-validation", "--sample-seconds", str(options.seconds), "--no-cpu-probe",
                 "--outdir", str(output / "fixture"), *profiler_flags]
     else:
-        args = ["--resolution", "1280x720", "--script", "res://tests/city_sustained_performance.gd", "--",
-                "--offscreen-validation", "--session-run-id=" + run_id, "--sustained-seconds=" + str(options.seconds)]
+        script = "res://tests/city_steady_endurance.gd" if steady else "res://tests/city_sustained_performance.gd"
+        args = ["--resolution", options.resolution, "--script", script, "--",
+                "--offscreen-validation", "--session-run-id=" + run_id, "--sustained-seconds=" + str(options.seconds),
+                "--render-width=" + str(width), "--render-height=" + str(height), "--steady-mode=" + options.steady_mode,
+                *profiler_flags]
     launch.validate_args(args)
     with godot_run.GodotLock():
         receipt = launch.prepare()
@@ -142,12 +163,13 @@ def run(options):
         receipt.update({"command": command, "profile": str(profile), "run_id": run_id,
                         "snapshot": str(source.parent / "snapshot.json"), "prepare_only": options.prepare_only,
                         "fixture": options.fixture, "profiling_flags": profiler_flags,
-                        "measurement_kind": "short active-play query attribution; profiler overhead included" if life else "sustained world traversal"})
+                        "render_resolution": [width, height], "steady_mode": options.steady_mode if steady else None,
+                        "measurement_kind": "short active-play query attribution; profiler overhead included" if life else ("short transition attribution; not sustained acceptance" if transitions else ("bounded-memory same-neighborhood endurance" if steady else "sustained world traversal"))})
         if not options.prepare_only:
             api = perf.WinApi()
             env = dict(os.environ, APPDATA=str(profile), LOCALAPPDATA=str(profile / "Local"))
             (profile / "Local").mkdir(parents=True)
-            receipt["run"] = perf.run_godot(command, launch.STAGE, env, 480, output / "engine.log", api,
+            receipt["run"] = perf.run_godot(command, launch.STAGE, env, options.seconds + 420, output / "engine.log", api,
                                             "normal", None, False, None, output / "gpu.csv")
             perf.write_telemetry_csv(output / "process-telemetry.csv", receipt["run"].pop("telemetry_samples"))
             result_path = output / "fixture" / "metrics.json" if life else ROOT / ".work" / "priorities-five" / "session-validation" / run_id / "result.json"
@@ -239,9 +261,12 @@ def main():
     runner = sub.add_parser("run")
     runner.add_argument("--name", required=True)
     runner.add_argument("--seconds", type=int, default=180)
-    runner.add_argument("--fixture", choices=["sustained", "life"], default="sustained")
+    runner.add_argument("--fixture", choices=["sustained", "life", "transitions", "steady"], default="sustained")
+    runner.add_argument("--resolution", default="1280x720", help="Explicit render size; set the actual display size to test native resolution")
+    runner.add_argument("--steady-mode", choices=["stationary", "walk"], default="stationary")
     runner.add_argument("--profile-city", action="store_true")
     runner.add_argument("--profile-vehicle", action="store_true")
+    runner.add_argument("--profile-transitions", action="store_true", help="Attribute relocation and streaming CPU; preserves the sustained workload")
     runner.add_argument("--prepare-only", action="store_true")
     reader = sub.add_parser("analyze")
     reader.add_argument("--name", required=True)

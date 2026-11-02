@@ -250,7 +250,7 @@ func _vehicle_roundtrip() -> void:
 	if not check(is_instance_valid(car), "real starter car exists"):
 		return
 	var spawn := car.global_position
-	if not check(await _drive_starter(car), "starter boarded, driven and parked through the real driving controls"):
+	if not check(await _park_starter_fixture(car), "starter placed at a separately validated parking pose; player driving remains disabled"):
 		return
 	check(car.global_position.distance_to(spawn) > 1.0, "parked starter now sits away from its spawn spot")
 	car.apply_body_damage(35.0)
@@ -292,50 +292,44 @@ func _vehicle_roundtrip() -> void:
 		"repeated load keeps the same bodies and payload")
 	check(_unique(bodies), "no live vehicle identity has two bodies")
 
-func _drive_starter(car: Node3D) -> bool:
+func _park_starter_fixture(car: Node3D) -> bool:
 	var driving: Node = level.driving
-	var size: Vector3 = driving._car_size(car)
-	var door: Dictionary = {}
-	for side in [1.0, -1.0]:
-		door = driving._exit_spot(car, side * (size.x * .5 + .65), .25, true)
-		if not door.is_empty():
-			break
-	if door.is_empty():
-		note("no clear starter door")
-		return false
-	_stand(door.position)
-	level.resume_exploring()
-	await frames(10)
-	if not driving.enter_vehicle(car):
-		note("starter entry refused: " + str(driving.get_status().get("prompt", "")))
-		level.pause_exploring()
-		return false
-	# Occupied: no checkpoint, and a load must refuse before touching anything.
-	var slot := _bytes(fixture)
-	var busy: int = provider.save_state()
-	var reason: String = provider.checkpoint_blocker()
-	check(busy == ERR_BUSY and reason == "leave the vehicle first" and _bytes(fixture) == slot, "no checkpoint while driving; slot bytes untouched")
-	var inventory: Variant = canonical(level.combat.equipment_snapshot())
-	var refused: Dictionary = provider.load_state()
-	check(not refused.get("ok", true) and not refused.get("partial", true) and driving.active and driving.vehicle == car
-		and canonical(level.combat.equipment_snapshot()) == inventory and not provider.get_status().write_blocked,
-		"load while seated refuses without detaching, mutating inventory or pausing saves")
-	driving.set_control_override(0.7, 0.0, 0.0, false)
-	await frames(45)
-	driving.set_control_override(0.0, 1.0, 0.0, true)
-	for step in 120:
-		await frames(1)
-		if absf(float(car.speed)) <= 0.1:
-			break
-	driving.set_control_override(0.0, 0.0, 0.0, true)
-	await frames(20)
-	driving.clear_control_override()
-	var exited: bool = driving.exit_vehicle(false)
-	if not exited:
-		exited = driving.exit_vehicle(true)
-	await frames(4)
-	level.pause_exploring()
-	return exited and not driving.active
+	check(not driving.enter_vehicle(car) and not driving.active and not level.player.is_seated(), "pacifist policy refuses starter entry without taking a seat")
+	check(level.traffic.can_claim_external(car, "persistence_fixture") == "not_fleet", "starter remains excluded from external traffic authority")
+	# External controllers require every ROAD_CORNER on traffic.on_road(). A
+	# curbside starter can be a valid parked save while failing that road gate;
+	# lengthening throttle simulation cannot move it. Probe and report the gate,
+	# then use the production restore-pose validator for the persistence fixture.
+	var origin: Transform3D = car.global_transform
+	var heading: float = car.yaw
+	car.begin_external_control("persistence_fixture")
+	var probe: Dictionary = car.external_step(1.0 / 60.0, 0.7, 0.0, 0.0, false)
+	note("curbside external probe: blocked=%s moved=%.6f" % [str(probe.get("blocked", "")), float(probe.get("moved", 0.0))])
+	car.end_external_control()
+	car.place_parked(origin, heading)
+	var forward := Vector3(sin(heading), 0.0, cos(heading))
+	var side := Vector3(forward.z, 0.0, -forward.x)
+	for distance in [3.0, 5.0, 8.0, 12.0, 18.0]:
+		for direction in [1.0, -1.0]:
+			for lateral in [0.0, 2.5, -2.5, 5.0, -5.0]:
+				var at: Vector3 = origin.origin + forward * float(distance) * float(direction) + side * float(lateral)
+				if at.distance_to(level.player.global_position) < 4.0:
+					continue
+				var ground: Dictionary = driving._ground(at)
+				if ground.is_empty():
+					continue
+				at.y = float(ground.position.y) + 0.025
+				var safe: Dictionary = driving._restore_pose(str(car.prototype_kind), at, heading, car, -1)
+				if safe.is_empty():
+					continue
+				car.place_parked(safe.transform, heading)
+				driving._settle_collider(car)
+				await frames(2)
+				check(not driving.active and not car.player_controlled and car.external_owner.is_empty() and not level.player.is_seated(), "parked fixture never grants player driving authority")
+				note("validated parked fixture displacement %.2fm" % car.global_position.distance_to(origin.origin))
+				return true
+	note("no separately supported, collision-clear parking fixture found")
+	return false
 
 # --- Legacy files -------------------------------------------------------------------
 
@@ -390,12 +384,13 @@ func _legacy_case(version: int) -> void:
 			check(level.combat.health == 100.0 and inventory.equipped == "fists" and inventory.weapons.pistol.owned
 				and int(inventory.weapons.pistol.ammo) == 12 and int(inventory.weapons.pistol.reserve) == 72
 				and not inventory.weapons.ak47.owned and not inventory.weapons.uzi.owned and int(economy.money) == starting,
-				label + "equipmentless file restores historical defaults, not future guns, wealth or wounds")
+				label + "equipmentless file preserves historical inventory while the player stays unarmed")
 		2:
 			check(level.combat.weapon == "fists" and level.combat.ammo == 0 and level.combat.reserve == 0, label + "fists keep an empty fists store")
 			level.combat.equip("pistol")
-			check(level.combat.ammo == 3 and level.combat.reserve == 19 and not level.combat.equipment_snapshot().weapons.ak47.owned,
-				label + "shared magazine migrates to the pistol without refill; future AK47 discarded")
+			var hidden_store: Dictionary = level.combat.equipment_snapshot().weapons.pistol
+			check(level.combat.weapon == "fists" and level.combat.ammo == 0 and level.combat.reserve == 0 and int(hidden_store.ammo) == 3 and int(hidden_store.reserve) == 19 and not level.combat.equipment_snapshot().weapons.ak47.owned,
+				label + "legacy magazine is preserved without refill while pistol equip stays refused")
 			level.combat.equip("fists")
 			var cash: int = economy.money
 			check(cash == starting and not economy.reward_case("lost_satchel", 100) and int(economy.money) == cash
@@ -404,8 +399,8 @@ func _legacy_case(version: int) -> void:
 			var again: Dictionary = provider.load_state()
 			check(again.get("ok", false) and int(economy.money) == cash, label + "repeated legacy load pays nothing")
 		3:
-			check(canonical(level.combat.equipment_snapshot()) == canonical(INVENTORY_V1) and is_equal_approx(level.combat.health, 82.0),
-				label + "inventory and health restore exactly")
+			check(_pacifist_inventory(level.combat.equipment_snapshot()) and is_equal_approx(level.combat.health, 82.0),
+				label + "legacy ownership and ammunition survive with fists selected and health restored")
 			var status: Dictionary = economy.get_status()
 			check(int(economy.money) == 285 and economy.reputation_value("snitch") == 6 and economy.reputation_value("gangsta") == 3
 				and economy.item_count("cannabis") == 1 and "lost_satchel" in status.rewarded_cases and "pistol" in status.weapons_purchased,
@@ -1046,3 +1041,8 @@ func _finish() -> void:
 		level.driving.clear_control_override()
 	print("[world_persistence] %d passed, %d failed" % [passes, failures])
 	get_tree().quit(1 if failures else 0)
+
+func _pacifist_inventory(value: Dictionary) -> bool:
+	var expected: Dictionary = INVENTORY_V1.duplicate(true)
+	expected.equipped = "fists"
+	return canonical(value) == canonical(expected)

@@ -25,6 +25,8 @@ signal choice_made(decision: String, option: String)
 ## 2 adds relationships, choices and errands; version 1 snapshots still restore.
 const VERSION := 2
 const PlayMode := preload("res://scripts/city/city_play_mode.gd")
+const ShopCatalog := preload("res://scripts/city/city_shop_catalog.gd")
+const SHOP_EQUIPPED_PREFIX := "shop_equipped_"
 const CONFIG_PATH := "res://assets/data/pen_lucy_progression.json"
 const WEAPONS_PATH := "res://scripts/city/city_combat_weapons.gd"
 const MAX_CONFIG_BYTES := 262144
@@ -115,6 +117,11 @@ static func read_config_file(path: String = CONFIG_PATH) -> Dictionary:
 	var parser := JSON.new()
 	if parser.parse(file.get_as_text()) != OK or not parser.data is Dictionary:
 		return {}
+	# The reusable neighborhood catalog has one authored source. Other config
+	# files and supplied test configs still pass through the strict schema alone.
+	if path == CONFIG_PATH and parser.data.get("items") is Dictionary and parser.data.get("shops") is Dictionary:
+		parser.data.items.merge(ShopCatalog.authored_items(), false)
+		parser.data.shops[ShopCatalog.SHOP_KIND] = ShopCatalog.authored_shop()
 	return parser.data
 
 ## An invalid config disables every transaction (snapshot_state returns {} and
@@ -861,8 +868,107 @@ func catalog(shop_kind: String) -> Array:
 	var gate := purchase_gate()
 	var weapons := _equipment_weapons()
 	for item_id in config.shops[shop_kind].items:
-		result.append(_catalog_entry(str(item_id), gate, weapons))
+		result.append(_shop_catalog_entry(str(item_id), gate) if _is_shop_item(str(item_id)) else _catalog_entry(str(item_id), gate, weapons))
 	return result
+
+func _is_shop_item(id: String) -> bool:
+	return config.items.has(id) and str(config.items[id].shop) == ShopCatalog.SHOP_KIND and ShopCatalog.ITEMS.has(id)
+
+## Empty means the original appearance. Both ownership and the active choice
+## use the existing versioned items/flags snapshot; no independent wallet/save.
+func equipped_shop_item(slot: String) -> String:
+	for id in ShopCatalog.item_ids():
+		if str(ShopCatalog.ITEMS[id].slot) == slot and not slot.is_empty() and item_count(str(id)) > 0 and flags.has(SHOP_EQUIPPED_PREFIX + str(id)):
+			return str(id)
+	return ""
+
+func equipped_shop_color(slot: String) -> String:
+	var id := equipped_shop_item(slot)
+	return str(ShopCatalog.ITEMS[id].color) if not id.is_empty() else ""
+
+func _shop_recovery_reason() -> String:
+	var combat = _combat()
+	if combat == null or not _is_number(combat.get("health")):
+		return "Recovery is unavailable."
+	if float(combat.get("health")) <= 0.0 or _positive(combat.get("downed")):
+		return "Recover before shopping."
+	if _positive_flag(_manager("law"), "recovering"):
+		return "Recovery is in progress."
+	if combat.has_method("get_status") and _positive(combat.get_status().get("aggro_count", 0)):
+		return "Finish the confrontation first."
+	if float(combat.get("health")) >= 100.0:
+		return "Already at full health."
+	return ""
+
+func _shop_catalog_entry(id: String, gate: Dictionary) -> Dictionary:
+	var item: Dictionary = config.items[id]
+	var definition := ShopCatalog.definition(id)
+	var cosmetic := ShopCatalog.is_cosmetic(id)
+	var owned := cosmetic and item_count(id) > 0
+	var equipped := owned and equipped_shop_item(str(definition.slot)) == id
+	var reason := str(gate.reason) if not bool(gate.ok) else ""
+	if reason.is_empty() and not cosmetic:
+		reason = _shop_recovery_reason()
+	if reason.is_empty() and not owned and not meets(item.requires):
+		reason = _locked_text(item)
+	return {"id": id, "shop": item.shop, "kind": "goods", "category": definition.category,
+		"label": item.label, "description": item.description, "price": 0 if owned else int(price_quote(id).price),
+		"owned": owned, "equipped": equipped, "can_equip": owned and not equipped,
+		"repeatable": not cosmetic, "available": reason.is_empty() and not equipped,
+		"reason": reason, "locked": false, "count": item_count(id)}
+
+func _buy_shop_item(item: Dictionary, quote: Dictionary, result: Dictionary) -> void:
+	var id := str(item.id)
+	var definition := ShopCatalog.definition(id)
+	var cosmetic := ShopCatalog.is_cosmetic(id)
+	var owned := cosmetic and item_count(id) > 0
+	var price := 0 if owned else int(quote.price)
+	if not owned and not meets(item.requires):
+		result.message = _locked_text(item)
+		return
+	if money < price:
+		result.message = "You need $%d more." % (price - money)
+		return
+	if cosmetic:
+		var slot := str(definition.slot)
+		var current := equipped_shop_item(slot)
+		if current == id:
+			result.message = "Already equipped."
+			return
+		# Switching removes the previous slot flag first, so a full flag table
+		# still permits changing clothes; a new slot needs one available entry.
+		if current.is_empty() and flags.size() >= int(config.limits.flags):
+			result.message = "Cannot save another appearance choice."
+			return
+		if not current.is_empty():
+			flags.erase(SHOP_EQUIPPED_PREFIX + current)
+		flags[SHOP_EQUIPPED_PREFIX + id] = true
+		items[id] = 1
+	else:
+		var reason := _shop_recovery_reason()
+		if not reason.is_empty():
+			result.message = reason
+			return
+		var combat = _combat()
+		var before := float(combat.get("health"))
+		var after := minf(100.0, before + float(definition.recovery))
+		combat.set("health", after)
+		if not _is_number(combat.get("health")) or not is_equal_approx(float(combat.get("health")), after):
+			combat.set("health", before)
+			result.message = "Recovery is unavailable; you were not charged."
+			return
+		result.recovered = after - before
+	# All gates/effects succeeded. Publish the completed transaction only now.
+	money -= price
+	if not owned:
+		purchases[id] = mini(int(purchases.get(id, 0)) + 1, int(config.limits.purchase_count))
+	result.ok = true
+	result.price = price
+	result.message = ("Equipped %s%s." % [str(item.label), " for $%d" % price if price > 0 else ""]) if cosmetic else "Used %s · recovered %d health · $%d." % [str(item.label).to_lower(), int(result.recovered), price]
+	_record(("equip:" if owned else "purchase:") + id, id, {}, -price, str(result.message))
+	if price > 0:
+		money_changed.emit(money, -price, "purchase")
+	changed.emit()
 
 ## Effective price after reputation modifiers (sum clamped to pricing limits).
 func price_quote(item_id: String) -> Dictionary:
@@ -931,6 +1037,8 @@ func purchase(item_id: String, context: Dictionary = {}) -> Dictionary:
 		var quote := price_quote(item_id)
 		if not bool(gate.ok):
 			result.message = str(gate.reason)
+		elif _is_shop_item(item_id):
+			_buy_shop_item(item, quote, result)
 		else:
 			match str(item.kind):
 				"weapon":
@@ -948,6 +1056,9 @@ func item_count(id: String) -> int:
 
 ## Authored hand-over/consumption hook (no use mechanics). Atomic.
 func remove_item(id: String, count = 1, reason: String = "handed over") -> bool:
+	# Wardrobe/bike purchases are permanent ownership, never consumable goods.
+	if _is_shop_item(id) and ShopCatalog.is_cosmetic(id):
+		return false
 	if not enabled or not items.has(id) or not _is_integer(count, 1, int(config.limits.stack)) or int(items[id]) < int(count):
 		return false
 	items[id] = int(items[id]) - int(count)
@@ -1721,6 +1832,17 @@ func _validate_state(data) -> String:
 	error = _validate_set(state.flags, {}, int(config.limits.flags), 0)
 	if not error.is_empty():
 		return "invalid flags: " + error
+	var equipped_slots := {}
+	for flag in state.flags:
+		if not str(flag).begins_with(SHOP_EQUIPPED_PREFIX):
+			continue
+		var id := str(flag).trim_prefix(SHOP_EQUIPPED_PREFIX)
+		if not _is_shop_item(id) or not ShopCatalog.is_cosmetic(id) or int(state.items.get(id, 0)) != 1:
+			return "invalid equipped shop item"
+		var slot := str(ShopCatalog.ITEMS[id].slot)
+		if equipped_slots.has(slot):
+			return "multiple equipped shop items in one slot"
+		equipped_slots[slot] = id
 	if not _is_integer(state.seq, 0, MAX_SEQ):
 		return "invalid sequence"
 	if not state.history is Array or state.history.size() > int(config.limits.history):

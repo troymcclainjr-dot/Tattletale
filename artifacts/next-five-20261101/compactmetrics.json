@@ -1,0 +1,928 @@
+{
+  "schema": 1,
+  "date": "2026-11-01",
+  "status": "Measured relocation fix, final integrated 600-second stationary endurance and 180-second traversal complete. No general FPS improvement claim.",
+  "environment": {
+    "render_resolution": [
+      1280,
+      720
+    ],
+    "quality": "balanced",
+    "render_scale": 1,
+    "fov_degrees": 68,
+    "uncapped": true,
+    "population": {
+      "ambient": 1200,
+      "daily": 40,
+      "traffic": 90
+    },
+    "background": "User videos and a separate playable game remained active; host contention was uncontrolled.",
+    "background_scope": "Earlier matched relocation diagnostics only; final integrated conditions and observed contention are recorded per run."
+  },
+  "teleport_bounds": {
+    "passed": {
+      "baseline": true,
+      "candidate": true
+    },
+    "player_solver": {
+      "baseline": {
+        "count": 1911,
+        "max_frame": 2588,
+        "max_usec": 213816,
+        "total_usec": 970503
+      },
+      "candidate": {
+        "count": 1921,
+        "max_frame": 3394,
+        "max_usec": 3316,
+        "total_usec": 464115
+      }
+    },
+    "frame_ms": {
+      "baseline": {
+        "count": 5435,
+        "max": 255.861,
+        "mean": 5.88953928242871,
+        "median": 4.046,
+        "min": 1.259,
+        "p95": 12.872,
+        "p99": 21.08,
+        "sum": 32009.646
+      },
+      "candidate": {
+        "count": 4980,
+        "max": 56.406,
+        "mean": 6.42916626506023,
+        "median": 4.611,
+        "min": 1.402,
+        "p95": 13.492,
+        "p99": 21.371,
+        "sum": 32017.248
+      }
+    },
+    "phase_max_ms": {
+      "baseline": {
+        "dumbarton_day": 38.378,
+        "dumbarton_night": 34.763,
+        "greenmount_day": 224.587,
+        "greenmount_night": 255.861,
+        "rose_hill_cator_day": 32.138,
+        "rose_hill_cator_night": 25.7,
+        "wyanoke_day": 26.485,
+        "wyanoke_night": 117.186
+      },
+      "candidate": {
+        "dumbarton_day": 40.398,
+        "dumbarton_night": 37.887,
+        "greenmount_day": 45.191,
+        "greenmount_night": 40.427,
+        "rose_hill_cator_day": 41.729,
+        "rose_hill_cator_night": 35.415,
+        "wyanoke_day": 24.998,
+        "wyanoke_night": 56.406
+      }
+    },
+    "all_spawn_capsules_clear": {
+      "baseline": true,
+      "candidate": true
+    },
+    "walked_m": {
+      "baseline": 65.8311738343909,
+      "candidate": 65.6417283387855
+    },
+    "matched_wyanoke_contact": [
+      {
+        "baseline_usec": 96797,
+        "candidate_usec": 3316,
+        "same_position": true,
+        "identical_contacts": true
+      }
+    ],
+    "solver_peak_reduction_percent": 98.449133834699,
+    "duration_seconds": 32,
+    "diagnostic_only": true,
+    "baseline_commit": "b8e04bc19d1b602973b651a9d39c0bf02f3b6025",
+    "source_files": 1826,
+    "changed_source_files": [
+      "scripts/city/city_player.gd"
+    ],
+    "identical_harness": true,
+    "provenance": {
+      "baseline": {
+        "path": ".work/priorities-five/session-validation/sustained-next-five-bounds-base-064567004300/result.json",
+        "sha256": "83194936b573b4bc3238b60fe1f66784d7899e930ba36522373694e3d5bad7f9"
+      },
+      "candidate": {
+        "path": ".work/priorities-five/session-validation/sustained-next-five-bounds-candidate-913762262000/result.json",
+        "sha256": "d0b5815b2e1ede7f356881e704bbf00de2ac238403ae2778e9d9a809315e1377"
+      }
+    },
+    "receipts": {
+      "baseline": {
+        "source_unchanged": true,
+        "exit_code": 0,
+        "timed_out": false,
+        "error_lines": 0
+      },
+      "candidate": {
+        "source_unchanged": true,
+        "exit_code": 0,
+        "timed_out": false,
+        "error_lines": 0
+      }
+    },
+    "interpretation": "Peak collision and relocation tails improved. Candidate median/p95 were worse; no overall FPS gain is claimed.",
+    "residual": "40-56ms transition frames remain, including detail refresh around22ms plus ordinary physics/rendering."
+  },
+  "traffic_dispatch": {
+    "control_state_comparisons": 12000,
+    "leader_comparisons": 7200,
+    "passed": true,
+    "pairs_per_gate": 6,
+    "calls_per_timing": 20000,
+    "alternating_order": "AB/BA",
+    "gates": {
+      "far_approach": {
+        "pairs": 6,
+        "baseline_median_usec_per_call": 2.4457500000000003,
+        "candidate_median_usec_per_call": 2.3542249999999996,
+        "median_paired_change_percent": -3.6909277290872007,
+        "candidate_faster_pairs": 5
+      },
+      "red_light": {
+        "pairs": 6,
+        "baseline_median_usec_per_call": 3.6266249999999998,
+        "candidate_median_usec_per_call": 3.6629750000000003,
+        "median_paired_change_percent": 0.9161001932032398,
+        "candidate_faster_pairs": 3
+      },
+      "leader_wait": {
+        "pairs": 6,
+        "baseline_median_usec_per_call": 3.2472000000000003,
+        "candidate_median_usec_per_call": 3.09965,
+        "median_paired_change_percent": -4.272374247514026,
+        "candidate_faster_pairs": 6
+      },
+      "foreign_reservation": {
+        "pairs": 6,
+        "baseline_median_usec_per_call": 3.534775,
+        "candidate_median_usec_per_call": 3.4949000000000003,
+        "median_paired_change_percent": -1.0598074614128539,
+        "candidate_faster_pairs": 4
+      },
+      "blocked_outgoing": {
+        "pairs": 6,
+        "baseline_median_usec_per_call": 5.1949000000000005,
+        "candidate_median_usec_per_call": 4.96055,
+        "median_paired_change_percent": -3.081974504651508,
+        "candidate_faster_pairs": 4
+      },
+      "unavailable_continuation": {
+        "pairs": 6,
+        "baseline_median_usec_per_call": 5.261475,
+        "candidate_median_usec_per_call": 5.2098,
+        "median_paired_change_percent": -1.122960930672512,
+        "candidate_faster_pairs": 4
+      },
+      "held_reservation": {
+        "pairs": 6,
+        "baseline_median_usec_per_call": 0.971,
+        "candidate_median_usec_per_call": 0.9463,
+        "median_paired_change_percent": -1.8282267503056615,
+        "candidate_faster_pairs": 5
+      }
+    },
+    "excluded_scenario": {
+      "id": 2,
+      "reason": "Warmup advanced stop dwell; timed branch was an active reservation, so it is excluded from stop-sign performance claims. The fixture was subsequently corrected."
+    },
+    "provenance": {
+      "path": ".work/next-five-20261101/traffic-dispatch.log",
+      "sha256": "168786ae8219e3d7ae4f23cec8dee323eef003f1dd805740ab596282a42bd900"
+    },
+    "interpretation": "Small per-gate CPU gains only; red-light result is inconclusive and no whole-frame gain follows."
+  },
+  "emergency_registry": {
+    "passed_checks": 22,
+    "failed_checks": 0,
+    "engine_mode": "headless",
+    "maximum_external_bodies": 4,
+    "fleet_population_unchanged": 90,
+    "purpose": "Separate obstacle registry for actual EMS bodies; safety integration, not a performance claim.",
+    "scope": "Initial registry validation only; later functional integration counts are recorded in ACCEPTANCE.md."
+  },
+  "steady_smoke": {
+    "passed": true,
+    "passed_checks": 19,
+    "provenance": {
+      "path": ".work/priorities-five/session-validation/sustained-next-five-physics-018540070500/result.json",
+      "sha256": "d443dc7029f401cc73f6e698055166d4b8f6c77b781caad248c9627330f41d33"
+    },
+    "requested_seconds": 60.0,
+    "measured_seconds": 60.010811,
+    "warmup_seconds": 30,
+    "steady_mode": "stationary",
+    "render_resolution": [
+      1280,
+      720
+    ],
+    "frame_metrics": {
+      "draw_calls": {
+        "count": 8750,
+        "max": 1154.0,
+        "mean": 1125.084,
+        "median": 1127.0,
+        "min": 1088.0,
+        "overflow": 0,
+        "p95": 1144.0,
+        "p99": 1149.0,
+        "percentile_bin_width": 1.0,
+        "percentiles_are_bin_upper_bounds": true,
+        "sum": 9844485.0
+      },
+      "frame_ms": {
+        "count": 8750,
+        "max": 31.983,
+        "mean": 6.85665599999998,
+        "median": 5.3,
+        "min": 2.724,
+        "overflow": 0,
+        "p95": 11.8,
+        "p99": 14.8,
+        "percentile_bin_width": 0.1,
+        "percentiles_are_bin_upper_bounds": true,
+        "sum": 59995.7399999998
+      },
+      "gpu_ms": {
+        "count": 8750,
+        "max": 5.40000009536743,
+        "mean": 2.70486925740923,
+        "median": 2.6,
+        "min": 1.56299996376038,
+        "overflow": 0,
+        "p95": 4.3,
+        "p99": 4.6,
+        "percentile_bin_width": 0.1,
+        "percentiles_are_bin_upper_bounds": true,
+        "sum": 23667.6060023308
+      },
+      "render_cpu_ms": {
+        "count": 8750,
+        "max": 6.51700019836426,
+        "mean": 2.41074125779016,
+        "median": 2.4,
+        "min": 1.47000002861023,
+        "overflow": 0,
+        "p95": 3.2,
+        "p99": 3.7,
+        "percentile_bin_width": 0.1,
+        "percentiles_are_bin_upper_bounds": true,
+        "sum": 21093.9860056639
+      }
+    },
+    "retained_frame_rows": 0,
+    "retained_histogram_bytes": 640032,
+    "retained_metric_samples": 13,
+    "interpretation": "Validates bounded instrumentation and live simulation; 60 seconds does not establish long-term memory stability."
+  },
+  "final_integrated_endurance": {
+    "status": "passed",
+    "requested_seconds": 600,
+    "measured_seconds": 600.005721,
+    "passed_checks": 19,
+    "failed_checks": 0,
+    "result": {
+      "path": ".work/priorities-five/session-validation/sustained-next-five-integrated-final-692403035600/result.json",
+      "sha256": "fc88220893cf65b87130a9c0b7c3305a55ccdbd7e460628eff1efd21e5fac8c4"
+    },
+    "receipt": {
+      "path": ".work/five-priorities-20261101/performance/next-five-integrated-final/sustained-next-five-integrated-final-692403035600/launch.json",
+      "sha256": "f8b2604d190083d7ade9609d7c333dcfd98470b104d72f20b77060dab8ae51bf"
+    },
+    "snapshot": {
+      "path": ".work/five-priorities-20261101/performance/next-five-integrated-final/source/snapshot.json",
+      "sha256": "30f20727e589d52b543adc62a41dd5161dbeb62b5782f0884dd1f2d3d97cec4f"
+    },
+    "samples": {
+      "path": ".work/priorities-five/session-validation/sustained-next-five-integrated-final-692403035600/samples.jsonl",
+      "sha256": "28db611bf947fef750f5d88c297dbba1b959b161113e371d35ea8d98b29a0147"
+    },
+    "process_telemetry": {
+      "path": ".work/five-priorities-20261101/performance/next-five-integrated-final/sustained-next-five-integrated-final-692403035600/process-telemetry.csv",
+      "sha256": "79732cee2059276f2b986e8e3664b43f78783f6c9920aef77748a01dc420841f"
+    },
+    "source_files": 1944,
+    "clean_run": true,
+    "exit_code": 0,
+    "timed_out": false,
+    "error_lines": 0,
+    "telemetry_errors": [],
+    "steady_mode": "stationary",
+    "warmup_seconds": 30,
+    "render_resolution": [
+      1280,
+      720
+    ],
+    "frame_metrics": {
+      "draw_calls": {
+        "count": 130445,
+        "max": 1136.0,
+        "mean": 1014.62947602438,
+        "median": 1003.0,
+        "min": 954.0,
+        "overflow": 0,
+        "p95": 1115.0,
+        "p99": 1131.0,
+        "percentile_bin_width": 1.0,
+        "percentiles_are_bin_upper_bounds": true,
+        "sum": 132353342.0
+      },
+      "frame_ms": {
+        "count": 130445,
+        "max": 41.718,
+        "mean": 4.5996096362451,
+        "median": 3.4,
+        "min": 2.015,
+        "overflow": 0,
+        "p95": 9.7,
+        "p99": 12.4,
+        "percentile_bin_width": 0.1,
+        "percentiles_are_bin_upper_bounds": true,
+        "sum": 599996.078999992
+      },
+      "gpu_ms": {
+        "count": 130445,
+        "max": 12.7270002365112,
+        "mean": 1.72303713273927,
+        "median": 1.6,
+        "min": 1.54100000858307,
+        "overflow": 0,
+        "p95": 2.3,
+        "p99": 2.5,
+        "percentile_bin_width": 0.1,
+        "percentiles_are_bin_upper_bounds": true,
+        "sum": 224761.578780174
+      },
+      "render_cpu_ms": {
+        "count": 130445,
+        "max": 6.80600023269653,
+        "mean": 1.84937081541316,
+        "median": 1.8,
+        "min": 1.28999996185303,
+        "overflow": 0,
+        "p95": 2.8,
+        "p99": 3.4,
+        "percentile_bin_width": 0.1,
+        "percentiles_are_bin_upper_bounds": true,
+        "sum": 241241.176016569
+      }
+    },
+    "population_ranges": {
+      "ambient": [
+        1200,
+        1200
+      ],
+      "daily": [
+        40,
+        40
+      ],
+      "traffic": [
+        90,
+        90
+      ]
+    },
+    "retained_frame_rows": 0,
+    "retained_histogram_bytes": 640032,
+    "retained_metric_samples": 121,
+    "memory_trends_bytes_and_counts": {
+      "memory_static": {
+        "first": 905071712.0,
+        "last": 906934896.0,
+        "peak": 906998436.0,
+        "delta": 1863184.0,
+        "per_second": 2764.2004208666804,
+        "samples": 121
+      },
+      "objects": {
+        "first": 19431.0,
+        "last": 19455.0,
+        "peak": 19479.0,
+        "delta": 24.0,
+        "per_second": 0.033573904707130765,
+        "samples": 121
+      },
+      "nodes": {
+        "first": 11146.0,
+        "last": 11146.0,
+        "peak": 11169.0,
+        "delta": 0.0,
+        "per_second": 0.01018955015176365,
+        "samples": 121
+      },
+      "orphans": {
+        "first": 0.0,
+        "last": 0.0,
+        "peak": 0.0,
+        "delta": 0.0,
+        "per_second": 0.0,
+        "samples": 121
+      }
+    },
+    "native_process_memory_trends_bytes": {
+      "private": {
+        "first": 3123568640.0,
+        "last": 3121233920.0,
+        "peak": 3124117504.0,
+        "delta": -2334720.0,
+        "per_second": -1550.9722425200334,
+        "samples": 2311
+      },
+      "working_set": {
+        "first": 2156122112.0,
+        "last": 2153132032.0,
+        "peak": 2156806144.0,
+        "delta": -2990080.0,
+        "per_second": -2815.770774359452,
+        "samples": 2311
+      }
+    },
+    "external_process_telemetry_valid": true,
+    "renderer_progress_verified": true,
+    "traffic_distance_delta_m": 147928.872463699,
+    "streaming_failures": 0,
+    "background_conditions": "User background videos remained allowed and no personal applications were stopped. Specific active applications were not inventoried; contention was uncontrolled. The separate-game observation belongs only to the earlier matched diagnostic.",
+    "observed_mean_other_logical_cores": 1.7638794789899146,
+    "interpretation": "Ten-minute stationary endurance passed, with no native process-memory escalation and no orphan nodes. Engine static memory rose 1.777 MiB (OLS +0.158 MiB/min); this finite run does not establish indefinite leak freedom. Histogram percentiles are upper-bin bounds, not exact percentiles. No before/after or general FPS claim.",
+    "current_and_frozen_manifests_matched_at_measurement_completion": true,
+    "post_measurement_changes": {
+      "scope": "Release validation tools only; gameplay scripts and assets remain equal to the measured snapshot.",
+      "changed_paths_relative_to_godot": [
+        "tools/export_city_release.py",
+        "tools/priorities_release_probe.gd"
+      ],
+      "purpose": "Correct stale standalone acceptance count from 17 named actors to exactly 19: 15 base, 2 police, 2 EMS.",
+      "actual_diff_keys_verified": true
+    }
+  },
+  "final_integrated_traversal": {
+    "status": "passed",
+    "requested_seconds": 180,
+    "measured_seconds": 180.016173,
+    "passed_checks": 37,
+    "failed_checks": 0,
+    "result": {
+      "path": ".work/priorities-five/session-validation/sustained-next-five-integrated-final-414022250600/result.json",
+      "sha256": "6a29462edede1b3e5b7b9c9a691500623cf232705614d85bf27944634ea7b8c2"
+    },
+    "receipt": {
+      "path": ".work/five-priorities-20261101/performance/next-five-integrated-final/sustained-next-five-integrated-final-414022250600/launch.json",
+      "sha256": "8f4e1e4b3b4c21c3abf51f66f20ed69c8808b05474605d630083cd4b98951035"
+    },
+    "snapshot": {
+      "path": ".work/five-priorities-20261101/performance/next-five-integrated-final/source/snapshot.json",
+      "sha256": "30f20727e589d52b543adc62a41dd5161dbeb62b5782f0884dd1f2d3d97cec4f"
+    },
+    "samples": {
+      "path": ".work/priorities-five/session-validation/sustained-next-five-integrated-final-414022250600/samples.jsonl",
+      "sha256": "5ec22f82656f3576af35fb4f9531ba975f3c1a3796753cc98accf73be3e2b532"
+    },
+    "frame_trace": {
+      "path": ".work/priorities-five/session-validation/sustained-next-five-integrated-final-414022250600/frames.json",
+      "sha256": "04c622aa57a8254b7c01521e013dcb44afc9d65a1ac7b8f4ba33151d2ad62ca7"
+    },
+    "process_telemetry": {
+      "path": ".work/five-priorities-20261101/performance/next-five-integrated-final/sustained-next-five-integrated-final-414022250600/process-telemetry.csv",
+      "sha256": "922b2be6958c63283f615923d66fe332dc0e8651a054fd3c3c941c2a71e48abc"
+    },
+    "source_files": 1944,
+    "same_snapshot_as_endurance": true,
+    "clean_run": true,
+    "exit_code": 0,
+    "timed_out": false,
+    "error_lines": 0,
+    "telemetry_errors": [],
+    "render_resolution": [
+      1280,
+      720
+    ],
+    "transition_profiling": true,
+    "diagnostic_only": false,
+    "frame_metrics": {
+      "draw_calls": {
+        "count": 38985,
+        "max": 1484.0,
+        "mean": 629.095113505194,
+        "median": 590.0,
+        "min": 122.0,
+        "p95": 1102.0,
+        "p99": 1257.0,
+        "sum": 24525273.0
+      },
+      "frame_ms": {
+        "count": 38985,
+        "max": 49.959,
+        "mean": 4.61731958445557,
+        "median": 3.234,
+        "min": 0.907,
+        "p95": 11.225,
+        "p99": 15.357,
+        "sum": 180006.204000001
+      },
+      "gpu_ms": {
+        "count": 38985,
+        "max": 3.31599998474121,
+        "mean": 1.40214118235873,
+        "median": 1.375,
+        "min": 0.819000005722046,
+        "p95": 2.09100008010864,
+        "p99": 2.41799998283386,
+        "sum": 54662.4739942551
+      },
+      "render_cpu_ms": {
+        "count": 38985,
+        "max": 6.99100017547607,
+        "mean": 1.49597619619066,
+        "median": 1.37999999523163,
+        "min": 0.354999989271164,
+        "p95": 2.86400008201599,
+        "p99": 3.76399993896484,
+        "sum": 58320.6320084929
+      }
+    },
+    "phase_frame_ms": {
+      "dumbarton_day": {
+        "count": 4020,
+        "max": 36.511,
+        "mean": 5.59772313432836,
+        "median": 4.219,
+        "min": 1.551,
+        "p95": 12.522,
+        "p99": 18.132,
+        "sum": 22502.847
+      },
+      "dumbarton_night": {
+        "count": 5919,
+        "max": 36.106,
+        "mean": 3.8010206115898,
+        "median": 2.581,
+        "min": 1.263,
+        "p95": 9.006,
+        "p99": 11.994,
+        "sum": 22498.241
+      },
+      "greenmount_day": {
+        "count": 4317,
+        "max": 48.199,
+        "mean": 5.2085432012972,
+        "median": 3.823,
+        "min": 1.303,
+        "p95": 12.45,
+        "p99": 17.657,
+        "sum": 22485.281
+      },
+      "greenmount_night": {
+        "count": 6424,
+        "max": 49.959,
+        "mean": 3.50242823785803,
+        "median": 2.784,
+        "min": 0.907,
+        "p95": 8.51,
+        "p99": 12.198,
+        "sum": 22499.599
+      },
+      "rose_hill_cator_day": {
+        "count": 5153,
+        "max": 31.408,
+        "mean": 4.36799805938288,
+        "median": 3.046,
+        "min": 1.327,
+        "p95": 10.059,
+        "p99": 13.278,
+        "sum": 22508.294
+      },
+      "rose_hill_cator_night": {
+        "count": 5599,
+        "max": 33.355,
+        "mean": 4.01856117163779,
+        "median": 2.727,
+        "min": 1.228,
+        "p95": 10.184,
+        "p99": 13.231,
+        "sum": 22499.924
+      },
+      "wyanoke_day": {
+        "count": 3257,
+        "max": 28.395,
+        "mean": 6.91093337427081,
+        "median": 5.699,
+        "min": 1.819,
+        "p95": 13.77,
+        "p99": 18.092,
+        "sum": 22508.91
+      },
+      "wyanoke_night": {
+        "count": 4296,
+        "max": 46.552,
+        "mean": 5.23815363128493,
+        "median": 3.532,
+        "min": 1.511,
+        "p95": 12.472,
+        "p99": 16.819,
+        "sum": 22503.108
+      }
+    },
+    "phase_count": 8,
+    "walked_m": 277.47449195385,
+    "population_ranges": {
+      "ambient": [
+        1200,
+        1200
+      ],
+      "daily": [
+        40,
+        40
+      ],
+      "traffic": [
+        90,
+        90
+      ]
+    },
+    "all_spawn_capsules_clear": true,
+    "player_solver": {
+      "count": 10801,
+      "max_frame": 17622,
+      "max_usec": 3351,
+      "total_usec": 2282947
+    },
+    "streaming_stage_maxima_usec": {
+      "activate_cell": 1369,
+      "add_child": 30,
+      "apply_quality": 14,
+      "bind_materials": 1258,
+      "building_refresh": 218,
+      "detail:CityAliveWorld": 230,
+      "detail:CityPowerGrid": 862,
+      "detail:CityVegetation": 16964,
+      "detail:CityYardDetails": 3434,
+      "detail:CivicDistrict": 82,
+      "detail:NeighborhoodDetails": 3233,
+      "detail:ParkBasketballCourts": 117,
+      "detail:ParkFurniture": 75,
+      "detail:ParkedNeighborhoodCars": 2011,
+      "detail:PorchAndStreetResidents": 4081,
+      "instantiate": 37,
+      "refresh_with_details": 26881,
+      "threaded_get_ready": 8
+    },
+    "slowest_frames": [
+      {
+        "seconds": 157.651753,
+        "phase": "greenmount_night",
+        "frame_ms": 49.959,
+        "gpu_ms": 1.49300003051758,
+        "render_cpu_ms": 3.12800002098084,
+        "draw_calls": 941.0,
+        "process_frame": 33440,
+        "process_cpu_ms": 8.547,
+        "physics_cpu_ms": 7.975,
+        "pipeline_canvas": 11.0,
+        "pipeline_mesh": 12.0,
+        "pipeline_surface": 98.0,
+        "pipeline_draw": 0.0,
+        "pipeline_specialization": 92.0,
+        "render_setup_cpu_ms": 0.011,
+        "process_to_predraw_ms": 33.025,
+        "predraw_to_postdraw_ms": 5.539,
+        "postdraw_to_process_ms": 11.338,
+        "player_physics_cpu_ms": 0.713,
+        "cycle_ms": 49.902,
+        "driver_ms": 0.01,
+        "process_pre_ms": 0.019,
+        "process_scripts_ms": 25.103,
+        "process_post_ms": 7.893,
+        "render_ms": 5.539,
+        "tail_ms": 0.044,
+        "physics_ticks": 2.0,
+        "physics_pre_ms": 0.035,
+        "physics_scripts_ms": 9.419,
+        "physics_engine_ms": 1.84,
+        "unattributed_ms": 0.0
+      },
+      {
+        "seconds": 67.753988,
+        "phase": "greenmount_day",
+        "frame_ms": 48.199,
+        "gpu_ms": 1.73800003528595,
+        "render_cpu_ms": 4.19999980926514,
+        "draw_calls": 1214.0,
+        "process_frame": 13315,
+        "process_cpu_ms": 8.153,
+        "physics_cpu_ms": 9.741,
+        "pipeline_canvas": 11.0,
+        "pipeline_mesh": 12.0,
+        "pipeline_surface": 98.0,
+        "pipeline_draw": 0.0,
+        "pipeline_specialization": 91.0,
+        "render_setup_cpu_ms": 0.016,
+        "process_to_predraw_ms": 35.258,
+        "predraw_to_postdraw_ms": 7.04,
+        "postdraw_to_process_ms": 5.854,
+        "player_physics_cpu_ms": 0.291,
+        "cycle_ms": 48.152,
+        "driver_ms": 0.016,
+        "process_pre_ms": 0.025,
+        "process_scripts_ms": 27.07,
+        "process_post_ms": 8.147,
+        "render_ms": 7.04,
+        "tail_ms": 0.076,
+        "physics_ticks": 1.0,
+        "physics_pre_ms": 0.013,
+        "physics_scripts_ms": 4.905,
+        "physics_engine_ms": 0.86,
+        "unattributed_ms": 0.0
+      },
+      {
+        "seconds": 90.257637,
+        "phase": "wyanoke_night",
+        "frame_ms": 46.552,
+        "gpu_ms": 1.21099996566772,
+        "render_cpu_ms": 3.50399994850159,
+        "draw_calls": 870.0,
+        "process_frame": 17636,
+        "process_cpu_ms": 19.735,
+        "physics_cpu_ms": 9.346,
+        "pipeline_canvas": 11.0,
+        "pipeline_mesh": 12.0,
+        "pipeline_surface": 98.0,
+        "pipeline_draw": 0.0,
+        "pipeline_specialization": 92.0,
+        "render_setup_cpu_ms": 0.017,
+        "process_to_predraw_ms": 31.562,
+        "predraw_to_postdraw_ms": 6.929,
+        "postdraw_to_process_ms": 7.959,
+        "player_physics_cpu_ms": 0.738,
+        "cycle_ms": 46.45,
+        "driver_ms": 0.024,
+        "process_pre_ms": 0.026,
+        "process_scripts_ms": 26.365,
+        "process_post_ms": 5.147,
+        "render_ms": 6.929,
+        "tail_ms": 0.075,
+        "physics_ticks": 1.0,
+        "physics_pre_ms": 0.015,
+        "physics_scripts_ms": 6.606,
+        "physics_engine_ms": 1.263,
+        "unattributed_ms": 0.0
+      }
+    ],
+    "frames_above_ms": {
+      "16.667": 251,
+      "33.333": 13,
+      "50": 0,
+      "100": 0
+    },
+    "periodic_samples": 44,
+    "orphan_nodes_peak": 0.0,
+    "renderer_progress_verified": true,
+    "external_process_telemetry_valid": true,
+    "traffic_distance_delta_m": 55528.211623251285,
+    "streaming_failures": 0,
+    "world_released": true,
+    "memory_trends_bytes_and_counts": {
+      "memory_static": {
+        "first": 898922106.0,
+        "last": 955792821.0,
+        "peak": 955792821.0,
+        "delta": 56870715.0,
+        "per_second": 319461.45076911343,
+        "samples": 44
+      },
+      "objects": {
+        "first": 19405.0,
+        "last": 18723.0,
+        "peak": 19635.0,
+        "delta": -682.0,
+        "per_second": -2.507474991984719,
+        "samples": 44
+      },
+      "nodes": {
+        "first": 11206.0,
+        "last": 10403.0,
+        "peak": 11256.0,
+        "delta": -803.0,
+        "per_second": -2.835975181473844,
+        "samples": 44
+      },
+      "orphans": {
+        "first": 0.0,
+        "last": 0.0,
+        "peak": 0.0,
+        "delta": 0.0,
+        "per_second": 0.0,
+        "samples": 44
+      }
+    },
+    "native_process_memory_trends_bytes": {
+      "private": {
+        "first": 3065200640.0,
+        "last": 3114151936.0,
+        "peak": 3115597824.0,
+        "delta": 48951296.0,
+        "per_second": 358040.80862721155,
+        "samples": 693
+      },
+      "working_set": {
+        "first": 2083368960.0,
+        "last": 2146177024.0,
+        "peak": 2146177024.0,
+        "delta": 62808064.0,
+        "per_second": 470200.9952892549,
+        "samples": 693
+      }
+    },
+    "memory_interpretation": "Traversal retains frame/physics/transition profiling arrays while moving through different streamed views; positive memory trends are not a leak test. Use bounded-instrumentation stationary endurance for the memory observation.",
+    "background_conditions": "Background videos remained allowed; specific active applications were not inventoried and contention was uncontrolled. The earlier separate-game observation is not asserted for this run.",
+    "observed_mean_other_logical_cores": 2.9154002971560287,
+    "interpretation": "All eight district/day-night phases passed, including collision-aware walking and real phone input. Player collision maximum 3.351 ms; residual 33-50 ms frames remain, with detail refresh maximum 26.881 ms. Profiling overhead is included. This is integrated acceptance, not matched before/after FPS evidence.",
+    "current_and_frozen_manifests_matched_at_measurement_completion": true,
+    "post_measurement_changes": {
+      "scope": "Release validation tools only; gameplay scripts and assets remain equal to the measured snapshot.",
+      "changed_paths_relative_to_godot": [
+        "tools/export_city_release.py",
+        "tools/priorities_release_probe.gd"
+      ],
+      "purpose": "Correct stale standalone acceptance count from 17 named actors to exactly 19: 15 base, 2 police, 2 EMS.",
+      "actual_diff_keys_verified": true
+    }
+  },
+  "movement_safety_regressions": {
+    "status": "passed",
+    "clean_runs": 7,
+    "result": [
+      {
+        "fixture": "city_movement_smoke",
+        "passed_checks": 114,
+        "failed_checks": 0,
+        "exit_code": 0,
+        "exit_code_source": "root serialized-run report",
+        "log": ".work/next-five-20261101/city_movement_smoke-final.log",
+        "log_sha256": "ec39646418f0ab93cd6af3abb74017c8a40b5dd3b0139d2a54ad013db0a04757"
+      },
+      {
+        "fixture": "city_jump_smoke",
+        "passed_checks": 15,
+        "failed_checks": 0,
+        "exit_code": 0,
+        "exit_code_source": "root serialized-run report",
+        "log": ".work/next-five-20261101/city_jump_smoke-final.log",
+        "log_sha256": "6abea4ce0320309f3b1e934c6d399c1f4164066c2dfef14f037242af4bfaef54"
+      },
+      {
+        "fixture": "city_vehicle_jump_smoke",
+        "passed_checks": null,
+        "failed_checks": 0,
+        "exit_code": 0,
+        "exit_code_source": "root serialized-run report",
+        "log": ".work/next-five-20261101/city_vehicle_jump_smoke-final.log",
+        "log_sha256": "7c33d2b2c6504e37410af27bde640b83123fc879d8ed7a2e24c9d9f1e9cd2325"
+      },
+      {
+        "fixture": "city_vehicle_impact_smoke",
+        "passed_checks": null,
+        "failed_checks": 0,
+        "exit_code": 0,
+        "exit_code_source": "root serialized-run report",
+        "log": ".work/next-five-20261101/city_vehicle_impact_smoke-final.log",
+        "log_sha256": "4a8bbdcbbf5fdc8b1273ecec1e4a3456225282da78d56c412d458772b817b80a"
+      },
+      {
+        "fixture": "city_bicycle_feel",
+        "passed_checks": 52,
+        "failed_checks": 0,
+        "exit_code": 0,
+        "exit_code_source": "root serialized-run report",
+        "log": ".work/next-five-20261101/city_bicycle_feel-final.log",
+        "log_sha256": "987fac5862153beee7900c2ca52d9c719c332252edbd02e3d0020a3d93fed5b5"
+      },
+      {
+        "fixture": "city_bicycle_curb_matrix",
+        "passed_checks": 2616,
+        "failed_checks": 0,
+        "exit_code": 0,
+        "exit_code_source": "root serialized-run report",
+        "log": ".work/next-five-20261101/city_bicycle_curb_matrix-final.log",
+        "log_sha256": "8ee5b9a0c0f84420e8b945f870c0967becf448cfdd9179b1a3df99c391acabc9",
+        "crossings": 277
+      },
+      {
+        "fixture": "city_bicycle_contact_integration",
+        "passed_checks": null,
+        "failed_checks": 0,
+        "exit_code": 0,
+        "exit_code_source": "root serialized-run report",
+        "log": ".work/next-five-20261101/city_bicycle_contact_integration-final.log",
+        "log_sha256": "43030bd0dbef2127dd3fac07c1f8b0977dc545b1e213f1216420e32169e0a3ca"
+      }
+    ]
+  }
+}

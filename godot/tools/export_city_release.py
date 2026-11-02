@@ -64,11 +64,19 @@ func _process(delta: float) -> void:
 	if not bool(level.get("ready_to_play")):
 		return
 	var crew_ids: Array[String] = []
+	var ems_crew_ids: Array[String] = []
+	var named_actors_valid := true
 	for actor_id in level.npcs.actors:
+		var actor = level.npcs.actors[actor_id]
+		named_actors_valid = named_actors_valid and is_instance_valid(actor) and actor.is_inside_tree()
 		if str(actor_id).begins_with("patrol_officer_cruiser_"):
 			crew_ids.append(str(actor_id))
+		elif str(actor_id).begins_with("ems_paramedic_"):
+			ems_crew_ids.append(str(actor_id))
 	crew_ids.sort()
+	ems_crew_ids.sort()
 	var expected_crew: Array[String] = ["patrol_officer_cruiser_1", "patrol_officer_cruiser_2"]
+	var expected_ems_crew: Array[String] = ["ems_paramedic_1", "ems_paramedic_2"]
 	var policy: Dictionary = PlayMode.status()
 	var pacifist: bool = not PlayMode.player_combat_enabled() and not PlayMode.player_driving_enabled() and not PlayMode.alignment_enabled()
 	var services: bool = level.get("incidents") != null and level.get("bicycle") != null and level.player.get("phone") != null
@@ -78,12 +86,14 @@ func _process(delta: float) -> void:
 	var report := {"main_scene": level.scene_file_path, "ready": true,
 		"editor": OS.has_feature("editor"), "debug": OS.is_debug_build(),
 		"crowd": level.npcs.crowd.residents.size(), "daily": level.residents.actors.size(),
-		"named": level.npcs.actors.size(), "base_named": level.npcs.actors.size() - crew_ids.size(),
-		"cruiser_crew_ids": crew_ids, "placeholders": Assets.used_placeholder.duplicate(),
+		"named": level.npcs.actors.size(), "base_named": level.npcs.actors.size() - crew_ids.size() - ems_crew_ids.size(),
+		"cruiser_crew_ids": crew_ids, "ems_crew_ids": ems_crew_ids, "named_actors_valid": named_actors_valid,
+		"placeholders": Assets.used_placeholder.duplicate(),
 		"engine": Engine.get_version_info(), "inspector": level.get("inspector") != null,
 		"play_mode": policy, "pacifist_policy": pacifist, "foundation_services": services,
 		"case_library": library, "case_library_ready": library_ready}
-	var ok: bool = not report.editor and not report.debug and report.crowd == 1200 and report.daily == 40 and report.named == 17 and report.base_named == 15 and crew_ids == expected_crew and report.placeholders.is_empty() and report.inspector and pacifist and services and library_ready
+	var named_population: bool = report.named == 19 and report.base_named == 15 and crew_ids == expected_crew and ems_crew_ids == expected_ems_crew and named_actors_valid
+	var ok: bool = not report.editor and not report.debug and report.crowd == 1200 and report.daily == 40 and named_population and report.placeholders.is_empty() and report.inspector and pacifist and services and library_ready
 	report["passed"] = ok
 	var output := FileAccess.open(destination, FileAccess.WRITE)
 	if output == null:

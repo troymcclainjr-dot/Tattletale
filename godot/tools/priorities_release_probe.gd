@@ -82,7 +82,28 @@ func _run() -> void:
 	report.offscreen_validation = bool(level.offscreen_validation)
 	_check(not report.editor and not report.debug, "release_template")
 	_check(level.scene_file_path == "res://scenes/city/pen_lucy.tscn", "main_scene")
-	_check(level.npcs.crowd.residents.size() == 1200 and level.residents.actors.size() == 40, "population")
+	var crew_ids: Array[String] = []
+	var ems_crew_ids: Array[String] = []
+	var named_actors_valid := true
+	for actor_id in level.npcs.actors:
+		var actor = level.npcs.actors[actor_id]
+		named_actors_valid = named_actors_valid and is_instance_valid(actor) and actor.is_inside_tree()
+		if str(actor_id).begins_with("patrol_officer_cruiser_"):
+			crew_ids.append(str(actor_id))
+		elif str(actor_id).begins_with("ems_paramedic_"):
+			ems_crew_ids.append(str(actor_id))
+	crew_ids.sort()
+	ems_crew_ids.sort()
+	var expected_crew: Array[String] = ["patrol_officer_cruiser_1", "patrol_officer_cruiser_2"]
+	var expected_ems_crew: Array[String] = ["ems_paramedic_1", "ems_paramedic_2"]
+	report.named = level.npcs.actors.size()
+	report.base_named = level.npcs.actors.size() - crew_ids.size() - ems_crew_ids.size()
+	report.cruiser_crew_ids = crew_ids
+	report.ems_crew_ids = ems_crew_ids
+	report.named_actors_valid = named_actors_valid
+	# Seated paramedics are registered but hidden; visibility is not population.
+	var named_population: bool = report.named == 19 and report.base_named == 15 and crew_ids == expected_crew and ems_crew_ids == expected_ems_crew and named_actors_valid
+	_check(level.npcs.crowd.residents.size() == 1200 and level.residents.actors.size() == 40 and named_population, "population")
 	_check(Assets.used_placeholder.is_empty(), "no_placeholders")
 	_check(level.get("inspector") != null, "inspector_present")
 	var resources: Array[String] = []

@@ -6,6 +6,8 @@ const C := preload("res://scripts/city/city_theme.gd")
 const T := C.T
 const Dialogue := preload("res://scripts/city/city_dialogue.gd")
 const Explorer := preload("res://scripts/city/city_player.gd")
+const Bindings := preload("res://scripts/city/city_input_bindings.gd")
+const Cosmetics := preload("res://scripts/city/city_player_cosmetics.gd")
 const SettingsPanel := preload("res://scripts/city/city_settings.gd")
 const MapOverlay := preload("res://scripts/city/city_map_overlay.gd")
 const PerfCounters := preload("res://scripts/city/city_perf_counters.gd")
@@ -110,6 +112,7 @@ var physics_samples: Dictionary = {"clock": [], "combat": [], "residents": [], "
 	"traffic_cars": [], "bicycle": [], "bicycle_reactions": [], "basketball": [], "police_assistance": [], "incidents": [], "driving": [], "vehicle_presentation": []}
 
 func _ready() -> void:
+	Bindings.ensure()
 	_old_auto_accept_quit = get_tree().auto_accept_quit
 	offscreen_validation = "--offscreen-validation" in OS.get_cmdline_args() or "--offscreen-validation" in OS.get_cmdline_user_args()
 	if offscreen_validation and DisplayServer.get_name() != "headless":
@@ -341,6 +344,7 @@ func _ready() -> void:
 	bicycle = load("res://scripts/city/city_bicycle.gd").new()
 	add_child(bicycle)
 	bicycle.setup(self)
+	progression.changed.connect(_apply_shop_cosmetics)
 	world_save = load("res://scripts/city/city_world_save.gd").new()
 	add_child(world_save)
 	world_save.setup(self)
@@ -355,6 +359,7 @@ func _ready() -> void:
 		streaming.refresh_now()
 		if vegetation != null:
 			await vegetation.prepare_presence(player.global_position, 55.0, 180.0)
+	_apply_shop_cosmetics()
 	bicycle_reactions = load("res://scripts/city/city_bicycle_reactions.gd").new()
 	add_child(bicycle_reactions)
 	bicycle_reactions.setup(self, bicycle)
@@ -663,6 +668,8 @@ func start_neighborhood_case(id: String) -> bool:
 		return false
 	if not missions.start_case(id):
 		return false
+	if basketball != null and basketball.has_method("cancel_activity"):
+		basketball.cancel_activity("Pickup game ended: a case is underway.")
 	resume_exploring()
 	return true
 
@@ -915,6 +922,9 @@ func toggle_map() -> void:
 	_map_overlay.map.fit_neighborhood()
 
 func _input(event: InputEvent) -> void:
+	if _settings != null and _settings.capture_binding(event):
+		get_viewport().set_input_as_handled()
+		return
 	if not ready_to_play:
 		return
 	if _dialogue != null and _dialogue.state.active:
@@ -949,6 +959,10 @@ func _input(event: InputEvent) -> void:
 			if basketball != null:
 				basketball.cancel_charge()
 			return
+	if Bindings.matches(event, "city_map"):
+		toggle_map()
+		get_viewport().set_input_as_handled()
+		return
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_ESCAPE:
 			if paused:
@@ -957,14 +971,14 @@ func _input(event: InputEvent) -> void:
 				pause_exploring()
 			get_viewport().set_input_as_handled()
 			return
-		if event.keycode == KEY_M:
-			toggle_map()
-			get_viewport().set_input_as_handled()
-			return
 		if _map_overlay.visible and event.keycode in [KEY_PLUS, KEY_EQUAL, KEY_KP_ADD, KEY_MINUS, KEY_KP_SUBTRACT]:
 			_map_overlay.map.zoom_by(0.8 if event.keycode in [KEY_MINUS, KEY_KP_SUBTRACT] else 1.25)
 			get_viewport().set_input_as_handled()
 			return
+	if Bindings.matches(event, "city_save"):
+		show_notice(save_progress())
+		get_viewport().set_input_as_handled()
+		return
 	if paused:
 		return
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
@@ -1004,11 +1018,10 @@ func _input(event: InputEvent) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not ready_to_play or paused or player.is_seated() or (player.phone != null and player.phone.active) or (law != null and law.recovering):
 		return
-	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_V:
-			player.toggle_view()
-		elif event.keycode == KEY_E:
-			interact()
+	if Bindings.matches(event, "city_view"):
+		player.toggle_view()
+	elif Bindings.matches(event, "city_interact"):
+		interact()
 	elif event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		player.look(event.screen_relative)
 
@@ -1252,12 +1265,12 @@ func _update_ui_content() -> void:
 		_objective.text = str(mark.get("label", "Next stop"))
 		_distance.text = "%dm away" % roundi(metres)
 		if _prompt.text.is_empty() and metres <= 6.0:
-			_prompt.text = "E  Check in"
+			_prompt.text = "%s  Check in" % Bindings.label("city_interact")
 	else:
 		_objective.text = "Neighborhood explored"
 		_distance.text = ""
 	if _prompt.text.is_empty() and not nearby_talker().is_empty():
-		_prompt.text = "E  Talk"
+		_prompt.text = "%s  Talk" % Bindings.label("city_interact")
 	_prompt.visible = not _prompt.text.is_empty() and not paused
 
 func _nearest_street(at := Vector3.INF) -> String:
@@ -1275,11 +1288,15 @@ func save_progress() -> String:
 	if world_save == null or not world_save.enabled:
 		return "Progress saving is unavailable in this session."
 	var result: Dictionary = world_save.request_save("manual")
+	if _settings != null and _settings.is_visible_in_tree():
+		_settings.refresh_checkpoint_status(str(result.message))
 	return str(result.message)
 
 func _on_pending_save_resolved(result: Dictionary) -> void:
 	if str(result.get("source", "")) == "manual" and ready_to_play:
 		show_notice(str(result.get("message", "Checkpoint request updated.")))
+	if _settings != null and _settings.is_visible_in_tree():
+		_settings.refresh_checkpoint_status(str(result.get("message", "Checkpoint request updated.")))
 
 func return_to_original() -> void:
 	_request_exit(true)
@@ -1358,7 +1375,12 @@ func _update_sandbox_ui() -> void:
 	if basketball != null:
 		var ball_prompt: String = basketball.interaction_prompt()
 		if not ball_prompt.is_empty():
-			lines.append(ball_prompt)
+			# Activity notices already appear through show_notice. Keep the live
+			# score, possession and charge controls here without repeating prose.
+			for line in ball_prompt.split("\n"):
+				var announced: bool = (_notice != null and line == _notice.text) or line in _notice_queue
+				if not line.is_empty() and not announced:
+					lines.append(line)
 	if progression != null:
 		lines.append(progression.hud_text())
 	if law != null:
@@ -1408,3 +1430,43 @@ func _on_incident_report_status(status: Dictionary) -> void:
 		return
 	if player != null and player.phone != null:
 		player.phone.set_report_status(str(status.get("text", "Report updated.")))
+
+func _apply_shop_cosmetics() -> void:
+	if progression == null or not progression.has_method("equipped_shop_color"):
+		return
+	var cloth: String = progression.equipped_shop_color("bandana_color")
+	if player != null and player.puppet != null:
+		Cosmetics.bandana(player.puppet.g, cloth)
+	if bicycle != null:
+		bicycle.apply_shop_cosmetics(progression.equipped_shop_color("bike_color"), cloth)
+
+func load_checkpoint() -> String:
+	if world_save == null or not world_save.enabled:
+		return "Checkpoint loading is unavailable in this session."
+	var blocked := str(world_save.checkpoint_blocker())
+	if not blocked.is_empty():
+		return "Wait before loading: " + blocked
+	var result: Dictionary = world_save.load_state()
+	if not bool(result.get("ok", false)):
+		return str(result.get("reason", "Could not load checkpoint."))
+	if basketball != null:
+		basketball.suspend(true)
+	_apply_shop_cosmetics()
+	_update_markers()
+	streaming.refresh_now()
+	return str(result.get("reason", "Checkpoint loaded. Continue when ready."))
+
+func start_fresh_world() -> String:
+	if world_save == null or not world_save.enabled:
+		return "Starting fresh is unavailable in this session."
+	var result: Error = world_save.archive_for_fresh_start()
+	if result != OK:
+		return world_save.last_result
+	call_deferred("_reload_fresh_visit")
+	return "Previous checkpoint preserved. Starting a new visit…"
+
+func _reload_fresh_visit() -> void:
+	var error := get_tree().reload_current_scene()
+	if error != OK:
+		world_save.enabled = true
+		show_notice("Could not restart the neighborhood. Previous checkpoint copies are preserved; you can save this visit or retry Start fresh.")

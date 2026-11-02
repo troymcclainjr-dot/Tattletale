@@ -98,6 +98,9 @@ static func walk(actor, destination: Vector3, delta: float, speed: float) -> int
 		return MOVE_BLOCKED
 	var before: Vector3 = actor.global_position
 	actor.move_and_collide(motion + Vector3.UP * rise)
+	if flat(before, actor.global_position) <= 0.001:
+		if not _try_step_up(actor, motion):
+			_try_step_down(actor, motion)
 	var travelled: float = actor.global_position.distance_to(before)
 	actor.distance_walked += travelled
 	actor.moving = travelled > 0.001
@@ -105,6 +108,81 @@ static func walk(actor, destination: Vector3, delta: float, speed: float) -> int
 	if actor.puppet != null:
 		actor.puppet.phase += travelled * 3.5
 	return MOVE_MOVED if actor.moving else MOVE_BLOCKED
+
+## The capsule's leading edge can meet a curb before its centre foot ray does.
+## Only a walkable ledge within the existing 23 cm step limit can raise the
+## body. Sweep the full capsule up (head clearance) and forward (walls/people)
+## before either movement; never change collision masks or assign a pose.
+static func _try_step_up(actor, motion: Vector3) -> bool:
+	if motion.length_squared() < 0.000001:
+		return false
+	var collider = actor.get("capsule")
+	if not collider is CollisionShape3D or not collider.shape is CapsuleShape3D:
+		return false
+	var at: Vector3 = actor.global_position
+	var radius: float = collider.shape.radius
+	var near: Dictionary = actor.walking_ground_at(at + motion)
+	var leading: Dictionary = actor.walking_ground_at(at + motion.normalized() * (radius + 0.06))
+	if near.is_empty() or leading.is_empty() or Vector3(near.normal).y < 0.7 or Vector3(leading.normal).y < 0.7:
+		return false
+	var ledge: float = Vector3(leading.position).y - Vector3(near.position).y
+	var rise: float = Vector3(leading.position).y + 0.012 - at.y
+	if ledge < 0.02 or ledge > 0.23 or rise < -0.025 or rise > 0.23:
+		return false
+	# Once lifted, retain that height while the front of the capsule is on the
+	# ledge and its centre has not crossed it yet. Normal grounding resumes there.
+	var up := Vector3.UP * maxf(0.0, rise)
+	var raised: Transform3D = actor.global_transform
+	if up.length_squared() > 0.000001 and actor.test_move(raised, up):
+		return false
+	raised.origin += up
+	if actor.test_move(raised, motion):
+		return false
+	var landing := raised
+	landing.origin += motion
+	var down := Vector3.UP * minf(0.0, Vector3(near.position).y + 0.012 - landing.origin.y)
+	if down.length() > 0.23:
+		return false
+	var support := KinematicCollision3D.new()
+	if down.length_squared() > 0.000001 and actor.test_move(landing, down, support):
+		var floor_body = support.get_collider()
+		if support.get_normal().y < 0.7 or not floor_body is CollisionObject3D \
+				or ((floor_body as CollisionObject3D).collision_layer & 1) == 0:
+			return false
+	if up.length_squared() > 0.000001:
+		actor.move_and_collide(up)
+	actor.move_and_collide(motion)
+	if down.length_squared() > 0.000001:
+		actor.move_and_collide(down)
+	return true
+
+## A descending centre ray can already see the street while the capsule's
+## trailing edge still rests on the curb. Walk horizontally away from that
+## edge before settling; a diagonal downward move would repeatedly hit its top.
+static func _try_step_down(actor, motion: Vector3) -> bool:
+	if motion.length_squared() < 0.000001:
+		return false
+	var at: Vector3 = actor.global_position
+	var ground: Dictionary = actor.walking_ground_at(at + motion)
+	if ground.is_empty() or Vector3(ground.normal).y < 0.7:
+		return false
+	var drop: float = at.y - (Vector3(ground.position).y + 0.012)
+	if drop < 0.005 or drop > 0.23:
+		return false
+	var landing: Transform3D = actor.global_transform
+	if actor.test_move(landing, motion):
+		return false
+	landing.origin += motion
+	var down := Vector3.DOWN * drop
+	var support := KinematicCollision3D.new()
+	if actor.test_move(landing, down, support):
+		var floor_body = support.get_collider()
+		if support.get_normal().y < 0.7 or not floor_body is CollisionObject3D \
+				or ((floor_body as CollisionObject3D).collision_layer & 1) == 0:
+			return false
+	actor.move_and_collide(motion)
+	actor.move_and_collide(down)
+	return true
 
 # --------------------------------------------------------------- queries
 

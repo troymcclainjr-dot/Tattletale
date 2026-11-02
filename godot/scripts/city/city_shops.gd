@@ -1,11 +1,13 @@
 extends Node3D
-## Five physical shops, one event-driven purchase panel. Progression alone owns
-## money/inventory transactions. This provider changes no player/combat/save state.
+## Five walk-in shells plus a civic pantry service window share one purchase
+## panel. Progression alone owns money, ownership, effects and saved selections.
 ## Shops whose kind city_play_mode.gd closes (gun stores while PLAYER_COMBAT is
 ## off) are still built in full but shuttered: no counter, prompt, interior
 ## checkpoint floor, purchase or map advertisement. Their map footprint stays.
 const PlayMode := preload("res://scripts/city/city_play_mode.gd")
 const Building := preload("res://scripts/city/city_shop_building.gd")
+const Catalog := preload("res://scripts/city/city_shop_catalog.gd")
+const Bindings := preload("res://scripts/city/city_input_bindings.gd")
 const C := preload("res://scripts/city/city_theme.gd")
 const T := C.T
 const DATA := "res://assets/data/pen_lucy_shops.json"
@@ -28,6 +30,7 @@ var stock_rows: VBoxContainer
 var _refresh_time := 0.0
 var _previous_mouse_mode := Input.MOUSE_MODE_CAPTURED
 var _removed: Array[String] = []
+var _interaction_label := ""
 
 func _load_definitions() -> void:
 	if definitions.is_empty():
@@ -68,8 +71,41 @@ func apply_before_collision(city: Node3D, district: Node3D) -> Dictionary:
 		models[str(entry.id)] = model
 		add_child(Building.approach(entry))
 	district._filter_level_metadata()
+	register_corner_store(district)
 	applied = true
 	return {"ok": true, "removed": _removed.duplicate(), "shops": models.size()}
+
+## Reuse the civic pantry and its map identity, without replacing another
+## building or publishing duplicate POIs. Called before collision setup.
+func register_corner_store(district: Node3D) -> bool:
+	if models.has(Catalog.SHOP_ID):
+		return true
+	var businesses: Variant = district.get("businesses")
+	if not businesses is Array:
+		return false
+	for source in businesses:
+		if str(source.get("id", "")) != Catalog.SHOP_ID or str(source.get("service", "")) != Catalog.SHOP_KIND:
+			continue
+		# Only advertise a counter when the actual civic storefront was built.
+		if district.get_node_or_null(NodePath(Catalog.SHOP_ID)) == null:
+			return false
+		var entry: Dictionary = source.duplicate(true)
+		entry.kind = Catalog.SHOP_KIND
+		entry.service_window = true
+		var model := Building.service_window(entry)
+		# Keep the exact supporting civic body, not a layer-wide exemption.
+		model.set_meta("foundation_body", district.get_node(NodePath(Catalog.SHOP_ID)).get_node_or_null("SolidArchitecture"))
+		add_child(model)
+		models[Catalog.SHOP_ID] = model
+		var target := model.to_global(model.get_meta("counter_local"))
+		entry.entry_world = [target.x, target.y, target.z]
+		definitions.append(entry)
+		for poi in district.map_pois:
+			if str(poi.get("id", "")) == Catalog.SHOP_ID:
+				poi.position = target
+				poi.label = str(entry.label) + " · Shop"
+		return true
+	return false
 
 func setup(owner_level: Node3D) -> void:
 	level = owner_level
@@ -83,6 +119,7 @@ func tick(delta: float) -> void:
 	if _refresh_time > 0.0 or level == null:
 		return
 	_refresh_time = 0.15
+	_refresh_interaction_labels()
 	var player: Node3D = level.get("player")
 	nearby_id = counter_at(player.global_position) if is_instance_valid(player) and _blocked_reason(is_open()).is_empty() else ""
 	if is_open() and nearby_id != active_id:
@@ -90,7 +127,17 @@ func tick(delta: float) -> void:
 	if hint != null:
 		hint.visible = not nearby_id.is_empty() and not is_open()
 		if hint.visible:
-			hint.text = "E · " + str(_entry(nearby_id).label)
+			hint.text = Bindings.label("city_interact") + " · " + str(_entry(nearby_id).label)
+
+func _refresh_interaction_labels() -> void:
+	var current := Bindings.label("city_interact")
+	if current == _interaction_label:
+		return
+	_interaction_label = current
+	for model in models.values():
+		var prompt: Label3D = model.get_node_or_null("ShopInteractionLabel")
+		if prompt != null:
+			prompt.text = str(prompt.get_meta("shop_prompt_format", "%s · Shop")) % current
 
 func _process(_delta: float) -> void:
 	# Gameplay tick stops during map/settings/inspector. Hide an already-visible
@@ -111,6 +158,9 @@ func _blocked_reason(own_modal := false) -> String:
 	var driving: Node = level.get("driving")
 	if driving != null and driving.get("active") == true:
 		return "Leave the vehicle first."
+	var bicycle: Node = level.get("bicycle")
+	if bicycle != null and bicycle.get("active") == true:
+		return "Step off your bicycle first."
 	var law: Node = level.get("law")
 	if law != null and law.get("recovering") == true:
 		return "Recovery is in progress."
@@ -137,6 +187,14 @@ func counter_at(world_position: Vector3) -> String:
 		var entry := _entry(str(identity))
 		if not is_entry_open(entry):
 			continue
+		if bool(entry.get("service_window", false)):
+			var target: Vector3 = model.get_meta("counter_local")
+			var front := float(entry.depth) * 0.5
+			# Customer must stand outside the facade, near this window, at ground
+			# height. No activation from inside the solid hull or on its roof.
+			if local.z > front + 0.5 and local.z < front + 2.5 and absf(local.x - target.x) < 1.4 and absf(local.y - target.y) < 1.2:
+				return str(identity)
+			continue
 		if absf(local.x) >= float(entry.width) * 0.5 - 0.25 or absf(local.z) >= float(entry.depth) * 0.5 - 0.25 or local.y < -0.15 or local.y > 2.2:
 			continue
 		var counter: Vector3 = model.get_meta("counter_local")
@@ -153,6 +211,8 @@ func walkable_floor_at(point: Vector3) -> Dictionary:
 		var model: Node3D = models[identity]
 		var local := model.to_local(point)
 		var entry := _entry(str(identity))
+		if bool(entry.get("service_window", false)):
+			continue
 		# A shuttered interior is never a checkpoint: an old save made inside
 		# falls back to a checked spot outside instead of a sealed room.
 		if not is_entry_open(entry):
@@ -176,6 +236,71 @@ func walkable_floor_at(point: Vector3) -> Dictionary:
 		return {"position": hit.position, "normal": hit.normal}
 	return {}
 
+## Customer apron only. The terrain export has a hole under this existing
+## foundation, so checkpoints need its actual exterior support. Exact model,
+## exterior bounds, near-floor height and a real top-surface hit are required;
+## root still verifies slope and the entire standing capsule independently.
+func exterior_floor_at(point: Vector3) -> Dictionary:
+	if not point.is_finite() or not is_inside_tree():
+		return {}
+	for identity in models:
+		var entry := _entry(str(identity))
+		if not bool(entry.get("service_window", false)) or not is_entry_open(entry):
+			continue
+		var model: Node3D = models[identity]
+		var local := model.to_local(point)
+		var counter: Vector3 = model.get_meta("counter_local")
+		var front := float(entry.depth) * 0.5
+		if local.z <= front + 0.5 or local.z >= front + 2.5 or absf(local.x - counter.x) >= 1.4:
+			continue
+		# Foundation top is authored at -0.025. Neither the shelf nor a roof
+		# nor a falling point can be snapped down into this approved region.
+		if local.y < -0.08 or local.y > 0.155:
+			continue
+		var foundation: Node = model.get_meta("foundation_body", null)
+		if not is_instance_valid(foundation):
+			continue
+		var floor_point := model.to_global(Vector3(local.x, -0.025, local.z))
+		var up := model.global_basis.y.normalized()
+		var ray := PhysicsRayQueryParameters3D.create(floor_point + up * 1.35, floor_point - up * 0.08, 2)
+		var hit := get_world_3d().direct_space_state.intersect_ray(ray)
+		if hit.is_empty() or hit.collider != foundation:
+			continue
+		if hit.position.distance_to(floor_point) <= 0.025 and hit.normal.dot(up) >= 0.99:
+			return hit
+	return {}
+
+## A player can rest against the pantry shelf within the physics contact
+## tolerance while checkpoint clearance requires another few millimetres.
+## Offer only centimetre-scale outward poses on this same verified apron.
+## The save owner must re-run its complete validation for every candidate.
+## This does not change the live player, the shelf, any margin, or collision.
+func exterior_checkpoint_candidates(point: Vector3) -> Array[Vector3]:
+	var result: Array[Vector3] = []
+	if not models.has(Catalog.SHOP_ID):
+		return result
+	var support := exterior_floor_at(point)
+	if support.is_empty():
+		return result
+	var model: Node3D = models[Catalog.SHOP_ID]
+	if support.collider != model.get_meta("foundation_body", null):
+		return result
+	var outward := model.global_basis.z
+	outward.y = 0.0
+	outward = outward.normalized()
+	for distance in [0.01, 0.02, 0.04]:
+		var candidate := point + outward * float(distance)
+		var floor_hit := exterior_floor_at(candidate)
+		if floor_hit.is_empty() or floor_hit.collider != support.collider:
+			continue
+		# Same side of the frontage and any other intervening obstacle. A
+		# full standing-capsule check still follows in the save owner.
+		var ray := PhysicsRayQueryParameters3D.create(point + Vector3.UP, candidate + Vector3.UP, 2 | 8 | 16)
+		if not get_world_3d().direct_space_state.intersect_ray(ray).is_empty():
+			continue
+		result.append(candidate)
+	return result
+
 func handle_input(event: InputEvent) -> bool:
 	if is_open():
 		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
@@ -183,7 +308,7 @@ func handle_input(event: InputEvent) -> bool:
 		# Mouse buttons reach GUI. Root must return from its world-input handler
 		# whenever is_open() was true, just as for the dialogue modal.
 		return event is InputEventKey or event is InputEventMouseMotion
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_E:
+	if Bindings.matches(event, "city_interact"):
 		var player: Node3D = level.get("player") if level != null else null
 		var identity := counter_at(player.global_position) if is_instance_valid(player) else ""
 		if not identity.is_empty():
@@ -209,7 +334,7 @@ func open_shop(identity: String) -> bool:
 	if entry.is_empty() or progression == null or not progression.has_method("catalog") or not is_instance_valid(player) or counter_at(player.global_position) != identity:
 		return false
 	active_id = identity
-	last_message = "Choose an item. Purchases are added to your inventory."
+	last_message = "Colors and clothing apply now. Food and drinks are used at the counter." if str(entry.kind) == Catalog.SHOP_KIND else "Choose an item. Purchases are added to your inventory."
 	_previous_mouse_mode = Input.mouse_mode
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	ui.show()
@@ -263,18 +388,32 @@ func _refresh_catalog() -> void:
 	for child in stock_rows.get_children():
 		stock_rows.remove_child(child)
 		child.queue_free()
+	var previous_category := ""
 	for item in progression.catalog(str(entry.kind)):
+		var category := str(item.get("category", ""))
+		if not category.is_empty() and category != previous_category:
+			var heading := Label.new()
+			heading.text = Catalog.category_label(category)
+			heading.add_theme_font_size_override("font_size", 19)
+			stock_rows.add_child(heading)
+			previous_category = category
 		var button := Button.new()
 		# This catalog uses paper cards; the shared dark-menu disabled colour
 		# would otherwise make lock reasons almost white on white.
 		button.add_theme_color_override("font_disabled_color", Color("626976"))
 		var price := int(item.get("price", 0))
 		var owned: bool = bool(item.get("owned", false)) and not bool(item.get("repeatable", false))
+		var can_equip := bool(item.get("can_equip", false))
+		var equipped := bool(item.get("equipped", false))
 		var locked := bool(item.get("locked", false))
-		var available: bool = bool(item.get("available", true)) and not owned and not locked
+		var available: bool = bool(item.get("available", true)) and (not owned or can_equip) and not equipped and not locked
 		var label := str(item.get("label", item.get("name", item.id)))
 		var status := "Buy"
-		if owned:
+		if equipped:
+			status = "Equipped"
+		elif owned and can_equip:
+			status = "Equip · free"
+		elif owned:
 			status = "Owned"
 		elif not available:
 			status = str(item.get("reason", "")).strip_edges()
@@ -284,6 +423,8 @@ func _refresh_catalog() -> void:
 			status = "Need $%d more" % (price - money)
 		elif bool(item.get("reissue", false)):
 			status = "Collect free"
+		elif category == "food":
+			status = "Buy & use"
 		button.text = "%s  ·  $%d  ·  %s" % [label, price, status]
 		var description := str(item.get("description", ""))
 		# Progression appends availability reasons to its descriptive text too.

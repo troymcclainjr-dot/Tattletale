@@ -169,10 +169,15 @@ static func _two_pack(H: float, b: Node3D, head: Node3D, hs: float, hy: float) -
 	Prim.sign("SNITCH 4 LIFE", 0.2 * H, 0.03 * H, ink, 0, 0.045 * H, 0.102 * H, b)
 	Prim.sign("NEIGHBORHOOD\nWATCH", 0.25 * H, 0.1 * H, ink, 0, 0.2 * H, -0.12 * H, b, PI)
 	var band := Prim.T(hs * 0.98, hs * 0.17, red, 0, hy + hs * 0.42, 0, head, 8, 24)
+	band.name = "Bandana"
+	# Prim.T returns a pivot; the rendered torus is its unnamed mesh child.
+	band.get_child(0).name = "BandanaBand"
 	band.rotation.x = PI / 2 + 0.12
-	Prim.M(Prim.sph(hs * 0.24, 10, 8), red, 0, hy + hs * 0.45, -hs * 0.98, head)
+	Prim.M(Prim.sph(hs * 0.24, 10, 8), red, 0, hy + hs * 0.45, -hs * 0.98, head).name = "BandanaKnot"
 	for s in [-1, 1]:
-		_rot(Prim.M(Prim.cone(hs * 0.13, hs * 0.6, 6), red, s * 0.07 * H * 0.4, hy + hs * 0.12, -hs * 1.08, head), -2.6, 0, s * 0.35)
+		var tail := Prim.M(Prim.cone(hs * 0.13, hs * 0.6, 6), red, s * 0.07 * H * 0.4, hy + hs * 0.12, -hs * 1.08, head)
+		tail.name = "BandanaTail%d" % s
+		_rot(tail, -2.6, 0, s * 0.35)
 	Prim.M(Prim.sph(0.01 * H, 6, 6), _c("#1a2030"), -0.042 * H, hy - 0.035 * H, 0.11 * H, head).scale = Vector3(0.8, 1.6, 0.6)
 	var ch := Prim.T(0.105 * H, 0.011 * H, gold, 0, 0.335 * H, 0.03 * H, b, 6, 22)
 	ch.rotation.x = PI / 2 - 0.45

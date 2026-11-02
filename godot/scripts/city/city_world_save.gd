@@ -645,9 +645,34 @@ func _put_player(at: Vector3, heading: float) -> void:
 	level._safe_position = at
 
 func safe_player_position(point: Vector3) -> Dictionary:
+	var exact := _validated_player_position(point)
+	if not exact.is_empty():
+		return exact
+	var shop_manager = level.get("shops")
+	if shop_manager == null or not shop_manager.has_method("exterior_checkpoint_candidates"):
+		return {}
+	# Only the pantry's verified customer apron may propose 1–4 cm outward
+	# clearance from its shelf. Every proposal passes ALL ordinary checks;
+	# there is no recursive retry, live-player movement or reduced margin.
+	var candidates: Array = shop_manager.exterior_checkpoint_candidates(point)
+	for index in mini(candidates.size(), 3):
+		var checked := _validated_player_position(candidates[index])
+		if not checked.is_empty():
+			return checked
+	return {}
+
+## Exact existing bounds, support, resident and full-capsule validation.
+func _validated_player_position(point: Vector3) -> Dictionary:
 	if not _in_bounds(point) or _inside_closed_shop(point):
 		return {}
 	var hit: Dictionary = level.ground_at(point)
+	# Service counters can stand on a shallow authored foundation above terrain.
+	# Only the shop's exact frontage/collider validation may supply that surface.
+	var shop_manager = level.get("shops")
+	if shop_manager != null and shop_manager.has_method("exterior_floor_at"):
+		var apron: Dictionary = shop_manager.exterior_floor_at(point)
+		if not apron.is_empty() and absf(point.y - apron.position.y) <= 0.35:
+			hit = apron
 	# Authored walk-in floors are valid checkpoints too; roofs/counters/vehicles
 	# remain excluded. The capsule clearance test below still applies.
 	if (hit.is_empty() or absf(point.y - hit.position.y) > 0.35) and level.get("shops") != null:
@@ -970,6 +995,12 @@ func _validate_deaths(value) -> String:
 func read_snapshot() -> Dictionary:
 	return _select_snapshot(_read_sources())
 
+## UI availability only: validation and world safety stay in load_state().
+## Do not call read_snapshot here: selecting an incompatible file can change
+## write protection. A sole temporary file is a supported recovery candidate.
+func has_checkpoint_candidates() -> bool:
+	return FileAccess.file_exists(path) or FileAccess.file_exists(path + ".bak") or FileAccess.file_exists(path + ".tmp")
+
 ## One parsed/validated view of all three slots for each read or write attempt.
 func _read_sources() -> Dictionary:
 	return {"checkpoint": _read(path), "backup": _read(path + ".bak"), "temporary": _read(path + ".tmp")}
@@ -1073,6 +1104,38 @@ func get_status() -> Dictionary:
 	return {"enabled": enabled, "path": path, "result": last_result, "saves": save_count, "write_blocked": _write_blocked, "age_seconds": maxf(0.0, Time.get_unix_time_from_system() - last_saved_unix) if last_saved_unix > 0.0 else -1.0, "preserved_files": _preserved_files.duplicate(),
 		"version": VERSION, "vehicle_persistence": _vehicle_api() != null, "blocked_reason": blocked_reason, "last_load": last_load.duplicate(true),
 		"mounted_checkpoints": Mounted.api(level) != null, "pending": _pending_status()}
+
+## Explicit Settings confirmation only. Keep all checkpoint candidates together;
+## roll back any partial rename before reporting failure. New scene starts empty.
+func archive_for_fresh_start() -> Error:
+	if not enabled:
+		last_result = "Starting fresh is unavailable in this session."
+		return ERR_UNAVAILABLE
+	var reason := checkpoint_blocker()
+	if not reason.is_empty():
+		last_result = "Wait before starting fresh: " + reason
+		return ERR_BUSY
+	var suffix := ".fresh-%d-%d" % [int(Time.get_unix_time_from_system()), Time.get_ticks_usec()]
+	var moved: Array[String] = []
+	for source in [path, path + ".bak", path + ".tmp"]:
+		if not FileAccess.file_exists(source):
+			continue
+		var result := DirAccess.rename_absolute(ProjectSettings.globalize_path(source), ProjectSettings.globalize_path(source + suffix))
+		if result != OK:
+			var rollback_ok := true
+			for previous in moved:
+				rollback_ok = DirAccess.rename_absolute(ProjectSettings.globalize_path(previous + suffix), ProjectSettings.globalize_path(previous)) == OK and rollback_ok
+			_write_blocked = not rollback_ok or _write_blocked
+			last_result = "Could not preserve the checkpoint. Your current visit is unchanged." if rollback_ok else "Checkpoint recovery copies remain on disk; saving is paused to protect them."
+			return result
+		moved.append(source)
+	for source in moved:
+		_preserved_files.append(source + suffix)
+	cancel_pending_save("starting fresh")
+	_write_blocked = false # All incompatible candidates are preserved outside the slot.
+	enabled = false # Prevent an autosave between confirmation and deferred reload.
+	last_result = "Previous checkpoint preserved."
+	return OK
 
 func recover_saving() -> Error:
 	# Explicit user action only: preserve every old candidate before allowing the

@@ -2,9 +2,10 @@ extends Control
 ## Per-user neighborhood settings; all controls change the running game immediately.
 const C := preload("res://scripts/city/city_theme.gd")
 const T := C.T
+const Bindings := preload("res://scripts/city/city_input_bindings.gd")
 const SAVE_PATH := "user://pen_lucy_settings.cfg"
 var level: Node3D
-var values: Dictionary = {"display": "Maximized", "quality": "Balanced", "clouds": "Volumetric", "vsync": true, "fps_cap": 120, "render_scale": 1.0, "master": 100.0, "music": 65.0, "sfx": 85.0, "sensitivity": 1.0, "invert_y": false, "fov": 68.0}
+var values: Dictionary = {"display": "Maximized", "quality": "Balanced", "clouds": "Volumetric", "vsync": true, "fps_cap": 120, "render_scale": 1.0, "master": 100.0, "music": 65.0, "sfx": 85.0, "sensitivity": 1.0, "invert_y": false, "fov": 68.0, "ui_scale": 1.0}
 var _save_feedback: Label
 var _recover_button: Button
 var _recover_confirmation: ConfirmationDialog
@@ -12,11 +13,21 @@ var _cases: AcceptDialog
 var _case_text: RichTextLabel
 var _credits: AcceptDialog
 var resume_button: Button
+var _binding_buttons: Dictionary = {}
+var _binding_feedback: Label
+var _waiting_action := ""
+var _load_confirmation: ConfirmationDialog
+var _fresh_confirmation: ConfirmationDialog
+var _load_button: Button
 
 func setup(owner_level: Node3D) -> void:
 	level = owner_level
+	Bindings.load_bindings()
 	theme = C.settings_theme()
 	name = "Settings"
+	visibility_changed.connect(func():
+		if not visible:
+			_waiting_action = "")
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var config := ConfigFile.new()
 	if config.load(SAVE_PATH) == OK:
@@ -48,6 +59,7 @@ func setup(owner_level: Node3D) -> void:
 	_choice(video, "Frame limit", "fps_cap", [30, 60, 90, 120, 144, 165, 240, 0])
 	_slider(video, "Render scale", "render_scale", 0.5, 1.0, 0.05, true)
 	_slider(video, "Camera field of view", "fov", 55.0, 90.0, 1.0)
+	_choice(video, "Text size", "ui_scale", [1.0, 1.1, 1.25])
 	var sound := _tab(tabs, "Audio")
 	_slider(sound, "Master volume", "master", 0, 100, 1)
 	_slider(sound, "Music volume", "music", 0, 100, 1)
@@ -55,13 +67,23 @@ func setup(owner_level: Node3D) -> void:
 	var controls := _tab(tabs, "Controls")
 	_slider(controls, "Mouse sensitivity", "sensitivity", 0.25, 3.0, 0.05)
 	_toggle(controls, "Invert vertical look", "invert_y")
-	_heading(controls, "WASD  Move     Shift  Run     Space  Jump\nMouse  Look     Hold right mouse  Orbit\nE  Talk / investigate / shop · V  First / third person\nF  Mount / dismount bicycle · W/S  Pedal / brake / reverse · A/D  Steer\nBike: Space  Ollie · Shift  Hard pedal\nBasketball: E pick up / drop · Aim with mouse\nHold LMB to charge; release to shoot · R return ball\nP  Phone: contacts, camera, photos, cases and police\nPhone: 1–5 select page · Esc back / close\nCamera: LMB / Enter photo; wheel zoom\nF5  Save progress · M  Map · Esc  Settings / Resume\nLeft / right arrows  Turn\nF6  Free-fly inspector (during play)\nInspector: WASD fly; E/Space up; Q down; Shift boost\nWheel speed; Ctrl precision; F7 copy; F8 screenshot\nConversations: E / Enter / Space continue; arrows choose; Esc leave\nMap: wheel or + / − to zoom; drag to pan\nGather evidence, speak with neighbors, and report incidents through your phone.", 18)
+	_heading(controls, "Choose an action, then press a key. Esc cancels. Duplicate keys are refused. Mouse aiming and menu navigation remain available.", 18)
+	_binding_feedback = _heading(controls, "", 16)
+	for action in Bindings.DEFAULTS:
+		var binding_row := _row(controls, str(Bindings.TITLES[action]))
+		var bind_button := _button(binding_row, Bindings.label(action), _begin_rebind.bind(str(action)))
+		bind_button.custom_minimum_size.x = 180
+		_binding_buttons[action] = bind_button
+	_button(controls, "Reset controls", _reset_bindings)
+	_heading(controls, "Hold right mouse to orbit. Bicycle steering follows the bicycle, independent of the camera.\nPhone: 1–5 pages; Enter confirms; Esc back. Conversations: Enter continues; arrows choose.\nMap: wheel or + / − zoom; drag to pan. F6 inspector; F7 copy; F8 screenshot.", 18)
 	var row := HFlowContainer.new()
 	row.add_theme_constant_override("h_separation", 12)
 	column.add_child(row)
 	resume_button = _button(row, "Resume", level.resume_exploring)
 	_button(row, "Return to starting corner", func(): level.spawn_player(); level.resume_exploring())
-	_button(row, "Save progress", func(): _save_feedback.text = level.save_progress())
+	_button(row, "Save progress", func(): refresh_checkpoint_status(str(level.save_progress())))
+	_load_button = _button(row, "Load checkpoint", _confirm_load)
+	_button(row, "Start fresh…", _confirm_fresh)
 	_recover_button = _button(row, "Recover saving…", _confirm_recovery)
 	_recover_button.hide()
 	_button(row, "Main menu", level.return_to_original)
@@ -74,10 +96,16 @@ func setup(owner_level: Node3D) -> void:
 	column.add_child(_save_feedback)
 	hide()
 
-func refresh_checkpoint_status() -> void:
+func refresh_checkpoint_status(feedback := "") -> void:
 	var save: Node = level.get("world_save")
 	var blocked: bool = save != null and bool(save.get_status().write_blocked)
 	_recover_button.visible = blocked
+	_load_button.disabled = save == null or not save.enabled or not save.has_checkpoint_candidates()
+	# Operation feedback must survive refreshing button availability in this
+	# same open menu (first save, temporary recovery, or a refused operation).
+	if not feedback.is_empty():
+		_save_feedback.text = feedback
+		return
 	if blocked:
 		_save_feedback.text = "Saving is paused: %s. Your previous checkpoint is preserved." % save.last_result
 	elif save != null and save.enabled:
@@ -105,6 +133,7 @@ func _show_cases() -> void:
 	else:
 		lines.append("Cases are not available in this scene.")
 	_case_text.text = "\n".join(lines)
+	apply_text_scale()
 	_cases.popup_centered()
 
 func _show_credits() -> void:
@@ -116,6 +145,7 @@ func _show_credits() -> void:
 		text.text = FileAccess.get_file_as_string("res://assets/data/release_notices.txt") if FileAccess.file_exists("res://assets/data/release_notices.txt") else "Map data © OpenStreetMap contributors\nhttps://www.openstreetmap.org/copyright\n\nBuilt with Godot Engine."
 		_credits.add_child(text)
 		add_child(_credits)
+	apply_text_scale()
 	_credits.popup_centered()
 
 func _confirm_recovery() -> void:
@@ -126,9 +156,9 @@ func _confirm_recovery() -> void:
 		_recover_confirmation.ok_button_text = "Preserve old save and continue"
 		_recover_confirmation.confirmed.connect(func():
 			var result: Error = level.world_save.recover_saving()
-			_save_feedback.text = "Stop on solid ground before recovering saving." if result == ERR_BUSY else str(level.world_save.last_result)
-			_recover_button.visible = bool(level.world_save.get_status().write_blocked))
+			refresh_checkpoint_status("Stop on solid ground before recovering saving." if result == ERR_BUSY else str(level.world_save.last_result)))
 		add_child(_recover_confirmation)
+	_prepare_confirmation(_recover_confirmation)
 	_recover_confirmation.popup_centered(Vector2i(580, 180))
 
 func _sanitize() -> void:
@@ -139,6 +169,7 @@ func _sanitize() -> void:
 	if values.clouds not in ["Off", "Simple", "Volumetric"]:
 		values.clouds = "Volumetric"
 	values.render_scale = clampf(float(values.render_scale), 0.5, 1.0)
+	values.ui_scale = clampf(float(values.ui_scale), 1.0, 1.25)
 	values.fov = clampf(float(values.fov), 55.0, 90.0)
 	values.sensitivity = clampf(float(values.sensitivity), 0.25, 3.0)
 	values.fps_cap = clampi(int(values.fps_cap), 0, 360)
@@ -147,6 +178,8 @@ func _sanitize() -> void:
 
 func apply_settings(initial := false, changed_key := "") -> void:
 	_sanitize()
+	if changed_key.is_empty() or changed_key == "ui_scale":
+		apply_text_scale()
 	var capture_run := DisplayServer.get_name() == "headless"
 	for argument in OS.get_cmdline_args():
 		if argument == "--resolution" or argument.begins_with("--resolution=") or argument == "--headless":
@@ -230,7 +263,7 @@ func _choice(parent: Node, title: String, key: String, options: Array) -> void:
 	choice.custom_minimum_size = Vector2(240, 40)
 	row.add_child(choice)
 	for i in options.size():
-		choice.add_item("Unlimited" if key == "fps_cap" and int(options[i]) == 0 else str(options[i]))
+		choice.add_item(("%d%%" % roundi(float(options[i]) * 100)) if key == "ui_scale" else ("Unlimited" if key == "fps_cap" and int(options[i]) == 0 else str(options[i])))
 		if options[i] == values[key]:
 			choice.select(i)
 	choice.item_selected.connect(func(index: int): _change(key, options[index]))
@@ -287,3 +320,101 @@ func _button(parent: Node, text: String, action: Callable) -> Button:
 	parent.add_child(button)
 	button.pressed.connect(action)
 	return button
+
+func _begin_rebind(action: String) -> void:
+	_waiting_action = action
+	_binding_feedback.text = "Press a key for %s; Esc cancels." % Bindings.TITLES[action]
+	_binding_buttons[action].release_focus()
+
+## Called before the level's Escape/map routing, including while paused.
+func capture_binding(event: InputEvent) -> bool:
+	if not visible or _waiting_action.is_empty():
+		return false
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_ESCAPE or event.physical_keycode == KEY_ESCAPE:
+			_waiting_action = ""
+			_binding_feedback.text = "Binding cancelled."
+			return true
+		var code: int = event.physical_keycode if event.physical_keycode != 0 else event.keycode
+		_finish_rebind(code)
+	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if _waiting_action == "city_ball_shoot":
+			_finish_rebind(-MOUSE_BUTTON_LEFT)
+	return true
+
+func _finish_rebind(code: int) -> void:
+	var message := Bindings.rebind(_waiting_action, code)
+	_binding_feedback.text = "Bound %s to %s." % [Bindings.TITLES[_waiting_action], Bindings.label(_waiting_action)] if message.is_empty() else message
+	_refresh_bindings()
+	_waiting_action = ""
+
+func _refresh_bindings() -> void:
+	for action in _binding_buttons:
+		_binding_buttons[action].text = Bindings.label(action)
+
+func _reset_bindings() -> void:
+	_waiting_action = ""
+	var result := Bindings.reset()
+	_refresh_bindings()
+	_binding_feedback.text = "Default controls restored." if result == OK else "Defaults restored for this visit, but could not be saved."
+
+func _confirm_load() -> void:
+	if _load_confirmation == null:
+		_load_confirmation = ConfirmationDialog.new()
+		_load_confirmation.title = "Load your checkpoint?"
+		_load_confirmation.dialog_text = "Unsaved progress from this visit will be replaced. The checkpoint is validated before it is loaded."
+		_load_confirmation.ok_button_text = "Load checkpoint"
+		_load_confirmation.confirmed.connect(func():
+			if level.has_method("load_checkpoint"):
+				refresh_checkpoint_status(str(level.load_checkpoint())))
+		add_child(_load_confirmation)
+	_prepare_confirmation(_load_confirmation)
+	_load_confirmation.popup_centered(Vector2i(580, 180))
+
+func _confirm_fresh() -> void:
+	if _fresh_confirmation == null:
+		_fresh_confirmation = ConfirmationDialog.new()
+		_fresh_confirmation.title = "Start a fresh neighborhood?"
+		_fresh_confirmation.dialog_text = "Your existing checkpoint will be preserved as a recovery copy. A new visit starts at the starting corner with fresh progress."
+		_fresh_confirmation.ok_button_text = "Preserve checkpoint and start fresh"
+		_fresh_confirmation.confirmed.connect(func():
+			if level.has_method("start_fresh_world"):
+				refresh_checkpoint_status(str(level.start_fresh_world())))
+		add_child(_fresh_confirmation)
+	_prepare_confirmation(_fresh_confirmation)
+	_fresh_confirmation.popup_centered(Vector2i(580, 180))
+
+func _prepare_confirmation(dialog: ConfirmationDialog) -> void:
+	# Dialog text/buttons are internal children, outside the ordinary UI walk.
+	# Wrap long explanations so larger text grows vertically within the viewport.
+	dialog.dialog_autowrap = true
+	apply_text_scale_to(dialog.get_label())
+	apply_text_scale_to(dialog.get_ok_button())
+	apply_text_scale_to(dialog.get_cancel_button())
+
+## Scale fonts, not the viewport: anchors, hit targets and scroll bounds stay put.
+## Cache original sizes so repeated changes never compound.
+func apply_text_scale() -> void:
+	_scale_text_tree(get_parent(), float(values.ui_scale))
+
+func apply_text_scale_to(node: Node) -> void:
+	if node != null:
+		_scale_text_tree(node, float(values.ui_scale))
+
+func _scale_text_tree(node: Node, factor: float) -> void:
+	if node is Label and node.label_settings != null:
+		if not node.has_meta("city_base_font_size"):
+			node.set_meta("city_base_font_size", node.label_settings.font_size)
+			node.label_settings = node.label_settings.duplicate()
+		node.label_settings.font_size = roundi(float(node.get_meta("city_base_font_size")) * factor)
+	elif node is Label or node is Button or node is TabBar:
+		if not node.has_meta("city_base_font_size"):
+			node.set_meta("city_base_font_size", node.get_theme_font_size("font_size"))
+		node.add_theme_font_size_override("font_size", roundi(float(node.get_meta("city_base_font_size")) * factor))
+	elif node is RichTextLabel:
+		for slot in ["normal_font_size", "bold_font_size", "italics_font_size", "bold_italics_font_size", "mono_font_size"]:
+			if not node.has_meta("city_base_" + slot):
+				node.set_meta("city_base_" + slot, node.get_theme_font_size(slot))
+			node.add_theme_font_size_override(slot, roundi(float(node.get_meta("city_base_" + slot)) * factor))
+	for child in node.get_children():
+		_scale_text_tree(child, factor)

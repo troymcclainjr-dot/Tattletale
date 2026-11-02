@@ -19,6 +19,13 @@ const MAX_FAR_DAMAGE_UPDATES := 8
 # Cars and parked colliders near an externally driven car keep physics
 # presence even far from the explorer, so a cruiser never passes through them.
 const EXTERNAL_PRESENCE_RADIUS := 40.0
+const MAX_EMERGENCY_VEHICLES := 4
+const MAX_EMERGENCY_JUNCTIONS_PER_BODY := 2
+# Separate physical obstacles, never AI traffic identities or player-owned cars.
+var emergency_vehicles: Array[Node3D] = []
+var _emergency_half_extents: Dictionary = {}
+# Node name -> body instance ID; at most eight shared junction leases.
+var _emergency_junctions: Dictionary = {}
 var _external_presence := false
 var external_claims := 0
 var external_releases := 0
@@ -28,7 +35,7 @@ var far_damage_peak_updates := 0
 var leader_candidate_checks := 0
 var leader_full_pair_checks := 0
 var spawn_street_counts: Dictionary = {}
-var network: RefCounted
+var network: Network
 var reservations: Dictionary = {}
 var junction_transfers := 0
 var _control_clock := 0.0
@@ -242,6 +249,9 @@ func _update_presence_impl(prospective: Node3D = null) -> void:
 	for car in vehicles:
 		if is_instance_valid(car) and (not car.external_owner.is_empty() or car == prospective):
 			external.append(car.global_position)
+	_prune_emergency_vehicles()
+	for body in emergency_vehicles:
+		external.append(body.global_position)
 	if external.is_empty():
 		for car in vehicles:
 			car.set_presence(center)
@@ -290,10 +300,12 @@ func _update_leaders_impl() -> void:
 		if is_instance_valid(car) and not vehicles.has(car):
 			fleet.append(car)
 	var omni := PackedByteArray()
+	var damaged := PackedByteArray()
 	for i in fleet.size():
-		var car := fleet[i]
+		var car := fleet[i] as Vehicle
 		var point := car.global_position
 		positions.append(point)
+		damaged.append(int(not car.flat_tires.is_empty()))
 		# A punctured car's body can yaw across its lane. Following priority is
 		# still based on lane travel, not the temporary steering/skid direction.
 		var heading: float = car._route_heading if not car.flat_tires.is_empty() else car.yaw
@@ -308,7 +320,7 @@ func _update_leaders_impl() -> void:
 	leader_candidate_checks = 0
 	leader_full_pair_checks = vehicles.size() * maxi(0, vehicles.size() - 1)
 	for i in vehicles.size():
-		var car := vehicles[i]
+		var car := vehicles[i] as Vehicle
 		car.leader_distance = INF
 		if not car.external_owner.is_empty():
 			continue # Police steer their own claimed car; it still leads others.
@@ -330,10 +342,156 @@ func _update_leaders_impl() -> void:
 					var along := delta.dot(forward)
 					if along <= 0 or along > 45.0:
 						continue
-					var corridor := 2.95 if not car.flat_tires.is_empty() or not fleet[j].flat_tires.is_empty() else 1.85
+					var corridor := 2.95 if damaged[i] != 0 or damaged[j] != 0 else 1.85
 					if (forward.dot(headings[j]) < 0.60 and omni[j] == 0) or absf(delta.dot(right)) > corridor:
 						continue
 					car.leader_distance = minf(car.leader_distance, maxf(0, along - Vehicle.BODY_SIZE.z - 1.8))
+	_update_emergency_leaders()
+
+## A bounded external body registry, independent of fleet population/ownership.
+## The hull is measured once; re-register after changing collision geometry.
+func register_emergency_vehicle(body: Node3D) -> bool:
+	if not is_instance_valid(body) or not body.is_inside_tree() or vehicles.has(body) or player_fleet.has(body):
+		return false
+	_prune_emergency_vehicles()
+	if not emergency_vehicles.has(body) and emergency_vehicles.size() >= MAX_EMERGENCY_VEHICLES:
+		return false
+	var half := _emergency_bounds(body)
+	if not half.is_finite() or half.x <= 0.0 or half.z <= 0.0:
+		return false
+	if not emergency_vehicles.has(body):
+		emergency_vehicles.append(body)
+	_emergency_half_extents[body.get_instance_id()] = half
+	if is_instance_valid(level):
+		_update_presence()
+	_update_leaders()
+	return true
+
+func unregister_emergency_vehicle(body: Node3D) -> bool:
+	if not is_instance_valid(body) or not emergency_vehicles.has(body):
+		return false
+	for node in _emergency_junctions.keys():
+		if int(_emergency_junctions[node]) == body.get_instance_id():
+			release_emergency_junction(body, str(node))
+	emergency_vehicles.erase(body)
+	_emergency_half_extents.erase(body.get_instance_id())
+	if is_instance_valid(level):
+		_update_presence()
+	_update_leaders()
+	return true
+
+## The driver owns approach eligibility and rear clearance. These leases use
+## ordinary traffic's existing admission check and never expire under a body.
+func claim_emergency_junction(body: Node3D, node: String) -> bool:
+	_prune_emergency_vehicles()
+	if not is_instance_valid(body) or not body.is_inside_tree() or body.is_queued_for_deletion() \
+		or not emergency_vehicles.has(body) or node.is_empty() or network == null or not network.nodes.has(node):
+		return false
+	var holder = reservations.get(node)
+	if is_instance_valid(holder) and holder != body:
+		return false
+	var identity := body.get_instance_id()
+	var owned := 0
+	for key in _emergency_junctions:
+		if int(_emergency_junctions[key]) == identity:
+			if str(key) == node:
+				return holder == body
+			owned += 1
+	if owned >= MAX_EMERGENCY_JUNCTIONS_PER_BODY:
+		return false
+	reservations[node] = body
+	_emergency_junctions[node] = identity
+	return true
+
+func release_emergency_junction(body: Node3D, node: String) -> bool:
+	if not is_instance_valid(body) or int(_emergency_junctions.get(node, 0)) != body.get_instance_id():
+		return false
+	_emergency_junctions.erase(node)
+	if reservations.get(node) != body:
+		return false
+	reservations.erase(node)
+	return true
+
+func _prune_emergency_vehicles() -> void:
+	for index in range(emergency_vehicles.size() - 1, -1, -1):
+		if not is_instance_valid(emergency_vehicles[index]):
+			emergency_vehicles.remove_at(index)
+	# At most four entries: remove cached bounds for freed bodies as well.
+	for identity in _emergency_half_extents.keys():
+		if not is_instance_id_valid(int(identity)):
+			_emergency_half_extents.erase(identity)
+	for node in _emergency_junctions.keys():
+		var identity := int(_emergency_junctions[node])
+		var body = instance_from_id(identity) if is_instance_id_valid(identity) else null
+		var holder = reservations.get(node)
+		if not is_instance_valid(body) or not body.is_inside_tree() or not emergency_vehicles.has(body):
+			if not is_instance_valid(holder) or holder == body:
+				reservations.erase(node)
+			_emergency_junctions.erase(node)
+		elif holder != body:
+			# Defensive cleanup must never remove a replacement ordinary holder.
+			_emergency_junctions.erase(node)
+
+func _emergency_bounds(body: Node3D) -> Vector3:
+	var half := Vector3.ZERO
+	var supplied: Variant = body.get_meta("traffic_obstacle_half_extents", Vector2.ZERO)
+	if supplied is Vector2 and supplied.is_finite() and supplied.x > 0.0 and supplied.y > 0.0:
+		half = Vector3(supplied.x, 0.0, supplied.y)
+	var inverse := body.global_transform.affine_inverse()
+	for child in body.find_children("*", "CollisionShape3D", true, false):
+		var collider := child as CollisionShape3D
+		if collider.shape == null or collider.disabled:
+			continue
+		var owner_body := collider.get_parent()
+		while owner_body != null and not owner_body is CollisionObject3D:
+			owner_body = owner_body.get_parent()
+		if owner_body != body:
+			continue # A separately owned passenger/child body is not this hull.
+		var bounds := collider.shape.get_debug_mesh().get_aabb()
+		var relative := inverse * collider.global_transform
+		for corner in 8:
+			var point: Vector3 = relative * bounds.get_endpoint(corner)
+			half.x = maxf(half.x, absf(point.x))
+			half.y = maxf(half.y, absf(point.y))
+			half.z = maxf(half.z, absf(point.z))
+	return half
+
+func _emergency_projection(body: Node3D, axis: Vector3) -> float:
+	var half: Vector3 = _emergency_half_extents[body.get_instance_id()]
+	return absf(body.global_basis.x.dot(axis)) * half.x + absf(body.global_basis.y.dot(axis)) * half.y + absf(body.global_basis.z.dot(axis)) * half.z
+
+func _update_emergency_leaders() -> void:
+	if emergency_vehicles.is_empty():
+		return
+	_prune_emergency_vehicles()
+	for entry in vehicles:
+		var car := entry as Vehicle
+		if not is_instance_valid(car) or not car.external_owner.is_empty():
+			continue
+		var heading := car._route_heading if not car.flat_tires.is_empty() else car.yaw
+		var forward := Vector3(sin(heading), 0.0, cos(heading))
+		var right := forward.cross(Vector3.UP)
+		for body in emergency_vehicles:
+			var delta := body.global_position - car.global_position
+			var along := delta.dot(forward)
+			var other_length := _emergency_projection(body, forward)
+			var clearance := along - Vehicle.BODY_SIZE.z * .5 - other_length - 1.8
+			if along + other_length <= -Vehicle.BODY_SIZE.z * .5 or clearance > 45.0:
+				continue
+			var corridor := Vehicle.BODY_SIZE.x * .5 + _emergency_projection(body, right) + .12
+			if absf(delta.dot(right)) <= corridor:
+				car.leader_distance = minf(car.leader_distance, maxf(0.0, clearance))
+
+func _emergency_exit_clear(origin: Vector3, direction: Vector3, right: Vector3, car_half_width := Vehicle.BODY_SIZE.x * 0.5) -> bool:
+	_prune_emergency_vehicles()
+	for body in emergency_vehicles:
+		var delta := body.global_position - origin
+		var along := delta.dot(direction)
+		var half_length := _emergency_projection(body, direction)
+		if along + half_length > -5.0 and along - half_length < 13.0 \
+			and absf(delta.dot(right)) < car_half_width + _emergency_projection(body, right) + 0.12:
+			return false
+	return true
 
 func release_reservation(car: Node3D) -> void:
 	if car.reservation_id != "" and reservations.get(car.reservation_id) == car:
@@ -351,8 +509,16 @@ func _exit_clear(car: Node3D, outgoing: int) -> bool:
 	var points: Array[Vector3] = network.lanes[outgoing].points
 	var direction := (points[1] - points[0]).normalized()
 	var right := direction.cross(Vector3.UP)
+	# The outgoing car will align with this lane. Use its cached prototype hull,
+	# not the old combined fleet corridor plus another ambulance half-width.
+	var half_width := Vehicle.BODY_SIZE.x * 0.5
+	if car is Vehicle:
+		var vehicle := car as Vehicle
+		if vehicle._clearance_shape != null:
+			half_width = vehicle._clearance_shape.size.x * 0.5 + absf(vehicle._clearance_center.x)
 	# Keep the live fleet order (including overlaps), without copying either list.
-	return _exit_fleet_clear(vehicles, car, points[0], direction, right) and _exit_fleet_clear(player_fleet, car, points[0], direction, right)
+	return _exit_fleet_clear(vehicles, car, points[0], direction, right) and _exit_fleet_clear(player_fleet, car, points[0], direction, right) \
+		and (emergency_vehicles.is_empty() or _emergency_exit_clear(points[0], direction, right, half_width))
 
 func _exit_fleet_clear(fleet: Array[Node3D], car: Node3D, origin: Vector3, direction: Vector3, right: Vector3) -> bool:
 	for other in fleet:
@@ -490,12 +656,12 @@ func unregister_player_vehicle(car: Node3D) -> void:
 ## lets it flow through green/empty junctions without stopping at every node.
 func control_distance(car: Node3D, dt: float) -> float:
 	var began := Time.get_ticks_usec() if Vehicle.profile_queries else 0
-	var result := _control_distance_impl(car, dt)
+	var result := _control_distance_impl(car as Vehicle, dt)
 	if Vehicle.profile_queries:
 		_profile_add("control_usec", began)
 	return result
 
-func _control_distance_impl(car: Node3D, dt: float) -> float:
+func _control_distance_impl(car: Vehicle, dt: float) -> float:
 	if car.lane_id < 0:
 		car.control_reason = "Waiting at traffic signal"
 		var heading: float = car._route_heading if not car.flat_tires.is_empty() else car.yaw
@@ -618,10 +784,13 @@ func tick(dt: float) -> void:
 		_presence_clock = 0.0
 	var coarse: Array[Node3D] = []
 	far_damage_updates = 0
-	for car in vehicles:
-		if is_instance_valid(car):
+	for entry in vehicles:
+		if is_instance_valid(entry):
+			# Keep the public fleet compatible with scene/save APIs, but resolve
+			# the script type once before the per-tick property/method accesses.
+			var car := entry as Vehicle
 			# The player's or police car: no AI motion, coarse damage ticks or recycling.
-			if car.get("player_controlled") == true or not car.external_owner.is_empty():
+			if car.player_controlled or not car.external_owner.is_empty():
 				car.far_damage_elapsed = 0.0
 				continue
 			if car.can_tick_damage_coarsely():
@@ -636,7 +805,7 @@ func tick(dt: float) -> void:
 		var start := _far_damage_cursor % coarse.size()
 		for offset in coarse.size():
 			var index := (start+offset)%coarse.size()
-			var car: Node3D = coarse[index]
+			var car := coarse[index] as Vehicle
 			if float(car.far_damage_elapsed)<FAR_DAMAGE_INTERVAL:
 				continue
 			var elapsed := minf(float(car.far_damage_elapsed),.25)
@@ -651,6 +820,9 @@ func tick(dt: float) -> void:
 		_recycle_check = 0.0
 
 func get_status() -> Dictionary:
+	var emergency_count := 0
+	for body in emergency_vehicles:
+		emergency_count += int(is_instance_valid(body))
 	var driving := 0
 	var stopped := 0
 	var parked_count := 0
@@ -700,5 +872,6 @@ func get_status() -> Dictionary:
 		"player_controlled": player_controlled, "player_fleet": player_fleet.size(),
 		"external_controlled": external_controlled, "external_owners": external_owners, "disabled": disabled,
 		"external_claims": external_claims, "external_releases": external_releases,
+		"emergency_obstacles": emergency_count, "max_emergency_obstacles": MAX_EMERGENCY_VEHICLES,
 		"network": network.get_status() if network else {}, "vehicles": details, "street_details": street_details,
 		"signals": signals.get_status() if signals else {}, "parked_cars": parked.get_status() if parked else {}}

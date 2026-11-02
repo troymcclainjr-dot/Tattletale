@@ -23,6 +23,29 @@ var _ready_stream := false
 var _detail_render_focus := Vector3.ZERO
 var _detail_physics_focus := Vector3.ZERO
 var _capture_details := false
+# Opt-in CPU attribution; disabled in ordinary play. Totals are bounded and
+# retain maxima/frame IDs, rather than growing a trace during long sessions.
+var profile_streaming := false
+var profile_stages: Dictionary = {}
+var profile_unload_batches: Dictionary = {"max_cells": 0, "max_frame": 0}
+var profile_slow_stages: Array[Dictionary] = []
+
+func _profile_stage(stage: String, began: int) -> void:
+	if not profile_streaming:
+		return
+	var elapsed := Time.get_ticks_usec() - began
+	var entry: Dictionary = profile_stages.get(stage, {"calls": 0, "total_usec": 0, "max_usec": 0, "max_frame": 0})
+	entry.calls += 1
+	entry.total_usec += elapsed
+	if elapsed > int(entry.max_usec):
+		entry.max_usec = elapsed
+		entry.max_frame = Engine.get_process_frames()
+	profile_stages[stage] = entry
+	if elapsed >= 20000:
+		if profile_slow_stages.size() >= 128:
+			profile_slow_stages.pop_front()
+		profile_slow_stages.append({"stage": stage, "usec": elapsed,
+			"process_frame": Engine.get_process_frames(), "at_usec": began})
 
 func _exit_tree() -> void:
 	# Consume an outstanding request when the level closes. Normal play never waits
@@ -144,6 +167,7 @@ func _distance_to_bounds(point: Vector3, bounds: AABB) -> float:
 func _refresh(initial: bool, refresh_details := true) -> void:
 	if level.player == null:
 		return
+	var began := Time.get_ticks_usec() if profile_streaming else 0
 	var point: Vector3 = level.player.global_position
 	# Automated captures and the overview camera request detail around their view,
 	# without ever changing the physical player's collision neighborhood.
@@ -165,6 +189,7 @@ func _refresh(initial: bool, refresh_details := true) -> void:
 	_capture_details = capture_details
 	var desired := -1
 	var priority := INF
+	var unloads_before := _unloads
 	for i in records.size():
 		var record: Dictionary = records[i]
 		var distance := _distance_to_bounds(render_point, record.bounds)
@@ -179,6 +204,11 @@ func _refresh(initial: bool, refresh_details := true) -> void:
 			if distance < priority:
 				priority = distance
 				desired = i
+	# queue_free only schedules work. This count distinguishes a cheap refresh
+	# that causes a later frame-end destruction spike from synchronous activation.
+	if profile_streaming and _unloads - unloads_before > int(profile_unload_batches.max_cells):
+		profile_unload_batches.max_cells = _unloads - unloads_before
+		profile_unload_batches.max_frame = Engine.get_process_frames()
 	if desired >= 0 and _pending.is_empty() and not initial:
 		var path: String = records[desired].path
 		var error := ResourceLoader.load_threaded_request(path, "PackedScene", false, ResourceLoader.CACHE_MODE_IGNORE)
@@ -189,27 +219,43 @@ func _refresh(initial: bool, refresh_details := true) -> void:
 			records[desired].failed = true
 			push_warning("City cell load request failed: " + path)
 	if not refresh_details:
+		_profile_stage("building_refresh", began)
 		return
+	_profile_stage("building_refresh", began)
 	for provider in providers:
 		if is_instance_valid(provider) and provider.has_method("set_presence"):
+			var provider_began := Time.get_ticks_usec() if profile_streaming else 0
 			var far_radius := 180.0 if quality != "low" else 135.0
 			if capture_details and provider.has_method("set_capture_presence"):
 				provider.set_capture_presence(point, detail_point, 55.0, far_radius)
 			else:
 				# These providers only cull visuals; their collision stays permanent.
 				provider.set_presence(detail_point if capture_details else point, 55.0, far_radius)
+			if profile_streaming:
+				_profile_stage("detail:" + str(provider.name), provider_began)
+	_profile_stage("refresh_with_details", began)
 
 func _poll_load() -> void:
 	if _pending.is_empty():
 		return
 	var status := ResourceLoader.load_threaded_get_status(_pending)
 	if status == ResourceLoader.THREAD_LOAD_LOADED:
+		var began := Time.get_ticks_usec() if profile_streaming else 0
 		var scene = ResourceLoader.load_threaded_get(_pending)
+		_profile_stage("threaded_get_ready", began)
 		if scene is PackedScene:
+			var stage_began := Time.get_ticks_usec() if profile_streaming else 0
 			var instance: MeshInstance3D = scene.instantiate()
+			_profile_stage("instantiate", stage_began)
+			stage_began = Time.get_ticks_usec() if profile_streaming else 0
 			optimizer.rebind_shared_materials(instance)
+			_profile_stage("bind_materials", stage_began)
+			stage_began = Time.get_ticks_usec() if profile_streaming else 0
 			optimizer.batch_root.add_child(instance)
+			_profile_stage("add_child", stage_began)
+			stage_began = Time.get_ticks_usec() if profile_streaming else 0
 			_apply_quality(instance)
+			_profile_stage("apply_quality", stage_began)
 			records[_pending_index].node = instance
 			records[_pending_index].proxy.hide()
 			_loads += 1
@@ -217,6 +263,7 @@ func _poll_load() -> void:
 			records[_pending_index].failed = true
 		_pending = ""
 		_pending_index = -1
+		_profile_stage("activate_cell", began)
 		# Advance the next building request immediately. Detail presence keeps its
 		# regular cadence (or explicit refresh_now), so a completed load cannot
 		# repeat provider scans or spend another vegetation mesh budget this frame.
@@ -262,6 +309,9 @@ func get_status() -> Dictionary:
 			detail_pending += int(status.get("pending_visual_cells", 0)) + int(status.get("pending_loads", 0))
 			detail_missing += int(status.get("near_cells_missing", 0))
 	return {"enabled": _ready_stream, "cells": records.size(),
+		"profile_stages": profile_stages.duplicate(true) if profile_streaming else {},
+		"profile_unload_batches": profile_unload_batches.duplicate() if profile_streaming else {},
+		"profile_slow_stages": profile_slow_stages.duplicate(true) if profile_streaming else [],
 		"capture_details": _capture_details, "detail_render_focus": _detail_render_focus, "detail_physics_focus": _detail_physics_focus,
 		"detail_pending": detail_pending, "detail_missing": detail_missing, "loaded_cells": active,
 		"proxy_cells": records.size() - active, "loaded_detail_triangles": triangles,

@@ -12,6 +12,7 @@ var map_buildings: Array[Dictionary] = []
 var map_pois: Array[Dictionary] = []
 var original_level_data: Dictionary = {}
 var _clear_regions: Array[Dictionary] = []
+var _parking_clear_regions: Array[Dictionary] = []
 var _buildings: Array[Node3D] = []
 var _removed_actual: Array[String] = []
 var _ground_faces := PackedVector3Array()
@@ -35,6 +36,10 @@ func setup(owner_level: Node3D, city: Node3D) -> void:
 			if not str(mesh_name) in removed_meshes:
 				removed_meshes.append(str(mesh_name))
 		_region(site.footprint_xz)
+		# Authored emergency approach, extended through its own curb mouth to
+		# the road centreline. This reserves parking only, not public movement.
+		if site.has("emergency_driveway_xz"):
+			_region(site.emergency_driveway_xz, [], true)
 		if site.has("approach_center"):
 			var start := _point(site.approach_center)
 			var end := _point(site.position)
@@ -93,7 +98,7 @@ func _polygon(values: Array) -> PackedVector2Array:
 		result.append(Vector2(float(point[0]), float(point[1])))
 	return result
 
-func _region(values: Array, holes: Array = []) -> void:
+func _region(values: Array, holes: Array = [], parking_only := false) -> void:
 	if values.size() < 3:
 		return
 	var excluded: Array[PackedVector2Array] = []
@@ -103,7 +108,11 @@ func _region(values: Array, holes: Array = []) -> void:
 	var bounds := Rect2(outer[0], Vector2.ZERO)
 	for point in outer:
 		bounds = bounds.expand(point)
-	_clear_regions.append({"outer": outer, "holes": excluded, "bounds": bounds.grow(0.001)})
+	var region := {"outer": outer, "holes": excluded, "bounds": bounds.grow(0.001)}
+	if parking_only:
+		_parking_clear_regions.append(region)
+	else:
+		_clear_regions.append(region)
 
 func _geo_regions(geometry: Dictionary) -> void:
 	var polygons: Array = geometry.coordinates if geometry.type == "MultiPolygon" else [geometry.coordinates]
@@ -111,8 +120,14 @@ func _geo_regions(geometry: Dictionary) -> void:
 		_region(polygon[0], polygon.slice(1))
 
 func is_cleared(at: Vector3) -> bool:
+	return _inside_regions(at, _clear_regions)
+
+func is_parking_cleared(at: Vector3) -> bool:
+	return _inside_regions(at, _parking_clear_regions)
+
+func _inside_regions(at: Vector3, regions: Array[Dictionary]) -> bool:
 	var point := Vector2(at.x, at.z)
-	for region in _clear_regions:
+	for region in regions:
 		if not region.bounds.has_point(point):
 			continue
 		if not Geometry2D.is_point_in_polygon(point, region.outer):

@@ -1,4 +1,5 @@
 extends CharacterBody3D
+const Bindings := preload("res://scripts/city/city_input_bindings.gd")
 ## Local exploration controller. The original game's simulation is deliberately unused.
 
 var puppet: Puppet
@@ -61,6 +62,8 @@ const FREE_LOOK_RETURN_MAX_RATE := 6.0
 # 100 degrees: running toward the camera never swings the view around.
 const CAMERA_ASSIST_MAX_ERROR := 1.745
 var _capsule: CollisionShape3D
+var _physics_last_position := Vector3.INF
+var _collision_bounds_refresh_ticks := 0
 var debug_step_reason := "not attempted"
 var _pose_speed := 0.0
 var _camera_anchor_y := 0.0
@@ -297,23 +300,67 @@ func reset_jump() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	# Dialogue consumes Space before unhandled input; menus disable exploration.
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_SPACE:
+	if Bindings.matches(event, "city_jump"):
 		if request_jump():
 			get_viewport().set_input_as_handled()
 
 var profile_costs := false
 var profile_samples: Array[float] = []
+var profile_stages: Dictionary = {}
+var profile_slow_stages: Array[Dictionary] = []
+
+func _profile_stage(stage: String, began: int) -> int:
+	if not profile_costs:
+		return 0
+	var ended := Time.get_ticks_usec()
+	var elapsed := ended - began
+	var entry: Dictionary = profile_stages.get(stage, {"count": 0, "total_usec": 0, "max_usec": 0, "max_frame": 0})
+	entry.count += 1
+	entry.total_usec += elapsed
+	if elapsed > entry.max_usec:
+		entry.max_usec = elapsed
+		entry.max_frame = Engine.get_process_frames()
+	profile_stages[stage] = entry
+	if elapsed >= 2000 and profile_slow_stages.size() < 256:
+		var event := {"stage": stage, "usec": elapsed, "frame": Engine.get_process_frames(), "position": [global_position.x, global_position.y, global_position.z]}
+		if stage == "move_and_slide":
+			event["contacts"] = []
+			for index in get_slide_collision_count():
+				var contact := get_slide_collision(index)
+				event.contacts.append({"collider": _obstacle_path(contact.get_collider()), "normal": str(contact.get_normal()), "depth": contact.get_depth(), "position": str(contact.get_position())})
+		profile_slow_stages.append(event)
+	return Time.get_ticks_usec()
 
 func set_court_activity(activity: Node3D) -> void:
 	court_activity = activity
 
 func _physics_process(delta: float) -> void:
 	var began := Time.get_ticks_usec() if profile_costs else 0
+	_refresh_teleport_collision_bounds()
 	_physics_step(delta)
 	if profile_costs:
 		profile_samples.append(float(Time.get_ticks_usec() - began) / 1000.0)
 
+func _refresh_teleport_collision_bounds() -> void:
+	if not _physics_last_position.is_finite() or global_position.distance_squared_to(_physics_last_position) > CAMERA_CUT_DISTANCE * CAMERA_CUT_DISTANCE:
+		_collision_bounds_refresh_ticks = 2
+	# Remember the start, including seat-follow/other placements made inside the
+	# previous callback. Ordinary walking/driving never crosses this cut distance.
+	_physics_last_position = global_position
+	if _collision_bounds_refresh_ticks <= 0 or not is_instance_valid(_capsule):
+		return
+	_collision_bounds_refresh_ticks -= 1
+	# Godot Physics caches the kinematic sweep's bounds through the following
+	# tick. A teleport otherwise makes move_and_slide cull a city-sized box.
+	# Re-submit the same owned capsule transform on both sides of integration;
+	# its geometry, enabled state, layers and all collision tests stay intact.
+	for owner_id in get_shape_owners():
+		if shape_owner_get_owner(owner_id) == _capsule:
+			shape_owner_set_transform(owner_id, _capsule.transform)
+			break
+
 func _physics_step(delta: float) -> void:
+	var stage_began := Time.get_ticks_usec() if profile_costs else 0
 	if _seated:
 		_tick_seated(delta)
 		return
@@ -348,6 +395,7 @@ func _physics_step(delta: float) -> void:
 	# CharacterBody carries us with the floor before applying our own velocity.
 	# Capture that support velocity before the solver can switch floor contacts.
 	var support_velocity := _floor_motion_velocity()
+	stage_began = _profile_stage("support", stage_began) if profile_costs else 0
 	if enabled and was_grounded and not _jump_active:
 		_coyote_time = COYOTE_TIME
 	else:
@@ -390,6 +438,7 @@ func _physics_step(delta: float) -> void:
 		current_speed = 0.0
 	else:
 		current_speed = move_toward(current_speed, target_speed, (18.0 if target_speed > current_speed else 24.0) * delta)
+	stage_began = _profile_stage("input", stage_began) if profile_costs else 0
 	if current_speed > 0.001 and enabled:
 		var forward := Vector3(sin(yaw), 0.0, cos(yaw))
 		requested_motion = forward * current_speed * delta
@@ -402,12 +451,14 @@ func _physics_step(delta: float) -> void:
 			# caused hard stops on every diagonal facade or porch-post contact.
 			velocity.x = forward.x * current_speed
 			velocity.z = forward.z * current_speed
+	stage_began = _profile_stage("step_preflight", stage_began) if profile_costs else 0
 	if jumped or not is_on_floor():
 		velocity.y -= GRAVITY * delta
 	else:
 		velocity.y = -0.5
 	if not stepped_this_frame:
 		move_and_slide()
+	stage_began = _profile_stage("move_and_slide", stage_began) if profile_costs else 0
 	# A triangle seam can report the same valid floor contact repeatedly and consume
 	# every slide iteration. Project onto the intended direction so diagonal curb
 	# sliding cannot be mistaken for forward progress.
@@ -418,6 +469,7 @@ func _physics_step(delta: float) -> void:
 	if not _jump_active and not stepped_this_frame and (was_grounded or is_on_floor()) and requested_motion.length() > 0.001 and horizontal_progress < requested_motion.length() * 0.85:
 		var remaining := requested_motion.normalized() * maxf(0.0, requested_motion.length() - horizontal_progress)
 		stepped_this_frame = _try_step(remaining)
+	stage_began = _profile_stage("step_retry", stage_began) if profile_costs else 0
 	displacement = global_position - before - support_motion
 	displacement.y = 0.0
 	var travelled := displacement.length()
@@ -449,12 +501,16 @@ func _physics_step(delta: float) -> void:
 		puppet.body.position.y -= sin(PI * _landing_pose / 0.13) * 0.055
 	# Follow the body's heading, not a wall slide's displacement: grazing a facade
 	# or pole must not swing the view.
+	stage_began = _profile_stage("pose", stage_began) if profile_costs else 0
 	if combat != null:
 		combat.apply_player_pose(delta)
 	if is_instance_valid(court_activity):
 		court_activity.apply_player_pose(delta)
 	_update_camera_follow(delta, move, actual_speed, yaw)
+	stage_began = _profile_stage("activities", stage_began) if profile_costs else 0
 	update_camera(delta)
+	if profile_costs:
+		_profile_stage("camera", stage_began)
 
 func _update_camera_follow(delta: float, move: Vector2, actual_speed: float, travel_yaw: float) -> void:
 	if not enabled or move.length() < 0.01 or actual_speed < 0.5:

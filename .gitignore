@@ -219,3 +219,10 @@ blender/blend/
 /artifacts/five-priorities-20261101/*
 !/artifacts/five-priorities-20261101/*.md
 !/artifacts/five-priorities-20261101/metrics.json
+
+# Non-quest systems: concise evidence only; captures and raw runs stay local.
+!/artifacts/next-five-20261101/
+/artifacts/next-five-20261101/*
+!/artifacts/next-five-20261101/*.md
+!/artifacts/next-five-20261101/compactmetrics.json
+!/artifacts/next-five-20261101/release-validation.json

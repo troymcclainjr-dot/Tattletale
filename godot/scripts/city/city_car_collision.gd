@@ -109,3 +109,41 @@ static func attach(body: CollisionObject3D, kind: String) -> void:
 		collider.name = part.name
 		collider.shape = part.shape
 		body.add_child(collider)
+## Project the full collision envelope, including pitched/rolled height, onto
+## the ground plane. Distant parked bodies may have their physics layer off.
+static func footprint(pose: Transform3D, kind: String) -> PackedVector2Array:
+	var envelope := envelope(kind)
+	var half: Vector3 = (envelope.shape as BoxShape3D).size * 0.5
+	var points := PackedVector2Array()
+	for x in [-1.0, 1.0]:
+		for y in [-1.0, 1.0]:
+			for z in [-1.0, 1.0]:
+				var world: Vector3 = pose * (Vector3(envelope.center) + Vector3(half.x * x, half.y * y, half.z * z))
+				points.append(Vector2(world.x, world.z))
+	return Geometry2D.convex_hull(points)
+
+## Separating axes of both convex footprints; a 20 cm gap is still required.
+## This rejects genuine hull overlap without a circular five-metre exclusion
+## that also blocked clear travel alongside every curb-parked car.
+static func footprints_overlap(a: PackedVector2Array, b: PackedVector2Array, clearance := 0.20) -> bool:
+	for polygon in [a, b]:
+		for i in range(1, polygon.size()):
+			var edge: Vector2 = polygon[i] - polygon[i - 1]
+			if edge.length_squared() < 0.000001:
+				continue
+			var axis := Vector2(-edge.y, edge.x).normalized()
+			var a_min := INF
+			var a_max := -INF
+			var b_min := INF
+			var b_max := -INF
+			for point in a:
+				var value := point.dot(axis)
+				a_min = minf(a_min, value)
+				a_max = maxf(a_max, value)
+			for point in b:
+				var value := point.dot(axis)
+				b_min = minf(b_min, value)
+				b_max = maxf(b_max, value)
+			if a_max + clearance < b_min or b_max + clearance < a_min:
+				return false
+	return true

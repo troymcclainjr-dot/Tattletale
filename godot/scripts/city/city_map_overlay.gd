@@ -1,4 +1,5 @@
 extends Control
+const Bindings := preload("res://scripts/city/city_input_bindings.gd")
 const C := preload("res://scripts/city/city_theme.gd")
 const T := C.T
 const MapCanvas := preload("res://scripts/city/city_minimap.gd")
@@ -11,6 +12,7 @@ const KEY := [["police", "Police"], ["fire", "Fire"], ["hospital", "Hospital"], 
 var level: Node3D
 var map: Control
 var key: HFlowContainer
+var _close_button: Button
 
 class KeySymbol extends Control:
 	var kind := ""
@@ -78,12 +80,17 @@ func setup(owner_level: Node3D, close_action: Callable = Callable()) -> void:
 	row.add_theme_constant_override("h_separation", 12)
 	column.add_child(row)
 	var close_callback: Callable = close_action if close_action.is_valid() else level.resume_exploring
-	for definition in [["−", func(): map.zoom_by(0.8)], ["+", func(): map.zoom_by(1.25)], ["Whole neighborhood", func(): map.fit_neighborhood()], ["Find me", func(): map.center_player()], ["Close map  ·  M", close_callback]]:
+	for definition in [["−", func(): map.zoom_by(0.8)], ["+", func(): map.zoom_by(1.25)], ["Whole neighborhood", func(): map.fit_neighborhood()], ["Find me", func(): map.center_player()], ["Close map", close_callback]]:
 		var button := Button.new()
 		button.text = definition[0]
 		button.custom_minimum_size = Vector2(52, 42)
 		button.pressed.connect(definition[1])
 		row.add_child(button)
+		if definition[0] == "Close map":
+			_close_button = button
+	visibility_changed.connect(func():
+		if visible and _close_button != null:
+			_close_button.text = "Close map  ·  " + Bindings.label("city_map"))
 	key = HFlowContainer.new()
 	key.name = "MapKey"
 	key.add_theme_constant_override("h_separation", 16)

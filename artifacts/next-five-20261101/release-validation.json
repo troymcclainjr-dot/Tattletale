@@ -1,0 +1,124 @@
+{
+  "build_id": "next-five-20261101-r2",
+  "verified": true,
+  "gameplay_passed": true,
+  "install_write_denial_verified": true,
+  "install_unchanged": true,
+  "source_runtime_unchanged": true,
+  "phases": {
+    "fresh": {
+      "passed": true,
+      "checks": {
+        "foundation_bridges": true,
+        "foundation_checkpoint": true,
+        "foundation_fixture_created": true,
+        "foundation_restore": true,
+        "foundation_schema": true,
+        "foundation_services": true,
+        "fresh_save_absent": true,
+        "fresh_settings_absent": true,
+        "input_moves_player": true,
+        "inspector_present": true,
+        "main_scene": true,
+        "no_placeholders": true,
+        "pacifist_policy": true,
+        "packed_case_library": true,
+        "packed_credits": true,
+        "packed_fonts_and_licenses": true,
+        "phone_bicycle_schema": true,
+        "population": true,
+        "production_progression_transaction": true,
+        "production_save": true,
+        "release_template": true,
+        "settings_apply": true,
+        "world_ready": true
+      }
+    },
+    "reload": {
+      "passed": true,
+      "checks": {
+        "foundation_bridges": true,
+        "foundation_checkpoint": true,
+        "foundation_restore": true,
+        "foundation_schema": true,
+        "foundation_services": true,
+        "inspector_present": true,
+        "main_scene": true,
+        "no_placeholders": true,
+        "pacifist_policy": true,
+        "packed_case_library": true,
+        "packed_credits": true,
+        "packed_fonts_and_licenses": true,
+        "phone_bicycle_schema": true,
+        "population": true,
+        "production_reload": true,
+        "progression_restored": true,
+        "release_template": true,
+        "reload_save_present": true,
+        "settings_loaded_on_startup": true,
+        "world_ready": true
+      }
+    },
+    "startup": {
+      "passed": true,
+      "checks": {
+        "automatic_world_restore": true,
+        "foundation_bridges": true,
+        "foundation_checkpoint": true,
+        "foundation_restore": true,
+        "foundation_schema": true,
+        "foundation_services": true,
+        "inspector_present": true,
+        "main_scene": true,
+        "no_placeholders": true,
+        "normal_startup_mode": true,
+        "pacifist_policy": true,
+        "packed_case_library": true,
+        "packed_credits": true,
+        "packed_fonts_and_licenses": true,
+        "phone_bicycle_schema": true,
+        "population": true,
+        "release_template": true,
+        "save_enabled_by_startup": true,
+        "settings_loaded_on_startup": true,
+        "startup_clock_restored": true,
+        "startup_guard_kept_mouse_visible": true,
+        "startup_mouse_uncaptured": true,
+        "startup_private_window": true,
+        "startup_progression_restored": true,
+        "startup_project_no_focus": true,
+        "startup_save_present": true,
+        "world_ready": true
+      }
+    }
+  },
+  "startup_native_foreground": {
+    "runtime_pid": 9940,
+    "samples": 1204,
+    "unknown_samples": 0,
+    "foreground_pids": [
+      29800,
+      19388
+    ],
+    "runtime_was_foreground": false,
+    "errors": []
+  },
+  "zip_integrity": {
+    "files": 16,
+    "sha256": "06aebe361f094fc8a47e8f39b1432b24166f6136891961ac52d8bca38bbc637f"
+  },
+  "local_release_directory": "artifacts/priorities-five/release/next-five-20261101-r2",
+  "local_full_report": "artifacts/priorities-five/release/next-five-20261101-r2/standalone-gameplay-validation.json",
+  "full_report_sha256": "a12bc3c95bc461735f2080c2c25ec23263cd7e1bd40c98b832be502c9b76be09",
+  "binaries": {
+    "Tattletale-PenLucy.exe": {
+      "bytes": 109268480,
+      "sha256": "d34d36f3be1a6c49c56525ae86469b92e4f417ddf0b43cf00dd80c385c4b0562"
+    },
+    "Tattletale-PenLucy.pck": {
+      "bytes": 144942888,
+      "sha256": "41eba3baa9de2dd60febbdff4624967ffc88832d730cf3e23c65321b6ad3d5ed"
+    }
+  },
+  "scope": "Headless exported gameplay/input/settings/save-load API plus ordinary graphical startup automatic world restore; not GPU visual acceptance"
+}

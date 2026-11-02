@@ -1,6 +1,6 @@
 # Tattletale 2-Pack
 
-Current Pen Lucy work: [pacifist foundation and acceptance status](artifacts/pacifist-foundation/ACCEPTANCE.md), [case authoring](artifacts/pacifist-foundation/CASE_AUTHORING.md), and [world quality inventory](artifacts/pacifist-foundation/WORLD_QUALITY.md). Earlier [neighborhood implementation](artifacts/alive-next/IMPLEMENTATION_AND_REVIEW.md), [shipping roadmap](artifacts/alive-next/SHIPPING_ROADMAP.md), [shader implementation](artifacts/render-audit/shader-implementation.md), and [shader research](artifacts/living-world/shader-research.md) preserve previous work; their older combat/driving priorities are historical.
+Current Pen Lucy work: [non-quest systems and acceptance](artifacts/next-five-20261101/ACCEPTANCE.md), [pacifist foundation](artifacts/pacifist-foundation/ACCEPTANCE.md), [case authoring](artifacts/pacifist-foundation/CASE_AUTHORING.md), and [world quality inventory](artifacts/pacifist-foundation/WORLD_QUALITY.md). Earlier [neighborhood implementation](artifacts/alive-next/IMPLEMENTATION_AND_REVIEW.md), [shipping roadmap](artifacts/alive-next/SHIPPING_ROADMAP.md), [shader implementation](artifacts/render-audit/shader-implementation.md), and [shader research](artifacts/living-world/shader-research.md) preserve previous work; their older combat/driving priorities are historical.
 
 A stylized 3D snitch game. Tattletale 2-Pack lives on a block where nothing ever changes, and he's telling on **everybody**. Every crime gets reported its own way: follow a trail of cash, tail the mailman, blow your whistle on the beat, tell Timmy's mama, dial in Mama's license plate from memory... and the timer never stops.
 
@@ -32,15 +32,25 @@ photos inside the phone's gallery; there is no photo-folder shortcut. **Esc / Ba
 back, **F5** saves while the phone is open, and **M** opens the map. The world keeps moving
 while you use the phone. In Police, **Enter** reports a witnessed incident or requests an area
 check; an unknown or unwitnessed incident cannot become a report just by selecting it.
+Reported injuries can dispatch a hospital ambulance and two paramedics. The phone follows actual
+arrival, treatment or inability to reach the patient; loading interrupts a live response honestly.
 **F** mounts the nearby bicycle or dismounts after braking. **W/S** pedals or brakes/reverses,
 **A/D** steers independently of the camera, **Space** hops and **Shift** pedals harder.
 Hard impacts can eject the rider; wait for recovery before riding or saving again. Pedestrian
 contacts can cause nonlethal stumbles or knockdowns and fists-only retaliation. Put the phone
-away before riding. At a court, **E** picks up a ball; hold/release **left mouse** to shoot.
+away before riding. At a court, **E** picks up/drops a ball; hold/release **left mouse** to shoot,
+**R** returns it and **T** starts a first-to-11 pickup game. Press **T** twice to quit;
+press it at the result to rematch. Defensive rebounds must be cleared beyond the arc.
+Pickup games are local activities and are not saved with checkpoints.
 Routines currently use outdoor frontages; interiors are not implemented. Stable ground progress
 saves automatically and through **Esc → Save progress**; supported older saves migrate through
-the compatibility path. Get off the bicycle and finish crash recovery or active confrontations
-before saving. See [current validation and profiling](artifacts/pacifist-foundation/ACCEPTANCE.md).
+the compatibility path. Mounted bicycle checkpoints are supported while safely stopped;
+finish crash recovery or active confrontations before saving or loading.
+Settings includes checkpoint loading and a confirmed Start Fresh action that archives existing saves.
+Controls can be rebound, and text can be enlarged to 110% or 125%.
+At the Old York Pantry service window near East 41st, buy food/drink to recover lost health,
+bicycle colors or bandana colors. Owned colors can be equipped again without paying twice.
+See [current validation and profiling](artifacts/next-five-20261101/ACCEPTANCE.md).
 Walk onto porch stairs and glide along walls with full collision. After manual look, the
 camera gently follows sustained travel; it preserves your view while idle or holding orbit.
 A circular radar follows your view; **M** opens the full neighborhood map and **Esc** opens

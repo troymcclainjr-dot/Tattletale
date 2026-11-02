@@ -140,7 +140,7 @@ func _segment_distance(point: Vector3, a: Vector3, b: Vector3) -> float:
 
 func _validate(candidate: Dictionary) -> Dictionary:
 	var at: Vector3 = candidate.at
-	if CivicClearance.blocked(level, at, 2.5):
+	if CivicClearance.parking_blocked(level, at, 2.5):
 		return _reject("civic_approach")
 	var forward: Vector3 = candidate.forward
 	var right := Vector3(forward.z, 0, -forward.x)

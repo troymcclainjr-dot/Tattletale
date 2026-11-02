@@ -1,4 +1,6 @@
 extends CharacterBody3D
+const Bindings := preload("res://scripts/city/city_input_bindings.gd")
+var _paint: StandardMaterial3D
 ## Player bicycle. Root owns tick/input ordering; this never enters car damage/law.
 ## Motion is a kinematic solver rather than move_and_slide:
 ## * A raised hull (three capsules from HULL_CLEARANCE up) sweeps horizontally,
@@ -313,7 +315,7 @@ func tick(delta: float) -> void:
 func handle_input(event: InputEvent) -> bool:
 	if not spawned or _paused() or player == null:
 		return false
-	if event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_F or event.physical_keycode == KEY_F):
+	if Bindings.matches(event, "city_bicycle"):
 		if active:
 			exit_vehicle()
 			return true
@@ -322,7 +324,7 @@ func handle_input(event: InputEvent) -> bool:
 			return true
 	if not active:
 		return false
-	if event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_SPACE or event.physical_keycode == KEY_SPACE):
+	if Bindings.matches(event, "city_jump"):
 		if not _crashed:
 			_hop_buffer = HOP_BUFFER
 		elif _crash.is_down():
@@ -337,8 +339,9 @@ func handle_input(event: InputEvent) -> bool:
 			player.vehicle_zoom(1 if event.button_index == MOUSE_BUTTON_WHEEL_UP else -1)
 		return true
 	if event is InputEventKey:
-		return event.keycode in [KEY_W, KEY_A, KEY_S, KEY_D, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_SPACE, KEY_SHIFT] \
-			or event.physical_keycode in [KEY_W, KEY_A, KEY_S, KEY_D, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_SPACE, KEY_SHIFT]
+		for action in ["move_forward", "move_back", "move_left", "move_right", "turn_left", "turn_right", "run", "city_jump", "city_bicycle"]:
+			if event.is_action(action) or Bindings.matches(event, action, event.pressed):
+				return true
 	return false
 
 func enter_bicycle() -> bool:
@@ -660,7 +663,7 @@ func _read_controls() -> Dictionary:
 	var move := Vector2(Input.get_action_strength("move_right") - Input.get_action_strength("move_left"),
 		Input.get_action_strength("move_forward") - Input.get_action_strength("move_back"))
 	return {"move": move, "brake": false, "sprint": Input.is_action_pressed("run"),
-		"hop": Input.is_physical_key_pressed(KEY_SPACE) or Input.is_key_pressed(KEY_SPACE)}
+		"hop": Bindings.pressed("city_jump")}
 
 # ------------------------------------------------------------------ motion solver
 
@@ -1330,9 +1333,9 @@ func get_status() -> Dictionary:
 	var prompt := ""
 	if active:
 		if not _crashed:
-			prompt = "W pedal · S brake / reverse · A/D steer · Space hop · Shift pedal hard · F get off"
+			prompt = "%s pedal · %s brake / reverse · %s/%s steer · %s hop · %s pedal hard · %s get off" % [Bindings.label("move_forward"), Bindings.label("move_back"), Bindings.label("move_left"), Bindings.label("move_right"), Bindings.label("city_jump"), Bindings.label("run"), Bindings.label("city_bicycle")]
 	elif spawned and is_instance_valid(player) and player.global_position.distance_to(global_position) <= MOUNT_DISTANCE:
-		prompt = "F · Pick up bicycle" if _fallen else "F · Ride bicycle"
+		prompt = ("%s · Pick up bicycle" if _fallen else "%s · Ride bicycle") % Bindings.label("city_bicycle")
 	var crash_phase := _crash.phase if _crash != null and _crashed else ""
 	return {"active": active, "spawned": spawned, "speed": 0.0 if _crashed else speed, "speed_kmh": 0 if _crashed else roundi(absf(speed) * 3.6),
 		"prompt": prompt, "message": _message if _clock < _message_until else "", "contacts": contacts,
@@ -1463,7 +1466,8 @@ func _build_model() -> void:
 	_visual = Node3D.new()
 	_visual.name = "BicycleModel"
 	add_child(_visual)
-	var paint := _material("#2db6a4", 0.35)
+	_paint = _material("#2db6a4", 0.35)
+	var paint := _paint
 	var rubber := _material("#20282b")
 	var chrome := _material("#b4c3c8", 0.8)
 	var saddle := _material("#473525")
@@ -1590,3 +1594,9 @@ func _animate_riderless(delta: float) -> void:
 	_visual.rotation.x = lerpf(_visual.rotation.x, 0.0, minf(1.0, delta * 6.0))
 	_visual.position.y = 0.06 * fall
 	_front.rotation.y = lerpf(_front.rotation.y, 0.5 * _fall_side * fall, minf(1.0, delta * 4.0))
+
+func apply_shop_cosmetics(paint_html: String, bandana_html: String) -> void:
+	if _paint != null:
+		_paint.albedo_color = Color.html(paint_html) if not paint_html.is_empty() else Color("#2db6a4")
+	if _rider != null:
+		preload("res://scripts/city/city_player_cosmetics.gd").bandana(_rider.g, bandana_html)

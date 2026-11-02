@@ -1,4 +1,5 @@
 extends Node
+const Bindings := preload("res://scripts/city/city_input_bindings.gd")
 ## A detached inspection camera. The physical player and world clock stay put.
 const T := preload("res://scripts/ui/hud_theme.gd")
 const MIN_SPEED := 5.0
@@ -125,7 +126,7 @@ func release_mouse() -> void:
 func handle_input(event: InputEvent) -> void:
 	if capture_busy:
 		return
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_M:
+	if Bindings.matches(event, "city_map"):
 		if map_open:
 			close_map()
 		else:
@@ -285,7 +286,7 @@ func _refresh_info() -> void:
 	lines.append("Axes: X east / Y up / Z south. Pitch + looks up.")
 	lines.append("WASD fly / Mouse look / E or Space up / Q down")
 	lines.append("Shift 4x / Ctrl precision / Wheel speed / Esc cursor")
-	lines.append("M map / F7 copy location / F8 save screenshot + location")
+	lines.append("%s map / F7 copy location / F8 save screenshot + location" % Bindings.label("city_map"))
 	lines.append(_message if has_control else "MOUSE FREE / Click to fly again / F6 return")
 	_label.text = "\n".join(lines)
 

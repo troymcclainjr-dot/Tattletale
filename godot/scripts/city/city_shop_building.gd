@@ -7,6 +7,34 @@ extends RefCounted
 const PlayMode := preload("res://scripts/city/city_play_mode.gd")
 const Kit := preload("res://scripts/city/city_civic_mesh_kit.gd")
 const Foundations := preload("res://scripts/city/city_civic_businesses.gd")
+const Bindings := preload("res://scripts/city/city_input_bindings.gd")
+
+## A service window on an existing civic storefront. It occupies the display
+## bay beside the central door, never adds an invisible whole-building hull,
+## and keeps its shallow shelf inside the established frontage clearance.
+static func service_window(entry: Dictionary) -> Node3D:
+	var k := Kit.new(str(entry.id) + "ServiceWindow")
+	k.material("trim", Color("395f58"), 4)
+	k.material("wood", Color("a67b4e"), 0)
+	k.material("glass", Color("253c3c"), 0)
+	var front := float(entry.depth) * 0.5
+	var x := float(entry.width) * 0.25 + 0.35
+	k.box(Vector3(x, 1.55, front + 0.12), Vector3(1.9, 1.32, 0.12), "trim")
+	k.box(Vector3(x, 1.56, front + 0.20), Vector3(1.65, 1.06, 0.08), "glass")
+	_solid(k, Vector3(x, 1.0, front + 0.27), Vector3(2.02, 0.12, 0.42), "wood")
+	var prompt := k.label("PANTRY COUNTER · %s" % Bindings.label("city_interact"), Vector3(x, 2.12, front + 0.26), 27, 0.005)
+	prompt.name = "ShopInteractionLabel"
+	prompt.set_meta("shop_prompt_format", "PANTRY COUNTER · %s")
+	k.label("BIKE COLORS · BANDANAS\nSNACKS · WATER", Vector3(x, 1.56, front + 0.255), 25, 0.005)
+	var model := k.finish()
+	model.position = point(entry.position)
+	model.rotation.y = float(entry.yaw)
+	model.set_meta("service_window", true)
+	# This customer point sits on the existing civic foundation apron, whose
+	# top is -0.025 (not on the central doorstep's lower entry_rise landing).
+	model.set_meta("counter_local", Vector3(x, -0.025, front + 1.1))
+	_set_ranges(model)
+	return model
 
 static func is_closed(entry: Dictionary) -> bool:
 	return not PlayMode.shop_kind_open(str(entry.get("kind", "")))
@@ -58,7 +86,9 @@ static func build(entry: Dictionary) -> Node3D:
 	_solid(k, Vector3(0, 0.48, counter_z), Vector3(w - 1.1, 0.96, 0.7), "wood")
 	k.box(Vector3(0, 1.0, counter_z), Vector3(w - 1.0, 0.12, 0.83), "trim")
 	if not closed:
-		k.label("COUNTER · E TO SHOP", Vector3(0, 1.48, counter_z + 0.37), 30, 0.008)
+		var prompt := k.label("COUNTER · %s TO SHOP" % Bindings.label("city_interact"), Vector3(0, 1.48, counter_z + 0.37), 30, 0.008)
+		prompt.name = "ShopInteractionLabel"
+		prompt.set_meta("shop_prompt_format", "COUNTER · %s TO SHOP")
 	# Shelves run along the side walls, leaving a >3m aisle even in narrow shops.
 	for side in [-1.0, 1.0]:
 		var x: float = float(side) * (w * 0.5 - 0.52)

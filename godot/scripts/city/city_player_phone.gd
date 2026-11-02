@@ -1,4 +1,5 @@
 extends Node3D
+const Bindings := preload("res://scripts/city/city_input_bindings.gd")
 ## In-world handset: neighborhood contacts, camera, private gallery, cases and
 ## police calls. Menus/dialogue retain higher priority and suspend it; the
 ## world keeps simulating while it is raised.
@@ -163,7 +164,7 @@ func go_back() -> void:
 		show_page("home")
 
 func handle_input(event: InputEvent) -> bool:
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_P:
+	if Bindings.matches(event, "city_phone"):
 		if active:
 			close()
 		else:
@@ -172,6 +173,12 @@ func handle_input(event: InputEvent) -> bool:
 	if not active:
 		return false
 	if not can_open():
+		suspend()
+		return false
+	if Bindings.matches(event, "city_save"):
+		_notice(level.save_progress())
+		return true
+	if Bindings.matches(event, "city_map"):
 		suspend()
 		return false
 	if event is InputEventKey:
@@ -194,9 +201,7 @@ func handle_input(event: InputEvent) -> bool:
 						request_capture()
 					elif page == "police":
 						request_police()
-				KEY_F5:
-					_notice(level.save_progress())
-				KEY_M, KEY_F6:
+				KEY_F6:
 					suspend()
 					return false
 		# Button focus navigation is handled by the phone GUI, never gameplay.
@@ -264,7 +269,7 @@ func _notify_hud(message: String) -> void:
 	_hud_notice = message
 	_hud_notice_at = now
 	notices_shown += 1
-	level.call("show_notice", "Police: " + message)
+	level.call("show_notice", "Dispatch: " + message)
 
 func _police_service() -> Node:
 	return level.get("police_assistance") as Node if level != null else null
@@ -574,9 +579,9 @@ func show_page(next: String) -> void:
 	_refresh_title()
 	if camera:
 		_release_focus()
-		_controls.text = "LMB / ENTER Photo   WHEEL Zoom   3 Photos   ESC Back   P Put away"
+		_controls.text = "LMB / ENTER Photo   WHEEL Zoom   3 Photos   ESC Back   %s Put away" % Bindings.label("city_phone")
 		return
-	_controls.text = "1-5 Apps   Arrows / Tab Move   ENTER Select   ESC Back   P Put away"
+	_controls.text = "1-5 Apps   Arrows / Tab Move   ENTER Select   ESC Back   %s Put away" % Bindings.label("city_phone")
 	_header.visible = page != "home"
 	if page != "home":
 		_header_title.text = str(TITLES.get(page, "")).to_upper()
@@ -596,6 +601,11 @@ func show_page(next: String) -> void:
 			_show_cases()
 		"police":
 			_show_police()
+	# Content is rebuilt per page inside a scroll container; scale it after build.
+	# Keep the fixed handset chrome and navigation footprint intact.
+	var settings: Node = level.get("_settings")
+	if settings != null and settings.has_method("apply_text_scale_to"):
+		settings.apply_text_scale_to(_content)
 	_focus_first.call_deferred(_generation)
 
 func _focus_first(generation: int) -> void:
@@ -663,7 +673,9 @@ func _show_home() -> void:
 		tile.pressed.connect(show_page.bind(str(app.page)))
 		grid.add_child(tile)
 	if level.has_method("toggle_map"):
-		var map_tile := UI.AppTile.new("map", "Map", Color("81d6b1"), "M")
+		var map_key := Bindings.label("city_map")
+		var map_tile := UI.AppTile.new("map", "Map", Color("81d6b1"), map_key if map_key.length() == 1 else "")
+		map_tile.tooltip_text = "Map  (%s)" % map_key
 		map_tile.pressed.connect(_open_map)
 		grid.add_child(map_tile)
 

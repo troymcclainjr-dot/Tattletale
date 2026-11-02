@@ -658,6 +658,12 @@ func npc_fight_status(id: String) -> Dictionary:
 		var entry: Dictionary = _knocked[id]
 		return {"fighting": false, "foe": "", "mode": "downed", "health": float(entry.state.health), "knocked": true,
 			"incident_id": "", "actor": entry.actor}
+	# A victim fleeing through panic carries their health in the panic state
+	# (read-only: incident aftermath reads how badly a fight hurt them).
+	for state in _panic.values():
+		if str(state.id) == id:
+			return {"fighting": false, "foe": "", "mode": "panic:" + str(state.get("mode", "")), "health": float(state.health),
+				"knocked": false, "incident_id": "", "actor": state.actor}
 	return {"fighting": false, "foe": "", "mode": "", "health": _wound_hp(id), "knocked": false, "incident_id": "", "actor": null}
 
 func _aim_fight(state: Dictionary, foe: Dictionary, options: Dictionary, primary: bool) -> void:
@@ -689,7 +695,8 @@ func _fightable(person: Dictionary) -> bool:
 	var actor = person.actor
 	if actor != null:
 		return is_instance_valid(actor) and not actor.dead and actor.enabled and not _is_police(actor) \
-			and not actor.has_meta("police_custody") and not actor.has_meta("law_responder") and not actor.has_meta("police_assist")
+			and not actor.has_meta("police_custody") and not actor.has_meta("law_responder") and not actor.has_meta("police_assist") \
+			and not actor.has_meta("ems_responder") and not actor.has_meta("ems_patient")
 	return _crowd_available(int(person.crowd_index))
 
 ## {id, actor, crowd_index}: a full body (crowd_index set when it stands in for
@@ -1118,8 +1125,10 @@ func _bike_exempt(actor, crowd_index: int) -> String:
 			return "police"
 		if actor.has_meta("police_custody"):
 			return "in_custody"
-		if actor.has_meta("law_responder") or actor.has_meta("police_assist") or actor.has_meta("police_crew"):
+		if actor.has_meta("law_responder") or actor.has_meta("police_assist") or actor.has_meta("police_crew") or actor.has_meta("ems_responder"):
 			return "on_duty"
+		if actor.has_meta("ems_patient"):
+			return "injured" # Already hurt and waiting for paramedics: a bump only jostles them.
 		return ""
 	var crowd = _crowd()
 	if crowd != null and crowd_index >= 0 and crowd_index < crowd.residents.size() and crowd.residents[crowd_index].get("police_custody", false):
@@ -1409,6 +1418,10 @@ func _react(actor, origin: Vector3, direct: bool, by_player: bool) -> void:
 	# into panic/alert between law's perception ticks. Direct damage still
 	# follows _damage_target and can wound, knock down or kill the officer.
 	if actor.has_meta("law_responder"):
+		return
+	# Paramedics on a call: their service already pulls them back to the
+	# ambulance when an armed person is near the patient (direct hits still land).
+	if actor.has_meta("ems_responder"):
 		return
 	var police := _is_police(actor)
 	if by_player and is_armed_id(actor.actor_id, police):

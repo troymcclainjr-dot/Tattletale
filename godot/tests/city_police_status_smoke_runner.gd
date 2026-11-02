@@ -838,7 +838,7 @@ func _phone_page() -> void:
 	level.hud_notices.clear()
 	handset.set_report_status("The officer stopped the person and issued a warning.")
 	handset.set_report_status("The officer stopped the person and issued a warning.")
-	check(level.hud_notices == ["Police: The officer stopped the person and issued a warning."],
+	check(level.hud_notices == ["Dispatch: The officer stopped the person and issued a warning."],
 		"while the phone is put away, a police step reaches the HUD once: %s" % str(level.hud_notices))
 	handset.open()
 	handset.set_report_status("Officers are dealing with the suspect now.")

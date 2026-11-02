@@ -23,6 +23,15 @@ extends Node3D
 ## end with a warning, theft and violence with custody. A report never removes
 ## anyone by itself. Contract: .work/pacifist-foundation/incidents-contract.md
 ## and .work/five-priorities-20261101/police-contract.md.
+##
+## Aftermath: a fight that really hurt its victim (combat's own state while it
+## lasted: knocked down, or at or below INJURY_HEALTH) names that person as the
+## record's patient. Once the incident is reported, or officers reach it, the
+## emergency service (city_emergency_response.gd, child "EmergencyResponse")
+## sends the hospital's ambulance; its progress comes back through
+## on_medical_progress() into the record's optional durable `medical` summary
+## and, for the player's reports, the phone. Contract:
+## .work/next-five-20261101/aftermath-contract.md.
 
 signal incident_opened(summary: Dictionary)
 signal incident_changed(summary: Dictionary)
@@ -34,6 +43,8 @@ const Actors := preload("res://scripts/city/city_incident_actors.gd")
 const Tactics := preload("res://scripts/city/city_police_tactics.gd")
 const Combat := preload("res://scripts/city/city_combat.gd")
 const PoliceStatus := preload("res://scripts/city/city_police_status.gd")
+const Emergency := preload("res://scripts/city/city_emergency_response.gd")
+const EmergencyStatus := preload("res://scripts/city/city_emergency_status.gd")
 
 const STATE_VERSION := 1
 const MAX_LIVE := 2
@@ -73,6 +84,9 @@ const STEP_BLOCKED_SECONDS := 8.0
 const LEAVE_BLOCKED_SECONDS := 4.0
 const FIGHT_SECONDS := 16.0
 const FIGHT_TIMEOUT := 30.0
+## Combat health (of 90) at or below which a fight's victim counts as hurt; a
+## knockdown always does. Bicycle knockdowns are harmless and never count.
+const INJURY_HEALTH := 60.0
 const ROAD_GRID := 30.0
 const CROSSING_CLEARANCE := 10.0
 const ROAD_END_CLEARANCE := 12.0
@@ -86,6 +100,8 @@ const PEOPLE_KINDS := ["crowd", "resident", "contact", "officer", "player"]
 var level: Node
 var spawning_enabled := true
 var actors := Actors.new()
+## The ambulance service (city_emergency_response.gd); created by setup().
+var emergency: Node3D
 var records: Array[Dictionary] = []
 var next_sequence := 1
 var last_spawn_reason := ""
@@ -93,7 +109,7 @@ var rays := 0
 var counters := {"spawned": 0, "spawn_attempts": 0, "external": 0, "cancelled": 0, "ended": 0, "unwitnessed": 0,
 	"witnesses": 0, "player_witnessed": 0, "report_attempts": 0, "reports": 0, "duplicates": 0, "rejected_reports": 0,
 	"npc_reports": 0, "phone_fallbacks": 0, "resolved": 0, "expired": 0, "lost_performers": 0, "handoffs": 0,
-	"photos_checked": 0, "photos_verified": 0}
+	"photos_checked": 0, "photos_verified": 0, "injuries": 0, "medical_requests": 0, "medical_refused": 0}
 var outcomes: Dictionary = {}
 ## Bumps whenever a record changes (the phone's refresh key).
 var revision := 0
@@ -111,6 +127,8 @@ var _road_grid: Dictionary = {}
 var _mailboxes: Array = []
 var _mailboxes_indexed := false
 var _props: Array[Dictionary] = []
+## incident id -> who asked: ambulance requests made on the next unpaused tick.
+var _medical_due: Dictionary = {}
 var _ray := PhysicsRayQueryParameters3D.new()
 var _prop_material: StandardMaterial3D
 var _photo_provider_registered := false
@@ -126,6 +144,10 @@ func setup(owner_level: Node) -> void:
 	_ray.hit_from_inside = false
 	_index_roads()
 	_connect_services(true)
+	if emergency == null:
+		emergency = Emergency.new()
+		add_child(emergency)
+		emergency.setup(level, self)
 
 ## Police find performers and report progress through us; the phone lists our
 ## live participants as photo subjects. Idempotent (retried at 2 Hz without
@@ -153,6 +175,9 @@ func tick(delta: float) -> void:
 	for id in _live.keys():
 		if _live.has(id):
 			_tick_live(str(id), delta)
+	_flush_medical()
+	if emergency != null:
+		emergency.tick(delta)
 	_observe_left -= delta
 	if _observe_left <= 0.0:
 		_observe_left = OBSERVE_INTERVAL
@@ -229,6 +254,9 @@ func report_incident(id: String, reporter_id := "player", context := {}) -> Dict
 		if reporter_id != str(report.by) and not reporter_id in corroborating and corroborating.size() < MAX_CORROBORATING:
 			corroborating.append(reporter_id)
 			_changed(rec)
+		# Someone is still hurt and the last medical response failed or stopped:
+		# a repeat call asks again (a live one is never duplicated).
+		_request_medical(rec, reporter_id)
 		result.ok = true
 		result.duplicate = true
 		result.status = str(report.status)
@@ -294,7 +322,10 @@ func phone_report_preview(at: Vector3) -> Dictionary:
 ## Reports police are still answering come first however old they are (at most
 ## PoliceStatus.MAX_LIVE_CALLS), then the `limit` newest others, newest first.
 ## Nobody else's reports are included. Durable (saved with the records), so the
-## phone rebuilds its report history from these after a reload.
+## phone rebuilds its report history from these after a reload. An ambulance
+## still answering a record keeps it among the live ones; each copy carries a
+## transient `medical_live` (never saved) so a card never shows a reloaded
+## medical stage as still under way.
 func reports_for(person_id := "player", limit := 4) -> Array:
 	var police = _police()
 	var answering: bool = police != null and police.has_method("has_open_ref")
@@ -306,11 +337,16 @@ func reports_for(person_id := "player", limit := 4) -> Array:
 			continue
 		if not (str(report.get("by", "")) == person_id or person_id in (report.get("corroborating", []) as Array)):
 			continue
-		if answering and live.size() < PoliceStatus.MAX_LIVE_CALLS and not str(records[i].state) in CLOSED_STATES \
-				and bool(police.has_open_ref(str(records[i].id))):
-			live.append(_serialize(records[i]))
+		var id := str(records[i].id)
+		var medical_live: bool = emergency != null and emergency.has_live(id)
+		var copy := _serialize(records[i])
+		if copy.has("medical"):
+			copy.medical_live = medical_live
+		if live.size() < PoliceStatus.MAX_LIVE_CALLS and (medical_live or (answering and not str(records[i].state) in CLOSED_STATES \
+				and bool(police.has_open_ref(id)))):
+			live.append(copy)
 		elif recent.size() < limit:
-			recent.append(_serialize(records[i]))
+			recent.append(copy)
 	return live + recent
 
 ## Case/traffic incidents without an ambient performance. spec: {template, at,
@@ -524,8 +560,10 @@ func validate_state(value) -> String:
 
 ## Replaces the record set from a checkpoint, faithfully: snapshot_state() right
 ## after equals `value` (the world save's rollback check relies on it). Acts in
-## this session stop first (performers go back to normal life where they stand).
-## Records that were mid-act or mid-response settle on the next tick (_settle).
+## this session stop first (performers go back to normal life where they stand);
+## so does any medical response (held patients released, ambulance back at the
+## hospital), without touching the records being replaced. Records that were
+## mid-act or mid-response settle on the next tick (_settle).
 func restore_state(value) -> Dictionary:
 	var reason := validate_state(value)
 	if not reason.is_empty():
@@ -533,6 +571,9 @@ func restore_state(value) -> Dictionary:
 	for id in _live.keys().duplicate():
 		_drop_live(str(id))
 	actors.release_all()
+	if emergency != null:
+		emergency.reset_state("checkpoint", false)
+	_medical_due.clear()
 	records.clear()
 	_phone_followups.clear()
 	_clear_props("")
@@ -544,7 +585,8 @@ func restore_state(value) -> Dictionary:
 	return {"ok": true, "restored": records.size(), "reason": ""}
 
 ## Stops every act now: performers go back to normal life where they stand.
-## Records stay; an act cut short keeps what was witnessed.
+## Records stay; an act cut short keeps what was witnessed. A medical response
+## under way stops too and its record says the result is unknown.
 func reset_state() -> void:
 	for id in _live.keys().duplicate():
 		var rec := _record(str(id))
@@ -552,6 +594,9 @@ func reset_state() -> void:
 			_cut_short(rec)
 		_drop_live(str(id))
 	actors.release_all()
+	_medical_due.clear()
+	if emergency != null:
+		emergency.reset_state("reset")
 
 func get_status() -> Dictionary:
 	var states: Dictionary = {}
@@ -565,7 +610,8 @@ func get_status() -> Dictionary:
 		"states": states, "next_sequence": next_sequence, "spawning_enabled": spawning_enabled,
 		"spawn_in": maxf(0.0, _spawn_left), "last_spawn_reason": last_spawn_reason, "counters": counters.duplicate(),
 		"outcomes": outcomes.duplicate(), "rays": rays, "props": _props.size(), "roads": _roads.size(),
-		"actors": actors.get_status()}
+		"actors": actors.get_status(), "medical_due": _medical_due.size(),
+		"medical": emergency.get_status() if emergency != null else {}}
 
 ## Ambient spawn or fixture: template id plus optional {offender, victim, route,
 ## stops} to pin people and geometry. Returns {ok, incident_id, reason}.
@@ -609,6 +655,9 @@ func on_police_progress(ref: String, event: String, data: Dictionary) -> void:
 			_emit_status(rec, event, str(data.get("text", "")), "", false, data)
 			if changed:
 				_changed(rec)
+			if event == "on_scene":
+				# Officers at the scene find whoever is still hurt there.
+				_request_medical(rec, str(data.get("officer_id", "police")))
 		"contact":
 			if not live.is_empty() and str(data.get("suspect_id", "")) == str(live.offender) and actors.owns(str(live.offender)):
 				live.phase = "stopped"
@@ -695,6 +744,199 @@ func _person_collider(id: String):
 			if body is CollisionObject3D and is_instance_valid(body):
 				return body
 	return null
+
+# --------------------------------------------------------------- medical aftermath
+
+## An injury from outside an ambient fight (a case, a traffic incident, a
+## fixture). `person_id` must be named on the open record and alive. True when
+## the record now names them as its patient (only the first injury counts).
+func note_injury(incident_id: String, person_id: String, injury := "hurt") -> bool:
+	var rec := _record(incident_id)
+	if rec.is_empty() or str(rec.state) in CLOSED_STATES:
+		return false
+	if not _is_participant(rec, person_id) and not _has_witness(rec, person_id):
+		return false
+	return _note_injury(rec, person_id, injury)
+
+## Deep copy of a record's medical summary; {} when nobody was hurt.
+func medical_for(id: String) -> Dictionary:
+	var rec := _record(id)
+	return (rec.get("medical", {}) as Dictionary).duplicate(true) if not rec.is_empty() else {}
+
+## city_emergency_response progress for a record's patient: after the injury
+## itself, the only writer of rec.medical. Anything outside the medical
+## vocabulary is ignored. A notice goes out (player reports) when `notify`.
+func on_medical_progress(ref: String, data: Dictionary) -> void:
+	var rec := _record(ref)
+	if rec.is_empty():
+		return
+	var medical: Dictionary = rec.get("medical", {})
+	if medical.is_empty() or str(medical.get("patient", "")) != str(data.get("patient", "")):
+		return
+	var stage := str(data.get("stage", ""))
+	var outcome := str(data.get("outcome", ""))
+	if stage == "injured" or not stage in EmergencyStatus.STAGES or (not outcome.is_empty() and not outcome in EmergencyStatus.OUTCOMES):
+		return
+	var clearance := str(data.get("clearance", ""))
+	medical.stage = stage
+	medical.outcome = outcome
+	medical.text = str(data.get("text", "")).left(160)
+	medical.clearance = clearance if clearance in EmergencyStatus.CLEARANCES else ""
+	medical.minutes = _minutes()
+	var first: Array = []
+	var timeline: Array = medical.get("timeline", [])
+	if not timeline.is_empty() and timeline[0] is Dictionary and str(timeline[0].get("stage", "")) == "injured":
+		first.append(timeline[0])
+	medical.timeline = _medical_timeline(first, data.get("timeline", []))
+	_changed(rec)
+	if bool(data.get("notify", true)):
+		_emit_medical(rec)
+
+## While a fight lasts: the worst harm combat reports for its victim (knocked
+## down, or at or below INJURY_HEALTH). A bicycle knockdown never counts.
+func _watch_injury(live: Dictionary, combat) -> void:
+	var victim := str(live.get("victim", ""))
+	if victim.is_empty() or combat == null or not combat.has_method("npc_fight_status") or str(live.get("injury", "")) == "knocked_down":
+		return
+	var status: Dictionary = combat.npc_fight_status(victim)
+	if bool(status.get("knocked", false)):
+		if not (combat.has_method("is_bicycle_knockdown") and bool(combat.is_bicycle_knockdown(victim))):
+			live.injury = "knocked_down"
+	elif float(status.get("health", INF)) <= INJURY_HEALTH:
+		live.injury = "hurt"
+
+## The record names `id` as its patient (never the player, never someone who
+## died); an already reported incident asks for an ambulance straight away.
+func _note_injury(rec: Dictionary, id: String, injury: String) -> bool:
+	if id.is_empty() or id == "player" or not injury in EmergencyStatus.INJURIES:
+		return false
+	if not (rec.get("medical", {}) as Dictionary).is_empty() or str(person_state(id).state) == "dead":
+		return false
+	var now := _minutes()
+	var text := "Someone was %s." % EmergencyStatus.injury_text(injury)
+	rec.medical = {"patient": id.left(64), "injury": injury, "stage": "injured", "outcome": "", "text": text, "minutes": now,
+		"opened_minutes": now, "clearance": "", "timeline": [{"stage": "injured", "outcome": "", "text": text, "minutes": now}]}
+	counters.injuries = int(counters.injuries) + 1
+	_changed(rec)
+	_request_medical(rec, str((rec.report as Dictionary).get("by", "")))
+	return true
+
+## Someone on a reported record is hurt, no medical call answers it now, and
+## none was made yet (or the last one failed or stopped and may be retried).
+func _medical_wanted(rec: Dictionary) -> bool:
+	var medical: Dictionary = rec.get("medical", {})
+	if medical.is_empty() or emergency == null or (rec.report as Dictionary).is_empty():
+		return false
+	if emergency.has_live(str(rec.id)):
+		return false
+	var stage := str(medical.get("stage", ""))
+	var outcome := str(medical.get("outcome", ""))
+	return stage == "injured" or (not EmergencyStatus.is_live(stage) and (outcome in EmergencyStatus.FAILED_OUTCOMES or outcome == "interrupted"))
+
+## Asked on the next unpaused tick, never inside a report call itself (the
+## phone shows the report's own reply first; a paused world sends nothing).
+func _request_medical(rec: Dictionary, by: String) -> void:
+	if _medical_wanted(rec):
+		_medical_due[str(rec.id)] = by.left(64)
+
+func _flush_medical() -> void:
+	if _medical_due.is_empty():
+		return
+	var due := _medical_due.duplicate()
+	_medical_due.clear()
+	for id in due:
+		var rec := _record(str(id))
+		if not rec.is_empty():
+			_send_medical(rec, str(due[id]))
+
+## One ambulance request. Accepted: its progress arrives through
+## on_medical_progress(). Refused (the person died or is in custody, no
+## ambulance can come): the record says why and no call exists.
+func _send_medical(rec: Dictionary, by: String) -> void:
+	if not _medical_wanted(rec):
+		return
+	var medical: Dictionary = rec.medical
+	var report: Dictionary = rec.report
+	counters.medical_requests = int(counters.medical_requests) + 1
+	var reply: Dictionary = emergency.request({"ref": str(rec.id), "patient": str(medical.patient), "injury": str(medical.injury),
+		"at": _vec(rec.at), "by": by, "street": str(rec.get("street", "")),
+		"phone": bool(report.get("phone", false)) or _phone_followups.has(str(rec.id))})
+	if bool(reply.get("ok", false)):
+		return
+	counters.medical_refused = int(counters.medical_refused) + 1
+	var outcome := str(reply.get("outcome", "unavailable"))
+	if not outcome in EmergencyStatus.OUTCOMES:
+		outcome = "unavailable"
+	_close_medical(rec, outcome, str(reply.get("message", "No ambulance could be sent.")))
+
+## A medical result decided here (a refusal, a response a reload stopped).
+func _close_medical(rec: Dictionary, outcome: String, text: String) -> void:
+	var medical: Dictionary = rec.medical
+	var stage := EmergencyStatus.terminal_stage(outcome)
+	var now := _minutes()
+	medical.stage = stage
+	medical.outcome = outcome
+	medical.text = text.left(160)
+	medical.minutes = now
+	medical.timeline = _medical_timeline(medical.get("timeline", []), [{"stage": stage, "outcome": outcome, "text": text, "minutes": now}])
+	_changed(rec)
+	_emit_medical(rec)
+
+## Checked steps, oldest first, at most MAX_TIMELINE (the first one is kept).
+func _medical_timeline(first: Array, steps) -> Array:
+	var result: Array = []
+	for step in first + (steps if steps is Array else []):
+		if not step is Dictionary:
+			continue
+		var stage := str(step.get("stage", ""))
+		if not stage in EmergencyStatus.TIMELINE_STAGES:
+			continue
+		var outcome := str(step.get("outcome", ""))
+		var minutes = step.get("minutes")
+		result.append({"stage": stage, "outcome": outcome if outcome in EmergencyStatus.OUTCOMES else "",
+			"text": str(step.get("text", "")).left(120), "minutes": float(minutes) if _number(minutes) else _minutes()})
+	while result.size() > EmergencyStatus.MAX_TIMELINE:
+		result.remove_at(1)
+	return result
+
+## The medical notice for the phone: the police relay's shape with status
+## "medical" (root forwards `text` when `phone`, exactly like police steps).
+func _emit_medical(rec: Dictionary) -> void:
+	var report: Dictionary = rec.report
+	var medical: Dictionary = rec.get("medical", {})
+	report_status_changed.emit({"incident_id": str(rec.id), "police_incident_id": str(report.get("police_incident_id", "")),
+		"status": "medical", "outcome": str((rec.resolution as Dictionary).get("outcome", "")),
+		"text": str(medical.get("text", "")), "by": str(report.get("by", "")),
+		"phone": bool(report.get("phone", false)) or _phone_followups.has(str(rec.id)), "minutes": _minutes(), "title": str(rec.title),
+		"stage": "", "handling": "", "street": str(rec.get("street", "")), "medical_stage": str(medical.get("stage", "")),
+		"medical_outcome": str(medical.get("outcome", "")), "clearance": str(medical.get("clearance", ""))})
+
+## The optional `medical` summary (absent on records nobody was hurt in).
+func _validate_medical(value) -> String:
+	if not value is Dictionary:
+		return "invalid incident medical"
+	var medical: Dictionary = value
+	if not medical.get("patient") is String or str(medical.patient).is_empty() or str(medical.patient).length() > 64:
+		return "invalid incident medical patient"
+	if not str(medical.get("injury", "")) in EmergencyStatus.INJURIES or not str(medical.get("stage", "")) in EmergencyStatus.STAGES:
+		return "invalid incident medical stage"
+	var outcome = medical.get("outcome")
+	if not outcome is String or (not str(outcome).is_empty() and not str(outcome) in EmergencyStatus.OUTCOMES):
+		return "invalid incident medical outcome"
+	if not medical.get("text") is String or str(medical.text).length() > 160 or not str(medical.get("clearance", "?")) in EmergencyStatus.CLEARANCES:
+		return "invalid incident medical fields"
+	for key in ["minutes", "opened_minutes"]:
+		if not _number(medical.get(key)) or float(medical[key]) < -1.0 or float(medical[key]) > 1.0e9:
+			return "invalid incident medical time"
+	var timeline = medical.get("timeline")
+	if not timeline is Array or timeline.size() > EmergencyStatus.MAX_TIMELINE:
+		return "invalid incident medical timeline"
+	for step in timeline:
+		if not step is Dictionary or not str(step.get("stage", "")) in EmergencyStatus.TIMELINE_STAGES or not step.get("outcome") is String \
+				or (not str(step.outcome).is_empty() and not str(step.outcome) in EmergencyStatus.OUTCOMES) \
+				or not step.get("text") is String or str(step.text).length() > 120 or not _number(step.get("minutes")):
+			return "invalid incident medical step"
+	return ""
 
 # --------------------------------------------------------------- live acts
 
@@ -854,9 +1096,11 @@ func _tick_fight(rec: Dictionary, live: Dictionary, delta: float) -> void:
 	var combat = _combat()
 	var offender := str(live.offender)
 	var status: Dictionary = combat.npc_fight_status(offender) if combat != null else {}
+	_watch_injury(live, combat)
 	if bool(status.get("fighting", false)) and float(live.timer) < FIGHT_TIMEOUT:
 		return
 	_finish_act(rec, live)
+	_note_injury(rec, str(live.get("victim", "")), str(live.get("injury", "")))
 	var body = status.get("actor")
 	if combat != null and is_instance_valid(body) and str(combat.actor_mode(body)) in ["aggro", "return"]:
 		combat.disengage_actor(body)
@@ -977,6 +1221,8 @@ func _witness_candidates(rec: Dictionary, at: Vector3) -> Array:
 		for actor in (list as Dictionary).values():
 			if not is_instance_valid(actor) or actor.get("dead") == true or actor.get("enabled") != true:
 				continue
+			if actor.has_meta(Emergency.CREW_META):
+				continue # Paramedics on a call are working, not neighbors who could report.
 			var id := str(actor.get("actor_id"))
 			if _is_participant(rec, id):
 				continue
@@ -1087,6 +1333,7 @@ func _file_report(rec: Dictionary, reporter_id: String, channel: String, phone: 
 	if reporter_id != "player":
 		counters.npc_reports = int(counters.npc_reports) + 1
 	_changed(rec)
+	_request_medical(rec, reporter_id)
 	return {"ok": true, "reason": "", "message": str(reply.get("message", ""))}
 
 ## Neighbors who call it in themselves (victims of theft, witnesses of a fight,
@@ -1170,6 +1417,11 @@ static func _outcome_from_police(outcome: String, event: String) -> String:
 func _resolve(rec: Dictionary, outcome: String, text: String, by: String) -> void:
 	if str(rec.state) in CLOSED_STATES:
 		return
+	var fight: Dictionary = _live.get(str(rec.id), {})
+	if str(fight.get("phase", "")) == "fight":
+		# Closed mid-fight (officers took the attacker): the harm already done stays
+		# on the record, and care does not depend on how the police call ended.
+		_note_injury(rec, str(fight.get("victim", "")), str(fight.get("injury", "")))
 	var reported := not (rec.report as Dictionary).is_empty()
 	rec.state = "expired" if outcome == "expired" else ("cancelled" if outcome == "cancelled" else "resolved")
 	rec.resolution = {"outcome": outcome, "minutes": _minutes(), "text": text.left(160), "by": by}
@@ -1215,7 +1467,8 @@ func _housekeeping() -> void:
 	while records.size() > MAX_RECORDS:
 		var dropped := false
 		for i in records.size():
-			if str(records[i].state) in CLOSED_STATES:
+			if str(records[i].state) in CLOSED_STATES and not (emergency != null and emergency.has_live(str(records[i].id))) \
+					and not _medical_due.has(str(records[i].id)):
 				_phone_followups.erase(str(records[i].id))
 				records.remove_at(i)
 				revision += 1
@@ -1226,10 +1479,16 @@ func _housekeeping() -> void:
 
 ## Records whose live part is gone (a reload, a reset): an act nobody performs
 ## any more has ended; a report with no open police call was interrupted (a
-## case report reopens so the case can file it again).
+## case report reopens so the case can file it again); a medical stage no
+## ambulance answers any more stopped with its result unknown.
 func _settle() -> void:
 	var police = _police()
 	for rec in records:
+		var medical: Dictionary = rec.get("medical", {})
+		if not medical.is_empty() and EmergencyStatus.is_live(medical.get("stage", "")) \
+				and not (emergency != null and emergency.has_live(str(rec.id))):
+			# Medical responses are never saved: say what is known, not how it went.
+			_close_medical(rec, "interrupted", "The medical response stopped before it finished, so its result is unknown.")
 		var state := str(rec.state)
 		if state == "active" and not _live.has(str(rec.id)):
 			if (rec.witnesses as Array).is_empty():
@@ -1863,6 +2122,8 @@ func _validate_record(entry) -> String:
 		return "invalid incident resolution"
 	if not (resolution as Dictionary).is_empty() and (not str(resolution.get("outcome", "")) in OUTCOMES or not _number(resolution.get("minutes"))):
 		return "invalid incident resolution fields"
+	if rec.has("medical"):
+		return _validate_medical(rec.medical)
 	return ""
 
 static func _number(value) -> bool:

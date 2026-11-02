@@ -17,6 +17,22 @@ static func blocked(level: Node, at: Vector3, radius := 0.0) -> bool:
 				return true
 	return false
 
+## Generated parked cars must also leave the authored emergency curb mouth
+## clear. General population/metadata clearance keeps its existing regions.
+static func parking_blocked(level: Node, at: Vector3, radius := 0.0) -> bool:
+	if blocked(level, at, radius):
+		return true
+	var civic = district(level)
+	if civic == null or not civic.has_method("is_parking_cleared"):
+		return false
+	if civic.is_parking_cleared(at):
+		return true
+	if radius > 0.0:
+		for direction in [Vector3.RIGHT, Vector3.LEFT, Vector3.FORWARD, Vector3.BACK]:
+			if civic.is_parking_cleared(at + direction * radius):
+				return true
+	return false
+
 static func segment_blocked(level: Node, start: Vector3, finish: Vector3, radius := 0.0) -> bool:
 	if district(level) == null:
 		return false

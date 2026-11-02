@@ -1,5 +1,6 @@
 extends Node3D
 const Basketball = preload("res://scripts/city/city_basketball.gd")
+const Bindings = preload("res://scripts/city/city_input_bindings.gd")
 class PlayerFixture:
 	extends CharacterBody3D
 	var enabled := true
@@ -42,6 +43,8 @@ func _run() -> void:
 	G.process_mode = Node.PROCESS_MODE_DISABLED
 	Hud.process_mode = Node.PROCESS_MODE_DISABLED
 	Hud.hide()
+	# Shoot/return route through the shared bindings; use defaults in memory only.
+	Bindings.bindings = Bindings.DEFAULTS.duplicate()
 	var level := LevelFixture.new()
 	add_child(level)
 	level.player = PlayerFixture.new()

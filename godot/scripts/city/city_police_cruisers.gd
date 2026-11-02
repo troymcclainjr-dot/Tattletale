@@ -143,8 +143,13 @@ static func flat(a: Vector3, b: Vector3) -> float:
 	return Vector2(a.x - b.x, a.z - b.z).length()
 
 static func forward_of(car: Node3D) -> Vector3:
-	var yaw := float(car.get("yaw"))
-	return Vector3(sin(yaw), 0.0, cos(yaw))
+	var yaw: Variant = car.get("yaw")
+	if yaw is float or yaw is int:
+		return Vector3(sin(float(yaw)), 0.0, cos(float(yaw)))
+	# Registered emergency bodies share reservations without a Vehicle script.
+	var forward := car.global_basis.z
+	forward.y = 0.0
+	return forward.normalized() if forward.length_squared() > 0.0001 else Vector3.BACK
 
 # --------------------------------------------------------------- setup
 
@@ -1663,6 +1668,15 @@ func _junction_state(unit: Dictionary) -> Dictionary:
 			return {}
 		var key := str(index)
 		var cleared: Dictionary = unit.cleared
+		# An ambulance owns the shared crossing until its rear has cleared.
+		# Neither an earlier approach decision nor elapsed waiting can revoke it.
+		if _emergency_junction_owned_by_other(unit.car, junction):
+			cleared.erase(key)
+			unit.yield_time = float(unit.yield_time) + SENSE_INTERVAL
+			if float(unit.yield_time) <= SENSE_INTERVAL + 0.001:
+				counters.yields = int(counters.yields) + 1
+			unit.yielding = true
+			return {"entry_s": entry, "yield": true}
 		if cleared.has(key) or distance <= 0.5:
 			cleared[key] = true
 			unit.yield_time = 0.0
@@ -1685,10 +1699,23 @@ func _signal_red(axis: String) -> bool:
 	var signals = traffic.get("signals")
 	return signals != null and signals.has_method("phase") and str(signals.phase(axis)) != "Green"
 
+func _emergency_junction_owned_by_other(car: Node3D, junction: Dictionary) -> bool:
+	if not is_instance_valid(traffic):
+		return false
+	var reservations = traffic.get("reservations")
+	var emergency = traffic.get("emergency_vehicles")
+	if not reservations is Dictionary or not emergency is Array:
+		return false
+	var holder = reservations.get(str(junction.get("node", "")))
+	return is_instance_valid(holder) and holder is Node3D and holder != car \
+		and holder.is_inside_tree() and emergency.has(holder)
+
 ## A car moving through the junction, or approaching it across our way, or
 ## holding traffic's own reservation of it.
 func _crossing_traffic(unit: Dictionary, junction: Dictionary) -> bool:
 	var car: Node3D = unit.car
+	if _emergency_junction_owned_by_other(car, junction):
+		return true
 	var center: Vector3 = junction.center
 	var radius := float(junction.radius)
 	var ours := Driver.direction_at(unit.path, unit.sums, float(junction.s) + 2.0, int(unit.cursor))

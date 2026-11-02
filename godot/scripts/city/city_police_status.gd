@@ -8,6 +8,13 @@ extends RefCounted
 ## there is no ETA or progress percentage anywhere, "en route" comes only from a
 ## unit that physically moved, and a reported record whose police response is
 ## not live (a reload) is never shown as still being answered.
+##
+## A record whose incident hurt someone also carries a medical summary
+## (city_emergency_status.gd): its card adds one medical line, the medical
+## steps join the timeline in time order, and a live ambulance keeps the card
+## live. Cards for records without one are unchanged.
+
+const EmergencyStatus := preload("res://scripts/city/city_emergency_status.gd")
 
 ## received -> queued | dispatched -> en_route -> on_scene -> handling ->
 ## resolved | failed | cancelled. "unavailable" is an intake refusal: no call.
@@ -296,7 +303,68 @@ static func _record_card(rec: Dictionary, live_call: Dictionary, closed_call: Di
 		if state in CLOSED_RECORD_STATES:
 			lines.append({"time": clock_text(resolution.get("minutes", -1.0)), "label": label(stage, "", outcome)})
 		card.timeline = lines
+	var medical: Dictionary = rec.get("medical", {}) if rec.get("medical") is Dictionary else {}
+	var medical_stage := str(medical.get("stage", ""))
+	if not medical_stage.is_empty() and medical_stage != "injured":
+		# `medical_live` (incidents.reports_for) says an ambulance still answers it;
+		# without it a live-looking stage is a reload and reads as interrupted.
+		var medical_live := bool(rec.get("medical_live", false)) and EmergencyStatus.is_live(medical_stage)
+		var line := EmergencyStatus.summary(medical, bool(rec.get("medical_live", false)))
+		if not line.is_empty():
+			parts.append(line)
+			card.incident = ". ".join(parts)
+		card.medical = {"stage": medical_stage, "outcome": str(medical.get("outcome", "")), "label": line,
+			"text": str(medical.get("text", "")), "clearance": str(medical.get("clearance", "")), "live": medical_live}
+		if medical_live:
+			card.live = true
+			if not is_live(stage):
+				card.next = EmergencyStatus.next_action(medical_stage)
+		var medical_minutes = medical.get("minutes", -1.0)
+		if medical_minutes is float or medical_minutes is int:
+			card.updated = maxf(float(card.updated), float(medical_minutes))
+		card.timeline = _merged_timeline(_police_steps(police, report, resolution, stage, outcome, state), medical.get("timeline", []))
 	return _finish(card)
+
+## The police side of a card's timeline with the game minute of each step.
+static func _police_steps(police: Dictionary, report: Dictionary, resolution: Dictionary, stage: String, outcome: String, state: String) -> Array:
+	var steps: Array = []
+	if not police.is_empty() and police.get("timeline") is Array and not (police.timeline as Array).is_empty():
+		for entry in police.timeline:
+			if entry is Dictionary:
+				steps.append({"minutes": entry.get("minutes", -1.0),
+					"label": label(str(entry.get("stage", "")), str(entry.get("handling", "")), str(entry.get("outcome", outcome)))})
+		return steps
+	steps.append({"minutes": report.get("minutes", -1.0), "label": "Report received"})
+	if state in CLOSED_RECORD_STATES:
+		steps.append({"minutes": resolution.get("minutes", -1.0), "label": label(stage, "", outcome)})
+	return steps
+
+## Police and medical steps in one timeline, in game-time order (ties keep
+## police before medical and each side's own order).
+static func _merged_timeline(police_steps: Array, medical_steps) -> Array:
+	var steps: Array = []
+	for i in police_steps.size():
+		var entry: Dictionary = police_steps[i]
+		steps.append({"minutes": entry.minutes, "label": str(entry.label), "key": _step_key(entry.minutes, i)})
+	if medical_steps is Array:
+		for i in (medical_steps as Array).size():
+			var entry = medical_steps[i]
+			if entry is Dictionary:
+				steps.append({"minutes": entry.get("minutes", -1.0), "key": _step_key(entry.get("minutes", -1.0), 1000 + i),
+					"label": EmergencyStatus.label(str(entry.get("stage", "")), str(entry.get("outcome", "")))})
+	steps.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return float(a.key) < float(b.key))
+	var lines: Array = []
+	for step in steps:
+		var time := clock_text(step.minutes)
+		if time.is_empty() and str(step.label) == "Report received":
+			continue # The fallback line only exists with a known report time.
+		lines.append({"time": time, "label": str(step.label)})
+	return lines
+
+## Game minute first, then the step's own order (exact in a double).
+static func _step_key(minutes, order: int) -> float:
+	var value := float(minutes) if (minutes is float or minutes is int) and is_finite(float(minutes)) else -1.0
+	return value * 4096.0 + float(order)
 
 static func _refusal_card(refusal: Dictionary) -> Dictionary:
 	var card := _card("refusal:" + str(refusal.get("id", "")), "Call not taken", str(refusal.get("street", "")), "unavailable",

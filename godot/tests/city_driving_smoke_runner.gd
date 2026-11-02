@@ -1,8 +1,9 @@
 extends Node
-## Standalone driving regressions on the production explorer, CharacterBody3D
+## Pacifist policy plus dormant vehicle-physics regressions on the explorer, CharacterBody3D
 ## vehicles, traffic manager and driving manager over real static collision:
 ## starter placement, entry authority, AI ownership, handling, collision sweeps,
-## tire damage, safe dismount, render LOD and pause gating.
+## tire damage, safe placement, external ownership, render LOD and pause gating.
+## Physics use legitimate external ownership; player driving is never enabled.
 ## Run: python godot/tools/godot_run.py --timeout 240 -- --headless --script res://tests/city_driving_smoke.gd
 const Vehicle := preload("res://scripts/city/city_vehicle.gd")
 const Explorer := preload("res://scripts/city/city_player.gd")
@@ -43,6 +44,9 @@ var traffic: Node3D
 var driving: Node3D
 var combat: CombatStub
 var renderer: Node3D
+var physics_car: Node3D
+var physics_impacts := 0
+var physics_contact: Dictionary = {}
 var passes := 0
 var failures := 0
 var obstacles: Array[Node] = []
@@ -144,12 +148,16 @@ func place(car: Node3D, at: Vector3, heading: float, speed := 0.0) -> void:
 		driving._last_seat = player.global_position
 
 func drive(count: int, throttle := 0.0, brake := 0.0, steer := 0.0, handbrake := false) -> void:
-	driving.set_control_override(throttle, brake, steer, handbrake)
 	for i in count:
-		traffic.tick(DT)
-		driving.tick(DT)
+		step_physics(DT, throttle, brake, steer, handbrake)
 		await get_tree().physics_frame
-	driving.clear_control_override()
+
+func step_physics(delta: float, throttle: float, brake: float, steer: float, handbrake: bool) -> void:
+	var result: Dictionary = physics_car.external_step(delta, throttle, brake, steer, handbrake)
+	var contact: Dictionary = result.get("contact", {})
+	if not contact.is_empty() and float(contact.get("speed", 0.0)) >= Driving.IMPACT_REPORT_SPEED:
+		physics_impacts += 1
+		physics_contact = contact
 
 func make_ai_car(at: Vector3, heading: float, id: String, cruise := 9.0, police := false) -> Node3D:
 	var car := Vehicle.new()
@@ -233,10 +241,14 @@ func _run() -> void:
 		return
 	await _presence_section()
 	await _entry_section()
+	physics_car = make_ai_car(OPEN, 0.0, "fixture_physics_car", 0.0)
+	check(traffic.claim_external_vehicle(physics_car, "physics_fixture"), "external physics fixture owns the body without enabling player driving")
 	await _handling_section()
 	await _collision_section()
 	await _damage_section()
+	traffic.release_external_vehicle(physics_car, "physics_fixture")
 	await _exit_section()
+	remove_ai_car(physics_car)
 	await _ownership_section()
 	await _pause_section()
 	_finish()
@@ -264,9 +276,9 @@ func _starter_section() -> void:
 	check(heading.dot(Vector3(0, 0, -1) if at.x > 0.0 else Vector3(0, 0, 1)) > 0.999, "starter faces the legal direction for its curb")
 	check(starter.state == "parked" and not starter.player_controlled and starter.collision_layer == 16 and starter._hull_clear(starter.global_transform),
 		"starter is a parked physical car with a clear hull")
-	check(driving.get_map_pois().size() == 1 and str(status.starter.street) == "Fixture Avenue" and bool(status.starter.visible_from_spawn),
-		"starter exposes a map point and was chosen in view of the spawn")
-	check(starter.get_node_or_null("StarterCarLabel") is Label3D, "starter carries a YOUR CAR / F label")
+	check(driving.get_map_pois().is_empty() and str(status.starter.street) == "Fixture Avenue" and bool(status.starter.visible_from_spawn),
+		"retired starter has no player map point but keeps safe placement")
+	check(starter.get_node_or_null("StarterCarLabel") == null, "retired starter carries no player-driving label")
 	var pose: Transform3D = starter.global_transform
 	for i in 30:
 		traffic.tick(DT)
@@ -299,48 +311,21 @@ func _presence_section() -> void:
 
 func _entry_section() -> void:
 	var starter: Node3D = driving.starter
-	await stand(Vector3(20, 0.0, 10))
+	await stand(door_point(starter))
 	driving.tick(0.1)
-	check(level.notices.size() == 1 and "press F" in level.notices[0], "approaching the starter announces the F prompt once")
-	check(driving.get_status().prompt == "" and not driving.handle_input(key(KEY_F)) and not driving.active,
-		"away from cars F is not consumed and nothing is boarded")
-	await stand(door_point(starter, 1.0))
-	driving.tick(0.1)
-	var status: Dictionary = driving.get_status()
-	check(status.prompt == "F  Drive your car" and status.candidate_id == "player_starter", "at the starter's door the HUD prompt offers F (%s)" % status.prompt)
+	check(not driving.get_status().player_driving_enabled and driving.get_status().prompt.is_empty(), "player driving is disabled with no misleading prompt")
+	check(not driving.handle_input(key(KEY_F)) and not driving.enter_vehicle(starter), "both F and direct entry refuse player driving")
+	check(not driving.active and not player.is_seated() and not starter.player_controlled and combat.cancels == 0, "refused entry leaves player, combat and vehicle ownership untouched")
 	level.paused = true
-	check(not driving.handle_input(key(KEY_F)) and not driving.active, "a paused level ignores F")
+	check(not driving.handle_input(key(KEY_F)), "paused input cannot enter retired driving")
 	level.paused = false
-	combat.downed = 1.0
-	check(driving.handle_input(key(KEY_F)) and not driving.active and "breath" in driving.get_status().prompt, "a downed explorer is refused with a reason")
-	combat.downed = 0.0
-	player.impact_recovery = 0.4
-	check(not driving.enter_vehicle(starter) and not driving.active, "a stumbling explorer cannot board")
-	player.impact_recovery = 0.0
-	driving._message_time = 0.0
-	var cancels := combat.cancels
-	check(driving.handle_input(key(KEY_F)) and driving.active and driving.vehicle == starter, "F at the door boards the starter car")
-	check(starter.player_controlled and starter.force_detailed and starter.state == "player", "the occupied car leaves AI control and forces detailed LOD")
-	check(player.is_seated() and player.collision_layer == 0 and player.collision_mask == 0 and not player.puppet.g.visible,
-		"the seated explorer has no collider and a hidden puppet")
-	check(player.global_position.distance_to(starter.global_position) < 0.01, "the explorer rides at the car origin for streaming and presence")
-	check(not player.request_jump() and not player.receive_vehicle_impact(Vector3(0, 0, 1), 12.0) and not player.is_standing_on_vehicle(starter),
-		"a seated explorer cannot jump, stumble or ride a roof")
-	check(combat.cancels == cancels + 1, "boarding cancels held combat actions")
-	check(not driving.enter_vehicle(starter) and driving.vehicle == starter, "only one car can be occupied at a time")
-	driving.tick(DT)
-	check(driving.get_status().prompt == "F  Get out" and bool(driving.get_status().exit_available), "stopped in the open, the prompt offers F to get out")
-	if renderer != null:
-		renderer.refresh(starter.global_position + Vector3(0, 0, 150))
-		check(not starter._render_lod_active and starter.model.visible, "the occupied car keeps its exact model at far viewer distance")
-		renderer.refresh(starter.global_position + Vector3(0, 0, 900))
-		check(starter.model.visible, "even beyond the visual cutoff (inspector or overview camera)")
+	await stand(SPAWN)
 
 func yaw_rate(car: Node3D, speed: float, steer: float) -> float:
 	place(car, OPEN, 0.0, speed)
 	car.drive_steer = steer
 	var before: float = car.yaw
-	car.player_step(DT, 0.0, 0.0, steer, false)
+	car.external_step(DT, 0.0, 0.0, steer, false)
 	return angle_difference(before, car.yaw) / DT
 
 func turn_sample(car: Node3D, handbrake: bool) -> Dictionary:
@@ -349,21 +334,21 @@ func turn_sample(car: Node3D, handbrake: bool) -> Dictionary:
 	var before: float = car.yaw
 	var slip := 0.0
 	for i in 30:
-		car.player_step(DT, 0.0, 0.0, 1.0, handbrake)
+		car.external_step(DT, 0.0, 0.0, 1.0, handbrake)
 		var forward := Vector3(sin(car.yaw), 0.0, cos(car.yaw))
 		slip = maxf(slip, absf(car.drive_velocity.dot(Vector3(forward.z, 0.0, -forward.x))))
 	return {"yaw": angle_difference(before, car.yaw), "slip": slip, "speed": car.speed}
 
 func _handling_section() -> void:
-	var car: Node3D = driving.vehicle
+	var car: Node3D = physics_car
 	place(car, OPEN, 0.0)
 	await frames(2)
 	await drive(120, 1.0)
 	check(car.speed > 10.0 and car.speed < Vehicle.DRIVE_MAX_SPEED, "W accelerates smoothly from rest (%.1f m/s after 2s)" % car.speed)
 	check(car.global_position.z > OPEN.z + 8.0 and absf(car.global_position.x - OPEN.x) < 0.3, "straight throttle drives along the heading")
-	check(player.global_position.distance_to(car.global_position) < 0.01, "the seat follows every driven step")
+	check(not player.is_seated() and not car.player_controlled, "external motion never takes the player seat")
 	var behind: Vector3 = player.camera.global_position - car.global_position
-	check(behind.dot(Vector3(sin(car.yaw), 0.0, cos(car.yaw))) < -3.0 and behind.y > 1.0, "the chase camera sits behind and above the car")
+	check(behind.is_finite() and not driving.active, "the on-foot camera remains independent of external vehicle motion")
 	place(car, OPEN, 0.0, 15.0)
 	var start: Vector3 = car.global_position
 	var stop_distance := INF
@@ -392,19 +377,19 @@ func _handling_section() -> void:
 	var motion := InputEventMouseMotion.new()
 	motion.relative = Vector2(300, 0)
 	motion.screen_relative = Vector2(300, 0)
-	check(driving.handle_input(motion) and player.vehicle_orbit_yaw < orbit_before - 0.5, "mouse motion orbits the chase camera")
+	check(not driving.handle_input(motion) and is_equal_approx(player.vehicle_orbit_yaw, orbit_before), "retired driving does not steal mouse look")
 	place(car, OPEN, 0.0, 10.0)
 	await drive(150, 0.6)
-	check(absf(player.vehicle_orbit_yaw) < 0.2, "a released orbit recenters behind the moving car")
+	check(is_equal_approx(player.vehicle_orbit_yaw, orbit_before), "external movement leaves player orbit unchanged")
 
 func _collision_section() -> void:
-	var car: Node3D = driving.vehicle
+	var car: Node3D = physics_car
 	var half := half_size(car).z
 	var wall_z := OPEN.z + 14.0
 	box("HeadOnWall", Vector3(OPEN.x, 1.5, wall_z), Vector3(10, 3, 0.2), 2)
 	await frames(2)
 	place(car, OPEN, 0.0, 20.0)
-	var impacts: int = driving.impacts
+	var impacts: int = physics_impacts
 	var deepest := -INF
 	var clear := true
 	for i in 90:
@@ -412,17 +397,16 @@ func _collision_section() -> void:
 		deepest = maxf(deepest, car.global_position.z + half)
 		clear = clear and hull_clear(car)
 	check(clear and deepest < wall_z - 0.1 + 0.02, "a 20 m/s head-on sweep stops at the wall face (front %.3f, face %.3f)" % [deepest, wall_z - 0.1])
-	check(absf(car.speed) < 0.6 and driving.impacts == impacts + 1 and driving.last_impact.kind == "structure" and float(driving.last_impact.speed) > 15.0,
-		"the crash is reported once with its closing speed (%s)" % str(driving.last_impact))
+	check(absf(car.speed) < 0.6 and physics_impacts == impacts + 1 and physics_contact.kind == "structure" and float(physics_contact.speed) > 15.0,
+		"the crash is reported once with its closing speed (%s)" % str(physics_contact))
 	clear_obstacles()
 	var thin_z := OPEN.z + 6.0
 	box("ThinWall", Vector3(OPEN.x, 1.5, thin_z), Vector3(10, 3, 0.1), 2)
 	await frames(2)
 	place(car, OPEN, 0.0, 24.0)
 	deepest = -INF
-	driving.set_control_override(1.0, 0.0, 0.0, false)
 	for i in 6:
-		driving.tick(0.1)
+		step_physics(0.1, 1.0, 0.0, 0.0, false)
 		deepest = maxf(deepest, car.global_position.z + half)
 		await get_tree().physics_frame
 	driving.clear_control_override()
@@ -461,7 +445,7 @@ func _collision_section() -> void:
 		await drive(1, 0.6)
 	check(car.global_position.z + half < person_at.z - 0.3 + 0.02 and person.global_position.is_equal_approx(person_at) and hull_clear(car),
 		"a pedestrian body stops the car before it; nobody is pushed or entered")
-	check(driving.last_impact.kind == "person", "pedestrian contact is classified for root/law hooks")
+	check(physics_contact.kind == "person", "pedestrian contact is classified for root/law hooks")
 	clear_obstacles()
 	place(car, OPEN, 0.0, 0.0)
 	await frames(2)
@@ -474,7 +458,7 @@ func _collision_section() -> void:
 		await drive(1, 0.6)
 	check(car.global_position.z + half < other.global_position.z - half_size(other).z + 0.02 and other.global_transform.is_equal_approx(other_pose) and hull_clear(car),
 		"a traffic car stops the driven car without being displaced")
-	check(driving.last_impact.kind == "vehicle", "vehicle contact is classified")
+	check(physics_contact.kind == "vehicle", "vehicle contact is classified")
 	remove_ai_car(other)
 	# A 15cm curb is mounted at an angle; a 60cm riser is a wall. Use a wide
 	# platform so the first front sample cannot leave its far edge in the same
@@ -504,7 +488,7 @@ func top_speed(car: Node3D, count: int) -> float:
 	var best := 0.0
 	for i in count:
 		# Hold the heading; a flat tire pulls otherwise.
-		car.player_step(DT, 1.0, 0.0, clampf(car.yaw * 3.0, -1.0, 1.0), false)
+		car.external_step(DT, 1.0, 0.0, clampf(car.yaw * 3.0, -1.0, 1.0), false)
 		best = maxf(best, car.speed)
 	return best
 
@@ -512,7 +496,7 @@ func braking_distance(car: Node3D, speed: float) -> float:
 	place(car, LONG_START, 0.0, speed)
 	var start: Vector3 = car.global_position
 	for i in 300:
-		car.player_step(DT, 0.0, 1.0, clampf(car.yaw * 3.0, -1.0, 1.0), false)
+		car.external_step(DT, 0.0, 1.0, clampf(car.yaw * 3.0, -1.0, 1.0), false)
 		if car.speed <= 0.0:
 			break
 	return car.global_position.distance_to(start)
@@ -522,11 +506,11 @@ func pull_drift(car: Node3D) -> float:
 	var before: float = car.yaw
 	for i in 60:
 		car.drive_velocity = Vector3(sin(car.yaw), 0.0, cos(car.yaw)) * 10.0
-		car.player_step(DT, 0.0, 0.0, 0.0, false)
+		car.external_step(DT, 0.0, 0.0, 0.0, false)
 	return angle_difference(before, car.yaw)
 
 func _damage_section() -> void:
-	var car: Node3D = driving.vehicle
+	var car: Node3D = physics_car
 	var healthy_top := top_speed(car, 480)
 	var healthy_stop := braking_distance(car, 12.0)
 	var healthy_rate := absf(yaw_rate(car, 15.0, 1.0))
@@ -534,7 +518,7 @@ func _damage_section() -> void:
 	place(car, LONG_START, 0.0)
 	car.receive_gunshot({"tire_index": 0}, car.global_position + Vector3.LEFT * 3.0)
 	check(car.flat_tires.size() == 1 and car.flat_tires[0] == 0 and car.force_detailed and car.model.visible and not car._render_lod_active,
-		"a shot tire on the occupied car keeps its exact damaged model")
+		"tire damage on an externally controlled car keeps its exact model")
 	var flat_top := top_speed(car, 480)
 	check(healthy_top > 20.0 and flat_top <= Vehicle.DRIVE_MAX_SPEED * 0.70 + 0.05 and flat_top > 12.0,
 		"one flat caps top speed by the existing tire speed factor (%.1f -> %.1f m/s)" % [healthy_top, flat_top])
@@ -555,173 +539,75 @@ func _damage_section() -> void:
 	await frames(1)
 
 func _exit_section() -> void:
-	var car: Node3D = driving.vehicle
+	var car: Node3D = physics_car
 	clear_obstacles()
-	place(car, OPEN, 0.0, 5.0)
+	place(car, OPEN, 0.0)
 	await frames(2)
-	var refused: int = driving.refused_exits
-	check(not driving.exit_vehicle(false) and driving.active and driving.refused_exits == refused + 1 and "Stop" in driving.get_status().prompt,
-		"a moving car refuses a normal exit")
-	place(car, OPEN, 0.0, 0.0)
+	var lateral := half_size(car).x + 0.50
+	check(not driving._exit_spot(car, lateral, 0.25, true).is_empty(), "legacy safe-placement helper finds a clear door")
+	box("DriverWall", car.global_position + Vector3(half_size(car).x + 0.25, 1.2, 0), Vector3(0.2, 2.4, 8), 2)
 	await frames(2)
-	driving._message_time = 0.0
-	driving._exit_clock = 0.0
-	driving.tick(DT)
-	check(driving.get_status().prompt == "F  Get out", "a stopped car in the open offers F to get out")
-	check(driving.handle_input(key(KEY_F)) and not driving.active and driving.last_exit.door == "driver", "F exits through the driver's door")
-	var local: Vector3 = car.global_transform.affine_inverse() * player.global_position
-	check(local.x > 0.9 and absf(local.z) < 1.0, "the explorer stands beside the driver's (+X) door (%s)" % local)
-	check(not player.is_seated() and player.collision_layer == 4 and player.collision_mask == (1 | 2 | 8 | 16) and player.puppet.g.visible,
-		"exit restores the solid explorer and its puppet")
-	check(not car.player_controlled and car.player_released and car.state == "parked" and car.speed == 0.0 and not car.force_detailed,
-		"the car is left parked and returns to normal LOD")
+	check(driving._exit_spot(car, lateral, 0.25, true).is_empty() and not driving._exit_spot(car, -lateral, 0.25, true).is_empty(), "safe placement refuses a wall and accepts the opposite clear side")
+	clear_obstacles()
+	box("Fence", car.global_position + Vector3(half_size(car).x + 0.115, 1, 0), Vector3(0.05, 2, 8), 2)
 	await frames(2)
-	check(capsule_clear(), "the explorer's capsule overlaps nothing after the exit")
-	if renderer != null:
-		renderer.refresh(car.global_position + Vector3(0, 0, 150))
-		check(car._render_lod_active, "after exit the parked car rejoins the far batch")
-		renderer.refresh(player.camera.global_position)
+	check(driving._exit_spot(car, lateral, 0.25, true).is_empty(), "safe-placement sweep refuses a thin fence")
+	clear_obstacles()
+	box("LeftBox", car.global_position + Vector3(lateral - 0.3, 1.2, 0), Vector3(0.2, 2.4, 6), 2)
+	box("RightBox", car.global_position + Vector3(-lateral + 0.3, 1.2, 0), Vector3(0.2, 2.4, 6), 2)
+	await frames(2)
+	check(driving._exit_spot(car, lateral, 0.25, true).is_empty() and driving._exit_spot(car, -lateral, 0.25, true).is_empty(), "boxed-in legacy door placements are both refused")
+	check(not driving.active and not player.is_seated() and capsule_clear(), "placement probes never seat or teleport the player")
+	clear_obstacles()
 	var before: Vector3 = player.global_position
 	Input.action_press("move_forward")
 	await frames(20)
 	Input.action_release("move_forward")
-	check(player.global_position.distance_to(before) > 0.5, "walking controls resume immediately after exit")
-	# A wall at the driver's door: the kerb-side door is used instead.
-	check(await board(car), "re-boarding for the blocked-door case")
-	place(car, OPEN, 0.0, 0.0)
-	var side_x: float = half_size(car).x
-	box("DriverWall", car.global_position + Vector3(side_x + 0.25, 1.2, 0.0), Vector3(0.2, 2.4, 8.0), 2)
-	await frames(2)
-	check(driving.exit_vehicle(false) and driving.last_exit.door == "passenger" and (car.global_transform.affine_inverse() * player.global_position).x < -0.9,
-		"a wall at the driver's door sends the explorer out the kerb side")
-	check(capsule_clear(), "the kerb-side exit is clear of the wall and the car")
-	clear_obstacles()
-	# A thin fence beside the door: the spot beyond it is free, the path is not.
-	check(await board(car), "re-boarding for the fence case")
-	place(car, OPEN, 0.0, 0.0)
-	box("Fence", car.global_position + Vector3(side_x + 0.115, 1.0, 0.0), Vector3(0.05, 2.0, 8.0), 2)
-	await frames(2)
-	check(driving.exit_vehicle(false) and driving.last_exit.door == "passenger", "no exit is placed through a fence the body cannot pass")
-	clear_obstacles()
-	# Boxed in on all sides: normal exit refused, forced exit still places the explorer.
-	check(await board(car), "re-boarding for the boxed-in case")
-	place(car, OPEN, 0.0, 0.0)
-	var length_half: float = half_size(car).z
-	box("LeftBox", car.global_position + Vector3(side_x + 0.2, 1.2, 0.0), Vector3(0.2, 2.4, 6.0), 2)
-	box("RightBox", car.global_position + Vector3(-side_x - 0.2, 1.2, 0.0), Vector3(0.2, 2.4, 6.0), 2)
-	box("FrontBox", car.global_position + Vector3(0.0, 1.2, length_half + 0.2), Vector3(3.0, 2.4, 0.2), 2)
-	box("RearBox", car.global_position + Vector3(0.0, 1.2, -length_half - 0.2), Vector3(3.0, 2.4, 0.2), 2)
-	await frames(2)
-	refused = driving.refused_exits
-	check(not driving.exit_vehicle(false) and driving.active and driving.refused_exits == refused + 1, "a boxed-in car refuses a normal exit")
-	driving._message_time = 0.0
-	driving.tick(DT)
-	check("No room" in driving.get_status().prompt, "the prompt explains that there is no room to get out")
-	check(not driving.recovery_exit_at(car.global_position + Vector3(side_x + 0.2, 0.05, 0.0), car.yaw) and driving.active,
-		"a recovery destination inside a wall is refused and the explorer stays seated")
-	check(driving.exit_vehicle(true) and not driving.active and bool(driving.last_exit.forced), "a forced exit (arrest, defeat) widens the search past boxed-in doors")
-	await frames(2)
-	check(capsule_clear(2), "the forced exit never places the explorer inside a wall")
-	clear_obstacles()
-	# Recovery detaches at a separately validated destination (facility).
-	check(await board(car), "re-boarding for the recovery destination case")
-	var release := Vector3(car.global_position.x + 6.0, ground_y(car.global_position + Vector3(6.0, 0.0, 0.0)) + 0.05, car.global_position.z)
-	check(driving.recovery_exit_at(release, 0.0) and not driving.active and driving.last_exit.door == "recovery" and player.global_position.is_equal_approx(release),
-		"recovery_exit_at places the explorer at a clear validated destination")
-	await frames(2)
-	check(capsule_clear() and car.state == "parked" and not car.player_controlled, "the recovery exit leaves the car parked and the explorer solid")
-	# A root teleport while seated (respawn, checkpoint) releases the car in place.
-	check(await board(car), "re-boarding for the relocation case")
-	var car_at: Vector3 = car.global_position
-	player.global_position = Vector3(40, 0.05, 40)
-	driving.tick(DT)
-	check(not driving.active and driving.last_exit.door == "relocated" and player.global_position.distance_to(Vector3(40, 0.05, 40)) < 0.01 and car.global_position.is_equal_approx(car_at),
-		"a teleport while seated releases the car where it stopped and keeps the new spot")
-	await frames(2)
+	check(player.global_position.distance_to(before) > 0.5, "walking stays available after refused driving and placement probes")
 
 func _ownership_section() -> void:
 	var ai := make_ai_car(AI_SPOT, 0.0, "fixture_taxi", 0.0)
 	traffic.reservations["fixture_junction"] = ai
 	ai.reservation_id = "fixture_junction"
-	var follower := make_ai_car(AI_SPOT - Vector3(0.0, 0.0, 14.0), 0.0, "fixture_follower")
+	var follower := make_ai_car(AI_SPOT - Vector3(0, 0, 14), 0.0, "fixture_follower")
 	follower.state = "parked"
-	var moving := make_ai_car(AI_SPOT + Vector3(9.0, 0.0, 0.0), 0.0, "fixture_moving")
-	moving.state = "parked"
+	var moving := make_ai_car(AI_SPOT + Vector3(9, 0, 0), 0.0, "fixture_moving")
 	moving.speed = 8.0
-	var patrol := make_ai_car(AI_SPOT + Vector3(-9.0, 0.0, 0.0), 0.0, "fixture_patrol", 9.0, true)
-	patrol.state = "parked"
-	await frames(2)
-	await stand(door_point(moving, 1.0))
-	driving.tick(0.1)
-	check(driving.get_status().candidate_id != "fixture_moving" and not driving.enter_vehicle(moving), "a moving traffic car cannot be boarded")
-	remove_ai_car(moving)
-	await stand(door_point(patrol, 1.0))
-	driving.tick(0.1)
-	check(driving.get_status().candidate_id != "fixture_patrol" and not driving.enter_vehicle(patrol), "patrol cars are not civilian cars to take")
-	await stand(door_point(ai, 1.0))
-	driving._message_time = 0.0
-	driving.tick(0.1)
-	check(driving.get_status().prompt == "F  Drive this car", "a stopped civilian car offers F")
-	check(driving.handle_input(key(KEY_F)) and driving.vehicle == ai, "F boards the stopped traffic car")
-	check(not traffic.reservations.has("fixture_junction") and ai.reservation_id == "", "boarding releases the car's junction reservation")
+	var patrol := make_ai_car(AI_SPOT + Vector3(-9, 0, 0), 0.0, "fixture_patrol", 9.0, true)
+	for car in [ai, moving, patrol]:
+		check(not driving.enter_vehicle(car) and not car.player_controlled, "policy refuses civilian, moving and patrol entry: " + str(car.vehicle_id))
+	check(traffic.reservations.has("fixture_junction") and ai.reservation_id == "fixture_junction", "refused player entry does not steal AI reservations")
+	check(traffic.claim_external_vehicle(ai, "fixture_dispatch"), "legitimate external ownership remains available")
+	check(not traffic.reservations.has("fixture_junction"), "external ownership releases the junction reservation")
 	var pose: Transform3D = ai.global_transform
-	for i in 60:
-		traffic.tick(DT)
-		ai.tick(DT)
-	check(ai.global_transform.is_equal_approx(pose), "neither traffic.tick nor a direct AI tick moves the occupied car")
-	check(not ai.try_recycle() and ai.recycled == 0 and not ai.can_tick_damage_coarsely(), "the occupied car is never recycled or coarse-ticked")
-	traffic._update_leaders()
-	check(is_finite(follower.leader_distance) and follower.leader_distance < 9.0, "AI followers queue behind the player's car (%.1fm)" % follower.leader_distance)
-	place(ai, AI_SPOT, PI * 0.5)
-	traffic._update_leaders()
-	check(is_finite(follower.leader_distance), "a player car turned across the lane still blocks it")
-	var status: Dictionary = traffic.get_status()
-	check(int(status.player_controlled) == 1 and int(status.total) == traffic.vehicles.size(), "traffic status counts the occupied car without changing fleet totals")
-	place(ai, AI_SPOT, 0.0)
-	await frames(2)
-	check(driving.exit_vehicle(false) and ai.player_released and ai.state == "parked" and not ai.player_controlled, "exit leaves the traffic car parked and released")
-	var parked: Transform3D = ai.global_transform
 	for i in 30:
-		traffic.tick(DT)
-	check(ai.global_transform.is_equal_approx(parked) and not ai.try_recycle(), "a released car stays parked near the explorer instead of being recycled")
+		ai.tick(DT)
+	check(ai.global_transform.is_equal_approx(pose) and not ai.try_recycle() and not ai.can_tick_damage_coarsely(), "AI cannot move, recycle or coarse-tick an externally owned car")
 	traffic._update_leaders()
-	check(is_finite(follower.leader_distance), "a released car still blocks its lane")
-	remove_ai_car(ai)
-	remove_ai_car(follower)
-	remove_ai_car(patrol)
+	check(is_finite(follower.leader_distance), "traffic queues behind an externally owned car")
+	check(traffic.release_external_vehicle(ai, "fixture_dispatch") and ai.state == "parked" and not ai.player_controlled, "external release leaves a parked non-player car")
+	check(not driving.active and not player.is_seated(), "ownership tests never enable a player vehicle")
+	for car in [ai, follower, moving, patrol]:
+		remove_ai_car(car)
 	await frames(2)
 
 func _pause_section() -> void:
 	var car: Node3D = driving.starter
-	check(await board(car), "boarding the starter for pause checks")
-	place(car, OPEN, 0.0, 0.0)
-	await drive(60, 1.0)
-	var speed: float = car.speed
+	place(car, OPEN, 0.0)
 	var pose: Transform3D = car.global_transform
-	var seat: Vector3 = player.global_position
-	var eye: Vector3 = player.camera.global_position
 	var ticks: int = driving.paused_ticks
-	driving.set_control_override(1.0, 0.0, 0.0, false)
+	driving.set_control_override(1.0, 0.0, 1.0, false)
 	level.paused = true
-	player.enabled = false
 	for i in 30:
 		driving.tick(DT)
-		await get_tree().physics_frame
-	check(car.global_transform.is_equal_approx(pose) and player.global_position.is_equal_approx(seat) and driving.paused_ticks == ticks + 30,
-		"a paused level (menu, map, inspector) freezes the car and seat despite held throttle")
-	check(is_equal_approx(car.speed, speed) and player.camera.global_position.is_equal_approx(eye), "the paused car keeps its speed and the chase view does not drift")
-	check(not driving.handle_input(key(KEY_F)) and driving.active, "F is ignored while paused")
+	check(car.global_transform.is_equal_approx(pose) and driving.paused_ticks == ticks + 30, "pause gates the manager despite a control override")
+	check(not driving.handle_input(key(KEY_F)) and not driving.active, "pause cannot activate driving")
 	level.paused = false
 	get_tree().paused = true
 	driving.tick(DT)
-	check(car.global_transform.is_equal_approx(pose), "a paused scene tree also freezes driving")
+	check(car.global_transform.is_equal_approx(pose), "tree pause also gates the manager")
 	get_tree().paused = false
-	player.enabled = true
-	for i in 10:
+	for i in 30:
 		driving.tick(DT)
-		await get_tree().physics_frame
 	driving.clear_control_override()
-	check(car.global_position.distance_to(pose.origin) > 0.5, "driving resumes when the pause ends")
-	place(car, car.global_position, car.yaw, 0.0)
-	await frames(2)
-	check(driving.exit_vehicle(true) and not driving.active, "cleanup exit")
+	check(car.global_transform.is_equal_approx(pose) and not driving.active, "unpausing does not bypass disabled player-driving policy")
