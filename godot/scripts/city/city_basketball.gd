@@ -192,7 +192,7 @@ func _step_ball(i: int, delta: float) -> void:
 		var normal := collision.get_normal()
 		# Only real, energetic contacts sound; resting/rolling balls stay quiet.
 		if absf(body.velocity.dot(normal)) >= 1.0:
-			_bounce_sound(collision.get_position())
+			_bounce_sound(collision.get_position(), clampf(absf(body.velocity.dot(normal)) / 8.0, 0.25, 1.0))
 		var kind := contact_kind(collision.get_collider(), normal)
 		body.velocity = body.velocity.bounce(normal) * 0.68
 		if normal.y > 0.65 and absf(body.velocity.y) < 0.75:
@@ -206,7 +206,7 @@ func _step_ball(i: int, delta: float) -> void:
 	var ring := _rim_contact(ball, before)
 	if not ring.is_empty():
 		if float(ring.speed) >= 1.0:
-			_bounce_sound(ring.position)
+			_bounce_sound(ring.position, clampf(float(ring.speed) / 8.0, 0.25, 1.0))
 		_ball_contact(i, "rim", ring.position)
 	if not ball.scored:
 		for hoop in ball.hoops:
@@ -1415,10 +1415,10 @@ func _sfx(sound: String) -> void:
 	if audio != null and audio.has_method("sfx"):
 		audio.sfx(sound)
 
-func _bounce_sound(at: Vector3) -> void:
+func _bounce_sound(at: Vector3, strength := 1.0) -> void:
 	var ambience := _level.get_node_or_null("NeighborhoodAudio")
 	if ambience != null:
-		ambience.play_activity("court_bounce", at)
+		ambience.play_activity("court_bounce", at, strength)
 
 func _build_meter() -> void:
 	var layer := CanvasLayer.new()

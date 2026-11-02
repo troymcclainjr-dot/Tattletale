@@ -1,0 +1,27 @@
+# Resident behavior polish
+
+Implemented in `city_residents.gd`, `city_resident_actor.gd`, and `city_resident_activity.gd`.
+
+Measured final scope: all 40 residents retain their routines with richer arrival/stop gestures, longer local walks and eligible nearby greetings. **One actual destination route qualified:** Yvette Freeman's leisure slot watches `park_court_20`, stopping 2.399 m from its real perimeter at `(-176.408, 1.857, -111.331)` with a clear sightline. **No shop destinations qualified.** Local walks are not represented as shop errands or additional destination visits.
+
+- Existing leisure slots can select a real open shop frontage within 5 m of its authored exterior approach, or a public basketball court edge within 8 m. Selection uses only existing capsule-swept corridor points, checks sightline, keeps the stop at least 5 m from home and 2.5 m from work, and separates selected stops by 2 m. Labels explicitly describe outside/watching. Arrivals face the real site. Shops use the actual declared `approach_start`; the pantry uses its declared exterior customer point. This matters because the 39th Street Supply entrance is 8.43 m behind its sidewalk approach, so a door-centered 5 m cutoff wrongly excludes legitimate frontage.
+- Unmatched residents keep their original honest neighborhood destinations. There is no invented shop interior access, unvalidated connector, street crossing, purchase, or new schedule activity.
+- Local outings now cover 8–18 checked corridor steps when space permits, with stable identity-derived preferences (check-in, stretch, quiet stop, fresh-air walk), distinct stop gestures and 5–9 second pauses. Short corridors truncate the walk safely. Return paths reverse the exact checked outbound path.
+- Nearby settled residents can exchange named greetings, face one another, and briefly gesture. One source is considered per second, at most 40 partner candidates and one visibility ray; cooldowns prevent repeated chatter. Walls/cars block greetings. Sleep, death, custody, combat, bicycle reactions, speech, recovery and disabled routines retain priority.
+- Started outings finish their return lifecycle if their stop crosses the 26 m presentation radius. New starts and idle animation remain near-gated. No additional people or vehicles are created.
+
+The 40 resident IDs, appearance assignments, six timetable slots, four saved activity names, schema version, far simulation cadence, 1200 ambient population and 90-car target remain unchanged. The real destination count and one-time setup query count are exposed in provider status; each actor reports site ID/kind and local outing purpose.
+
+Budgets: one route start per tick; at most two additional sightline rays during each resident's one-time route build; one social ray per second for the entire resident provider. Movement retains existing footfall checks, route recovery, activation hysteresis and incident overrides. No engine process was launched by this worker; the root agent serializes engine validation.
+
+Validation fixtures prepared:
+
+- `res://tests/city_resident_depth_smoke.gd`: outing lengths/return path, budget, blocked arrivals, stale-route cancellation, wall-occluded/clear greetings, incident/custody/death/sleep priority, far gating and started-return completion.
+- `res://tests/city_resident_destinations_smoke.gd`: extends the existing full-city resident fixture, preserving population/identity/save/physical-route checks while asserting real site proximity, openness, sightlines and setup query cap. Prints selected real destinations.
+- Existing `city_neighborhood_activity_smoke.gd` covers physical out-and-back continuity; `city_resident_recovery_smoke.gd` covers blocked paths and rejoin behavior.
+
+`git diff --check` passed for the resident changes. Root's serialized engine runs passed `city_resident_depth_smoke` (0 failures), `city_neighborhood_activity_smoke` (0 failures, full physical out-and-back), and `city_resident_recovery_smoke` (11 passed, 0 failed). Both the initial and revised real-city runs passed **389 checks, 0 failures**, with one eligible destination (Yvette Freeman watching `park_court_20`). The measured stop remains 2.399 m from the edge even after allowing an 8 m spectator radius; broadening the cutoff did not inflate the actual count. Logs are in `.work/polish-five/`; measured route evidence is `.work/model-quality-20261101/npc-deployment-evidence.json`. Root owns the final integrated `graphify update .`.
+
+Limitation: each resident currently owns a continuous, collision-checked corridor along one street, extending at most 80 m in each direction and stopping at blocked geometry. The new selector cannot connect disjoint sidewalks, cross an intersection, traverse a frontage reservation, or create a shop approach route. Eligible sites must already be reachable within that corridor and pass clearance/proximity/separation/visibility checks. More home-to-store/court trips require validated cross-block navigation or authored connector routes; relabeling distant endpoints or widening arbitrary thresholds would not provide that capability. No such route or additional visit is claimed here.
+
+Independent bicycle review: no concrete logic regression found in the visual cadence/braking/landing changes or focused fixture. Solver-owned movement remains unchanged; hands are refitted after poses and transient animation state clears through the existing reset path. Existing crash/rider-fit regression fixtures remain useful complementary coverage.

@@ -11,16 +11,26 @@ const CELL := 48.0
 const RAW_VERTEX_BYTES := 56
 const HISTORY_BYTE_BUDGET := 32 * 1024 * 1024
 const MAX_NEW_MESHES_PER_REFRESH := 1
+## Paced (ordinary streaming cadence) presence retires at most this many horizon
+## cells per call; their nodes are destroyed at frame end. set_presence stays complete.
+const PACED_HORIZON_UNLOADS := 16
+## Loading-screen preparation may run several one-build passes in one frame.
+const PREPARE_FRAME_BUDGET_USEC := 12000
 var _cells := {}
 var _active := {}
 var _meshes := {}
 var _template_normals := {}
 var _template_vertices := {}
+var _template_colors := {}
 var _template_wind_weights := {}
 var _template_wind_counts := {}
+# Per template: [vertices, normals, colors, one-column FORMAT_RF sway weights].
+var _templates := {}
 var _cell_meshes := {}
 var _mesh_history := {}
 var _mesh_history_order: Array[Vector3i] = []
+# Cell -> number of historical variants, so distant cells skip four history probes.
+var _history_cells := {}
 var _history_vertices := 0
 var _history_byte_budget := HISTORY_BYTE_BUDGET
 var _legacy_cache := false
@@ -28,6 +38,7 @@ var _history_evictions := 0
 var _cell_mesh_builds := 0
 var _cell_mesh_cache_hits := 0
 var _pending_visual_cells := 0
+var _deferred_horizon_unloads := 0
 var _last_refresh_mesh_builds := 0
 var _max_refresh_mesh_builds := 0
 var _counts := {}
@@ -35,6 +46,11 @@ var _material: Material
 var _wind_enabled := true
 var _wind_shader := true
 var _wind_time := 0.0
+# Opt-in phase attribution, enabled by the streamer's profiler. Microseconds spent
+# in the latest presence call; nested inside the streamer's provider timing.
+# "unload" excludes node destruction, which the engine defers to frame end.
+var profile_presence := false
+var presence_profile: Dictionary = {}
 
 func setup(_level: Node3D, city: Node3D) -> Dictionary:
 	if not FileAccess.file_exists(DATA_PATH):
@@ -75,10 +91,13 @@ func setup(_level: Node3D, city: Node3D) -> Dictionary:
 			# One authored library supplies the same crowns to near and far batches.
 			# Keep the spire fallback for older metadata without its template.
 			var template: Dictionary = data.templates[kind][lod]
-			var mesh := _build_mesh(template) if template.has("vertices") else _pointed_shrub_mesh(lod == "near")
-			_meshes[key] = mesh
-			_template_normals[key] = mesh.surface_get_arrays(0)[Mesh.ARRAY_NORMAL]
-			_template_vertices[key] = mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+			var arrays := _template_arrays(template) if template.has("vertices") else _pointed_shrub_arrays(lod == "near")
+			_meshes[key] = _mesh_from_arrays(arrays)
+			# Retain the source arrays: reading them back from the ArrayMesh is a
+			# renderer readback, which merging previously repeated for every plant.
+			_template_normals[key] = arrays[Mesh.ARRAY_NORMAL]
+			_template_vertices[key] = arrays[Mesh.ARRAY_VERTEX]
+			_template_colors[key] = arrays[Mesh.ARRAY_COLOR]
 			var vertices: PackedVector3Array = _template_vertices[key]
 			var weights := PackedFloat32Array()
 			weights.resize(vertices.size())
@@ -169,9 +188,7 @@ func clear_playground_shrubs(playgrounds: Array[Dictionary]) -> int:
 		if retained.size() == _cells[cell].size():
 			continue
 		_cells[cell] = retained
-		_cell_meshes.erase(cell)
-		for variant in 4:
-			_erase_history(Vector3i(cell.x, cell.y, variant))
+		_release_cell_meshes(cell)
 		# Update visible geometry without replacing tree bodies. Empty/pending
 		# cells will build normally on their next streaming refresh.
 		var active: Dictionary = _active.get(cell, {})
@@ -197,7 +214,7 @@ func set_wind_enabled(enabled: bool) -> void:
 		if _wind_enabled:
 			wind_material.set_shader_parameter("wind_time", _wind_time)
 
-func _build_mesh(data: Dictionary) -> ArrayMesh:
+func _template_arrays(data: Dictionary) -> Array:
 	var vertices := PackedVector3Array()
 	var normals := PackedVector3Array()
 	var colors := PackedColorArray()
@@ -214,6 +231,12 @@ func _build_mesh(data: Dictionary) -> ArrayMesh:
 	arrays[Mesh.ARRAY_VERTEX] = vertices
 	arrays[Mesh.ARRAY_NORMAL] = normals
 	arrays[Mesh.ARRAY_COLOR] = colors
+	return arrays
+
+func _build_mesh(data: Dictionary) -> ArrayMesh:
+	return _mesh_from_arrays(_template_arrays(data))
+
+func _mesh_from_arrays(arrays: Array) -> ArrayMesh:
 	var mesh := ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	mesh.surface_set_material(0, _material)
@@ -223,77 +246,143 @@ func set_capture_presence(center: Vector3, render_center: Vector3, near_radius :
 	set_presence(center, near_radius, far_radius, render_center)
 
 func set_presence(center: Vector3, near_radius: float, far_radius: float, render_center := Vector3.INF) -> void:
+	_update_presence(center, near_radius, far_radius, render_center, -1)
+
+func set_paced_presence(center: Vector3, near_radius: float, far_radius: float, render_center := Vector3.INF) -> void:
+	# Ordinary streaming cadence: identical residency and collision decisions, but
+	# a relocation's horizon exits are retired over several calls.
+	_update_presence(center, near_radius, far_radius, render_center, PACED_HORIZON_UNLOADS)
+
+func _update_presence(center: Vector3, near_radius: float, far_radius: float, render_center: Vector3, unload_budget: int) -> void:
 	# Large tree silhouettes remain on the horizon. Short bushes need only the
 	# street-level vicinity; cylinder physics is ready before a walker reaches it.
+	var profiling := profile_presence
+	if profiling:
+		presence_profile = {"scan": 0, "unload": 0, "mesh_arrays": 0, "mesh_upload": 0, "physics": 0}
+	var scan_began := Time.get_ticks_usec() if profiling else 0
 	var horizon := maxf(far_radius, 400.0)
-	var candidates: Array[Dictionary] = []
-	for cell in _cells:
-		var previous: Dictionary = _active.get(cell, {})
-		var closest := Vector2(clampf(center.x, float(cell.x) * CELL, (float(cell.x) + 1.0) * CELL), clampf(center.z, float(cell.y) * CELL, (float(cell.y) + 1.0) * CELL))
-		var distance := closest.distance_to(Vector2(center.x, center.z))
+	var physics_limit := maxf(near_radius, 90.0)
+	var camera := render_center.is_finite()
+	var focus := Vector2(center.x, center.z)
+	var eye := Vector2(render_center.x, render_center.z) if camera else focus
+	# Parallel arrays: the full-city scan allocates nothing per unchanged cell.
+	var candidate_cells: Array[Vector2i] = []
+	var candidate_distances := PackedFloat64Array()
+	var candidate_flags := PackedByteArray()
+	_deferred_horizon_unloads = 0
+	for cell: Vector2i in _cells:
+		var x0 := float(cell.x) * CELL
+		var z0 := float(cell.y) * CELL
+		var distance := Vector2(clampf(focus.x, x0, x0 + CELL), clampf(focus.y, z0, z0 + CELL)).distance_to(focus)
 		var physics_distance := distance
-		if render_center.is_finite():
-			var camera_closest := Vector2(clampf(render_center.x, float(cell.x) * CELL, (float(cell.x) + 1.0) * CELL), clampf(render_center.z, float(cell.y) * CELL, (float(cell.y) + 1.0) * CELL))
-			distance = minf(distance, camera_closest.distance_to(Vector2(render_center.x, render_center.z)))
+		if camera:
+			distance = minf(distance, Vector2(clampf(eye.x, x0, x0 + CELL), clampf(eye.y, z0, z0 + CELL)).distance_to(eye))
+		var previous = _active.get(cell)
+		var resident: bool = previous != null
 		# Different enter/leave thresholds prevent reallocating batches and shapes
 		# when the player jogs back and forth across a cell's distance boundary.
-		if distance > horizon + (20.0 if not previous.is_empty() else 0.0):
-			if _active.has(cell):
-				_active[cell].node.queue_free()
+		if distance > horizon + (20.0 if resident else 0.0):
+			if resident:
+				if unload_budget == 0:
+					# Still beyond the horizon next call; keep it whole until then.
+					_deferred_horizon_unloads += 1
+					continue
+				unload_budget -= 1
+				var unload_began := Time.get_ticks_usec() if profiling else 0
+				previous.node.queue_free()
 				_active.erase(cell)
-			# Historical variants are useful only while their cell is resident.
-			_cell_meshes.erase(cell)
-			for variant in 4:
-				_erase_history(Vector3i(cell.x, cell.y, variant))
+				# Historical variants are useful only while their cell is resident.
+				_release_cell_meshes(cell)
+				if profiling:
+					presence_profile.unload += Time.get_ticks_usec() - unload_began
+			elif _cell_meshes.has(cell) or _history_cells.has(cell):
+				_release_cell_meshes(cell)
 			continue
-		var near_limit := near_radius + (10.0 if str(previous.get("lod", "")) == "near" else 0.0)
-		var lod := "near" if distance <= near_limit else "far"
-		var physics := physics_distance <= maxf(near_radius, 90.0) + (10.0 if bool(previous.get("physics", false)) else 0.0)
-		var bushes := distance <= 125.0 + (10.0 if bool(previous.get("bushes", false)) else 0.0)
-		var signature := "%s_%s_%s" % [lod, physics, bushes]
-		if _active.has(cell) and _active[cell].signature == signature:
+		var near := distance <= near_radius + (10.0 if resident and previous.lod == "near" else 0.0)
+		var physics := physics_distance <= physics_limit + (10.0 if resident and previous.physics else 0.0)
+		var bushes := distance <= 125.0 + (10.0 if resident and previous.bushes else 0.0)
+		# Pending cells carry lod "", so they always remain candidates.
+		if resident and previous.lod == ("near" if near else "far") and previous.physics == physics and previous.bushes == bushes:
 			continue
-		candidates.append({"cell": cell, "distance": distance, "lod": lod, "physics": physics,
-			"bushes": bushes, "signature": signature})
-	candidates.sort_custom(func(a: Dictionary, b: Dictionary): return float(a.distance) < float(b.distance))
+		candidate_cells.append(cell)
+		candidate_distances.append(distance)
+		candidate_flags.append(int(near) | (int(physics) << 1) | (int(bushes) << 2))
+	if profiling:
+		presence_profile.scan = Time.get_ticks_usec() - scan_began - int(presence_profile.unload)
 	var builds_before := _cell_mesh_builds
 	_pending_visual_cells = 0
-	for desired in candidates:
-		var cell: Vector2i = desired.cell
-		var previous: Dictionary = _active.get(cell, {})
-		var visual_signature := "%s_%s" % [desired.lod, desired.bushes]
-		var cached := str(_cell_meshes.get(cell, {}).get("signature", "")) == visual_signature or _mesh_history.has(_history_key(cell, visual_signature))
-		var can_build := cached or _cell_mesh_builds - builds_before < MAX_NEW_MESHES_PER_REFRESH
-		if not can_build:
-			_pending_visual_cells += 1
-			# Keep the old visual until its replacement is ready, but never defer
-			# nearby collision merely because a far/near mesh needs construction.
-			if previous.is_empty() and bool(desired.physics):
+	var count := candidate_cells.size()
+	var handled := PackedByteArray()
+	handled.resize(count)
+	handled.fill(0)
+	# Ready variants never spend the construction budget. Apply them first so a
+	# later build's history eviction cannot discard a variant this pass reuses.
+	for i in count:
+		var flags := candidate_flags[i]
+		if _variant_ready(candidate_cells[i], "near" if flags & 1 else "far", bool(flags & 4)):
+			_apply_cell(candidate_cells[i], flags)
+			handled[i] = 1
+	# Then construct uncached variants nearest-first within the per-call budget.
+	for _build in MAX_NEW_MESHES_PER_REFRESH:
+		var nearest := -1
+		for i in count:
+			if handled[i] == 0 and (nearest < 0 or candidate_distances[i] < candidate_distances[nearest]):
+				nearest = i
+		if nearest < 0:
+			break
+		_apply_cell(candidate_cells[nearest], candidate_flags[nearest])
+		handled[nearest] = 1
+	for i in count:
+		if handled[i] == 1:
+			continue
+		_pending_visual_cells += 1
+		# Keep the old visual until its replacement is ready, but never defer
+		# nearby collision merely because a far/near mesh needs construction.
+		var cell := candidate_cells[i]
+		var physics := bool(candidate_flags[i] & 2)
+		var previous = _active.get(cell)
+		if previous == null:
+			if physics:
 				var waiting := _new_cell_root(cell, "pending")
 				_set_cell_physics(waiting, cell, true)
 				_active[cell] = {"node": waiting, "signature": "", "lod": "", "physics": true, "bushes": false}
-			elif not previous.is_empty() and bool(previous.physics) != bool(desired.physics):
-				_set_cell_physics(previous.node, cell, bool(desired.physics))
-				previous.physics = desired.physics
-				previous.signature = "%s_%s_%s" % [previous.lod, previous.physics, previous.bushes]
-			continue
-		var cell_node: Node3D = previous.node if not previous.is_empty() else _new_cell_root(cell, desired.lod)
-		cell_node.name = "Plants_%d_%d_%s" % [cell.x, cell.y, desired.lod]
-		_set_cell_geometry(cell_node, _cell_mesh(cell, desired.lod, desired.bushes), desired.lod)
-		if previous.is_empty() or bool(previous.physics) != bool(desired.physics):
-			_set_cell_physics(cell_node, cell, desired.physics)
-		_active[cell] = {"node": cell_node, "signature": desired.signature, "lod": desired.lod,
-			"physics": desired.physics, "bushes": desired.bushes}
+		elif bool(previous.physics) != physics:
+			_set_cell_physics(previous.node, cell, physics)
+			previous.physics = physics
+			previous.signature = "%s_%s_%s" % [previous.lod, previous.physics, previous.bushes]
 	_last_refresh_mesh_builds = _cell_mesh_builds - builds_before
 	_max_refresh_mesh_builds = maxi(_max_refresh_mesh_builds, _last_refresh_mesh_builds)
 
+func _variant_ready(cell: Vector2i, lod: String, bushes: bool) -> bool:
+	var visual_signature := "%s_%s" % [lod, bushes]
+	return str(_cell_meshes.get(cell, {}).get("signature", "")) == visual_signature or _mesh_history.has(_history_key(cell, visual_signature))
+
+func _apply_cell(cell: Vector2i, flags: int) -> void:
+	var lod := "near" if flags & 1 else "far"
+	var physics := bool(flags & 2)
+	var bushes := bool(flags & 4)
+	var previous = _active.get(cell)
+	var cell_node: Node3D = previous.node if previous != null else _new_cell_root(cell, lod)
+	cell_node.name = "Plants_%d_%d_%s" % [cell.x, cell.y, lod]
+	_set_cell_geometry(cell_node, _cell_mesh(cell, lod, bushes), lod)
+	if previous == null or bool(previous.physics) != physics:
+		_set_cell_physics(cell_node, cell, physics)
+	_active[cell] = {"node": cell_node, "signature": "%s_%s_%s" % [lod, physics, bushes], "lod": lod,
+		"physics": physics, "bushes": bushes}
+
 func prepare_presence(center: Vector3, near_radius: float, far_radius: float) -> void:
 	# Await under the loading screen so the first playable frame has its horizon.
-	# Runtime presence updates keep the same one-mesh construction budget.
+	# Every presence pass keeps the one-mesh construction budget; several bounded
+	# passes may share one loading frame.
 	set_presence(center, near_radius, far_radius)
 	while _pending_visual_cells > 0:
 		await get_tree().process_frame
+		if not is_inside_tree():
+			return
+		var frame_began := Time.get_ticks_usec()
 		set_presence(center, near_radius, far_radius)
+		while _pending_visual_cells > 0 and Time.get_ticks_usec() - frame_began < PREPARE_FRAME_BUDGET_USEC:
+			set_presence(center, near_radius, far_radius)
 
 func is_trunk_clear(point: Vector3, radius: float) -> bool:
 	# Placement uses surveyed plant records, including unloaded distant cells.
@@ -313,6 +402,26 @@ func is_trunk_clear(point: Vector3, radius: float) -> bool:
 					return false
 	return true
 
+func _template(key: String) -> Array:
+	if _templates.has(key):
+		return _templates[key]
+	# Setup supplies CPU arrays. Fixtures that inject only shared meshes read the
+	# missing arrays back once per template here, never once per plant.
+	var arrays: Array = []
+	if not (_template_vertices.has(key) and _template_normals.has(key) and _template_colors.has(key)):
+		var shared: ArrayMesh = _meshes[key]
+		arrays = shared.surface_get_arrays(0)
+	var vertices: PackedVector3Array = _template_vertices[key] if _template_vertices.has(key) else arrays[Mesh.ARRAY_VERTEX]
+	var normals: PackedVector3Array = _template_normals[key] if _template_normals.has(key) else arrays[Mesh.ARRAY_NORMAL]
+	var colors: PackedColorArray = _template_colors[key] if _template_colors.has(key) else arrays[Mesh.ARRAY_COLOR]
+	var weights: PackedFloat32Array = _template_wind_weights[key]
+	var column: Image = null
+	if not weights.is_empty():
+		column = Image.create_from_data(1, weights.size(), false, Image.FORMAT_RF, weights.to_byte_array())
+	var template := [vertices, normals, colors, column]
+	_templates[key] = template
+	return template
+
 func _cell_mesh(cell: Vector2i, lod: String, bushes: bool) -> Dictionary:
 	var signature := "%s_%s" % [lod, bushes]
 	var cached: Dictionary = _cell_meshes.get(cell, {})
@@ -327,19 +436,20 @@ func _cell_mesh(cell: Vector2i, lod: String, bushes: bool) -> Dictionary:
 		_cell_meshes[cell] = restored
 		_cell_mesh_cache_hits += 1
 		return restored
-	var surface := SurfaceTool.new()
-	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var began := Time.get_ticks_usec() if profile_presence else 0
 	var vertex_count := 0
 	for plant in _cells[cell]:
 		var kind: String = plant.kind
 		if kind.begins_with("tree") or bushes:
-			var weights: PackedFloat32Array = _template_wind_weights[kind + "_" + lod]
-			vertex_count += weights.size()
-	var corrected_normals := PackedVector3Array()
-	if not _wind_shader:
-		corrected_normals.resize(vertex_count)
-	var wind_data := PackedFloat32Array()
-	wind_data.resize(vertex_count * 4)
+			var template_vertices: PackedVector3Array = _template(kind + "_" + lod)[0]
+			vertex_count += template_vertices.size()
+	var vertices := PackedVector3Array()
+	var normals := PackedVector3Array()
+	var colors := PackedColorArray()
+	# One row of four floats per vertex: anchor x, anchor z, normal ratio, sway
+	# weight. FORMAT_RF rows have exactly the CUSTOM0 RGBA_FLOAT byte layout, and
+	# native fills/copies replace four GDScript writes per merged vertex.
+	var wind_rows: Image = Image.create_empty(4, vertex_count, false, Image.FORMAT_RF) if vertex_count > 0 else null
 	var vertex_offset := 0
 	var origin := Vector3(float(cell.x) * CELL, 0, float(cell.y) * CELL)
 	var plant_count := 0
@@ -350,38 +460,46 @@ func _cell_mesh(cell: Vector2i, lod: String, bushes: bool) -> Dictionary:
 			continue
 		var radius: float = plant.radius
 		var height: float = plant.height
-		var pose := Transform3D(Basis(Vector3.UP, float(plant.yaw)).scaled(Vector3(radius, height, radius)), plant.position - origin)
 		var key := kind + "_" + lod
-		surface.append_from(_meshes[key], 0, pose)
-		# append_from applies the forward basis. Yaw commutes with (r,h,r), so
-		# multiplying its normal's XZ by (h/r)^2 restores inverse-transpose
-		# direction in the shader. StandardMaterial keeps the CPU correction.
-		if not _wind_shader:
-			var normal_basis := pose.basis.inverse().transposed()
-			var source_normals: PackedVector3Array = _template_normals[key]
-			for i in source_normals.size():
-				corrected_normals[vertex_offset + i] = (normal_basis * source_normals[i]).normalized()
-		var weights: PackedFloat32Array = _template_wind_weights[key]
+		var template := _template(key)
+		var source_vertices: PackedVector3Array = template[0]
+		var source_normals: PackedVector3Array = template[1]
+		var source_colors: PackedColorArray = template[2]
+		var pose := Transform3D(Basis(Vector3.UP, float(plant.yaw)).scaled(Vector3(radius, height, radius)), plant.position - origin)
+		vertices.append_array(pose * source_vertices)
+		# Like the former SurfaceTool merge, apply the forward basis without
+		# normalizing. Yaw commutes with (r,h,r), so multiplying its normal's XZ by
+		# (h/r)^2 restores inverse-transpose direction in the shader. StandardMaterial
+		# keeps the CPU correction; octahedral vertex encoding normalizes either form.
+		var normal_basis := pose.basis if _wind_shader else pose.basis.inverse().transposed()
+		normals.append_array(Transform3D(normal_basis, Vector3.ZERO) * source_normals)
+		colors.append_array(source_colors)
+		var count := source_vertices.size()
+		if count > 0:
+			var anchor: Vector3 = plant.position - origin
+			var normal_ratio := (height / radius) * (height / radius) if _wind_shader else 1.0
+			wind_rows.fill_rect(Rect2i(0, vertex_offset, 1, count), Color(anchor.x, 0.0, 0.0))
+			wind_rows.fill_rect(Rect2i(1, vertex_offset, 1, count), Color(anchor.z, 0.0, 0.0))
+			wind_rows.fill_rect(Rect2i(2, vertex_offset, 1, count), Color(normal_ratio, 0.0, 0.0))
+			wind_rows.blit_rect(template[3], Rect2i(0, 0, 1, count), Vector2i(3, vertex_offset))
 		wind_vertices += int(_template_wind_counts[key])
-		var anchor: Vector3 = plant.position - origin
-		var normal_ratio := (height / radius) * (height / radius) if _wind_shader else 1.0
-		for i in weights.size():
-			var at := (vertex_offset + i) * 4
-			wind_data[at] = anchor.x
-			wind_data[at + 1] = anchor.z
-			wind_data[at + 2] = normal_ratio
-			wind_data[at + 3] = weights[i]
-		vertex_offset += weights.size()
+		vertex_offset += count
 		plant_count += 1
+	var upload_began := Time.get_ticks_usec() if profile_presence else 0
 	var mesh: ArrayMesh
-	if plant_count > 0:
-		var arrays := surface.commit_to_arrays()
-		if not _wind_shader:
-			arrays[Mesh.ARRAY_NORMAL] = corrected_normals
-		arrays[Mesh.ARRAY_CUSTOM0] = wind_data
+	if plant_count > 0 and vertex_count > 0:
+		var arrays := []
+		arrays.resize(Mesh.ARRAY_MAX)
+		arrays[Mesh.ARRAY_VERTEX] = vertices
+		arrays[Mesh.ARRAY_NORMAL] = normals
+		arrays[Mesh.ARRAY_COLOR] = colors
+		arrays[Mesh.ARRAY_CUSTOM0] = wind_rows.get_data().to_float32_array()
 		mesh = ArrayMesh.new()
 		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays, [], {}, Mesh.ARRAY_CUSTOM_RGBA_FLOAT << Mesh.ARRAY_FORMAT_CUSTOM0_SHIFT)
 		mesh.surface_set_material(0, _material)
+	if profile_presence:
+		presence_profile.mesh_arrays = int(presence_profile.get("mesh_arrays", 0)) + upload_began - began
+		presence_profile.mesh_upload = int(presence_profile.get("mesh_upload", 0)) + Time.get_ticks_usec() - upload_began
 	# Keep the active variant plus a bounded LRU of previously used signatures.
 	# Returning across a LOD/bush threshold reuses immutable merged triangles.
 	_remember_mesh(cell, cached)
@@ -394,12 +512,24 @@ func _history_key(cell: Vector2i, signature: String) -> Vector3i:
 	var variant := (2 if signature.begins_with("far_") else 0) + (1 if signature.ends_with("true") else 0)
 	return Vector3i(cell.x, cell.y, variant)
 
+func _release_cell_meshes(cell: Vector2i) -> void:
+	_cell_meshes.erase(cell)
+	if _history_cells.has(cell):
+		for variant in 4:
+			_erase_history(Vector3i(cell.x, cell.y, variant))
+
 func _erase_history(key: Vector3i) -> void:
 	if not _mesh_history.has(key):
 		return
 	_history_vertices -= int(_mesh_history[key].vertices)
 	_mesh_history.erase(key)
 	_mesh_history_order.erase(key)
+	var cell := Vector2i(key.x, key.y)
+	var remaining := int(_history_cells.get(cell, 0)) - 1
+	if remaining > 0:
+		_history_cells[cell] = remaining
+	else:
+		_history_cells.erase(cell)
 
 func _remember_mesh(cell: Vector2i, geometry: Dictionary) -> void:
 	if _legacy_cache or geometry.is_empty():
@@ -416,6 +546,7 @@ func _remember_mesh(cell: Vector2i, geometry: Dictionary) -> void:
 	_mesh_history[key] = geometry
 	_mesh_history_order.append(key)
 	_history_vertices += vertices
+	_history_cells[cell] = int(_history_cells.get(cell, 0)) + 1
 
 func _build_cell(cell: Vector2i, lod: String, physics: bool, bushes: bool) -> Node3D:
 	var root := _new_cell_root(cell, lod)
@@ -433,6 +564,7 @@ func _new_cell_root(cell: Vector2i, lod: String) -> Node3D:
 func _set_cell_physics(root: Node3D, cell: Vector2i, physics: bool) -> void:
 	if bool(root.get_meta("physics", false)) == physics:
 		return
+	var began := Time.get_ticks_usec() if profile_presence else 0
 	for child in root.get_children():
 		if child is StaticBody3D:
 			child.collision_layer = 0
@@ -459,6 +591,8 @@ func _set_cell_physics(root: Node3D, cell: Vector2i, physics: bool) -> void:
 			trunk_count += 1
 	root.set_meta("trunks", trunk_count)
 	root.set_meta("physics", physics)
+	if profile_presence:
+		presence_profile.physics = int(presence_profile.get("physics", 0)) + Time.get_ticks_usec() - began
 
 func _set_cell_geometry(root: Node3D, geometry: Dictionary, lod: String) -> void:
 	var batch: MeshInstance3D
@@ -503,8 +637,10 @@ func get_stats() -> Dictionary:
 	result.cell_mesh_builds = _cell_mesh_builds
 	result.cell_mesh_cache_hits = _cell_mesh_cache_hits
 	result.pending_visual_cells = _pending_visual_cells
+	result.deferred_horizon_unloads = _deferred_horizon_unloads
 	result.last_refresh_mesh_builds = _last_refresh_mesh_builds
 	result.max_refresh_mesh_builds = _max_refresh_mesh_builds
+	result.presence_profile = presence_profile.duplicate() if profile_presence else {}
 	for geometry in _cell_meshes.values():
 		result.cached_vertices += int(geometry.vertices)
 		result.wind_vertices += int(geometry.wind_vertices)
@@ -522,6 +658,9 @@ func get_stats() -> Dictionary:
 	return result
 
 func _pointed_shrub_mesh(near: bool) -> ArrayMesh:
+	return _mesh_from_arrays(_pointed_shrub_arrays(near))
+
+func _pointed_shrub_arrays(near: bool) -> Array:
 	# A narrow evergreen crown with overlapping irregular tiers and a pointed
 	# leader. Shared by every lawn, merged into the existing vegetation cells.
 	var surface := SurfaceTool.new()
@@ -551,5 +690,4 @@ func _pointed_shrub_mesh(near: bool) -> ArrayMesh:
 					surface.set_normal(normal)
 					surface.set_color(color)
 					surface.add_vertex(corners[index])
-	surface.set_material(_material)
-	return surface.commit()
+	return surface.commit_to_arrays()

@@ -46,6 +46,10 @@ var _profile_between_frames_ms := 0.0
 var _timeline: Timeline
 var _profile_player_cursor := 0
 
+static func _sweep_pixels(elapsed_usec: int) -> float:
+	# Preserve the old 0.3-pixel step at nominal 60 Hz, not at renderer FPS.
+	return maxf(0.0, float(elapsed_usec)) * 0.000018
+
 func _watchdog() -> void:
 	# Includes startup; outer launcher independently kills/reaps a stalled engine.
 	var deadline := clampf(float(option("--sustained-seconds", "180")), 0.0, 900.0) + 360.0
@@ -158,11 +162,15 @@ func _run() -> void:
 		if district < 3:
 			var starts := [0, 63, 103]
 			var start: int = starts[district]
+			var initial_direction := route[start + 1] - route[start]
+			player.camera_yaw = atan2(initial_direction.x, initial_direction.z)
 			_set_scenario_position(route[start])
 			waypoint = start + 1
 			walking = true
 			Input.action_press("move_forward")
 		else:
+			# The stationary view must not inherit the previous phase's sweep.
+			player.camera_yaw = 0.0
 			_set_scenario_position(level.vector(level.level_data.landmarks[4].position))
 			walking = false
 			Input.action_release("move_forward")
@@ -172,6 +180,9 @@ func _run() -> void:
 		var phase_deadline := sample_started + int(duration * float(phase + 1) / 8.0 * 1000000.0)
 		var phone_at := phase_deadline - (1000000 if transition_probe else 6000000)
 		var phone_opened := false
+		var sweep_started := 0
+		var sweep_initial_yaw := 0.0
+		var phase_initial_yaw: float = player.camera_yaw
 		while Time.get_ticks_usec() < phase_deadline and not finished:
 			if not phone_opened and Time.get_ticks_usec() >= phone_at:
 				walking = false
@@ -181,7 +192,12 @@ func _run() -> void:
 				phone_opened = true
 				check(player.phone.get_status().active and player.phone.get_status().page == "camera", "real P/2 opens phone camera without pausing")
 			if not walking:
-				player.look(Vector2(.3, 0.0))
+				var now := Time.get_ticks_usec()
+				if sweep_started == 0:
+					sweep_started = now
+					sweep_initial_yaw = player.camera_yaw
+				var target_yaw: float = sweep_initial_yaw - _sweep_pixels(now - sweep_started) * player.mouse_sensitivity
+				player.look(Vector2((player.camera_yaw - target_yaw) / player.mouse_sensitivity, 0.0))
 			await get_tree().process_frame
 		if phone_opened:
 			await key(KEY_P)
@@ -195,7 +211,8 @@ func _run() -> void:
 		stream_failures += int(stream.get("failed_cells", stream.get("failures", 0)))
 		phase_results.append({"phase": phase_name, "wall_seconds": float(Time.get_ticks_usec() - phase_start) / 1000000.0,
 			"walked_m": moved, "streaming": stream, "traffic": level.traffic.get_status(),
-			"clock": level.world_time.get_status(), "player_position": player.global_position})
+			"clock": level.world_time.get_status(), "player_position": player.global_position,
+			"camera_initial_yaw": phase_initial_yaw, "camera_final_yaw": player.camera_yaw})
 		_sample("phase_boundary", true)
 	collecting = false
 	sampling = false
@@ -218,6 +235,7 @@ func _run() -> void:
 	for label in phase_frames:
 		by_phase[label] = Stats.distribution(phase_frames[label])
 	result_details["sustained"] = {"schema": 3, "requested_seconds": duration, "measured_seconds": seconds,
+		"camera_sweep": {"schema": 2, "pixels_per_second": 18.0, "clock": "elapsed_wall_usec", "phase_heading": "route_tangent_or_zero"},
 		"render_resolution": [render_resolution.x, render_resolution.y],
 		"diagnostic_only": transition_probe,
 		"unix_start": unix_start, "unix_end": Time.get_unix_time_from_system(),

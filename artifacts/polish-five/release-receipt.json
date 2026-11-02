@@ -1,0 +1,12 @@
+{
+  "verified": true,
+  "files": 14,
+  "build_id": "polish-five-20261101-r1",
+  "zip": "C:\\files\\projects\\Tattletale\\artifacts\\priorities-five\\release\\polish-five-20261101-r1.zip",
+  "zip_integrity": {
+    "files": 16,
+    "sha256": "dcf0eee4af11f4e996884a99d72611daedda880bdfa6f785078d4722e25fc90d"
+  },
+  "gameplay_passed": true,
+  "work": "C:\\files\\projects\\Tattletale\\.work\\priorities-five\\release\\polish-five-20261101-r1"
+}

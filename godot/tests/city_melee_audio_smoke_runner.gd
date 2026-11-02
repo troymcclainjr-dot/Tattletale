@@ -1,6 +1,13 @@
 extends "res://tests/city_combat_reactions_smoke_runner.gd"
-## Reuse the production-combat arena helpers, not a mock witness policy.
+## Retained combat backend coverage; the playable nonviolent policy stays off.
 const WorldAudio = preload("res://scripts/city/city_world_audio.gd")
+
+class BackendCombat:
+	extends "res://scripts/city/city_combat.gd"
+	# A test-only policy override exercises the retained implementation without
+	# adding a production switch, setting or command-line unlock.
+	func player_offense_enabled() -> bool:
+		return true
 
 func _run() -> void:
 	G.built = false
@@ -19,7 +26,10 @@ func _run() -> void:
 	arena.npcs = npcs
 	arena.residents = PeopleFixture.new()
 	arena.add_child(arena.residents)
-	combat = Combat.new()
+	var playable_policy := Combat.new()
+	check(not playable_policy.player_offense_enabled(), "playable build still rejects player offense")
+	playable_policy.free()
+	combat = BackendCombat.new()
 	arena.add_child(combat)
 	combat.setup(arena)
 	reset_player()
@@ -36,7 +46,7 @@ func _run() -> void:
 	check(combat.assault_events==0,"missed swing emits no assault witness event")
 	victim.position = Vector3(0,.012,1.35)
 	await frames(2)
-	check(combat.request_attack(),"production melee input starts an attack")
+	check(combat.request_attack(),"explicit backend fixture policy starts retained melee attack")
 	combat.tick(.1)
 	combat.tick(.1)
 	check(combat.hits_landed==1 and combat.assault_events==1,"production landed punch emits exactly one witness event")

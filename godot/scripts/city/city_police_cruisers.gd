@@ -1034,6 +1034,17 @@ func _set_emergency(unit: Dictionary, on: bool) -> void:
 	if is_instance_valid(car):
 		car.set_meta("police_unit", str(unit.owner))
 		car.set_meta("police_emergency", on)
+		if not on:
+			_response_audio(car, false)
+
+func _response_audio(car: Node3D, responding: bool) -> void:
+	var audio := level.get_node_or_null("CityWorldAudio") if is_instance_valid(level) else null
+	if audio == null:
+		return
+	if responding and audio.has_method("emergency"):
+		audio.emergency(car)
+	elif audio.has_method("stop_emergency"):
+		audio.stop_emergency(car)
 
 func _release_unit(unit: Dictionary) -> void:
 	units.erase(int(unit.slot))
@@ -1047,6 +1058,7 @@ func _release_unit(unit: Dictionary) -> void:
 	var car = unit.car
 	if not is_instance_valid(car):
 		return
+	_response_audio(car, false)
 	if car.has_meta("police_emergency"):
 		car.remove_meta("police_emergency")
 	if car.has_meta("police_unit"):
@@ -1088,6 +1100,8 @@ func _tick_unit(unit: Dictionary, delta: float) -> void:
 	var car = unit.car
 	if not is_instance_valid(car) or not car.is_inside_tree() or str(car.get("external_owner")) != str(unit.owner):
 		# Authority is gone (the car was removed or reclaimed): nothing left to move.
+		if is_instance_valid(car):
+			_response_audio(car, false)
 		var entry := _crew_of(unit)
 		if not entry.is_empty() and str(entry.state) == "seated":
 			entry.state = "station"
@@ -1114,6 +1128,7 @@ func _tick_unit(unit: Dictionary, delta: float) -> void:
 			_tick_parked(unit, delta)
 		_:
 			_tick_drive(unit, delta)
+	_response_audio(car, bool(unit.emergency) and str(unit.mode) in ["respond", "pursue", "assist"])
 
 func _step(car: Node3D, delta: float, controls: Dictionary) -> Dictionary:
 	var result = car.external_step(delta, float(controls.get("throttle", 0.0)), float(controls.get("brake", 0.0)),

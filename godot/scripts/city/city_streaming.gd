@@ -4,6 +4,9 @@ extends Node
 const CACHE_VERSION := 2
 const CACHE_ROOT := "user://city_stream_cache"
 const SOURCE_PATH := "res://assets/models/city/pen_lucy.glb"
+const DETAIL_INTERVAL := 0.25
+## A physics-focus jump this large between frames is a relocation, not travel.
+const RELOCATION_DISTANCE := 16.0
 var level: Node3D
 var optimizer: Node
 var records: Array[Dictionary] = []
@@ -11,6 +14,11 @@ var providers: Array[Node] = []
 var quality := "balanced"
 var load_distance := 240.0
 var unload_distance := 330.0
+## Ordinary play spreads one periodic provider pass over consecutive frames. This
+## soft target is checked between provider calls: one indivisible set_presence
+## call can exceed it, and each frame always advances at least one provider.
+## refresh_now(), setup and camera captures still refresh every provider at once.
+var detail_frame_budget_usec := 2500
 var _elapsed := 0.0
 var _directory := ""
 var _pending := ""
@@ -23,17 +31,31 @@ var _ready_stream := false
 var _detail_render_focus := Vector3.ZERO
 var _detail_physics_focus := Vector3.ZERO
 var _capture_details := false
+var _detail_queue: Array[Node] = []
+var _detail_due := false
+var _detail_pass_usec := 0
+var _detail_pass_slices := 0
+var _detail_passes := 0
+var _detail_slices := 0
+var _detail_overruns := 0
+var _relocation_refreshes := 0
+# Latest measured cost per provider instance id; predicts whether it fits a slice.
+var _provider_cost := {}
+var _last_focus := Vector3.INF
 # Opt-in CPU attribution; disabled in ordinary play. Totals are bounded and
 # retain maxima/frame IDs, rather than growing a trace during long sessions.
 var profile_streaming := false
 var profile_stages: Dictionary = {}
 var profile_unload_batches: Dictionary = {"max_cells": 0, "max_frame": 0}
 var profile_slow_stages: Array[Dictionary] = []
+var profile_detail_schedule: Dictionary = {"passes": 0, "slices": 0, "max_slices_per_pass": 0, "budget_overruns": 0}
 
 func _profile_stage(stage: String, began: int) -> void:
 	if not profile_streaming:
 		return
-	var elapsed := Time.get_ticks_usec() - began
+	_profile_elapsed(stage, Time.get_ticks_usec() - began, began)
+
+func _profile_elapsed(stage: String, elapsed: int, began: int, frame_event := true) -> void:
 	var entry: Dictionary = profile_stages.get(stage, {"calls": 0, "total_usec": 0, "max_usec": 0, "max_frame": 0})
 	entry.calls += 1
 	entry.total_usec += elapsed
@@ -41,7 +63,8 @@ func _profile_stage(stage: String, began: int) -> void:
 		entry.max_usec = elapsed
 		entry.max_frame = Engine.get_process_frames()
 	profile_stages[stage] = entry
-	if elapsed >= 20000:
+	# Slow events are correlated with individual frames; multi-frame totals opt out.
+	if frame_event and elapsed >= 20000:
 		if profile_slow_stages.size() >= 128:
 			profile_slow_stages.pop_front()
 		profile_slow_stages.append({"stage": stage, "usec": elapsed,
@@ -53,6 +76,9 @@ func _exit_tree() -> void:
 	if not _pending.is_empty():
 		ResourceLoader.load_threaded_get(_pending)
 		_pending = ""
+	_detail_queue.clear()
+	_detail_due = false
+	_provider_cost.clear()
 
 func setup(owner_level: Node3D, render_optimizer: Node, detail_providers: Array[Node] = []) -> void:
 	level = owner_level
@@ -155,22 +181,55 @@ func _process(delta: float) -> void:
 	if level == null:
 		return
 	_poll_load()
+	if level.player == null:
+		return
 	_elapsed += delta
-	if _elapsed >= 0.25:
+	var relocated := _focus_jumped()
+	if relocated or _elapsed >= DETAIL_INTERVAL:
 		_elapsed = 0.0
-		_refresh(false)
+		_relocation_refreshes += int(relocated)
+		if _capture_requested():
+			# Automated captures keep the original fully synchronous refresh.
+			_cancel_detail_pass()
+			_refresh(false)
+			return
+		_refresh(false, false, true)
+		# A pass in progress continues with the new focus; a complete pass follows.
+		_detail_due = true
+	if _detail_queue.is_empty():
+		if not _detail_due:
+			return
+		_detail_due = false
+		_detail_queue.assign(providers)
+		if _detail_queue.is_empty():
+			return
+	_dispatch_detail_slice()
+
+func _focus_jumped() -> bool:
+	if level.player == null:
+		return false
+	var focus: Vector3 = level.player.global_position
+	var inspector = level.get("inspector")
+	if inspector != null and inspector.active:
+		focus = inspector.streaming_focus()
+	var jumped := _last_focus.is_finite() and focus.distance_squared_to(_last_focus) > RELOCATION_DISTANCE * RELOCATION_DISTANCE
+	_last_focus = focus
+	return jumped
+
+func _capture_requested() -> bool:
+	if level.player == null or level.player.camera_override.is_empty():
+		return false
+	var inspector = level.get("inspector")
+	return inspector == null or not inspector.active
 
 func _distance_to_bounds(point: Vector3, bounds: AABB) -> float:
 	var closest := Vector2(clampf(point.x, bounds.position.x, bounds.end.x), clampf(point.z, bounds.position.z, bounds.end.z))
 	return Vector2(point.x, point.z).distance_to(closest)
 
-func _refresh(initial: bool, refresh_details := true) -> void:
-	if level.player == null:
-		return
-	var began := Time.get_ticks_usec() if profile_streaming else 0
-	var point: Vector3 = level.player.global_position
+func _detail_focus() -> Array:
 	# Automated captures and the overview camera request detail around their view,
 	# without ever changing the physical player's collision neighborhood.
+	var point: Vector3 = level.player.global_position
 	var render_point := point
 	var detail_point := point
 	var capture_details: bool = not level.player.camera_override.is_empty()
@@ -187,23 +246,38 @@ func _refresh(initial: bool, refresh_details := true) -> void:
 	_detail_render_focus = detail_point
 	_detail_physics_focus = point
 	_capture_details = capture_details
+	return [point, render_point, detail_point, capture_details]
+
+func _refresh(initial: bool, refresh_details := true, paced := false) -> void:
+	if level.player == null:
+		return
+	var began := Time.get_ticks_usec() if profile_streaming else 0
+	var focus := _detail_focus()
+	var render_point: Vector3 = focus[1]
 	var desired := -1
 	var priority := INF
 	var unloads_before := _unloads
+	var retire := -1
+	var retire_distance := -INF
 	for i in records.size():
 		var record: Dictionary = records[i]
 		var distance := _distance_to_bounds(render_point, record.bounds)
 		if is_instance_valid(record.node):
 			if distance > unload_distance:
-				record.node.queue_free()
-				record.node = null
-				record.proxy.show()
-				_unloads += 1
+				# Periodic scheduling retires the farthest such cell per call, so a
+				# relocation cannot destroy several large scenes at one frame end.
+				if not paced:
+					_retire(record)
+				elif distance > retire_distance:
+					retire = i
+					retire_distance = distance
 		elif distance < load_distance and not record.failed:
 			# Closest cells first; one threaded request avoids flooding storage/GPU.
 			if distance < priority:
 				priority = distance
 				desired = i
+	if retire >= 0:
+		_retire(records[retire])
 	# queue_free only schedules work. This count distinguishes a cheap refresh
 	# that causes a later frame-end destruction spike from synchronous activation.
 	if profile_streaming and _unloads - unloads_before > int(profile_unload_batches.max_cells):
@@ -218,22 +292,88 @@ func _refresh(initial: bool, refresh_details := true) -> void:
 		else:
 			records[desired].failed = true
 			push_warning("City cell load request failed: " + path)
-	if not refresh_details:
-		_profile_stage("building_refresh", began)
-		return
 	_profile_stage("building_refresh", began)
+	if not refresh_details:
+		return
 	for provider in providers:
 		if is_instance_valid(provider) and provider.has_method("set_presence"):
-			var provider_began := Time.get_ticks_usec() if profile_streaming else 0
-			var far_radius := 180.0 if quality != "low" else 135.0
-			if capture_details and provider.has_method("set_capture_presence"):
-				provider.set_capture_presence(point, detail_point, 55.0, far_radius)
-			else:
-				# These providers only cull visuals; their collision stays permanent.
-				provider.set_presence(detail_point if capture_details else point, 55.0, far_radius)
-			if profile_streaming:
-				_profile_stage("detail:" + str(provider.name), provider_began)
+			_apply_presence(provider, focus, false)
+	# Synchronous full refreshes only; periodic passes report detail_frame_slice.
 	_profile_stage("refresh_with_details", began)
+
+func _retire(record: Dictionary) -> void:
+	record.node.queue_free()
+	record.node = null
+	record.proxy.show()
+	_unloads += 1
+
+func _apply_presence(provider: Node, focus: Array, paced: bool) -> void:
+	var point: Vector3 = focus[0]
+	var detail_point: Vector3 = focus[2]
+	var capture_details: bool = focus[3]
+	var far_radius := 180.0 if quality != "low" else 135.0
+	if profile_streaming and "profile_presence" in provider:
+		provider.profile_presence = true
+	var began := Time.get_ticks_usec()
+	if capture_details and provider.has_method("set_capture_presence"):
+		provider.set_capture_presence(point, detail_point, 55.0, far_radius)
+	elif paced and not capture_details and provider.has_method("set_paced_presence"):
+		provider.set_paced_presence(point, 55.0, far_radius)
+	else:
+		# These providers only cull visuals; their collision stays permanent.
+		provider.set_presence(detail_point if capture_details else point, 55.0, far_radius)
+	var elapsed := Time.get_ticks_usec() - began
+	_provider_cost[provider.get_instance_id()] = elapsed
+	if not profile_streaming:
+		return
+	var stage := "detail:" + str(provider.name)
+	_profile_elapsed(stage, elapsed, began)
+	# Provider phases are nested inside its stage; never sum them with it.
+	if "presence_profile" in provider:
+		var phases: Dictionary = provider.presence_profile
+		for phase in phases:
+			_profile_elapsed(stage + "/" + str(phase), int(phases[phase]), began)
+
+func _dispatch_detail_slice() -> void:
+	var began := Time.get_ticks_usec()
+	var focus := _detail_focus()
+	var dispatched := 0
+	while not _detail_queue.is_empty():
+		var provider = _detail_queue[0]
+		var usable: bool = is_instance_valid(provider) and provider.has_method("set_presence")
+		if usable and dispatched > 0:
+			var predicted := int(_provider_cost.get(provider.get_instance_id(), 0))
+			if Time.get_ticks_usec() - began + predicted > detail_frame_budget_usec:
+				break
+		_detail_queue.pop_front()
+		if usable:
+			_apply_presence(provider, focus, true)
+			dispatched += 1
+	var spent := Time.get_ticks_usec() - began
+	_detail_slices += 1
+	_detail_pass_slices += 1
+	_detail_pass_usec += spent
+	_detail_overruns += int(spent > detail_frame_budget_usec)
+	if profile_streaming:
+		_profile_elapsed("detail_frame_slice", spent, began)
+		profile_detail_schedule.slices += 1
+		profile_detail_schedule.budget_overruns += int(spent > detail_frame_budget_usec)
+	if not _detail_queue.is_empty():
+		return
+	_detail_passes += 1
+	if profile_streaming:
+		# CPU summed across the pass's frames; it is not a single-frame cost.
+		_profile_elapsed("detail_pass_cpu", _detail_pass_usec, began, false)
+		profile_detail_schedule.passes += 1
+		profile_detail_schedule.max_slices_per_pass = maxi(int(profile_detail_schedule.max_slices_per_pass), _detail_pass_slices)
+	_detail_pass_usec = 0
+	_detail_pass_slices = 0
+
+func _cancel_detail_pass() -> void:
+	_detail_queue.clear()
+	_detail_due = false
+	_detail_pass_usec = 0
+	_detail_pass_slices = 0
 
 func _poll_load() -> void:
 	if _pending.is_empty():
@@ -267,7 +407,7 @@ func _poll_load() -> void:
 		# Advance the next building request immediately. Detail presence keeps its
 		# regular cadence (or explicit refresh_now), so a completed load cannot
 		# repeat provider scans or spend another vegetation mesh budget this frame.
-		_refresh(false, false)
+		_refresh(false, false, true)
 	elif status == ResourceLoader.THREAD_LOAD_FAILED or status == ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
 		records[_pending_index].failed = true
 		push_warning("City cell background load failed: " + _pending)
@@ -276,6 +416,9 @@ func _poll_load() -> void:
 
 func refresh_now() -> void:
 	if level != null:
+		# Explicit requests stay complete and synchronous; they supersede any
+		# periodic pass still spread over frames.
+		_cancel_detail_pass()
 		_refresh(false)
 
 func get_status() -> Dictionary:
@@ -284,6 +427,7 @@ func get_status() -> Dictionary:
 	var total_triangles := 0
 	var failures := 0
 	var missing_near := 0
+	var deferred_unloads := 0
 	var focus: Vector3 = level.player.global_position if level != null and level.player != null else Vector3.ZERO
 	if level != null and level.player != null and not level.player.camera_override.is_empty():
 		focus = level.player.camera_override.get("target", focus)
@@ -295,6 +439,7 @@ func get_status() -> Dictionary:
 		if is_instance_valid(record.node):
 			active += 1
 			triangles += int(record.triangles)
+			deferred_unloads += int(_distance_to_bounds(focus, record.bounds) > unload_distance)
 		if record.failed:
 			failures += 1
 		if not is_instance_valid(record.node) and _distance_to_bounds(focus, record.bounds) < load_distance:
@@ -312,10 +457,14 @@ func get_status() -> Dictionary:
 		"profile_stages": profile_stages.duplicate(true) if profile_streaming else {},
 		"profile_unload_batches": profile_unload_batches.duplicate() if profile_streaming else {},
 		"profile_slow_stages": profile_slow_stages.duplicate(true) if profile_streaming else [],
+		"profile_detail_schedule": profile_detail_schedule.duplicate() if profile_streaming else {},
 		"capture_details": _capture_details, "detail_render_focus": _detail_render_focus, "detail_physics_focus": _detail_physics_focus,
 		"detail_pending": detail_pending, "detail_missing": detail_missing, "loaded_cells": active,
 		"proxy_cells": records.size() - active, "loaded_detail_triangles": triangles,
 		"total_detail_triangles": total_triangles, "released_original_meshes": _released_sources,
-		"background_loads": _loads, "unloads": _unloads, "pending": not _pending.is_empty(),
+		"background_loads": _loads, "unloads": _unloads, "unloads_deferred": deferred_unloads, "pending": not _pending.is_empty(),
 		"failures": failures, "near_cells_missing": missing_near, "load_radius": load_distance, "unload_radius": unload_distance,
+		"detail_frame_budget_usec": detail_frame_budget_usec, "detail_queue": _detail_queue.size(),
+		"detail_passes": _detail_passes, "detail_slices": _detail_slices, "detail_budget_overruns": _detail_overruns,
+		"relocation_refreshes": _relocation_refreshes,
 		"quality": quality, "collision_streaming": false}

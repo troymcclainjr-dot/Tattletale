@@ -35,6 +35,8 @@ const LEGACY_RESIDENT_IDS := [
 const ACTIVE_RADIUS := 100.0
 const INACTIVE_RADIUS := 120.0
 const FAR_INTERVAL := 0.5
+const COURT_VIEW_RADIUS := 8.0
+const SHOP_FRONTAGE_RADIUS := 5.0
 var level: Node3D
 var actors: Dictionary = {}
 var definitions: Array = []
@@ -57,6 +59,8 @@ var _route_exclude: Array[RID] = []
 var _activation_waits := 0
 var _logical_waits := 0
 var _local_activity := LocalActivity.new()
+var _destination_stops: Array[Vector3] = []
+var _destination_queries := 0
 
 func setup(owner_level: Node3D) -> void:
 	if not actors.is_empty():
@@ -221,9 +225,69 @@ func _build_route(id: String) -> void:
 	if leisure_index == home_index:
 		leisure_index = int((home_index + work_index) / 2)
 	routes[id] = {"points": corridor, "anchors": {"home": home_index, "sleep": home_index, "work": work_index, "leisure": leisure_index}}
+	_bind_leisure_destination(id)
 	if corridor.size() < 16:
 		route_failures.append(id + ": short accessible frontage (%dm)" % corridor.size())
 	_update_schedule(actor, true)
+
+func _bind_leisure_destination(id: String) -> void:
+	# Select a real outdoor destination already on this actor's swept corridor.
+	# Never append an unchecked shortcut or relabel a remote endpoint as a shop.
+	var sites: Array[Dictionary] = []
+	if level.get("shops") != null:
+		for entry in level.shops.definitions:
+			if level.shops.is_entry_open(entry) and entry.has("entry_world"):
+				# The declared ramp starts on the exterior sidewalk. Some doors are
+				# eight metres back or at a collider plane; do not aim through walls.
+				var exterior: Vector3 = level.vector(entry.get("approach_start", entry.entry_world))
+				sites.append({"id": str(entry.id), "kind": "shop", "label": str(entry.label) + " · outside", "focus": exterior})
+	if level.get("park_courts") != null:
+		for court in level.park_courts.records:
+			sites.append({"id": str(court.id), "kind": "court", "label": "Public basketball court · watching", "focus": court.position, "polygon": court.polygon})
+	var route: Dictionary = routes[id]
+	var corridor: Array[Vector3] = route.points
+	var candidates: Array[Dictionary] = []
+	for site in sites:
+		var best := INF
+		var anchor := -1
+		for i in corridor.size():
+			var point := corridor[i]
+			if point.distance_to(corridor[route.anchors.home]) < 5.0 or point.distance_to(corridor[route.anchors.work]) < 2.5:
+				continue
+			var occupied := false
+			for reserved in _destination_stops:
+				if point.distance_to(reserved) < 2.0:
+					occupied = true
+					break
+			if occupied:
+				continue
+			var flat := Vector2(point.x, point.z)
+			var focus: Vector3 = site.focus
+			var distance := flat.distance_to(Vector2(focus.x, focus.z))
+			if site.kind == "court":
+				var polygon: PackedVector2Array = site.polygon
+				distance = INF
+				for edge in polygon.size():
+					distance = minf(distance, flat.distance_to(Geometry2D.get_closest_point_to_segment(flat, polygon[edge], polygon[(edge + 1) % polygon.size()])))
+			if distance < best and distance <= (COURT_VIEW_RADIUS if site.kind == "court" else SHOP_FRONTAGE_RADIUS) and absf(point.y - focus.y) < 1.5:
+				best = distance
+				anchor = i
+		if anchor >= 0:
+			candidates.append({"anchor": anchor, "distance": best, "site": site})
+	candidates.sort_custom(func(a, b): return float(a.distance) < float(b.distance))
+	# Route construction is already one resident per tick. At most two extra
+	# rays during that one-time build; no new recurring navigation queries.
+	for candidate in candidates.slice(0, mini(2, candidates.size())):
+		var point: Vector3 = corridor[candidate.anchor]
+		var site: Dictionary = candidate.site
+		var ray := PhysicsRayQueryParameters3D.create(point + Vector3.UP * 1.3, site.focus + Vector3.UP * 1.3, 2 | 16)
+		_destination_queries += 1
+		if not get_world_3d().direct_space_state.intersect_ray(ray).is_empty():
+			continue
+		route.anchors.leisure = candidate.anchor
+		route.destination = site
+		_destination_stops.append(point)
+		return
 
 func _clear_edge(start: Vector3, wanted: Vector3) -> Dictionary:
 	if CivicClearance.segment_blocked(level, start, wanted, 0.35):
@@ -299,7 +363,8 @@ func _update_schedule(actor, force := false) -> void:
 	var direction := 1 if destination >= nearest else -1
 	for i in range(nearest, destination + direction, direction):
 		path.append(corridor[i])
-	actor.assign_route(path, str(entry.activity), str(entry.label))
+	var site: Dictionary = route.get("destination", {}) if str(entry.activity) == "leisure" else {}
+	actor.assign_route(path, str(entry.activity), str(site.get("label", entry.label)), site)
 
 func tick(delta: float) -> void:
 	var started := Time.get_ticks_usec()
@@ -352,6 +417,7 @@ func tick(delta: float) -> void:
 					resume_after_combat(actor)
 			else:
 				_advance_far(actor, far_delta)
+	_local_activity.tick_social(actors.values(), delta)
 	_last_tick_usec = Time.get_ticks_usec() - started
 	_max_tick_usec = maxi(_max_tick_usec, _last_tick_usec)
 
@@ -543,7 +609,7 @@ func resume_after_combat(actor) -> bool:
 		var direction := 1 if destination >= index else -1
 		for i in range(index + direction, destination + direction, direction):
 			connector.append(corridor[i])
-		actor.assign_route(connector, actor.activity, actor.destination_label)
+		actor.assign_route(connector, actor.activity, actor.destination_label, actor.destination_site)
 		return true
 	# Return may be obstructed by a person or parked vehicle. Preserve the body
 	# at its real position and retry; never restore a stale straight-line target.
@@ -628,4 +694,5 @@ func get_status() -> Dictionary:
 		"near_updates": _near_updates, "far_updates": _far_updates, "last_tick_usec": _last_tick_usec,
 		"max_tick_usec": _max_tick_usec, "placement_failures": placement_failures.duplicate(),
 		"activation_waits": _activation_waits, "logical_waits": _logical_waits,
-		"route_failures": route_failures.duplicate(), "actors": detail, "local_activity": _local_activity.status()}
+		"route_failures": route_failures.duplicate(), "actors": detail, "local_activity": _local_activity.status(),
+		"real_destination_count": _destination_stops.size(), "destination_build_queries": _destination_queries}

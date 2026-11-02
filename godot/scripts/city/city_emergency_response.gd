@@ -725,6 +725,9 @@ func tick(delta: float) -> void:
 ## put back at its home. A load (relay false) also forgets this session's
 ## closed calls: the restored records replace that timeline.
 func reset_state(why := "reset", relay := true) -> void:
+	var audio := level.get_node_or_null("CityWorldAudio") if is_instance_valid(level) else null
+	if audio != null and audio.has_method("stop_emergency"):
+		audio.stop_emergency(ambulance)
 	counters.resets = int(counters.resets) + 1
 	for call in calls.duplicate():
 		call.relay = relay
@@ -2182,6 +2185,12 @@ func _scene_unsafe(call: Dictionary) -> bool:
 
 func _animate() -> void:
 	var lit := driver.emergency and is_instance_valid(ambulance) and ambulance.visible
+	var audio := level.get_node_or_null("CityWorldAudio") if is_instance_valid(level) else null
+	if audio != null:
+		if lit and str(unit.mode) == "responding" and audio.has_method("emergency"):
+			audio.emergency(ambulance)
+		elif audio.has_method("stop_emergency"):
+			audio.stop_emergency(ambulance)
 	var flash := fmod(_clock, 0.7) < 0.35
 	for i in _lights.size():
 		if is_instance_valid(_lights[i]):

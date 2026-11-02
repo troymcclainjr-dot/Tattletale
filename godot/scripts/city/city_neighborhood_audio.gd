@@ -77,11 +77,12 @@ func _audible() -> bool:
 	return true
 
 func _process(delta: float) -> void:
-	var suspended := _suspended()
+	var suspended := _suspended() or not _audible()
 	if suspended:
 		if not _blocked:
 			_stop_all()
 		_blocked = true
+		_accum = 0.0
 		return
 	_blocked = false
 	_court_wait = maxf(0.0, _court_wait - delta)
@@ -123,20 +124,25 @@ func _listener_position() -> Vector3:
 
 func _nearby_green() -> Vector3:
 	var listener := _listener_position()
-	var nearest := Vector3.INF
-	var best := BIRD_RANGE * BIRD_RANGE
+	var selected := Vector3.INF
+	var candidates := 0
+	# Reservoir sampling keeps calls among real nearby greens, without always
+	# repeating from the closest tree or creating a candidate array each tick.
 	for anchor in _green_anchors:
-		var distance := listener.distance_squared_to(anchor)
-		if distance < best:
-			nearest = anchor
-			best = distance
-	return nearest
+		if listener.distance_squared_to(anchor) < BIRD_RANGE * BIRD_RANGE:
+			candidates += 1
+			if _rng.randi_range(1, candidates) == 1:
+				selected = anchor
+	return selected
 
 ## Call only for a real world action; no scheduled spectator/porch noises.
-func play_activity(kind: String, at: Vector3) -> bool:
+func play_activity(kind: String, at: Vector3, strength := 1.0) -> bool:
 	if kind != "court_bounce" or _court_wait > 0.0:
 		return false
-	if _play(2, "court_bounce", at, COURT_RANGE, -12.0, 5.0, kind):
+	if not is_finite(strength):
+		return false
+	var db := -12.0 + linear_to_db(clampf(strength, 0.25, 1.0))
+	if _play(2, "court_bounce", at, COURT_RANGE, db, 5.0, kind):
 		_court_wait = 0.18
 		return true
 	return false
@@ -154,6 +160,8 @@ func _play(index: int, stem: String, at: Vector3, range_m: float, db: float, nea
 	voice.stream = stream
 	voice.global_position = at
 	voice.volume_db = db
+	# Small natural variation without new samples, added voices or longer tails.
+	voice.pitch_scale = _rng.randf_range(0.96, 1.04) if tag != "air" else 1.0
 	voice.unit_size = near_m
 	voice.max_distance = range_m
 	voice.play()

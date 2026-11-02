@@ -47,18 +47,51 @@ var loop_direction := 1
 var loops_completed := 0
 var maximum_displacement := 0.0
 var steady_origin := Vector3.ZERO
+const SLOW_FRAME_THRESHOLD_MS := 50.0
+const MAX_SLOW_FRAMES := 32
+var slow_frames: Array[Dictionary] = []
+var slow_frame_count := 0
 
 func _process(_delta: float) -> void:
 	if not collecting:
 		return
 	var now := Time.get_ticks_usec()
-	histograms.frame_ms.record(float(now - previous_frame) / 1000.0)
+	var frame_ms := float(now - previous_frame) / 1000.0
+	histograms.frame_ms.record(frame_ms)
 	previous_frame = now
-	histograms.gpu_ms.record(RenderingServer.viewport_get_measured_render_time_gpu(get_viewport().get_viewport_rid()))
-	histograms.render_cpu_ms.record(RenderingServer.viewport_get_measured_render_time_cpu(get_viewport().get_viewport_rid()))
-	histograms.draw_calls.record(float(RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME)))
+	var gpu_ms := RenderingServer.viewport_get_measured_render_time_gpu(get_viewport().get_viewport_rid())
+	var render_cpu_ms := RenderingServer.viewport_get_measured_render_time_cpu(get_viewport().get_viewport_rid())
+	var draw_calls := float(RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME))
+	histograms.gpu_ms.record(gpu_ms)
+	histograms.render_cpu_ms.record(render_cpu_ms)
+	histograms.draw_calls.record(draw_calls)
+	if frame_ms > SLOW_FRAME_THRESHOLD_MS:
+		_record_slow_frame(now, frame_ms, render_cpu_ms, gpu_ms, draw_calls)
 	maximum_displacement = maxf(maximum_displacement, flat_distance(player.global_position, steady_origin))
 	any_paused = any_paused or bool(level.paused) or get_tree().paused
+
+func _record_slow_frame(now: int, frame_ms: float, render_cpu_ms: float, gpu_ms: float, draw_calls: float) -> void:
+	slow_frame_count += 1
+	# Keep only the worst bounded tail, sorted descending. No log/file writes or
+	# world-status scans in the measured frame; ordinary frames allocate no row.
+	if slow_frames.size() >= MAX_SLOW_FRAMES and frame_ms <= float(slow_frames.back().frame_ms):
+		return
+	var unix_end := Time.get_unix_time_from_system()
+	var row := {"unix": unix_end, "unix_interval_start": unix_end - frame_ms / 1000.0,
+		"elapsed_seconds": float(now - sample_started) / 1000000.0,
+		"process_frame": Engine.get_process_frames(), "frame_ms": frame_ms,
+		"process_ms": Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0,
+		"physics_ms": Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0,
+		"render_cpu_ms": render_cpu_ms, "gpu_ms": gpu_ms, "draw_calls": draw_calls}
+	# These public scalars update after a successful write; the saved timestamp
+	# belongs to its snapshot, not the write's completion. Reads perform no I/O.
+	if is_instance_valid(level.world_save):
+		row.save_count = int(level.world_save.save_count)
+		row.last_saved_snapshot_unix = float(level.world_save.last_saved_unix)
+	if slow_frames.size() >= MAX_SLOW_FRAMES:
+		slow_frames.pop_back()
+	slow_frames.append(row)
+	slow_frames.sort_custom(func(a: Dictionary, b: Dictionary): return float(a.frame_ms) > float(b.frame_ms))
 
 func _physics_process(_delta: float) -> void:
 	if not collecting or steady_mode != "walk" or route.size() < 2:
@@ -160,5 +193,8 @@ func _run() -> void:
 		"walked_m": player.distance_walked - walked_before, "max_displacement_m": maximum_displacement,
 		"streaming": stream, "retained_frame_rows": frame_rows.size(),
 		"retained_histogram_bytes": 4 * Histogram.BIN_COUNT * 8, "retained_metric_samples": samples.size(),
-		"notes": "Fixed histograms (~640KB) and at most182 five-second samples; no per-frame trace or per-physics arrays. Percentiles are 0.1ms upper-bin bounds (draw counts1); min/max/mean exact. Same initial scene and normal clock, no repeat relocations, balanced scale1 uncapped real renderer. User/background processes remain a contention variable."}
+		"slow_frame_threshold_ms": SLOW_FRAME_THRESHOLD_MS, "slow_frame_count": slow_frame_count,
+		"retained_slow_frame_limit": MAX_SLOW_FRAMES, "slow_frames": slow_frames,
+		"slow_frame_notes": "Worst32 frames over50ms only, descending wall time. Unix marks observation end; interval start is derived. Process/physics/render counters are the latest available monitor samples, not a stack trace. Save fields are cheap public scalars; last_saved_snapshot_unix dates the successful snapshot, not write completion or duration. No per-event world-status scan. Older histogram-only runs (including the988.315ms spike) cannot be retrospectively attributed from this diagnostic.",
+		"notes": "Fixed histograms (~640KB), at most182 five-second samples and worst32 slow-frame records; no full per-frame trace or per-physics arrays. Percentiles are 0.1ms upper-bin bounds (draw counts1); min/max/mean exact. Same initial scene and normal clock, no repeat relocations, balanced scale1 uncapped real renderer. User/background processes remain a contention variable."}
 	_finish()

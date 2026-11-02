@@ -1,0 +1,160 @@
+{
+  "fresh": {
+    "checks": {
+      "foundation_bridges": true,
+      "foundation_checkpoint": true,
+      "foundation_fixture_created": true,
+      "foundation_restore": true,
+      "foundation_schema": true,
+      "foundation_services": true,
+      "fresh_save_absent": true,
+      "fresh_settings_absent": true,
+      "input_moves_player": true,
+      "inspector_present": true,
+      "main_scene": true,
+      "no_placeholders": true,
+      "pacifist_policy": true,
+      "packed_case_library": true,
+      "packed_credits": true,
+      "packed_fonts_and_licenses": true,
+      "phone_bicycle_schema": true,
+      "population": true,
+      "production_progression_transaction": true,
+      "production_save": true,
+      "release_template": true,
+      "settings_apply": true,
+      "world_ready": true
+    },
+    "money": 507,
+    "save_sha256": "43a2414c1fea427e78005aa93d561134ab6b4463e65aab9594bbd952c977a2e3",
+    "phase": "fresh",
+    "editor": false,
+    "offscreen_validation": true,
+    "passed": true,
+    "debug": false,
+    "display_server": "headless",
+    "main_scene": "res://scenes/city/pen_lucy.tscn"
+  },
+  "install_unchanged": true,
+  "startup": {
+    "save_enabled_at_startup": true,
+    "money": 507,
+    "phase": "startup",
+    "debug": false,
+    "startup_window": {
+      "focused": false,
+      "mouse_mode": 0,
+      "outside_all_screens": true,
+      "rect": [
+        -10008,
+        -10031,
+        976,
+        579
+      ],
+      "screen_rects": [
+        [
+          1920,
+          0,
+          2560,
+          1440
+        ],
+        [
+          4480,
+          0,
+          1920,
+          1080
+        ],
+        [
+          0,
+          0,
+          1920,
+          1080
+        ]
+      ],
+      "unfocusable": true
+    },
+    "native_foreground": {
+      "runtime_pid": 42296,
+      "samples": 1218,
+      "unknown_samples": 0,
+      "foreground_pids": [
+        18848
+      ],
+      "runtime_was_foreground": false,
+      "errors": []
+    },
+    "offscreen_validation": false,
+    "checks": {
+      "automatic_world_restore": true,
+      "foundation_bridges": true,
+      "foundation_checkpoint": true,
+      "foundation_restore": true,
+      "foundation_schema": true,
+      "foundation_services": true,
+      "inspector_present": true,
+      "main_scene": true,
+      "no_placeholders": true,
+      "normal_startup_mode": true,
+      "pacifist_policy": true,
+      "packed_case_library": true,
+      "packed_credits": true,
+      "packed_fonts_and_licenses": true,
+      "phone_bicycle_schema": true,
+      "population": true,
+      "release_template": true,
+      "save_enabled_by_startup": true,
+      "settings_loaded_on_startup": true,
+      "startup_clock_restored": true,
+      "startup_guard_kept_mouse_visible": true,
+      "startup_mouse_uncaptured": true,
+      "startup_private_window": true,
+      "startup_progression_restored": true,
+      "startup_project_no_focus": true,
+      "startup_save_present": true,
+      "world_ready": true
+    },
+    "main_scene": "res://scenes/city/pen_lucy.tscn",
+    "editor": false,
+    "save_sha256": "43a2414c1fea427e78005aa93d561134ab6b4463e65aab9594bbd952c977a2e3",
+    "startup_mouse_before_pause": 0,
+    "passed": true,
+    "display_server": "Windows"
+  },
+  "source_runtime_unchanged": true,
+  "reload": {
+    "checks": {
+      "foundation_bridges": true,
+      "foundation_checkpoint": true,
+      "foundation_restore": true,
+      "foundation_schema": true,
+      "foundation_services": true,
+      "inspector_present": true,
+      "main_scene": true,
+      "no_placeholders": true,
+      "pacifist_policy": true,
+      "packed_case_library": true,
+      "packed_credits": true,
+      "packed_fonts_and_licenses": true,
+      "phone_bicycle_schema": true,
+      "population": true,
+      "production_reload": true,
+      "progression_restored": true,
+      "release_template": true,
+      "reload_save_present": true,
+      "settings_loaded_on_startup": true,
+      "world_ready": true
+    },
+    "money": 507,
+    "save_sha256": "43a2414c1fea427e78005aa93d561134ab6b4463e65aab9594bbd952c977a2e3",
+    "phase": "reload",
+    "editor": false,
+    "offscreen_validation": true,
+    "passed": true,
+    "debug": false,
+    "display_server": "headless",
+    "main_scene": "res://scenes/city/pen_lucy.tscn"
+  },
+  "install_write_denial_verified": true,
+  "passed": true,
+  "scope": "Headless exported gameplay/input/settings/save-load API plus ordinary graphical startup automatic world restore; not GPU visual acceptance"
+}

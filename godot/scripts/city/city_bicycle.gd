@@ -29,6 +29,7 @@ const CrashRig := preload("res://scripts/city/city_bicycle_crash.gd")
 const MAX_SPEED := 9.0
 const SPRINT_SPEED := 12.0
 const REVERSE_SPEED := 2.4
+const REVERSE_BRAKE_DWELL := 0.30
 const ACCELERATION := 3.8
 const BRAKING := 12.0
 const GRAVITY := 22.0
@@ -91,6 +92,16 @@ var _legs: Array[MeshInstance3D] = []
 var _shoes: Array[MeshInstance3D] = []
 var _pedals: Array[MeshInstance3D] = []
 var _phase := 0.0
+## The freewheel lets tyres spin while the rider rests on the pedals.
+var _pedal_phase := 0.0
+var _pedal_rate := 0.0
+var _pedal_input := 0.0
+var _pedal_effort := 0.0
+var _braking := false
+var _reverse_wait := 0.0
+var _brake_effort := 0.0
+var _landing_load := 0.0
+var _rider_compression := 0.0
 var _near_clock := 0.0
 var _clock := 0.0
 var _contact_until: Dictionary = {}
@@ -136,6 +147,8 @@ var _recovery_retry := 0.0
 var _fallen := false
 var _fall_amount := 0.0
 var _fall_side := 1.0
+var _fall_start_roll := 0.0
+var _fall_start_drop := 0.0
 var _settling := false
 var _spin_rate := 0.0
 var _trail: Array[Vector3] = []
@@ -221,6 +234,17 @@ func tick(delta: float) -> void:
 	var controls := _read_controls()
 	var move: Vector2 = controls.move
 	var brake: bool = controls.brake
+	# Holding S first gives the rider a readable stop, then backs up. Starting
+	# S from rest still reverses immediately; releasing it cancels the dwell.
+	if brake or move.y >= -0.01:
+		_reverse_wait = 0.0
+	elif speed > 0.05:
+		_reverse_wait = REVERSE_BRAKE_DWELL
+	else:
+		_reverse_wait = maxf(0.0, _reverse_wait - delta)
+	var stopping_for_reverse := move.y < -0.01 and (speed > 0.05 or _reverse_wait > 0.0)
+	_braking = brake or stopping_for_reverse or (move.y > 0.01 and speed < -0.05)
+	_pedal_input = 0.0 if _braking else move.y
 	var hop_held := bool(controls.get("hop", false))
 	if hop_held and not _hop_held:
 		_hop_buffer = HOP_BUFFER
@@ -239,9 +263,8 @@ func tick(delta: float) -> void:
 		if _wobble > 0.0 and speed >= -0.05:
 			acceleration *= 0.35 # Regaining balance after a knock.
 	elif move.y < -0.01:
-		# Holding S brakes a forward-moving bicycle before backing it up slowly.
-		target_speed = 0.0 if speed > 0.05 else REVERSE_SPEED * move.y
-		acceleration = BRAKING if speed > 0.05 else ACCELERATION * 0.65
+		target_speed = 0.0 if stopping_for_reverse else REVERSE_SPEED * move.y
+		acceleration = BRAKING if stopping_for_reverse else ACCELERATION * 0.65
 	speed = move_toward(speed, target_speed, delta * acceleration)
 	_steer = move_toward(_steer, move.x, delta * 5.0)
 	# Positive steering is the rider's right (-X when facing +Z). The camera
@@ -362,6 +385,7 @@ func enter_bicycle() -> bool:
 		_flash("Put away the phone before riding")
 		return false
 	_seat_rider(player.global_position)
+	_play_contact_sound()
 	return true
 
 ## Seats the explorer on the upright bicycle (mounting, or a mounted restore).
@@ -404,6 +428,8 @@ func exit_vehicle(force := false) -> bool:
 	var at := _exit_spot([1.0, 1.4, 2.0, 3.0] if force else [1.0, 1.4])
 	if at.is_finite():
 		_finish_exit(at, yaw)
+		if not force:
+			_play_contact_sound()
 		return true
 	_flash("Move to a clear spot to get off")
 	return false
@@ -441,6 +467,7 @@ func recovery_exit_at(at: Vector3, heading: float) -> bool:
 
 func _finish_exit(at: Vector3, heading: float) -> void:
 	active = false
+	_reverse_wait = 0.0
 	speed = 0.0
 	velocity = Vector3.ZERO
 	_hop_active = false
@@ -469,6 +496,11 @@ func set_control_override(move: Vector2, brake := false, sprint := false, hop :=
 func clear_control_override() -> void:
 	input_override.clear()
 
+func _play_contact_sound() -> void:
+	var audio := level.get_node_or_null("CityWorldAudio") if is_instance_valid(level) else null
+	if audio != null and audio.has_method("bicycle_contact"):
+		audio.bicycle_contact(global_position + Vector3.UP * 0.5)
+
 ## Fixtures that place the bicycle directly clear the transient solver state.
 func reset_motion_state() -> void:
 	velocity = Vector3.ZERO
@@ -476,6 +508,14 @@ func reset_motion_state() -> void:
 	_yaw_deflect = 0.0
 	_wobble = 0.0
 	_jolt = 0.0
+	_pedal_rate = 0.0
+	_pedal_input = 0.0
+	_pedal_effort = 0.0
+	_braking = false
+	_reverse_wait = 0.0
+	_brake_effort = 0.0
+	_landing_load = 0.0
+	_rider_compression = 0.0
 	_grounded = true
 	_climbing = false
 	_hop_active = false
@@ -675,7 +715,10 @@ func _move(planar: Vector3, delta: float, touched: Array[Dictionary]) -> void:
 			velocity.y = 0.0 # Low ceiling or canopy: the hop stops rising.
 	var start := global_position
 	var motion := Vector3(planar.x, 0.0, planar.z) * delta
-	if motion.length_squared() > 0.0000001:
+	# The first pedal stroke at high physics rates can be sub-millimetre.
+	# Sweep it normally: discarding it makes measured travel zero, which then
+	# clears speed and traps the bicycle at rest on every subsequent tick.
+	if motion.length_squared() > 0.000000000001:
 		_sweep(motion, touched)
 	var reach := SNAP_DOWN if _grounded else maxf(SNAP_DOWN, -velocity.y * delta + 0.08)
 	var profile := _support_profile(global_transform, reach)
@@ -711,7 +754,9 @@ func _sweep(motion: Vector3, touched: Array[Dictionary]) -> void:
 	var remaining := motion
 	var planes: Array[Vector3] = []
 	for iteration in 4:
-		if remaining.length_squared() < 0.0000004:
+		# Keep the existing slide-remainder cutoff after a collision, but never
+		# discard an ordinary first acceleration step before testing the hull.
+		if remaining.length_squared() < (0.000000000001 if iteration == 0 else 0.0000004):
 			break
 		var hit := move_and_collide(remaining, false, safe_margin, false, 4)
 		if hit == null:
@@ -866,6 +911,9 @@ func _settle_vertical(profile: Dictionary, reach: float, start: Vector3, delta: 
 	_support = profile
 
 func _land() -> void:
+	if not _grounded:
+		# The rider absorbs the landing without moving the collision hull/tyres.
+		_landing_load = maxf(_landing_load, clampf(-velocity.y / HOP_SPEED, 0.0, 1.0))
 	if not _grounded and velocity.y < -5.0:
 		_jolt = 1.0
 		_shake(clampf(-velocity.y * 0.05, 0.1, 0.4))
@@ -1131,6 +1179,7 @@ func _eject(event: Dictionary, v_pre: Vector3) -> bool:
 	if not _crash.begin(start, launch, spin, yaw):
 		return false
 	_crashed = true
+	_reverse_wait = 0.0
 	crashes += 1
 	_crash_heading = yaw
 	_crash_recovery = {}
@@ -1143,6 +1192,8 @@ func _eject(event: Dictionary, v_pre: Vector3) -> bool:
 	_slip = recoil
 	_spin_rate = clampf(lever.cross(normal).y * closing * 0.6, -3.0, 3.0)
 	_fall_side = _choose_fall_side(1.0 if tangent.dot(right) >= 0.0 else -1.0)
+	_fall_start_roll = _visual.rotation.z
+	_fall_start_drop = _visual.position.y
 	_fall_amount = 0.0
 	_fallen = true
 	_settling = true
@@ -1537,11 +1588,13 @@ func _wheel(parent: Node3D, at: Vector3, rubber: Material, chrome: Material) -> 
 	_rod(wheel, Vector3(-0.08, 0.0, 0.0), Vector3(0.08, 0.0, 0.0), 0.034, chrome)
 
 func _animate(delta: float, turn: float) -> void:
+	_update_rider_motion(delta)
 	for wheel in _wheels:
 		wheel.rotation.x = _phase
-	_front.rotation.y = lerpf(_front.rotation.y, clampf(turn * 0.14, -0.45, 0.45), minf(1.0, delta * 12.0))
+	_front.rotation.y = lerpf(_front.rotation.y, clampf(turn * 0.14, -0.45, 0.45), 1.0 - exp(-delta * 12.0))
 	var wobble := sin(_clock * 26.0) * 0.07 * clampf(_wobble / 0.4, 0.0, 1.0)
-	_visual.rotation.z = lerpf(_visual.rotation.z, clampf(-turn * speed * 0.012, -0.16, 0.16) + wobble, minf(1.0, delta * 8.0))
+	var effort_sway := sin(_pedal_phase) * 0.016 * _pedal_effort
+	_visual.rotation.z = lerpf(_visual.rotation.z, clampf(-turn * speed * 0.012, -0.16, 0.16) + wobble + effort_sway, 1.0 - exp(-delta * 8.0))
 	# Pitch the frame so both tyres meet the sampled ground: curbs, slopes, ledges.
 	var rear := float(_support.get("rear", -INF))
 	var front := float(_support.get("front", -INF))
@@ -1550,23 +1603,51 @@ func _animate(delta: float, turn: float) -> void:
 	if _grounded and is_finite(rear) and is_finite(front):
 		pitch = -atan2(front - rear, FRONT_AXLE - REAR_AXLE)
 		drop = (front + rear) * 0.5 - global_position.y
-	var blend := minf(1.0, delta * 16.0)
+	elif _hop_active:
+		pitch = clampf(-velocity.y * 0.018, -0.11, 0.09)
+	var blend := 1.0 - exp(-delta * 16.0)
 	_visual_pitch = lerpf(_visual_pitch, clampf(pitch, -0.35, 0.35), blend)
 	_visual_drop = lerpf(_visual_drop, clampf(drop, -0.2, 0.0), blend)
 	_jolt = maxf(0.0, _jolt - delta * 3.0)
 	_visual.rotation.x = _visual_pitch - _jolt * 0.1
 	_visual.position.y = _visual_drop
+	# Keep the hips near the saddle, brace back under braking and tuck for a
+	# hard pedal stroke. The hands are refitted after every body pose.
+	var rider_shift := Vector3(0.0, -_rider_compression, -0.025 * _brake_effort)
+	_rider.g.position = Vector3(0.0, 0.19, -0.24) + rider_shift
+	var lean := 0.80 + 0.075 * _pedal_effort - 0.06 * _brake_effort + _rider_compression * 0.7
+	_rider.pose({"lean": lean, "nod": -lean + 0.18, "tilt": -effort_sway * 0.6})
 	for i in 2:
 		var side := -1.0 if i == 0 else 1.0
-		var phase := _phase * 0.55 + float(i) * PI
+		var phase := _pedal_phase + float(i) * PI
 		var foot := Vector3(side * 0.19, 0.34 + sin(phase) * 0.14, -0.10 + cos(phase) * 0.14)
 		_pedals[i].position = foot
 		_shoes[i].position = foot + Vector3(0.0, 0.065, 0.035)
-		var hip := Vector3(side * 0.14, 1.03, -0.24)
-		var knee := Vector3(side * 0.17, 0.70 + sin(phase) * 0.06, 0.24)
+		var hip := Vector3(side * 0.14, 1.03, -0.24) + rider_shift
+		var knee := Vector3(side * 0.17, 0.70 + sin(phase) * 0.06, 0.24) + rider_shift * 0.5
 		_place_rod(_legs[i * 2], hip, knee)
 		_place_rod(_legs[i * 2 + 1], knee, foot + Vector3.UP * 0.08)
 	_fit_rider_hands()
+
+## Visual-only response: rolling distance still owns wheel rotation and the
+## solver owns all acceleration, steering, hops, contacts and recovery.
+func _update_rider_motion(delta: float) -> void:
+	var pedalling := absf(_pedal_input) > 0.01 and not _braking and _grounded and absf(speed) > 0.08
+	var effort := (1.0 if _sprinting else 0.55) * absf(_pedal_input) if pedalling else 0.0
+	_pedal_effort = lerpf(_pedal_effort, effort, 1.0 - exp(-delta * 7.0))
+	var cadence := 0.0
+	if pedalling:
+		cadence = lerpf(3.8, 8.5, clampf(absf(speed) / MAX_SPEED, 0.0, 1.0))
+		cadence *= (1.2 if _sprinting else 1.0) * signf(_pedal_input)
+	# Ease into the stroke and let it settle when coasting; feet never teleport
+	# to an arbitrary rest phase or windmill at sprint wheel speed.
+	_pedal_rate = lerpf(_pedal_rate, cadence, 1.0 - exp(-delta * (8.0 if pedalling else 12.0)))
+	_pedal_phase = fposmod(_pedal_phase + _pedal_rate * delta, TAU)
+	var braking_load := clampf(absf(speed) / 3.0, 0.0, 1.0) if _braking else 0.0
+	_brake_effort = lerpf(_brake_effort, braking_load, 1.0 - exp(-delta * 9.0))
+	var compression := _landing_load * 0.065 + (0.025 if _hop_active else 0.0)
+	_rider_compression = lerpf(_rider_compression, compression, 1.0 - exp(-delta * 24.0))
+	_landing_load *= exp(-delta * 6.0)
 
 func _fit_rider_hands() -> void:
 	# The legacy cast now has measured adult anatomy. Fit its actual hand
@@ -1590,9 +1671,9 @@ func _animate_riderless(delta: float) -> void:
 	for wheel in _wheels:
 		wheel.rotation.x = _phase
 	var fall := _fall_amount * _fall_amount * (3.0 - 2.0 * _fall_amount)
-	_visual.rotation.z = _fall_side * 1.38 * fall
+	_visual.rotation.z = lerpf(_fall_start_roll, _fall_side * 1.38, fall)
 	_visual.rotation.x = lerpf(_visual.rotation.x, 0.0, minf(1.0, delta * 6.0))
-	_visual.position.y = 0.06 * fall
+	_visual.position.y = lerpf(_fall_start_drop, 0.06, fall)
 	_front.rotation.y = lerpf(_front.rotation.y, 0.5 * _fall_side * fall, minf(1.0, delta * 4.0))
 
 func apply_shop_cosmetics(paint_html: String, bandana_html: String) -> void:

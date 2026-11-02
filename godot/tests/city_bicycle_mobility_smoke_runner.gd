@@ -88,6 +88,7 @@ func _frames(count: int) -> void:
 		max_rise = maxf(max_rise, bike.global_position.y - before)
 
 func _run() -> void:
+	preload("res://scripts/city/city_input_bindings.gd").ensure()
 	G.process_mode = Node.PROCESS_MODE_DISABLED
 	Hud.process_mode = Node.PROCESS_MODE_DISABLED
 	Hud.hide()
