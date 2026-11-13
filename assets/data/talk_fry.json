@@ -1,0 +1,22 @@
+{
+	"about": "A sample conversation to test the talk box. The lines are placeholders written on 2026-11-13, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "This is a no-smoking studio. You know that, right?", "face": "focused", "next": "smoke"},
+			{"say": "Heard the new single. You rhymed \"crime\" with \"crime\".", "face": "smug", "next": "rhyme"},
+			{"say": "I'm cutting a record about jaywalkers. You want a verse?", "face": "happy", "next": "jaywalk"}
+		]},
+		"smoke": {"speaker": "npc", "face": "bored", "line": "Ain't nobody smoking. That's the mixing board. It's been doing that since Tuesday.", "next": "back"},
+		"rhyme": {"speaker": "npc", "face": "smug", "line": "That's called emphasis, playboy. Look it up.", "next": "back"},
+		"jaywalk": {"speaker": "npc", "face": "neutral", "line": "I don't cross streets. Streets come to me.", "next": "back"},
+		"back": {"choices": [
+			{"say": "I'm going to have to report that board to the fire marshal.", "face": "focused", "next": "marshal"},
+			{"say": "Just say no. To all of it. Whatever it is.", "face": "preachy", "next": "say_no"},
+			{"say": "Be honest. Are you wearing a wire? Because I am.", "face": "suspicious", "next": "wire"}
+		]},
+		"marshal": {"speaker": "npc", "face": "happy", "line": "You do that. Tell him he still owes me twenty.", "next": ""},
+		"say_no": {"speaker": "npc", "face": "bored", "line": "I been saying no since you walked in. You still here.", "next": ""},
+		"wire": {"speaker": "npc", "face": "shocked", "line": "...And that's why nobody books the booth after you.", "next": ""}
+	}
+}

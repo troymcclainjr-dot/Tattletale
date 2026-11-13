@@ -1,0 +1,7 @@
+# Text is stored and checked out with LF, whatever the machine.
+* text=auto eol=lf
+# Windows batch files need CRLF, including in a downloaded ZIP: stored exactly as they are.
+*.cmd -text
+*.png binary
+*.ttf binary
+*.jpg binary

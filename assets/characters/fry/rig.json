@@ -1,0 +1,412 @@
+{
+ "about": "Positions and sizes are pixels of body.png (x right, y down). Built by build_fry.py (see the README).",
+ "name": "LARGE FRY",
+ "height_m": 1.7,
+ "tilt_deg": 0.0,
+ "views": {
+  "front": {
+   "art": "body.png",
+   "limbs": "limbs.png",
+   "legs": "legs.png",
+   "hip": 1115.0,
+   "knee": 1285.0,
+   "arm_l": [
+    352.5,
+    522.0
+   ],
+   "arm_r": [
+    838.5,
+    522.0
+   ],
+   "arm_ink": 9.0,
+   "face": {
+    "hide": [
+     "eye_l",
+     "eye_r",
+     "brow_l",
+     "brow_r",
+     "stache_l",
+     "stache_r",
+     "goatee"
+    ]
+   }
+  },
+  "back": {
+   "art": "back.png",
+   "limbs": "limbs_back.png",
+   "legs": "legs_back.png",
+   "hip": 1115.0,
+   "knee": 1285.0,
+   "arm_l": [
+    300.0,
+    532.0
+   ],
+   "arm_r": [
+    850.5,
+    541.0
+   ],
+   "arm_ink": 9.0
+  },
+  "side": {
+   "art": "side.png",
+   "limbs": "limbs.png",
+   "legs": "legs_side.png",
+   "hip": 1123.3,
+   "knee": 1285.0,
+   "arm_art": "body.png",
+   "far_arm_hidden": true,
+   "arm_l": [
+    352.5,
+    522.0
+   ],
+   "arm_r": [
+    838.5,
+    522.0
+   ],
+   "arm_ink": 9.0,
+   "arm_l_shift": [
+    191.79999999999995,
+    39.60000000000002
+   ],
+   "arm_l_rest": 0.37,
+   "stride": 353.0,
+   "face": {
+    "tilt_deg": 0.0,
+    "hide": [
+     "eye_l",
+     "eye_r",
+     "brow_l",
+     "brow_r",
+     "stache_l",
+     "stache_r",
+     "goatee"
+    ],
+    "mouth_prefix": "side_"
+   }
+  }
+ },
+ "anchors": {
+  "eye_l": [
+   602.0,
+   403.0
+  ],
+  "eye_r": [
+   602.0,
+   403.0
+  ],
+  "brow_l": [
+   602.0,
+   403.0
+  ],
+  "brow_r": [
+   602.0,
+   403.0
+  ],
+  "stache_l": [
+   602.0,
+   403.0
+  ],
+  "stache_r": [
+   602.0,
+   403.0
+  ],
+  "goatee": [
+   602.0,
+   403.0
+  ],
+  "mouth": [
+   602.0,
+   403.0
+  ]
+ },
+ "parts": {
+  "eye_open": {
+   "file": "parts/eye_open.png",
+   "w": 61.0,
+   "h": 121.5
+  },
+  "mouth_grin": {
+   "file": "parts/mouth_grin.png",
+   "w": 266.4,
+   "h": 122.9,
+   "lip": 39.6
+  },
+  "stache_l": {
+   "file": "parts/stache_l.png",
+   "w": 136.0,
+   "h": 66.0
+  },
+  "stache_r": {
+   "file": "parts/stache_r.png",
+   "w": 136.0,
+   "h": 42.0
+  },
+  "goatee": {
+   "file": "parts/goatee.png",
+   "w": 92.0,
+   "h": 67.0
+  },
+  "eye_half": {
+   "file": "parts/eye_half.png",
+   "w": 61.0,
+   "h": 73.5
+  },
+  "eye_shut": {
+   "file": "parts/eye_shut.png",
+   "w": 66.5,
+   "h": 27.5
+  },
+  "eye_happy": {
+   "file": "parts/eye_happy.png",
+   "w": 66.5,
+   "h": 29.5
+  },
+  "eye_wide": {
+   "file": "parts/eye_wide.png",
+   "w": 81.0,
+   "h": 86.0
+  },
+  "eye_squint": {
+   "file": "parts/eye_squint.png",
+   "w": 60.5,
+   "h": 37.5
+  },
+  "eye_glare": {
+   "file": "parts/eye_glare.png",
+   "w": 61.5,
+   "h": 68.0
+  },
+  "eye_side": {
+   "file": "parts/eye_side.png",
+   "w": 78.0,
+   "h": 60.0,
+   "mirror": false
+  },
+  "brow_straight": {
+   "file": "parts/brow_straight.png",
+   "w": 64.0,
+   "h": 16.5
+  },
+  "brow_arched": {
+   "file": "parts/brow_arched.png",
+   "w": 63.5,
+   "h": 25.0
+  },
+  "brow_tapered": {
+   "file": "parts/brow_tapered.png",
+   "w": 59.0,
+   "h": 18.5
+  },
+  "mouth_neutral": {
+   "file": "parts/mouth_neutral.png",
+   "w": 124.2,
+   "h": 15.8
+  },
+  "mouth_smile": {
+   "file": "parts/mouth_smile.png",
+   "w": 141.3,
+   "h": 31.5
+  },
+  "mouth_frown": {
+   "file": "parts/mouth_frown.png",
+   "w": 140.8,
+   "h": 30.2
+  },
+  "mouth_smirk": {
+   "file": "parts/mouth_smirk.png",
+   "w": 148.5,
+   "h": 44.1,
+   "lip": 36.9
+  },
+  "mouth_grit": {
+   "file": "parts/mouth_grit.png",
+   "w": 225.0,
+   "h": 85.5
+  },
+  "mouth_ah": {
+   "file": "parts/mouth_ah.png",
+   "w": 118.4,
+   "h": 128.2,
+   "lip": 21.6
+  },
+  "mouth_oh": {
+   "file": "parts/mouth_oh.png",
+   "w": 71.1,
+   "h": 79.2
+  },
+  "mouth_ee": {
+   "file": "parts/mouth_ee.png",
+   "w": 199.3,
+   "h": 58.5
+  },
+  "mouth_small": {
+   "file": "parts/mouth_small.png",
+   "w": 94.5,
+   "h": 68.0,
+   "lip": 10.8
+  },
+  "mouth_ff": {
+   "file": "parts/mouth_ff.png",
+   "w": 124.7,
+   "h": 26.6,
+   "lip": 6.3
+  },
+  "mouth_shout": {
+   "file": "parts/mouth_shout.png",
+   "w": 209.2,
+   "h": 182.2,
+   "lip": 25.2
+  },
+  "mouth_firm": {
+   "file": "parts/mouth_firm.png",
+   "w": 83.7,
+   "h": 17.1
+  },
+  "mouth_wavy": {
+   "file": "parts/mouth_wavy.png",
+   "w": 135.5,
+   "h": 25.7
+  },
+  "mouth_laugh": {
+   "file": "parts/mouth_laugh.png",
+   "w": 180.9,
+   "h": 108.9,
+   "lip": 18.0
+  },
+  "side_mouth_grin": {
+   "file": "parts/side_mouth_grin.png",
+   "w": 143.5,
+   "h": 109.5,
+   "at": [
+    736.2,
+    424.8
+   ]
+  },
+  "side_mouth_neutral": {
+   "file": "parts/side_mouth_neutral.png",
+   "w": 99.0,
+   "h": 15.5,
+   "at": [
+    754.5,
+    410.2
+   ]
+  },
+  "side_mouth_smile": {
+   "file": "parts/side_mouth_smile.png",
+   "w": 110.0,
+   "h": 31.0,
+   "at": [
+    749.0,
+    410.0
+   ]
+  },
+  "side_mouth_frown": {
+   "file": "parts/side_mouth_frown.png",
+   "w": 110.5,
+   "h": 30.0,
+   "at": [
+    749.8,
+    409.5
+   ]
+  },
+  "side_mouth_smirk": {
+   "file": "parts/side_mouth_smirk.png",
+   "w": 112.5,
+   "h": 44.0,
+   "at": [
+    748.8,
+    395.0
+   ]
+  },
+  "side_mouth_grit": {
+   "file": "parts/side_mouth_grit.png",
+   "w": 123.5,
+   "h": 85.5,
+   "at": [
+    750.2,
+    409.8
+   ]
+  },
+  "side_mouth_ah": {
+   "file": "parts/side_mouth_ah.png",
+   "w": 65.0,
+   "h": 86.0,
+   "at": [
+    775.5,
+    431.0
+   ]
+  },
+  "side_mouth_oh": {
+   "file": "parts/side_mouth_oh.png",
+   "w": 39.0,
+   "h": 71.0,
+   "at": [
+    791.5,
+    405.5
+   ]
+  },
+  "side_mouth_ee": {
+   "file": "parts/side_mouth_ee.png",
+   "w": 109.5,
+   "h": 58.5,
+   "at": [
+    755.2,
+    409.8
+   ]
+  },
+  "side_mouth_small": {
+   "file": "parts/side_mouth_small.png",
+   "w": 51.5,
+   "h": 57.5,
+   "at": [
+    779.2,
+    427.8
+   ]
+  },
+  "side_mouth_ff": {
+   "file": "parts/side_mouth_ff.png",
+   "w": 99.5,
+   "h": 26.5,
+   "at": [
+    754.2,
+    416.8
+   ]
+  },
+  "side_mouth_shout": {
+   "file": "parts/side_mouth_shout.png",
+   "w": 114.5,
+   "h": 101.5,
+   "at": [
+    751.8,
+    435.2
+   ]
+  },
+  "side_mouth_firm": {
+   "file": "parts/side_mouth_firm.png",
+   "w": 66.5,
+   "h": 16.5,
+   "at": [
+    771.8,
+    409.2
+   ]
+  },
+  "side_mouth_wavy": {
+   "file": "parts/side_mouth_wavy.png",
+   "w": 107.0,
+   "h": 25.5,
+   "at": [
+    751.5,
+    409.8
+   ]
+  },
+  "side_mouth_laugh": {
+   "file": "parts/side_mouth_laugh.png",
+   "w": 98.5,
+   "h": 84.0,
+   "at": [
+    756.8,
+    435.0
+   ]
+  }
+ }
+}

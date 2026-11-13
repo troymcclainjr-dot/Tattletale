@@ -1,0 +1,11 @@
+# Made by Godot when it imports the project
+.godot/
+# This machine's own Godot (see PLAY.cmd)
+godot_path.txt
+/Godot*.exe
+__pycache__/
+*.pyc
+*.tmp
+.DS_Store
+Thumbs.db
+desktop.ini
