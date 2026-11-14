@@ -217,25 +217,27 @@ static func mirror(p: Node3D, b: int, u: float, v: float, yaw := 0.0, w := 0.55,
 
 ## A wall calendar from her own shop: a picture at the top, the shop's name,
 ## the month in a grid with a day ringed.
-static func calendar(p: Node3D, b: int, u: float, v: float, yaw := 0.0, y := 1.55, month := "") -> Node3D:
-	var g: Node3D = p.prop(b, u, v, yaw, 0.42, 0.05, false)
+static func calendar(p: Node3D, b: int, u: float, v: float, yaw := 0.0, y := 1.55, month := "", size := 1.0) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, 0.42 * size, 0.05, false)
+	var s := Kit.group(g, Vector3(0, y, 0))
+	s.scale = Vector3.ONE * size
 	var z := 0.02
-	Kit.box(g, Vector3(0.012, 0.012, 0.03), Vector3(0, y + 0.36, z), Props.DARK)                   # the nail
-	Kit.box(g, Vector3(0.4, 0.7, 0.008), Vector3(0, y, z), Props.PAPER)
-	Kit.box(g, Vector3(0.36, 0.22, 0.006), Vector3(0, y + 0.22, z + 0.006), Color(0.55, 0.75, 0.9))    # the picture: a bowl of fruit
-	Kit.box(g, Vector3(0.36, 0.07, 0.006), Vector3(0, y + 0.145, z + 0.008), Color(0.55, 0.36, 0.2))
+	Kit.box(s, Vector3(0.012, 0.012, 0.03), Vector3(0, 0.36, z), Props.DARK)                   # the nail
+	Kit.box(s, Vector3(0.4, 0.7, 0.008), Vector3(0, 0, z), Props.PAPER)
+	Kit.box(s, Vector3(0.36, 0.22, 0.006), Vector3(0, 0.22, z + 0.006), Color(0.55, 0.75, 0.9))    # the picture: a bowl of fruit
+	Kit.box(s, Vector3(0.32, 0.07, 0.006), Vector3(0, 0.145, z + 0.008), Color(0.55, 0.36, 0.2))
 	for k in 5:
-		Kit.ball(g, 0.035, Vector3(-0.1 + k * 0.05, y + 0.2 + 0.03 * (k % 2), z + 0.012), _pick([Color(0.9, 0.2, 0.15), Color(0.98, 0.75, 0.15), Color(0.4, 0.7, 0.25), Color(0.6, 0.25, 0.6)], k * 2.7), 7)
+		Kit.ball(s, 0.035, Vector3(-0.1 + k * 0.05, 0.2 + 0.03 * (k % 2), z + 0.012), _pick([Color(0.9, 0.2, 0.15), Color(0.98, 0.75, 0.15), Color(0.4, 0.7, 0.25), Color(0.6, 0.25, 0.6)], k * 2.7), 7)
 	var green := Color(0.16, 0.36, 0.28)          # the grocery's own green (plans/store.gd)
-	Kit.box(g, Vector3(0.38, 0.11, 0.006), Vector3(0, y + 0.055, z + 0.006), green)
-	Props.words(g, "MISS BEA'S", Vector3(0, y + 0.08, z + 0.011), 0.04, Color(0.95, 0.92, 0.8))
-	Props.words(g, "CORNER GROCERY", Vector3(0, y + 0.035, z + 0.011), 0.028, Color(0.95, 0.92, 0.8))
+	Kit.box(s, Vector3(0.38, 0.11, 0.006), Vector3(0, 0.055, z + 0.006), green)
+	Props.words(s, "MISS BEA'S", Vector3(0, 0.08, z + 0.011), 0.045, Color(0.95, 0.92, 0.8))
+	Props.words(s, "CORNER GROCERY", Vector3(0, 0.032, z + 0.011), 0.032, Color(0.95, 0.92, 0.8))
 	if month != "":
-		Props.words(g, month, Vector3(0, y - 0.03, z + 0.008), 0.03, Color(0.6, 0.12, 0.1))
+		Props.words(s, month, Vector3(0, -0.03, z + 0.008), 0.034, Color(0.6, 0.12, 0.1))
 	for r in 5:
 		for c in 7:
-			Kit.box(g, Vector3(0.036, 0.03, 0.004), Vector3(-0.15 + c * 0.05, y - 0.08 - r * 0.045, z + 0.006), Color(0.82, 0.8, 0.74))
-	Kit.ring(g, 0.028, 0.006, Vector3(0.05, y - 0.17, z + 0.01), Color(0.8, 0.1, 0.1))
+			Kit.box(s, Vector3(0.036, 0.03, 0.004), Vector3(-0.15 + c * 0.05, -0.08 - r * 0.045, z + 0.006), Color(0.82, 0.8, 0.74))
+	Kit.ring(s, 0.028, 0.006, Vector3(0.05, -0.17, z + 0.01), Color(0.8, 0.1, 0.1))
 	return g
 
 

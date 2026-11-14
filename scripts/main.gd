@@ -112,7 +112,7 @@ const PLACES := [
 	{"id": "fry", "name": "LARGE FRY'S PLACE", "note": "ARGONNE COURT, APT 1"},
 	{"id": "hospital", "name": "HOSPITAL", "note": "EMERGENCY DEPARTMENT"},
 	{"id": "park", "name": "PEN LUCY PARK", "note": "THE COURT"},
-	{"id": "park2", "name": "THE GREEN", "note": "THE OTHER PARK"},
+	{"id": "park2", "name": "LINDEN SQUARE", "note": "THE OLD GREEN"},
 	{"id": "street", "name": "ROSE HILL TERRACE", "note": "THE BLOCK"},
 	{"id": "bea", "name": "MISS BEA'S HOUSE", "note": "PORCH-FRONT HOUSE"},
 	{"id": "clothes", "name": "CLOTHING STORE", "note": "FRESH THREADS"},

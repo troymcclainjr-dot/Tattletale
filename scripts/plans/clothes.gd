@@ -161,7 +161,7 @@ static func _floor(p: Node3D, b: int) -> void:
 	Props.boombox(n, p.pt(8.45, 4.07, 1.875), 0.0)
 	Wear.glass_counter(p, b, 8.92, 5.3, 0.0, 1.98, 0.6)
 	p.person(b, "clerk", 8.6, 4.62, {"name": "CLERK"})
-	p.person(b, "huff", 7.3, 8.6, {"name": "HUFF DADDY", "face": "smug"})      # a customer (a working name): he is here every day
+	p.person(b, "huff", 2.3, 7.3, {"name": "HUFF DADDY", "face": "smug"})      # a customer (a working name): he is here every day
 	Wear.security_mirror(n, p.pt(9.8, 3.95, 2.55), -45.0)
 	Props.words(n, "NO REFUNDS  -  EXCHANGE ONLY", p.pt(8.55, 3.885, 2.42), 0.09, ink)
 	# Down the right wall, by the door: a mirror, a poster, a round rack of tracksuits.

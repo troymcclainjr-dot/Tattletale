@@ -115,6 +115,8 @@ static func pier(p: Node3D, b: int, u: float, v: float, h := 1.55, top := "ball"
 		Kit.ball(g, 0.23, Vector3(0, h + 0.68, 0), Kit.flat(GLOBE, 1.8), 10)
 		Kit.cyl(g, 0.06, 0.08, Vector3(0, h + 0.94, 0), IRON, Vector3.ZERO, 6, 0.02)
 		Kit.omni(g, Vector3(0, h + 0.75, 0.2), WARM, 0.9, 6.0)
+	elif top == "cap":
+		Kit.box(g, Vector3(0.46, 0.08, 0.46), Vector3(0, h + 0.22, 0), STONE)
 	else:
 		Kit.box(g, Vector3(0.32, 0.12, 0.32), Vector3(0, h + 0.24, 0), STONE)
 		Kit.ball(g, 0.2, Vector3(0, h + 0.49, 0), STONE, 10)
@@ -176,8 +178,16 @@ static func gate_arch(p: Node3D, b: int, u0: float, u1: float, v: float, title: 
 	var green := Color(0.1, 0.3, 0.22)
 	for s: float in [-1.0, 1.0]:
 		Kit.box(g, Vector3(0.07, low + 0.62, 0.07), Vector3(s * (half - 0.035), (low + 0.62) * 0.5, 0), IRON)
-		Kit.ball(g, 0.065, Vector3(s * (half - 0.035), low + 0.68, 0), GILT, 6)
 		Kit.ring(g, 0.16, 0.025, Vector3(s * (half - 0.26), low - 0.2, 0), IRON)
+		Kit.ball(g, 0.065, Vector3(s * (half - 0.035), low + 0.68, 0), GILT, 6)
+		# a globe lantern hung out from each post over the pier, higher than
+		# the camera's line to him
+		var x := s * (half + 0.3)
+		Kit.box(g, Vector3(0.4, 0.04, 0.04), Vector3(s * (half + 0.15), low + 0.62, 0), IRON)
+		Kit.cyl(g, 0.015, 0.1, Vector3(x, low + 0.57, 0), IRON, Vector3.ZERO, 5)
+		Kit.cyl(g, 0.1, 0.07, Vector3(x, low + 0.53, 0), IRON, Vector3.ZERO, 8, 0.03)
+		Kit.ball(g, 0.17, Vector3(x, low + 0.34, 0), Kit.flat(GLOBE, 1.8), 10)
+	Kit.omni(g, Vector3(0, low - 0.4, 0.6), WARM, 1.0, 6.5)
 	Kit.box(g, Vector3(half * 2.0 - 0.1, 0.46, 0.05), Vector3(0, low + 0.23, 0), green)
 	Kit.box(g, Vector3(half * 2.0 - 0.12, 0.04, 0.08), Vector3(0, low + 0.015, 0), GILT)
 	Kit.box(g, Vector3(half * 2.0 - 0.12, 0.04, 0.08), Vector3(0, low + 0.45, 0), GILT)

@@ -530,10 +530,11 @@ static func street_sign(p: Node3D, b: int, u: float, v: float, along_u: String, 
 		Props.words(g, along_v, Vector3(0.017 * side, 3.104, 0), 0.12, white, 90.0 * side)
 	# The stop sign: a grey back, the red face, the white border, the word.
 	var stop := Kit.group(g, Vector3(0, 2.2, 0), Vector3(0, stop_yaw, 0))
-	Kit.cyl(stop, 0.34, 0.01, Vector3(0, 0, 0.05), Color(0.6, 0.62, 0.64), Vector3(90, 0, 22.5), 8)
-	Kit.cyl(stop, 0.335, 0.012, Vector3(0, 0, 0.06), Color(0.8, 0.12, 0.1), Vector3(90, 0, 22.5), 8)
-	Kit.cyl(stop, 0.3, 0.01, Vector3(0, 0, 0.069), Color(0.95, 0.94, 0.9), Vector3(90, 0, 22.5), 8)
-	Kit.cyl(stop, 0.27, 0.01, Vector3(0, 0, 0.077), Color(0.8, 0.12, 0.1), Vector3(90, 0, 22.5), 8)
+	var oct := Kit.group(stop, Vector3.ZERO, Vector3(0, 0, 22.5))      # a flat side on top
+	Kit.disc(oct, 0.34, Vector3(0, 0, 0.05), Color(0.6, 0.62, 0.64), 0.01, 8)
+	Kit.disc(oct, 0.335, Vector3(0, 0, 0.06), Color(0.8, 0.12, 0.1), 0.012, 8)
+	Kit.disc(oct, 0.3, Vector3(0, 0, 0.069), Color(0.95, 0.94, 0.9), 0.01, 8)
+	Kit.disc(oct, 0.27, Vector3(0, 0, 0.077), Color(0.8, 0.12, 0.1), 0.01, 8)
 	Props.words(stop, "STOP", Vector3(0, 0, 0.087), 0.15, Color(0.97, 0.97, 0.95))
 	return g
 

@@ -27,7 +27,10 @@ const RUN := 1.8              # sprinting covers the ground this many times fast
 const RUN_STEPS := 1.38       # and the steps come this much faster; the rest of the speed is a longer stride
 const REGIONS := ["", "hat", "jacket", "shirt", "trousers", "shoes", "sleeve"]     # the clothes a drawing can have (outfit.py), by number
 const ARM_BEND := 0.1            # an arm swinging at his side has turned all the way this far from its shoulder (paper_card.gdshader's arm_reach)
-const ARM_BEND_HELD := 0.045    # holding something it turns at the shoulder, stiffly, or it would hook
+const ARM_BEND_HELD := 0.06     # holding something it turns at the shoulder, stiffly, or it would hook
+const ARM_JOINT := 0.034        # what was drawn this close to a shoulder stays put under the moving arm (paper_card.gdshader's arm_joint)...
+const ARM_JOINT_HELD := 0.046   # ...and a little more of it when the arm is turned a long way, to something he holds
+const FIST_IN := 13.0           # the arm runs this many pixels past the wrist, into the fist that covers its end
 const LEAD_ARM := 0.083       # metres: how thick the lead's arm is drawn. What someone holds is sized to their own arm against this
 
 ## How each thing is held, for each way he can face and for carrying it or
@@ -48,23 +51,23 @@ const LEAD_ARM := 0.083       # metres: how thick the lead's arm is drawn. What 
 const HOLDS := {
 	"pistol": {
 		"side_carry": {"grip": [0.3, 1.02], "angle": 52.0, "curl": 0.3},
-		"side_aim": {"grip": [1.22, 0.27], "angle": 0.0, "curl": 0.22},
+		"side_aim": {"grip": [1.3, 0.4], "angle": 0.0, "curl": 0.18},
 		"front_carry": {"angle": 82.0, "flip": true},
 		"front_aim": {"grip": [-1.18, -0.06], "angle": 0.0, "flip": true, "curl": -0.2},
 		"back_carry": {"angle": 82.0, "arm": "r"},
 	},
 	"uzi": {
-		"side_carry": {"grip": [0.46, 1.0], "angle": 36.0, "curl": 0.3},
-		"side_aim": {"grip": [1.28, 0.34], "angle": 0.0, "curl": 0.3},
+		"side_carry": {"grip": [0.74, 1.08], "angle": 52.0, "curl": 0.3},
+		"side_aim": {"grip": [1.36, 0.46], "angle": 0.0, "curl": 0.24},
 		"front_carry": {"angle": 80.0, "flip": true, "gun_under": true},
 		"front_aim": {"grip": [-1.12, 0.04], "angle": 0.0, "flip": true, "curl": -0.3},
 		"back_carry": {"angle": 80.0, "arm": "r", "gun_under": true},
 	},
 	"ak": {
-		"side_carry": {"grip": [0.62, 1.02], "angle": 20.0, "curl": 0.5, "fore_curl": 0.3, "far": [0.5, 0.35], "over": true},
-		"side_aim": {"grip": [1.0, 0.77], "angle": 0.0, "curl": 0.45, "fore_curl": 0.2, "far": [0.55, 0.35], "over": true},
-		"front_carry": {"grip": [0.44, 1.0], "angle": -24.0, "curl": 0.3, "fore_curl": -1.1},
-		"back_carry": {"at": [-0.44, 1.0], "angle": -24.0, "flip": true, "arm": "r", "grip": [-0.72, 0.84], "curl": -1.0, "fore_at": [0.58, 0.62], "fore_curl": 1.0, "under": true},
+		"side_carry": {"grip": [0.62, 1.02], "angle": 20.0, "curl": 0.5, "fore_curl": 0.3, "far": [0.45, 0.6], "over": true},
+		"side_aim": {"grip": [0.98, 0.8], "angle": 0.0, "curl": 0.45, "fore_curl": 0.35, "far": [0.45, 0.78], "over": true},
+		"front_carry": {"grip": [0.44, 1.0], "angle": -21.0, "curl": 0.2, "fore_curl": -0.7},
+		"back_carry": {"at": [-0.44, 1.0], "angle": -24.0, "flip": true, "arm": "r", "grip": [-0.72, 0.9], "curl": -0.6, "fore_at": [0.6, 0.72], "fore_curl": 0.6, "under": true},
 	},
 }
 
@@ -627,6 +630,7 @@ func _hold() -> void:
 		_mat.set_shader_parameter("layer", 0)
 		_bend = ARM_BEND
 		_put("arm_reach", _bend)
+		_put("arm_joint", ARM_JOINT)
 		for side: String in ["l", "r"]:
 			_put("arm_%s_stretch" % side, 1.0)
 			_put("arm_%s_cut" % side, 9.0)
@@ -638,6 +642,7 @@ func _hold() -> void:
 	var m := height / _px.y                                   # metres to a pixel of his drawing
 	_bend = lerpf(ARM_BEND, ARM_BEND_HELD, k)
 	_put("arm_reach", _bend)
+	_put("arm_joint", lerpf(ARM_JOINT, ARM_JOINT_HELD, k))
 	var arm: Dictionary = _arms[key]
 	var unit := clampf(float(arm["width"]) * m / LEAD_ARM, 0.8, 1.3) * float(info.get("size", 1.0)) / float(weapons()["px_per_m"])    # metres to a unit of the thing's drawing
 	if _held_name != held:
@@ -663,7 +668,7 @@ func _hold() -> void:
 	var bow := lerpf(float(_mat.get_shader_parameter(pre + "curl")), curl, k)
 	var stretch := lerpf(1.0, reach.y, k)
 	var under: bool = carry.get("under", false)
-	var cut := (wrist + 5.0) / _px.y if k > 0.5 and not under else 9.0
+	var cut := (wrist + FIST_IN) / _px.y if k > 0.5 and not under else 9.0
 	_put(pre + "angle", angle)
 	_put(pre + "curl", bow)
 	_put(pre + "stretch", stretch)
@@ -723,7 +728,7 @@ func _hold() -> void:
 	_put(pre2 + "angle", lerp_angle(float(_mat.get_shader_parameter(pre2 + "angle")), reach2.x, k))
 	_put(pre2 + "curl", lerpf(float(_mat.get_shader_parameter(pre2 + "curl")), fore_curl, k))
 	_put(pre2 + "stretch", lerpf(1.0, reach2.y, k))
-	_put(pre2 + "cut", (wrist2 + 5.0) / _px.y if k > 0.5 and not under else 9.0)
+	_put(pre2 + "cut", (wrist2 + FIST_IN) / _px.y if k > 0.5 and not under else 9.0)
 
 
 ## Where a hold puts the fist on the grip, from the shoulder, in pixels. With no

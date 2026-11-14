@@ -34,10 +34,10 @@ extends RefCounted
 ## floor); the second street lamp stands on the north pavement (the real one is
 ## across the street, on the camera's side); the stop sign is on the corner post
 ## facing the eastbound lane (the real one stands on the south corner); the
-## curb-side trash cans, the lit windows, curtains, blinds, painted screens,
-## porch chairs, ferns and pots, the mural on 532's end wall, the mailbox, the
-## bus stop and its bench, and Old York Road's houses and lamp are the pop-up's
-## own; the trees are only behind the houses, their crowns over the roofs.
+## trash cans, the lit windows, curtains, blinds, painted screens, porch chairs,
+## ferns and pots, the mural on 532's end wall, the mailbox, the hydrant, the
+## bus stop and its bench, and Old York Road (its width, houses and lamp) are
+## the pop-up's own; the trees are only behind the houses, crowns over the roofs.
 ## The old game's two residents here (Pearl Sutton, mid-block on the north
 ## pavement; Camille Porter across from her) are not added.
 ##

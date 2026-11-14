@@ -176,8 +176,8 @@
   },
   "eye_shine": {
    "file": "parts/eye_shine.png",
-   "w": 65.9,
-   "h": 135.9,
+   "w": 71.0,
+   "h": 146.1,
    "mirror": false
   },
   "eye_spiral": {
@@ -193,23 +193,23 @@
   },
   "brow_straight": {
    "file": "parts/brow_straight.png",
-   "w": 71.0,
-   "h": 24.3
+   "w": 73.0,
+   "h": 26.4
   },
   "brow_arched": {
    "file": "parts/brow_arched.png",
-   "w": 69.0,
-   "h": 30.4
+   "w": 71.0,
+   "h": 31.4
   },
   "brow_tapered": {
    "file": "parts/brow_tapered.png",
-   "w": 75.1,
-   "h": 27.4
+   "w": 77.1,
+   "h": 29.4
   },
   "brow_worried": {
    "file": "parts/brow_worried.png",
-   "w": 71.0,
-   "h": 35.5
+   "w": 73.0,
+   "h": 37.5
   },
   "mouth_neutral": {
    "file": "parts/mouth_neutral.png",
@@ -261,13 +261,13 @@
   },
   "mouth_grit": {
    "file": "parts/mouth_grit.png",
-   "w": 199.8,
-   "h": 75.1,
-   "lip": 17.2
+   "w": 217.1,
+   "h": 79.1,
+   "lip": 19.3
   },
   "mouth_yikes": {
    "file": "parts/mouth_yikes.png",
-   "w": 211.0,
+   "w": 223.2,
    "h": 75.6,
    "lip": 16.2
   },
@@ -315,9 +315,9 @@
   },
   "mouth_shout": {
    "file": "parts/mouth_shout.png",
-   "w": 219.3,
-   "h": 118.2,
-   "lip": 19.6
+   "w": 228.4,
+   "h": 117.1,
+   "lip": 18.5
   },
   "mouth_laugh": {
    "file": "parts/mouth_laugh.png",

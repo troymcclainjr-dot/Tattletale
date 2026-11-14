@@ -2,8 +2,8 @@ extends RefCounted
 ## The second park, nothing like the first (a fenced asphalt court under
 ## floodlights): an old green neighbourhood square, LINDEN SQUARE. Low iron
 ## railings on a stone kerb all round, brick piers at the corners and at a gate
-## on each side; the front gate stands open under an iron arch with the name on
-## it, the other three are chained shut. Inside: lawns, four flagstone paths
+## on each side; the front gate stands open under an iron arch with the name and
+## two globe lanterns on it, the other three are chained shut. Inside: lawns, four flagstone paths
 ## meeting at a brick ring round a bandstand (white columns, a green roof,
 ## bulbs round the eaves), double-globe lamps where the paths come in, benches
 ## facing it. A playground in the back-left corner inside its own red railing
@@ -83,9 +83,11 @@ static func _railings(p: Node3D, st: int) -> void:
 	var iron := Park.IRON
 	for c: Vector2 in [Vector2(0, 0), Vector2(32, 0), Vector2(0, 22), Vector2(32, 22)]:
 		Park.pier(p, st, c.x, c.y, 1.45)
-	# the front: the gate stands open under its arch, lamps on its piers
-	Park.pier(p, st, 14.55, 22.0, 1.6, "lamp")
-	Park.pier(p, st, 17.45, 22.0, 1.6, "lamp")
+	# the front: the gate stands open under its arch, lanterns on the arch. Its
+	# piers are kept low: walking in up the path he passes behind the right one
+	# from the camera, and a tall pier there hid him.
+	Park.pier(p, st, 14.55, 22.0, 1.15, "cap")
+	Park.pier(p, st, 17.45, 22.0, 1.15, "cap")
 	p.fence(st, true, 22.0, 0.3, 31.7, [[14.25, 17.75]], 1.05, "rail", iron)
 	Park.plinth(p, st, true, 22.0, 0.3, 14.25)
 	Park.plinth(p, st, true, 22.0, 17.75, 31.7)

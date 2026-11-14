@@ -2,6 +2,11 @@
  "about": "Positions and sizes are pixels of body.png (x right, y down). Built by build_fry.py (see the README).",
  "name": "LARGE FRY",
  "height_m": 1.7,
+ "skin": [
+  116.0,
+  40.0,
+  14.0
+ ],
  "tilt_deg": 0.0,
  "views": {
   "front": {
@@ -29,6 +34,34 @@
      "stache_r",
      "goatee"
     ]
+   },
+   "arms": {
+    "l": {
+     "pivot": [
+      352.5,
+      522.0
+     ],
+     "len": 472.8,
+     "wrist_r": 326.2,
+     "wrist": [
+      166.6,
+      786.9
+     ],
+     "width": 147.8
+    },
+    "r": {
+     "pivot": [
+      838.5,
+      522.0
+     ],
+     "len": 475.2,
+     "wrist_r": 327.9,
+     "wrist": [
+      1028.6,
+      786.0
+     ],
+     "width": 148.6
+    }
    }
   },
   "back": {
@@ -45,7 +78,35 @@
     850.5,
     541.0
    ],
-   "arm_ink": 9.0
+   "arm_ink": 9.0,
+   "arms": {
+    "l": {
+     "pivot": [
+      300.0,
+      532.0
+     ],
+     "len": 440.4,
+     "wrist_r": 303.9,
+     "wrist": [
+      166.5,
+      802.4
+     ],
+     "width": 142.5
+    },
+    "r": {
+     "pivot": [
+      850.5,
+      541.0
+     ],
+     "len": 452.4,
+     "wrist_r": 312.1,
+     "wrist": [
+      1028.9,
+      794.1
+     ],
+     "width": 150.2
+    }
+   }
   },
   "side": {
    "art": "side.png",
@@ -205,8 +266,8 @@
   },
   "eye_shine": {
    "file": "parts/eye_shine.png",
-   "w": 65.0,
-   "h": 134.0,
+   "w": 70.0,
+   "h": 144.0,
    "mirror": false
   },
   "eye_spiral": {
@@ -222,23 +283,23 @@
   },
   "brow_straight": {
    "file": "parts/brow_straight.png",
-   "w": 70.0,
-   "h": 24.0
+   "w": 72.0,
+   "h": 26.0
   },
   "brow_arched": {
    "file": "parts/brow_arched.png",
-   "w": 68.0,
-   "h": 30.0
+   "w": 70.0,
+   "h": 31.0
   },
   "brow_tapered": {
    "file": "parts/brow_tapered.png",
-   "w": 74.0,
-   "h": 27.0
+   "w": 76.0,
+   "h": 29.0
   },
   "brow_worried": {
    "file": "parts/brow_worried.png",
-   "w": 70.0,
-   "h": 35.0
+   "w": 72.0,
+   "h": 37.0
   },
   "mouth_neutral": {
    "file": "parts/mouth_neutral.png",
@@ -290,13 +351,13 @@
   },
   "mouth_grit": {
    "file": "parts/mouth_grit.png",
-   "w": 177.3,
-   "h": 66.6,
-   "lip": 15.3
+   "w": 192.6,
+   "h": 70.2,
+   "lip": 17.1
   },
   "mouth_yikes": {
    "file": "parts/mouth_yikes.png",
-   "w": 187.2,
+   "w": 198.0,
    "h": 67.0,
    "lip": 14.4
   },
@@ -344,8 +405,8 @@
   },
   "mouth_shout": {
    "file": "parts/mouth_shout.png",
-   "w": 196.2,
-   "h": 105.8,
+   "w": 216.9,
+   "h": 111.2,
    "lip": 17.6
   },
   "mouth_laugh": {
@@ -476,19 +537,19 @@
   },
   "side_mouth_grit": {
    "file": "parts/side_mouth_grit.png",
-   "w": 107.0,
-   "h": 66.0,
+   "w": 115.0,
+   "h": 69.5,
    "at": [
-    763.5,
-    427.5
+    759.5,
+    427.2
    ]
   },
   "side_mouth_yikes": {
    "file": "parts/side_mouth_yikes.png",
-   "w": 112.0,
+   "w": 118.0,
    "h": 66.0,
    "at": [
-    760.0,
+    757.0,
     429.0
    ]
   },
@@ -557,11 +618,11 @@
   },
   "side_mouth_shout": {
    "file": "parts/side_mouth_shout.png",
-   "w": 117.0,
-   "h": 90.5,
+   "w": 128.5,
+   "h": 93.5,
    "at": [
-    758.5,
-    437.8
+    752.8,
+    439.2
    ]
   },
   "side_mouth_laugh": {

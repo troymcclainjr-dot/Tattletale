@@ -4,15 +4,22 @@ extends RefCounted
 ## (a brick rowhouse, one room behind another) or Large Fry's flat (one wide
 ## floor in a block): it stands on its own, clapboard painted butter yellow,
 ## behind a picket fence and a front yard, with a deep porch across the whole
-## front. A side-hall plan: the front door opens into the hall with the stairs
-## up its left wall, the parlour beside it. 9 x 11 m, two floors.
+## front. A side-hall plan: the front door opens at the foot of the stairs,
+## which climb the hall's left wall, the parlour through an arch beside it.
+## 9 x 11 m, two floors; everything in it forty years' worth of hers.
 ##
-##   out of doors (the street's band): the pavement | the front yard | the porch
-##   ground floor:  parlour | front hall (the stairs)
-##                  dining room | kitchen
-##                  sun room | pantry
-##   upstairs:      her bedroom | the hall (the top of the stairs)
-##                  sewing room | bathroom
+##   street band:  the pavement | FRONT YARD (11.4 x 2.2) | PORCH (9 x 2.4)
+##   band 1:       PARLOUR (5.6 x 4.6)  | FRONT HALL (3.4 x 4.6, the stairs)
+##   band 2:       DINING ROOM (5 x 3.4) | KITCHEN (4 x 3.4)
+##   band 3:       SUN ROOM (5 x 3)      | PANTRY (4 x 3)
+##   upstairs 1:   BEDROOM (5.6 x 5.4)  | UPSTAIRS HALL (3.4 x 5.4)
+##   upstairs 2:   SEWING ROOM (5 x 3)   | BATHROOM (4 x 3)
+##
+## Ways through: front door; parlour arch to the hall and to the dining room;
+## a doorway hall to kitchen; a door dining room to kitchen; wide openings to
+## the sun room and the pantry (a door in a cut-away wall stands between the
+## camera and the room); upstairs, doors to the bedroom, the sewing room
+## (through the bedroom) and the bathroom.
 ##
 ## The game floor is flat, so the porch is at the yard's level and the stairs
 ## are a spot you use (E), as in the crib. Upstairs is its own stack of bands,
@@ -24,9 +31,10 @@ extends RefCounted
 ## v = 13.4, and the front fence stands on the edge of the pavement at v = 15.6
 ## (the plan's depth). The new furniture is in props_bea.gd.
 ##
-## Invented here (placeholders): the house number 3912, "GOD BLESS OUR HOME"
-## on the sampler over her bed, "MARCH 1994" on the calendar from her shop
-## (the shop's name on it is the owners' own: MISS BEA'S CORNER GROCERY).
+## Invented here (placeholders): the house number 3912, the WELCOME mat, "GOD
+## BLESS OUR HOME" on the sampler over her bed, "MARCH 1994" on the calendar
+## from her shop (the shop's name on it is the owners' own: MISS BEA'S CORNER
+## GROCERY), and the door names FRONT DOOR, SEWING ROOM DOOR, BATHROOM DOOR.
 
 const Props := preload("res://scripts/props.gd")
 const Bea := preload("res://scripts/props_bea.gd")
@@ -39,9 +47,10 @@ const LOT := 15.6             # the front fence, on the edge of the pavement
 const STAIR_U := 6.15         # the middle of the flight, on both floors
 const STAIR_V := 7.9
 const STAIR_L := 2.8          # v 6.5 (the top) to 9.3 (the foot)
-const DOOR := [6.6, 7.6]      # the front door; the porch steps and the gate line up with it
-const STEPS := [6.45, 7.75]
-const GATE := [6.5, 7.7]
+const DOOR := [5.75, 6.65]    # the front door, at the foot of the stairs; the porch steps and the gate line up with it
+const STEPS := [5.6, 6.8]
+const GATE := [5.6, 6.8]
+const HALL_WINDOW := [7.45, 8.25]
 const PANTRY_WINDOW := {"a": 5.45, "b": 7.15, "kind": "window", "sill": 2.02, "head": 2.6}   # high, over her shelves
 
 const BUTTER := Color(0.94, 0.83, 0.5)
@@ -72,7 +81,7 @@ static func build(p: Node3D) -> void:
 	var g3: int = p.band()
 	var h1: int = p.band(1)
 	var h2: int = p.band(1)
-	p.arrive = p.pt(7.1, 16.7)
+	p.arrive = p.pt((GATE[0] + GATE[1]) * 0.5, 16.7)
 
 	p.room("PORCH", st, 0, FRONT, 9, PORCH, deck, {"street": true, "cam_y": 2.4, "look_y": 1.1})
 	p.room("FRONT YARD", st, -1.2, PORCH, 10.2, LOT, grass, {"street": true})
@@ -102,20 +111,21 @@ static func build(p: Node3D) -> void:
 	# ---- the ground floor walls
 	var front_ops := [
 		{"a": 1.0, "b": 4.4, "kind": "window", "sill": 0.55, "head": 2.3, "frame": trim},
-		{"a": DOOR[0], "b": DOOR[1], "head": 2.15, "colour": door_red, "frame": trim, "name": "FRONT DOOR", "swing": 1},
+		{"a": DOOR[0], "b": DOOR[1], "head": 2.15, "colour": door_red, "frame": trim, "name": "FRONT DOOR"},
+		{"a": HALL_WINDOW[0], "b": HALL_WINDOW[1], "kind": "window", "sill": 0.9, "head": 2.2, "frame": trim},
 	]
 	var front: Node3D = p.cross(g1, FRONT, 0, 9, BUTTER, front_ops, {"h": 6.0})
 	var arch_ops := [{"a": 9.5, "b": 10.7, "kind": "arch", "head": 2.25, "frame": Bea.MAHOGANY}]
 	var parlour_back_ops := [{"a": 0.5, "b": 2.2, "kind": "arch", "head": 2.3, "frame": Bea.MAHOGANY}]
-	var hall_back_ops := [{"a": 7.9, "b": 8.8, "colour": white_door, "frame": Props.WOOD, "name": "KITCHEN DOOR", "swing": 1}]
+	var hall_back_ops := [{"a": 7.9, "b": 8.8, "kind": "arch", "head": 2.15, "frame": Props.WOOD}]     # (a doorway: a door here would stand between the camera and the kitchen)
 	p.side(g1, 0.0, 6.4, FRONT, parlour["paper"])
 	p.side(g1, 5.6, 6.4, FRONT, hall["paper"], arch_ops)
 	p.side(g1, 9.0, 6.4, FRONT, hall["paper"])
 	p.cross(g2, 6.4, 0, 5.6, parlour["paper"], parlour_back_ops)
 	p.cross(g2, 6.4, 5.6, 9, hall["paper"], hall_back_ops)
 	var kitchen_side_ops := [{"a": 5.3, "b": 6.2, "colour": white_door, "frame": Props.WOOD, "hinge": "b", "swing": -1}]
-	var dining_back_ops := [{"a": 0.6, "b": 2.0, "kind": "double", "head": 2.2, "colour": white_door, "frame": white, "name": "SUN ROOM DOORS", "swing": 1}]
-	var kitchen_back_ops := [{"a": 8.0, "b": 8.85, "colour": white_door, "frame": Props.WOOD, "name": "PANTRY DOOR", "swing": 1}]
+	var dining_back_ops := [{"a": 0.6, "b": 2.0, "kind": "arch", "head": 2.2, "frame": white}]      # a wide opening: doors here would stand between the camera and the sun room
+	var kitchen_back_ops := [{"a": 8.0, "b": 8.85, "kind": "arch", "head": 2.1, "frame": Props.WOOD}]
 	p.side(g2, 0.0, 3.0, 6.4, dining["paper"])
 	p.side(g2, 5.0, 3.0, 6.4, kitchen_paint, kitchen_side_ops)
 	p.side(g2, 9.0, 3.0, 6.4, kitchen_paint)
@@ -140,7 +150,7 @@ static func build(p: Node3D) -> void:
 	var bed_side_ops := [{"a": 9.4, "b": 10.5, "kind": "window", "sill": 0.85, "head": 2.15, "frame": white}]
 	var bed_door_ops := [{"a": 9.6, "b": 10.5, "hinge": "a", "colour": white_door, "frame": Props.WOOD}]
 	var bed_back_ops := [{"a": UP + 3.95, "b": UP + 4.85, "colour": white_door, "frame": Props.WOOD, "name": "SEWING ROOM DOOR", "swing": 1}]
-	var uphall_back_ops := [{"a": UP + 7.7, "b": UP + 8.6, "colour": white_door, "frame": Props.WOOD, "name": "BATHROOM DOOR", "swing": 1}]
+	var uphall_back_ops := [{"a": UP + 7.95, "b": UP + 8.85,"colour": white_door, "frame": Props.WOOD, "name": "BATHROOM DOOR", "swing": 1}]
 	var sew_back_ops := [{"a": UP + 1.6, "b": UP + 3.2, "kind": "window", "sill": 1.1, "head": 2.2, "frame": white}]
 	var bath_back_ops := [{"a": UP + 5.5, "b": UP + 6.6, "kind": "window", "sill": 1.3, "head": 2.05, "frame": white, "pane": Color(0.86, 0.92, 0.96, 0.92)}]
 	p.cross(h1, FRONT, UP, UP + 9, bedroom["paper"])
@@ -208,7 +218,7 @@ static func _street(p: Node3D, st: int, front: Node3D, front_ops: Array) -> void
 	for w: Array in upstairs:
 		hole_list.append([w[0] - 0.12, w[1] + 0.12, 3.38, 5.02])
 	Bea.siding(p, front, true, FRONT, -0.0, 9.0, 1.0, 0.0, 6.0, LINE, hole_list)
-	for w: Array in [[1.0, 4.4, 0.55, 2.3], [1.0, 2.2, 3.5, 4.9], [3.2, 4.4, 3.5, 4.9], [6.6, 7.6, 3.5, 4.9]]:
+	for w: Array in [[1.0, 4.4, 0.55, 2.3], [HALL_WINDOW[0], HALL_WINDOW[1], 0.9, 2.2], [1.0, 2.2, 3.5, 4.9], [3.2, 4.4, 3.5, 4.9], [6.6, 7.6, 3.5, 4.9]]:
 		for side: float in [-1.0, 1.0]:
 			var u0: float = w[0] - 0.55 if side < 0 else w[1] + 0.09
 			p.slab(front, true, FRONT + 0.105, u0, u0 + 0.46, w[2], w[3], 0.03, SHUTTER)
@@ -226,6 +236,7 @@ static func _street(p: Node3D, st: int, front: Node3D, front_ops: Array) -> void
 	var lace := Color(0.98, 0.97, 0.92, 0.82)
 	for seg: Array in [[1.04, 1.75], [3.65, 4.36]]:
 		p.slab(front, true, FRONT - 0.13, seg[0], seg[1], 0.6, 2.18, 0.02, lace)
+	p.slab(front, true, FRONT - 0.13, HALL_WINDOW[0] + 0.02, HALL_WINDOW[1] - 0.02, 0.95, 1.55, 0.02, lace)
 	p.slab(front, true, FRONT - 0.15, 1.0, 4.4, 2.0, 2.27, 0.02, Color(0.75, 0.25, 0.3))
 	p.slab(front, true, FRONT, 1.02, 4.38, 1.45, 1.49, 0.04, trim_of(front_ops))
 	p.slab(front, true, FRONT + 0.003, 2.12, 2.16, 0.57, 2.28, 0.04, trim_of(front_ops))
@@ -312,8 +323,8 @@ static func _porch(p: Node3D, st: int) -> void:
 	p.slab(n, false, 9.27, FRONT + 0.08, PORCH + 0.195, 2.45, 2.8, 0.05, white)
 	Props.words(n, "3912", p.pt((STEPS[0] + STEPS[1]) * 0.5, PORCH + 0.255, 2.62), 0.18, Color(0.15, 0.15, 0.18))
 	# By the door: the lantern, the mailbox, the mat.
-	Bea.lantern(n, p.pt(DOOR[0] - 0.3, FRONT + 0.075, 1.95))
-	Bea.mailbox(n, p.pt(DOOR[1] + 0.45, FRONT + 0.075, 1.35))
+	Bea.lantern(n, p.pt(DOOR[0] - 0.36, FRONT + 0.075, 1.95))
+	Bea.mailbox(n, p.pt(DOOR[0] - 0.36, FRONT + 0.075, 1.3))
 	var mat := Kit.box(n, Vector3(0.9, 0.012, 0.5), p.pt((DOOR[0] + DOOR[1]) * 0.5, FRONT + 0.4, 0.006), Color(0.55, 0.42, 0.25))
 	Props.words(n, "WELCOME", mat.position + Vector3(0, 0.008, 0), 0.1, Color(0.3, 0.2, 0.12)).rotation_degrees = Vector3(-90, 0, 0)
 	# Her porch: the glider under the window, a little table, two rockers, ferns.
@@ -323,8 +334,8 @@ static func _porch(p: Node3D, st: int) -> void:
 	Kit.cyl(table, 0.05, 0.16, Vector3(-0.08, 0.7, 0), Color(0.6, 0.35, 0.15, 0.85), Vector3.ZERO, 10)
 	for x: float in [0.1, 0.18]:
 		Kit.cyl(table, 0.035, 0.12, Vector3(x, 0.68, 0.08 - x * 0.5), Color(0.85, 0.92, 0.95, 0.6), Vector3.ZERO, 8)
-	Bea.rocker(p, st, 4.05, FRONT + 0.72, 12.0)
-	Bea.rocker(p, st, 5.3, FRONT + 0.72, -12.0, white, Color(0.3, 0.5, 0.8))
+	Bea.rocker(p, st, 3.85, FRONT + 0.72, 12.0)
+	Bea.rocker(p, st, 4.8, FRONT + 0.72, -12.0, white, Color(0.3, 0.5, 0.8))
 	var stand := Props.table(p, st, 8.42, FRONT + 0.35, 0.0, 0.42, 0.42, white, 0.5)
 	Bea.fern(stand, Vector3(0, 0.5, 0), 0.9)
 	for u: float in [1.65, 4.7]:
@@ -392,7 +403,7 @@ static func _front_rooms(p: Node3D, b: int) -> void:
 	Bea.doily(end, Vector3(0, 0.62, 0), 0.18)
 	Bea.table_lamp(end, Vector3(0, 0.63, 0))
 	Bea.floor_lamp(p, b, 0.38, 10.55)
-	Bea.fern_stand(p, b, 5.12, 8.0)
+	Bea.fern_stand(p, b, 4.75, 10.62)        # by the window, where it is out of the way of the camera
 	for k in 3:
 		Bea.wall_picture(p, b, 0.075, 8.25 + k * 0.75, 90.0, 0.42 if k != 1 else 0.5, 0.52 if k != 1 else 0.62, 1.75, "portrait", 2.0 + k * 1.9)
 	Bea.wall_picture(p, b, 3.1, 6.475, 0.0, 0.9, 0.6, 2.05, "scene", 4.0)
@@ -431,7 +442,13 @@ static func _middle_rooms(p: Node3D, b: int, kitchen_paint: Variant) -> void:
 	Kit.cyl(side, 0.16, 0.05, Vector3(0, 1.11, 0.0), Color(0.55, 0.32, 0.2), Vector3.ZERO, 12)
 	Bea.wall_picture(p, b, 4.12, 3.075, 0.0, 1.0, 0.55, 1.95, "scene", 21.0)
 	Bea.wall_picture(p, b, 0.075, 4.7, 90.0, 0.45, 0.55, 2.4, "portrait", 17.0)
-	Props.clock(p, b, 2.65, 3.075, 0.0, 2.55)
+	# Her good plates, hung on the wall in a row.
+	for k in 3:
+		var pu := 2.45 + k * 0.38
+		var py := 2.05 + 0.08 * float(k % 2)
+		Kit.cyl(n, 0.15, 0.02, p.pt(pu, 3.075 + 0.01, py), Color(0.96, 0.95, 0.9), Vector3(90, 0, 0), 16)
+		Kit.cyl(n, 0.115, 0.02, p.pt(pu, 3.075 + 0.016, py), [Color(0.3, 0.45, 0.8), Color(0.75, 0.3, 0.35), Color(0.3, 0.6, 0.45)][k], Vector3(90, 0, 0), 16)
+		Kit.cyl(n, 0.075, 0.02, p.pt(pu, 3.075 + 0.022, py), Color(0.96, 0.95, 0.9), Vector3(90, 0, 0), 14)
 	Props.rug(p, b, 2.65, 4.85, 2.4, 1.9, Color(0.3, 0.32, 0.5))
 	# The kitchen: the stove with her big pot on, the sink, the fridge, the
 	# table with a pie on it, the calendar from her shop.
@@ -453,8 +470,8 @@ static func _middle_rooms(p: Node3D, b: int, kitchen_paint: Variant) -> void:
 	Kit.cyl(kt, 0.04, 0.1, Vector3(-0.2, 0.8, -0.15), Color(0.2, 0.2, 0.22), Vector3.ZERO, 8)
 	Props.seat(p, b, 6.2, 5.05, 90.0, Color(0.85, 0.85, 0.82), Color(0.8, 0.2, 0.18))
 	Props.seat(p, b, 7.6, 5.05, 270.0, Color(0.85, 0.85, 0.82), Color(0.8, 0.2, 0.18))
-	Bea.calendar(p, b, 5.075, 4.85, 90.0, 1.55, "MARCH 1994")
-	Props.clock(p, b, 5.075, 5.75, 90.0, 2.5)
+	Bea.calendar(p, b, 5.075, 4.85, 90.0, 1.55, "MARCH 1994", 1.35)
+	Props.clock(p, b, 8.42, 3.075, 0.0, 2.5)
 	var oval := Kit.cyl(n, 0.6, 0.012, p.pt(6.9, 5.05, 0.006), Color(0.45, 0.55, 0.75), Vector3.ZERO, 18)
 	oval.scale = Vector3(1.4, 1, 1)
 
@@ -496,6 +513,7 @@ static func _back_rooms(p: Node3D, b: int, sun_paint: Variant) -> void:
 	Bea.mops(p, b, 8.65, 0.4)
 	Props.boxes(p, b, 8.4, 1.55, 2)
 	Bea.stripes(p, n, false, 5.0, 0.075, 2.925, 1.0, 0.0, 2.86, pantry_groove(), 0.12, 0.012, [], 0.0)
+	Bea.stripes(p, n, false, 9.0, 0.075, 2.925, -1.0, 0.0, 2.86, pantry_groove(), 0.12, 0.012, [], 0.0)
 	Bea.stripes(p, n, true, 0.0, 5.075, 8.925, 1.0, 0.0, 2.86, pantry_groove(), 0.12, 0.012, Bea.holes([PANTRY_WINDOW, {"a": 7.75, "b": 8.6, "head": 2.1}]), 0.0)
 	# The back door, shut: a panel door with a window and a curtain.
 	p.slab(n, true, 0.1, 7.7, 8.65, 0.0, 2.15, 0.04, Props.WOOD)
@@ -514,17 +532,19 @@ static func pantry_groove() -> Color:
 static func _bedroom(p: Node3D, b: int) -> void:
 	var n: Node3D = p.node_of(b)
 	# Her room: the bed under its quilt, the dressing table, the hat boxes.
-	Bea.quilt_bed(p, b, UP + 2.25, 5.675 + 1.04, 0.0, 1.5, 2.05)
-	Bea.nightstand(p, b, UP + 1.15, 5.675 + 0.23)
-	Bea.nightstand(p, b, UP + 3.35, 5.675 + 0.23, 0.0, false)
-	Bea.wall_picture(p, b, UP + 2.25, 5.675, 0.0, 0.8, 0.45, 1.95, "words", 0.0, "GOD BLESS OUR HOME")
-	Bea.cedar_chest(p, b, UP + 2.25, 8.0)
+	# The bed stands left of the room's middle, so he does not hide the quilt.
+	var bed_u := UP + 1.85
+	Bea.quilt_bed(p, b, bed_u, 5.675 + 1.04, 0.0, 1.5, 2.05)
+	Bea.nightstand(p, b, bed_u - 1.1, 5.675 + 0.23)
+	Bea.nightstand(p, b, bed_u + 1.1, 5.675 + 0.23, 0.0, false)
+	Bea.wall_picture(p, b, bed_u, 5.675, 0.0, 0.8, 0.45, 1.95, "words", 0.0, "GOD BLESS OUR HOME")
+	Bea.cedar_chest(p, b, bed_u, 8.0)
 	Bea.vanity(p, b, UP + 0.075 + 0.46, 8.4, 90.0)
 	Bea.hat_boxes(p, b, UP + 0.35, 10.6)
 	Props.wardrobe(p, b, UP + 5.525 - 0.31, 7.4, 270.0, 1.2, Bea.MAHOGANY)
 	Bea.rocker(p, b, UP + 4.2, 9.4, -40.0, Bea.MAHOGANY, Color(0.6, 0.35, 0.65))
 	Bea.wall_picture(p, b, UP + 0.075, 6.6, 90.0, 0.4, 0.5, 1.7, "portrait", 31.0)
-	Props.rug(p, b, UP + 2.25, 7.15, 2.9, 2.6, Color(0.78, 0.5, 0.56))
+	Props.rug(p, b, bed_u + 0.05, 7.15, 2.6, 2.6, Color(0.78, 0.5, 0.56))
 	var rug := Kit.cyl(n, 0.65, 0.012, p.pt(UP + 2.4, 9.3, 0.006), Color(0.55, 0.35, 0.55), Vector3.ZERO, 18)
 	rug.scale = Vector3(1.6, 1, 1)
 	var rug2 := Kit.cyl(n, 0.45, 0.012, p.pt(UP + 2.4, 9.3, 0.009), Color(0.85, 0.8, 0.9), Vector3.ZERO, 18)
@@ -547,8 +567,8 @@ static func _upstairs_back(p: Node3D, b: int) -> void:
 	var n: Node3D = p.node_of(b)
 	# The sewing room: the treadle machine under the window, the dummy, the
 	# fabric, a day bed under an afghan.
-	Bea.sewing_machine(p, b, UP + 2.4, 2.675 + 0.5)
-	Bea.dress_form(p, b, UP + 4.25, 3.15)
+	Bea.sewing_machine(p, b, UP + 3.05, 2.675 + 0.5)
+	Bea.dress_form(p, b, UP + 4.35, 3.05)
 	Bea.fabric_shelf(p, b, UP + 0.9, 2.675 + 0.2, 0.0, 1.1)
 	Bea.day_bed(p, b, UP + 0.075 + 0.45, 4.55, 90.0, 1.9)
 	Props.rug(p, b, UP + 2.6, 4.4, 1.6, 1.0, Color(0.85, 0.6, 0.3))
@@ -568,8 +588,10 @@ static func _upstairs_back(p: Node3D, b: int) -> void:
 	var loo := Props.toilet(p, b, UP + 7.4, 2.675 + 0.34)
 	Bea.toilet_cover(loo)
 	Bea.roll_doll(loo, Vector3(0.0, 0.89, -0.22))
-	Bea.hamper(p, b, UP + 8.65, 4.55)
-	Props.basin(p, b, UP + 8.4, 2.675 + 0.23)
+	# (Her things keep off the right-hand wall: the bathroom door, see-through
+	# in the cut-away wall, stands between the camera and it.)
+	Bea.hamper(p, b, UP + 5.3, 3.85)
+	Props.basin(p, b, UP + 8.2, 2.675 + 0.23)
 	Bea.towels(p, b, UP + 5.075, 4.6, 90.0)
 	var mat := Kit.cyl(n, 0.4, 0.012, p.pt(UP + 6.1, 3.75, 0.006), Color(0.95, 0.65, 0.8), Vector3.ZERO, 16)
 	mat.scale = Vector3(1.4, 1, 1)
