@@ -10,6 +10,13 @@ extends Node3D
 ## picked (he still blinks) and START can be pressed. Clicking the same one
 ## again lets go of it. Esc goes back.
 ##
+## The two little figures are never still. Both blink, lift their brows and
+## stretch and squash a little as they breathe. The angel hovers, beats his
+## wings and raises and lowers his praying hands; the devil flicks his tail,
+## lifts his pitchfork and sets it down, and bounces on his heels. Each is one
+## drawing: shaders/paper_glow.gdshader moves the parts, and build_choice.py
+## says where they are (assets/ui/<name>.json and <name>_parts.png).
+##
 ##   var choose: Node3D = ChooseScreen.new()
 ##   add_child(choose)
 ##   choose.build("res://assets/characters/e")
@@ -43,6 +50,7 @@ const NAMES := {"": "WHO DO YOU LISTEN TO?", "angel": "THE ANGEL", "devil": "THE
 const TINTS := {"": FAINT, "angel": Color(1.0, 0.92, 0.6), "devil": Color(1.0, 0.35, 0.28)}
 const EYE := Vector3(0.0, 0.96, 2.75)        # the camera, and what it looks at: low, so he stands in the top of the picture, clear of START
 const AIM := Vector3(0.0, 0.86, 0.0)
+const BLINK := 0.16                   # seconds a blink of theirs takes, shut and open again
 
 var chosen := ""                      # "", "angel" or "devil"
 
@@ -58,6 +66,8 @@ var _pan := 1.0                       # how much the camera drifts: 1 while nobo
 var _eyes_on := "angel"               # who his eyes are on while he cannot decide
 var _eyes_in := 0.8                   # seconds until they dart across
 var _hover := ""
+var _size := {}                       # side: how big it is drawn (1, a little more under the mouse, more when picked)
+var _blinks := {}                     # side: {"in": seconds until the next blink, "left": seconds of this one still to run}
 var _rng := RandomNumberGenerator.new()
 
 
@@ -82,6 +92,26 @@ func build(rig_dir: String) -> void:
 		mat.set_shader_parameter("core_colour", GLOWS[side][1])
 		mat.set_shader_parameter("glow", 0.0)
 		mat.set_shader_parameter("dim", 1.0)
+		mat.set_shader_parameter("rim", 0.45)
+		# What can move, and where it is on the picture.
+		var map = JSON.parse_string(FileAccess.get_file_as_string("res://assets/ui/%s.json" % side))
+		if typeof(map) == TYPE_DICTIONARY:
+			mat.set_shader_parameter("parts", load("res://assets/ui/%s_parts.png" % side))
+			mat.set_shader_parameter("has_parts", true)
+			for key: String in map["parts"]:
+				var part: Dictionary = map["parts"][key]
+				mat.set_shader_parameter("pivot_" + key, Vector3(part["pivot"][0], part["pivot"][1], part["reach"]))
+			for i in 2:
+				var eye: Array = map["eyes"][i]
+				var brow: Array = map["brows"][i]
+				mat.set_shader_parameter(["eye_l", "eye_r"][i], Vector4(eye[0], eye[1], eye[2], eye[3]))
+				mat.set_shader_parameter(["brow_l", "brow_r"][i], Vector4(brow[0], brow[1], brow[2], brow[3]))
+			mat.set_shader_parameter("eye_top", Vector2(map["eyes"][0][4], map["eyes"][1][4]))
+			mat.set_shader_parameter("skin", Color(map["skin"][0], map["skin"][1], map["skin"][2]))
+		else:
+			push_warning("Could not read assets/ui/%s.json: the %s will not move" % [side, side])
+		_size[side] = 1.0
+		_blinks[side] = {"in": 1.0 + SIDES.find(side) * 0.9, "left": 0.0}
 		var card := MeshInstance3D.new()
 		card.name = side.capitalize()
 		card.mesh = quad
@@ -217,17 +247,46 @@ func _process(delta: float) -> void:
 	_pan = move_toward(_pan, 1.0 if chosen == "" else 0.0, delta * 1.5)
 	var drift := Vector3(0.2 * sin(_time * 0.55), 0.03 * sin(_time * 0.38), 0.0) * smoothstep(0.0, 1.0, _pan)
 	_camera.look_at_from_position(to_global(EYE + drift), to_global(AIM + drift * 0.25))
-	# The two of them: the angel hovers, the devil bounces on his heels; the
-	# one picked glows and grows a little, the other fades back.
+	# The two of them. The one picked glows and grows a little, the other
+	# fades back; picked or not, they keep moving.
 	var k := 1.0 - exp(-10.0 * delta) if delta > 0.0 else 1.0
+	var t := _time
 	for side: String in SIDES:
 		var card: MeshInstance3D = _cards[side]
 		var mat: ShaderMaterial = _mats[side]
 		var picked := chosen == side
-		var lift := 0.02 * sin(_time * 1.7) if side == "angel" else 0.012 * absf(sin(_time * 2.6))
-		card.position = SPOTS[side] + Vector3(0, lift, 0)
+		var lift := 0.0                 # how far off his perch, metres
+		var stretch := 0.0              # taller and thinner by this much (negative: squashed)
+		var brows := Vector2.ZERO       # how far up each brow is, of the picture's height
+		if side == "angel":
+			# He hovers, breathing slowly: the wings beat, the praying hands rise and sink.
+			var beat := sin(t * 5.2)
+			mat.set_shader_parameter("move_r", Vector3(0, 0, 0.16 * beat))
+			mat.set_shader_parameter("move_g", Vector3(0, 0, -0.16 * beat))
+			mat.set_shader_parameter("move_b", Vector3(0, -0.012 * (0.5 + 0.5 * sin(t * 1.3)), 0))
+			lift = 0.02 * sin(t * 1.7)
+			stretch = 0.022 * sin(t * 1.7 + 1.1)
+			brows = Vector2.ONE * (0.0015 + 0.0045 * sin(t * 0.9))
+		else:
+			# He cannot keep still: the tail flicks, the pitchfork goes up and comes down, he bounces on his heels.
+			mat.set_shader_parameter("move_r", Vector3(0, 0, 0.07 * sin(t * 2.3) + 0.03 * sin(t * 5.1)))
+			mat.set_shader_parameter("move_g", Vector3(0, -0.026 * pow(0.5 - 0.5 * cos(t * 1.5), 2.0), 0))
+			lift = 0.012 * absf(sin(t * 1.3))
+			stretch = 0.03 * sin(t * 2.6)
+			brows = Vector2(0.002 * sin(t * 1.1), 0.0015 + 0.0045 * sin(t * 1.9))
+		mat.set_shader_parameter("brow_lift", brows)
 		var size := 1.14 if picked else (1.05 if _hover == side else 1.0)
-		card.scale = card.scale.lerp(Vector3.ONE * size, k)
+		_size[side] = lerpf(_size[side], size, k)
+		card.position = SPOTS[side] + Vector3(0, lift, 0)
+		card.scale = Vector3(1.0 - stretch * 0.6, 1.0 + stretch, 1.0) * float(_size[side])      # about his feet
+		# A blink now and then: shut and open again.
+		var eyes: Dictionary = _blinks[side]
+		eyes["in"] -= delta
+		if eyes["in"] <= 0.0:
+			eyes["in"] = _rng.randf_range(1.8, 4.6)
+			eyes["left"] = BLINK
+		eyes["left"] = maxf(eyes["left"] - delta, 0.0)
+		mat.set_shader_parameter("blink", eyes.get("hold", clampf(1.7 * sin(PI * eyes["left"] / BLINK), 0.0, 1.0)))      # "hold": for a still picture
 		var pulse := 0.85 + 0.15 * sin(_time * 3.2)
 		var glow_now: float = mat.get_shader_parameter("glow")
 		mat.set_shader_parameter("glow", lerpf(glow_now, pulse if picked else 0.0, k))

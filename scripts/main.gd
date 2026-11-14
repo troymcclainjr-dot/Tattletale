@@ -1065,6 +1065,8 @@ func _take_shot() -> void:
 			"continue":     # pick CONTINUE on the title screen
 				_continue_game()
 				print("[shot] continued: mode %s, side %s, place %s" % [_mode, _side, _place])
+			"blink":        # blink:side:amount: hold that one's eyes part shut (0 open .. 1 shut), for a picture
+				_choose._blinks[bits[1]]["hold"] = float(bits[2])
 			"start":        # press START there
 				_choose.start()
 				print("[shot] started: mode %s, side %s, place %s" % [_mode, _side, _place])
