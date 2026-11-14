@@ -32,6 +32,7 @@ const ARM_BEND_HELD := 0.06     # holding something it turns at the shoulder, st
 const ARM_JOINT := 0.034        # what was drawn this close to a shoulder stays put under the moving arm (paper_card.gdshader's arm_joint)...
 const ARM_JOINT_HELD := 0.04    # ...and a little more of it when the arm is turned a long way, to something he holds
 const AWAY_LEAN := 0.3           # pointing away, it leans no further than this from straight up the screen, radians
+const ARM_STUB := 0.04            # an arm raised from behind his sleeve: this much of it, from the shoulder, is not drawn
 const ARM_ROOT := 0.075           # an arm that goes behind him to a rifle's handguard: this much of it, from the shoulder, is not drawn
 const FIST_NEAR := 0.05         # the fists are drawn this much nearer the eye than his card: over what he holds and over his arm's end
 const FIST_IN := 13.0           # the arm runs this many pixels past the wrist, into the fist that covers its end
@@ -76,7 +77,7 @@ const HOLDS := {
 		"front_aim": {"grip": [-1.18, -0.06], "angle": 0.0, "flip": true, "curl": -0.2},
 		"back_carry": {"angle": 82.0, "arm": "r"},
 		"front_point": {"art": "toward", "grip": [0.56, 0.46], "angle": 0.0, "flip": true},
-		"back_point": {"art": "away", "arms_under": true, "behind": true, "flip": true, "arm": "r", "grip": [0.62, -0.86]},
+		"back_point": {"art": "away", "arms_under": true, "behind": true, "flip": false, "arm": "r", "grip": [1.15, -1.27]},
 	},
 	"uzi": {
 		"side_carry": {"grip": [0.74, 1.08], "angle": 52.0, "curl": 0.3},
@@ -85,7 +86,7 @@ const HOLDS := {
 		"front_aim": {"grip": [-1.12, 0.04], "angle": 0.0, "flip": true, "curl": -0.3},
 		"back_carry": {"angle": 80.0, "arm": "r", "gun_under": true},
 		"front_point": {"art": "toward", "grip": [0.56, 0.5], "angle": 0.0, "flip": true},
-		"back_point": {"art": "away", "arms_under": true, "behind": true, "flip": true, "arm": "r", "grip": [0.62, -0.86]},
+		"back_point": {"art": "away", "arms_under": true, "behind": true, "flip": false, "arm": "r", "grip": [1.15, -1.27]},
 	},
 	"ak": {
 		"side_carry": {"grip": [0.62, 1.02], "angle": 20.0, "curl": 0.5, "fore_curl": 0.3, "far": [0.45, 0.6], "over": true},
@@ -93,7 +94,7 @@ const HOLDS := {
 		"front_carry": {"grip": [0.44, 1.0], "angle": -21.0, "curl": 0.0, "fore_curl": -0.7},
 		"back_carry": {"at": [-0.44, 1.0], "angle": -24.0, "flip": true, "arm": "r", "grip": [-0.5, 0.96], "curl": -0.3, "fore_at": [0.45, 0.86], "fore_curl": 0.3, "under": true},
 		"front_point": {"art": "toward", "grip": [0.3, 0.5], "angle": 0.0, "curl": 0.0, "fore_curl": 0.0},
-		"back_point": {"art": "away", "arms_under": true, "behind": true, "flip": true, "arm": "r", "grip": [0.56, -0.5], "curl": 0.0, "fore_curl": 0.0},
+		"back_point": {"art": "away", "arms_under": true, "behind": true, "flip": false, "arm": "r", "grip": [0.98, -0.76], "curl": 0.0, "fore_curl": 0.0},
 	},
 }
 
@@ -243,6 +244,11 @@ func set_rig(dir: String) -> bool:
 	var layers = JSON.parse_string(FileAccess.get_file_as_string(dir.path_join("wardrobe.json"))) if FileAccess.file_exists(dir.path_join("wardrobe.json")) else null
 	if typeof(layers) == TYPE_DICTIONARY and layers.has("base") and layers.has("items"):
 		_wardrobe = layers
+		for name: String in layers["base"]:        # a bare body that cannot be read would leave him invisible: then he is as drawn
+			if _layer(dir.path_join(String(layers["base"][name].get("art", "")))) == null:
+				push_warning("Wardrobe of %s not used: its base drawing for %s cannot be read (python tools/shot.py --import?)" % [dir, name])
+				_wardrobe = {}
+				break
 	height = float(rig["height_m"])
 	for name: String in rig["views"]:
 		var data: Dictionary = rig["views"][name]
@@ -1009,7 +1015,8 @@ func _hold() -> void:
 	_held.rotation.z = deg_to_rad(dip) * (1.0 if flip else -1.0)
 	_held.scale = Vector3(-1.0 if flip else 1.0, 1.0, 1.0)
 	var behind: bool = pose.get("behind", false)
-	_put("arm_from", Vector2.ZERO)
+	# An arm that goes behind him starts clear of his sleeve, with an inked end, not as a tab of skin under it.
+	_put("arm_from", (Vector2(ARM_STUB, 0.0) if key == "l" else Vector2(0.0, ARM_STUB)) if pose.get("arms_under", false) and k > 0.5 else Vector2.ZERO)
 	(_gun.material_override as ShaderMaterial).set_shader_parameter("toward", -0.03 if under or behind or pose.get("gun_under", false) else 0.03)
 	(_fist.material_override as ShaderMaterial).set_shader_parameter("toward", -0.02 if behind else FIST_NEAR)
 	_fist.visible = not under
@@ -1073,13 +1080,15 @@ func _hold() -> void:
 		_put("arm_%s_pivot" % other, (pivot2 + axis2 * down2) / _px)
 	_put("arm_elbow", elbow)
 	var reach2 := _reach_for(axis2, hand2 / _px.y, length2 / _px.y, (fore - shoulder2) / _px.y, fore_curl, 3.2 if pose.get("arms_under", false) else 1.9)      # behind him it may be as long as it must
-	if pose.get("arms_under", false) and k > 0.5:      # ...and its root, which would stick out of his far shoulder, is not drawn
-		_put("arm_from", Vector2(ARM_ROOT, 0.0) if other == "l" else Vector2(0.0, ARM_ROOT))
+	if pose.get("arms_under", false) and k > 0.5:      # ...its root, which would stick out of his far shoulder, is not drawn, and it stops short of its hand
+		_put("arm_from", Vector2(ARM_ROOT, ARM_STUB) if other == "l" else Vector2(ARM_STUB, ARM_ROOT))
 	var pre2 := "arm_%s_" % other
 	_put(pre2 + "angle", lerp_angle(float(_mat.get_shader_parameter(pre2 + "angle")), reach2.x, k))
 	_put(pre2 + "curl", lerpf(float(_mat.get_shader_parameter(pre2 + "curl")), fore_curl, k))
 	_put(pre2 + "stretch", lerpf(1.0, reach2.y, k))
 	_put(pre2 + "cut", (wrist2 + FORE_IN) / _px.y if k > 0.5 and not under else 9.0)
+	if pose.get("arms_under", false) and k > 0.5:
+		_put(pre2 + "cut", (wrist2 - 12.0) / _px.y)
 
 
 ## Where a hold puts the fist on the grip, from the shoulder, in pixels. With no

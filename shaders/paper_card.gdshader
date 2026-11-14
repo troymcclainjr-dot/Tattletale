@@ -200,8 +200,12 @@ vec4 arm(vec2 src, vec2 pivot, float cut, float body_side, bool left, vec2 dx, v
 	}
 	vec4 c = textureGrad(arm_art, src, dx, dy);
 	c.rgb = dress(c.rgb, src, arm_regions);
-	if (rim_ink > 0.0 && cut < 8.0 && c.a > 0.5 && length((src - pivot) * vec2(aspect, 1.0)) > cut - rim_ink) {
+	if (rim_ink > 0.0 && cut < 8.0 && c.a > 0.5 && along_arm > cut - rim_ink) {
 		c.rgb = ink;       // the cut end: whatever of it a fist does not cover is closed with a line
+	}
+	float root = left ? arm_from.x : arm_from.y;
+	if (rim_ink > 0.0 && root > 0.0 && c.a > 0.5 && along_arm < root + rim_ink) {
+		c.rgb = ink;       // and the end it starts from, when its root is not drawn
 	}
 	if (arm_ink > 0.0 && c.a > 0.5) {
 		vec2 beside = src + vec2(body_side * arm_ink / aspect, 0.0);

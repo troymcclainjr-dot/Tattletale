@@ -86,6 +86,8 @@ const MOODS := ["focused", "preachy", "smug", "shout", "happy"]     # his face c
 const WEAPONS := ["", "pistol", "uzi", "ak"]      # Q goes round these
 const Crosshair := preload("res://scripts/crosshair.gd")
 const AIM_SIDE := 0.96      # radians: the cross this far above or below level (55 degrees) is still "to the side"
+const AIM_AWAY := false     # turn his back to aim at a cross well above him. Off: that pose (a gun held up beside his head) reads as
+                            # pointing at the sky, not away from us, so he stays side-on and tips it up as far as AIM_TIP
 const AIM_TIP := 0.6        # ...and side-on he tips what he holds up or down no further than this
 
 ## What is on the racks of the clothing store: the colours each piece of
@@ -1249,10 +1251,12 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_E:
 			_use_nearest()
 			get_viewport().set_input_as_handled()    # or the same press would also answer the talk box it just opened
-		KEY_C:                      # at a rack of clothes: the same thing in its next colour
+		KEY_C:                      # at a rack of clothes: the same thing in its next colour; in the studio, the ceiling
 			var rack := _rack_slot()
 			if rack != "":
 				_next_colour(rack)
+			elif _ceiling():
+				_ceiling().visible = not _ceiling().visible
 		KEY_Q:
 			_actor.weapon = WEAPONS[(WEAPONS.find(_actor.weapon) + 1) % WEAPONS.size()]
 		KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9:
@@ -1264,9 +1268,6 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			if _ceiling():
 				_ceiling().visible = true
 			_set_camera(names[(names.find(_cam_name) + 1) % names.size()])
-		KEY_C:
-			if _ceiling():
-				_ceiling().visible = not _ceiling().visible
 		KEY_Z, KEY_X:
 			if _actor.face:
 				var faces: Array = _actor.face.names()
@@ -1296,7 +1297,7 @@ func _aim_at(cross: Vector2) -> void:
 	var rise := atan2(-to.y, absf(to.x))                       # how far above level, seen on the screen
 	var edge := AIM_SIDE + (0.1 if _actor.aim_way == "" else -0.1)      # a little sticky, so it does not flicker at the edge
 	_actor.aiming = true
-	_actor.aim_way = "" if absf(rise) < edge else ("away" if rise > 0.0 else "toward")
+	_actor.aim_way = "" if absf(rise) < edge or (rise > 0.0 and not AIM_AWAY) else ("away" if rise > 0.0 else "toward")
 	_actor.aim_to = signf(to.x)
 	_actor.aim_pitch = clampf(rise, -AIM_TIP, AIM_TIP) if _actor.aim_way == "" else 0.0
 	_actor.aim_lean = atan2(to.x, -to.y)          # pointing away: how far the cross is to the right of straight up
