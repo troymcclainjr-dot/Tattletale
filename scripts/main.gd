@@ -47,6 +47,11 @@ const PLANS := {
 	"liquor": preload("res://scripts/plans/liquor.gd"),
 	"fry": preload("res://scripts/plans/fry.gd"),
 	"hospital": preload("res://scripts/plans/hospital.gd"),
+	"park": preload("res://scripts/plans/park.gd"),
+	"park2": preload("res://scripts/plans/park2.gd"),
+	"street": preload("res://scripts/plans/street.gd"),
+	"bea": preload("res://scripts/plans/bea.gd"),
+	"clothes": preload("res://scripts/plans/clothes.gd"),
 }
 const FlickerCheck := preload("res://scripts/flicker_check.gd")
 const PaperActor := preload("res://scripts/paper_actor.gd")
@@ -81,6 +86,11 @@ const PLACES := [
 	{"id": "liquor", "name": "LIQUOR STORE", "note": "PARKWAY SPIRITS"},
 	{"id": "fry", "name": "LARGE FRY'S PLACE", "note": "ARGONNE COURT, APT 1"},
 	{"id": "hospital", "name": "HOSPITAL", "note": "EMERGENCY DEPARTMENT"},
+	{"id": "park", "name": "PEN LUCY PARK", "note": "THE COURT"},
+	{"id": "park2", "name": "THE GREEN", "note": "THE OTHER PARK"},
+	{"id": "street", "name": "ROSEDALE STREET", "note": "THE BLOCK"},
+	{"id": "bea", "name": "MISS BEA'S HOUSE", "note": "PORCH-FRONT HOUSE"},
+	{"id": "clothes", "name": "CLOTHING STORE", "note": "FRESH THREADS"},
 ]
 
 ## name: [camera position, look-at point, vertical field of view]
@@ -391,6 +401,8 @@ func _site(id: String) -> Node3D:
 		PLANS[id].build(site)
 		for portal: Node3D in site.portals:
 			portal.used.connect(_teleport)
+		for point: Node3D in site.use_points:
+			point.used.connect(_use_point)
 		_people(id, site)
 	site.name = id.capitalize()
 	site.visible = false           # _open_place shows the one he is at
@@ -753,6 +765,11 @@ func _start_talk(_by: Node3D, npc: Node3D, file: String) -> void:
 
 func _end_talk() -> void:
 	_set_frozen(_talk_with, _scripted)
+
+
+## E at a use point (use_point.gd, place.gd's `use_point`): what happens depends on its id.
+func _use_point(id: String, _by: Node3D) -> void:
+	print("[use] ", id)
 
 
 ## Stop or release whoever walks `npc` about (nothing, for someone who only stands).

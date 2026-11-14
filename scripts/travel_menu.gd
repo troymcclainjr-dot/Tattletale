@@ -8,6 +8,7 @@ extends CanvasLayer
 signal picked(id: String)
 
 const FONT := preload("res://assets/fonts/Bungee-Regular.ttf")
+const KEYS := "1234567890ABCDFGHIJKL"      # the key for each row, top to bottom (M and Esc close the list; E is left alone)
 const PAPER := Color("#f6f1e3")
 const TICKET := Color("#f2d24a")
 const FAINT := Color(0.96, 0.94, 0.89, 0.34)
@@ -51,6 +52,7 @@ func _init() -> void:
 	column.add_child(title)
 	_rows = VBoxContainer.new()
 	_rows.add_theme_constant_override("separation", 12)
+	_rows.name = "Rows"
 	column.add_child(_rows)
 	var foot := _label(18, FAINT)
 	foot.text = "M OR ESC   CLOSE"
@@ -73,14 +75,15 @@ func open(here := "") -> void:
 	for child in _rows.get_children():
 		_rows.remove_child(child)
 		child.queue_free()
+	_rows.add_theme_constant_override("separation", 12 if _places.size() <= 9 else 4)
 	for i in _places.size():
 		var place: Dictionary = _places[i]
 		var can_go: bool = place.get("built", true)
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 24)
 		row.mouse_filter = Control.MOUSE_FILTER_STOP
-		var label := _label(28, PAPER if can_go else FAINT)
-		label.text = "%d   %s" % [i + 1, place["name"]]
+		var label := _label(28 if _places.size() <= 9 else 22, PAPER if can_go else FAINT)
+		label.text = "%s   %s" % [KEYS[i] if i < KEYS.length() else " ", place["name"]]
 		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(label)
 		var note := _label(18, TICKET if place["id"] == _here else FAINT)
@@ -135,8 +138,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()        # while the list is up, no key reaches the game
 	if key in [KEY_M, KEY_ESCAPE]:
 		close()
-	elif key >= KEY_1 and key <= KEY_9:
-		pick(key - KEY_1)
+	else:
+		var i := KEYS.find(OS.get_keycode_string(key))
+		if i >= 0:
+			pick(i)
 
 
 func _label(size: int, colour: Color) -> Label:

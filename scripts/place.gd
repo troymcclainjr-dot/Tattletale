@@ -34,6 +34,7 @@ extends Node3D
 
 const Door := preload("res://scripts/door.gd")
 const Portal := preload("res://scripts/portal.gd")
+const UsePoint := preload("res://scripts/use_point.gd")
 
 const RADIUS := 0.26                 # paper_actor.gd's: how close a middle may come to a wall in front of him or behind
 const REACH := 0.4                   # and to a wall beside him: his hands and feet reach that far (paper_actor.gd)
@@ -55,6 +56,7 @@ var rooms: Array = []
 var bands: Array = []                # "node", "level", "order" (0 is nearest the street)
 var doors: Array = []
 var portals: Array = []
+var use_points: Array = []           # spots E can be used at (use_point.gd): main.gd acts on their `id`
 var obstacles: Array = []
 var watchers: Array = []             # things that want to know where he is each frame (walk_light.gd): main.gd calls their `watch`
 ## Who stands about here. Each is a Dictionary: "rig" (a folder of
@@ -262,6 +264,72 @@ func portal(b: int, label: String, u: float, v: float, to_u: float, to_v: float)
 	return p
 
 
+## A spot E can be used at (use_point.gd): `label` shows over it, and main.gd
+## acts on `id` ("outfit:hat", "sleep", ...: see main.gd's _use_point).
+func use_point(b: int, label: String, u: float, v: float, id: String, reach := 1.1, label_height := 1.5) -> Node3D:
+	var point: Node3D = UsePoint.new()
+	point.id = id
+	point.label = label
+	point.use_reach = reach
+	point.label_height = label_height
+	point.position = pt(u, v)
+	node_of(b).add_child(point)
+	use_points.append(point)
+	return point
+
+
+## A fence out of doors, built in band b's own node (it is never cut away): it
+## runs along u (left to right) or along v, at `at`, from `from` to `to`.
+## `gaps` is a list of [from, to]: gateways, always open. The ground either
+## side must be separate rooms; people cross only at the gaps. kind: "rail" (a
+## low iron railing), "chain" (tall chain link on steel posts: you see through
+## it), "wood" (a board fence: you do not).
+func fence(b: int, along_u: bool, at: float, from: float, to: float, gaps := [], h := 1.1, kind := "rail", look: Variant = null) -> void:
+	var node := node_of(b)
+	var cuts := gaps.duplicate()
+	cuts.sort_custom(func(p: Array, q: Array) -> bool: return p[0] < q[0])
+	var runs: Array = []
+	var cursor := from
+	for g: Array in cuts:
+		runs.append([cursor, g[0]])
+		cursor = g[1]
+		_always.append(_passage(along_u, at, g[0], g[1]))
+	runs.append([cursor, to])
+	var colour: Variant = look if look != null else {"rail": Color(0.14, 0.15, 0.17), "chain": Color(0.55, 0.58, 0.6), "wood": Color(0.5, 0.36, 0.24)}[kind]
+	for run: Array in runs:
+		var length: float = run[1] - run[0]
+		if length < 0.05:
+			continue
+		var bay: float = {"rail": 0.14, "chain": 2.4, "wood": 1.8}[kind]
+		var n := maxi(int(round(length / bay)), 1)
+		match kind:
+			"rail":
+				slab(node, along_u, at, run[0], run[1], h - 0.09, h - 0.04, 0.05, colour)
+				slab(node, along_u, at, run[0], run[1], 0.12, 0.17, 0.05, colour)
+				for i in n + 1:
+					var w: float = run[0] + length * float(i) / float(n)
+					var post := i % 8 == 0 or i == n
+					Kit.cyl(node, 0.03 if post else 0.011, h + (0.08 if post else 0.0), pt(w, at, (h + (0.08 if post else 0.0)) * 0.5) if along_u else pt(at, w, (h + (0.08 if post else 0.0)) * 0.5), colour, Vector3.ZERO, 5)
+			"chain":
+				slab(node, along_u, at, run[0], run[1], h - 0.05, h, 0.05, colour)
+				slab(node, along_u, at, run[0], run[1], 0.02, 0.06, 0.04, colour)
+				slab(node, along_u, at, run[0], run[1], 0.06, h - 0.05, 0.012, Kit.tex("chain_link", 0.5, Color(0.7, 0.74, 0.76, 0.3)) if ResourceLoader.exists(Kit.TEX_DIR + "chain_link.png") else Color(0.72, 0.76, 0.78, 0.22))
+				for i in n + 1:
+					var w: float = run[0] + length * float(i) / float(n)
+					Kit.cyl(node, 0.04, h + 0.1, pt(w, at, (h + 0.1) * 0.5) if along_u else pt(at, w, (h + 0.1) * 0.5), colour, Vector3.ZERO, 6)
+			_:
+				slab(node, along_u, at, run[0], run[1], 0.05, h, 0.04, colour)
+				slab(node, along_u, at - 0.03, run[0], run[1], h * 0.3, h * 0.3 + 0.08, 0.03, (colour as Color).darkened(0.18) if colour is Color else colour)
+				slab(node, along_u, at - 0.03, run[0], run[1], h * 0.8, h * 0.8 + 0.08, 0.03, (colour as Color).darkened(0.18) if colour is Color else colour)
+				for i in n + 1:
+					var w: float = run[0] + length * float(i) / float(n)
+					Kit.box(node, Vector3(0.1, h + 0.06, 0.1), pt(w, at, (h + 0.06) * 0.5) if along_u else pt(at, w, (h + 0.06) * 0.5), (colour as Color).darkened(0.25) if colour is Color else colour)
+		if along_u:
+			block(run[0], at - 0.04, run[1], at + 0.04)
+		else:
+			block(at - 0.04, run[0], at + 0.04, run[1])
+
+
 ## One box of wall: from a to b along the wall, y0 to y1 high, t thick.
 func slab(parent: Node3D, along_u: bool, at: float, a: float, b: float, y0: float, y1: float, t: float, look: Variant) -> MeshInstance3D:
 	var mid := (a + b) * 0.5
@@ -427,6 +495,7 @@ func usables() -> Array:
 		if not door.has_meta("mate"):
 			out.append(door)
 	out.append_array(portals)
+	out.append_array(use_points)
 	return out
 
 
