@@ -2,8 +2,34 @@
 	"about": "One character's own numbers for a hold, laid over HOLDS in scripts/paper_actor.gd: character folder > weapon > view_carry or view_aim > the keys to change.",
 	"fry": {
 		"ak": {
-			"side_aim": {"grip": [1.2, 0.74], "far": [0.75, 0.95], "fore_curl": 0.6},
-			"side_carry": {"far": [0.7, 0.8]}
+			"side_aim": {
+				"grip": [
+					1.2,
+					0.74
+				],
+				"far": [
+					0.75,
+					0.95
+				],
+				"fore_curl": 0.6
+			},
+			"side_carry": {
+				"far": [
+					0.7,
+					0.8
+				]
+			}
+		}
+	},
+	"dee": {
+		"ak": {
+			"front_carry": {
+				"grip": [
+					0.9,
+					1.25
+				],
+				"angle": -10.0
+			}
 		}
 	}
 }
