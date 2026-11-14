@@ -31,6 +31,8 @@ const ARM_BEND := 0.1            # an arm swinging at his side has turned all th
 const ARM_BEND_HELD := 0.06     # holding something it turns at the shoulder, stiffly, or it would hook
 const ARM_JOINT := 0.034        # what was drawn this close to a shoulder stays put under the moving arm (paper_card.gdshader's arm_joint)...
 const ARM_JOINT_HELD := 0.04    # ...and a little more of it when the arm is turned a long way, to something he holds
+const AWAY_LEAN := 0.7           # pointing away, it leans no further than this from straight up the screen, radians
+const FIST_NEAR := 0.05         # the fists are drawn this much nearer the eye than his card: over what he holds and over his arm's end
 const FIST_IN := 13.0           # the arm runs this many pixels past the wrist, into the fist that covers its end
 const RIM_INK := 11.0           # a held arm's cut end and the rim of its shoulder disc are inked this wide, pixels of his drawing
 const THIN_ARM := 4.3           # an arm longer than this many of its own widths (the lead's) bows less, or it loops
@@ -57,8 +59,9 @@ const LEAD_ARM := 0.083       # metres: how thick the lead's arm is drawn. What 
 ##   under  seen from the back, both hands on it in front of him: it goes behind him, the fists are not drawn, and his
 ##          arms go to spots of their own behind his body: "grip" for the arm that holds it, "fore_at" for the other
 ##          (each from its own shoulder), while "at" says where the thing's grip is (from the holding arm's shoulder)
-##   art    which drawing of the thing this pose shows: "toward" is the muzzle-on one, "away" the one from behind (weapons.json);
-##          left out, the side-on one
+##   art    which drawing of the thing this pose shows: "toward" is the muzzle-on one, "away" the short one that runs away from us
+##          (weapons.json; it is turned to point up the screen, aim_lean off straight up); left out, the side-on one
+##   behind the thing and its fists go behind his body too (it is further off than his head), and his forearm over the fist
 ##   arms_under  his arms go behind his body (he faces away, they are in front of him) while the thing and its fists stay in front
 ##   hidden the thing and its fists are not drawn at all (pointed away from us, his body is in the way)
 ## view_carry is how it is carried and view_aim how it is pointed across the screen; view_point is how it is pointed
@@ -72,7 +75,7 @@ const HOLDS := {
 		"front_aim": {"grip": [-1.18, -0.06], "angle": 0.0, "flip": true, "curl": -0.2},
 		"back_carry": {"angle": 82.0, "arm": "r"},
 		"front_point": {"art": "toward", "grip": [0.56, 0.46], "angle": 0.0, "flip": true},
-		"back_point": {"art": "away", "arms_under": true, "arm": "r", "grip": [0.5, -0.2]},
+		"back_point": {"art": "away", "arms_under": true, "behind": true, "flip": false, "arm": "r", "grip": [0.95, -0.5]},
 	},
 	"uzi": {
 		"side_carry": {"grip": [0.74, 1.08], "angle": 52.0, "curl": 0.3},
@@ -81,7 +84,7 @@ const HOLDS := {
 		"front_aim": {"grip": [-1.12, 0.04], "angle": 0.0, "flip": true, "curl": -0.3},
 		"back_carry": {"angle": 80.0, "arm": "r", "gun_under": true},
 		"front_point": {"art": "toward", "grip": [0.56, 0.5], "angle": 0.0, "flip": true},
-		"back_point": {"art": "away", "arms_under": true, "arm": "r", "grip": [0.5, -0.2]},
+		"back_point": {"art": "away", "arms_under": true, "behind": true, "flip": false, "arm": "r", "grip": [0.95, -0.5]},
 	},
 	"ak": {
 		"side_carry": {"grip": [0.62, 1.02], "angle": 20.0, "curl": 0.5, "fore_curl": 0.3, "far": [0.45, 0.6], "over": true},
@@ -89,7 +92,7 @@ const HOLDS := {
 		"front_carry": {"grip": [0.44, 1.0], "angle": -21.0, "curl": 0.0, "fore_curl": -0.7},
 		"back_carry": {"at": [-0.44, 1.0], "angle": -24.0, "flip": true, "arm": "r", "grip": [-0.5, 0.96], "curl": -0.3, "fore_at": [0.45, 0.86], "fore_curl": 0.3, "under": true},
 		"front_point": {"art": "toward", "grip": [0.3, 0.5], "angle": 0.0, "curl": 0.0, "fore_curl": 0.0},
-		"back_point": {"art": "away", "arms_under": true, "arm": "r", "grip": [0.36, -0.12], "curl": 0.0, "fore_at": [0.8, 0.15], "fore_curl": 0.0},
+		"back_point": {"art": "away", "arms_under": true, "behind": true, "flip": false, "arm": "r", "grip": [0.9, -0.22], "curl": 0.0, "fore_curl": 0.0},
 	},
 }
 
@@ -113,6 +116,7 @@ var sprinting := false                           # running: faster, longer steps
 var weapon := ""                                 # what is in his hands: "" nothing, "pistol", "uzi" or "ak" (assets/weapons)
 var aiming := false                              # he points it. Side-on if he has a side drawing; not while walking towards or away
 var aim_way := ""                                # along the line of sight instead: "toward" the camera or "away" from it ("": across the screen)
+var aim_lean := 0.6                              # pointing away, how far to the right of straight up the screen it points, radians
 var aim_pitch := 0.0                             # side-on, how far above level he points it, radians (below zero: down)
 var aim_to := 0.0                                # which side of the screen he points it at (-1 left, 1 right); 0: the way he is facing
 var reach := REACH                               # how far the drawing reaches either side of its middle, metres
@@ -193,7 +197,7 @@ func _init() -> void:
 	_held.visible = false
 	_card.add_child(_held)
 	_gun = _prop_card(0.03)
-	_fist = _prop_card(0.05)
+	_fist = _prop_card(FIST_NEAR)
 
 
 ## A drawing laid on the card: the thing he holds, or the fists on it.
@@ -940,8 +944,10 @@ func _hold() -> void:
 	if _held_name != held or _held_art != art:
 		_take(held, info, unit)
 		_held_art = art
-	var flip: bool = carry.get("flip", false)
+	var flip: bool = pose.get("flip", carry.get("flip", false))
 	var dip := lerpf(carry.get("angle", 0.0), point.get("angle", 0.0), a)
+	if art == "away":         # it points up the screen, at the cross
+		dip = -(90.0 - rad_to_deg(clampf(aim_lean, -AWAY_LEAN, AWAY_LEAN)))
 	var curl := lerpf(carry.get("curl", 0.0), point.get("curl", 0.0), a) * thin
 	var pitch := aim_pitch * a if view == "side" else 0.0        # side-on he points it up or down at what the cross is on
 	dip -= rad_to_deg(pitch)
@@ -993,7 +999,9 @@ func _hold() -> void:
 	_held.position = Vector3((at.x - _px.x * 0.5) * m, (_px.y - at.y) * m, 0.0)
 	_held.rotation.z = deg_to_rad(dip) * (1.0 if flip else -1.0)
 	_held.scale = Vector3(-1.0 if flip else 1.0, 1.0, 1.0)
-	(_gun.material_override as ShaderMaterial).set_shader_parameter("toward", -0.03 if under or pose.get("gun_under", false) else 0.03)
+	var behind: bool = pose.get("behind", false)
+	(_gun.material_override as ShaderMaterial).set_shader_parameter("toward", -0.03 if under or behind or pose.get("gun_under", false) else 0.03)
+	(_fist.material_override as ShaderMaterial).set_shader_parameter("toward", -0.02 if behind else FIST_NEAR)
 	_fist.visible = not under
 	_put("arms_under", (under or pose.get("arms_under", false)) and k > 0.5)
 	var over: bool = pose.get("over", false) and key == "l" and k > 0.5
@@ -1025,7 +1033,7 @@ func _hold() -> void:
 		var far1: Array = point.get("far", far0)
 		var far := Vector2(far0[0], far0[1]).lerp(Vector2(far1[0], far1[1]), a) * wrist
 		if pitch > 0.0:        # pointing up, the far arm comes out higher and straighter, or it hangs below the thing like a strap
-			far += Vector2(-0.1, -0.75) * pitch * wrist
+			far += Vector2(0.0, -0.95) * pitch * wrist
 			fore_curl *= maxf(1.0 - 1.6 * pitch, 0.0)
 		var far_reach := _reach_for(axis, hand / _px.y, length / _px.y, (fore - shoulder - far) / _px.y, fore_curl, 3.2)      # most of it is behind him
 		_put("arm_elbow", elbow)

@@ -1299,6 +1299,7 @@ func _aim_at(cross: Vector2) -> void:
 	_actor.aim_way = "" if absf(rise) < edge else ("away" if rise > 0.0 else "toward")
 	_actor.aim_to = signf(to.x)
 	_actor.aim_pitch = clampf(rise, -AIM_TIP, AIM_TIP) if _actor.aim_way == "" else 0.0
+	_actor.aim_lean = atan2(to.x, -to.y)          # pointing away: how far the cross is to the right of straight up
 	_cross.at = cross
 	_cross.loose = move_toward(_cross.loose, 1.0 if _actor.sprinting else 0.0, 0.2)
 	_cross.visible = true
