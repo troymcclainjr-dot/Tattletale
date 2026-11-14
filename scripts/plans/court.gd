@@ -20,7 +20,7 @@ static func build(p: Node3D) -> void:
 	p.setup("COURTHOUSE", 18.0, 22.5)
 	var beige := Kit.tex("stucco", 2.0, Color(0.8, 0.76, 0.64), true, Color(0.95, 1.0, 0.86))
 	var panel := Kit.tex("wood_panel", 1.2, Color(0.5, 0.33, 0.2), true, Color(0.5, 0.44, 0.48))      # dark oak
-	var block := Kit.tex("painted_block", 1.2, Color(0.6, 0.62, 0.66), true, Color(0.6, 0.68, 0.95))
+	var block := Kit.tex("block_plain", 1.2, Color(0.62, 0.64, 0.68), true, Color(0.68, 0.71, 0.78))
 	var lino := Kit.tex("lino", 1.6, Color(0.66, 0.6, 0.5), true, Color(1.0, 0.86, 0.72))
 	var boards := Kit.tex("wood_panel", 1.6, Color(0.45, 0.32, 0.22), true, Color(0.6, 0.62, 0.7))
 	var carpet := Kit.tex("carpet", 2.0, Color(0.45, 0.14, 0.18), true, Color(0.95, 0.8, 0.85))
@@ -41,11 +41,11 @@ static func build(p: Node3D) -> void:
 	p.room("CLERK'S OFFICE", b1, 11, 17.5, 18, 22.5, lino, {"light": strip})
 	p.room("LAWYER ROOM", b2, 0, 13.5, 4, 17.5, lino, {"light": strip})
 	p.room("PUBLIC HALL", b2, 4, 13.5, 18, 17.5, lino, {"light": strip, "energy": 0.6})
-	p.room("LOCKUP", b3, 0, 4.5, 3, 8.6, concrete, {"light": Color(0.88, 1.0, 0.92), "energy": 0.4})
+	p.room("LOCKUP", b3, 0, 4.5, 3, 8.6, concrete, {"light": Color(0.96, 0.98, 0.95), "energy": 0.4})
 	p.room("HOLDING CELL", b3, 0, 8.6, 3, 13.5, concrete)
 	p.room("COURTROOM", b3, 3, 4.5, 15, 13.5, boards, {"light": strip, "energy": 0.75})
 	p.room("JURY ROOM", b3, 15, 4.5, 18, 13.5, lino, {"light": strip, "energy": 0.4})
-	p.room("RECORDS", b4, 0, 0, 9, 4.5, concrete, {"light": Color(0.88, 1.0, 0.92), "energy": 0.4})
+	p.room("RECORDS", b4, 0, 0, 9, 4.5, concrete, {"light": Color(0.96, 0.98, 0.95), "energy": 0.4})
 	p.room("JUDGE'S CHAMBERS", b4, 9, 0, 18, 4.5, carpet, {"light": Color(1.0, 0.88, 0.7)})
 
 	var bronze := Color(0.3, 0.25, 0.18)

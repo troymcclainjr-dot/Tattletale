@@ -17,6 +17,8 @@ render_mode unshaded, cull_disabled;
 
 uniform sampler2D art : source_color, filter_linear_mipmap, repeat_disable;
 uniform float aspect = 0.58;           // drawing width / height
+uniform float pad = 0.0;               // the card is this much wider than the drawing at each side (a fraction of the
+                                       // drawing's width): room for an arm raised out past the drawing's edge
 uniform vec3 ink : source_color = vec3(0.03, 0.0, 0.0);
 
 uniform sampler2D limbs : filter_linear, repeat_disable;   // red: arm on the left of the picture, green: on the right
@@ -90,6 +92,9 @@ vec2 arm_source(vec2 uv, vec2 pivot, float angle) {
 // One arm's colour from where it sits in arm_art (alpha 0 where src is not arm).
 // `body_side` is +1 if the body is to the right of this arm in the drawing.
 vec4 arm(vec2 src, float body_side, bool left, vec2 dx, vec2 dy) {
+	if (src.x < 0.0 || src.x > 1.0 || src.y < 0.0 || src.y > 1.0) {
+		return vec4(0.0);
+	}
 	vec4 m = textureLod(limbs, src, 0.0);
 	if ((left ? m.r : m.g) < 0.5) {
 		return vec4(0.0);
@@ -106,14 +111,18 @@ vec4 arm(vec2 src, float body_side, bool left, vec2 dx, vec2 dy) {
 }
 
 void fragment() {
-	vec2 dx = dFdx(UV);
-	vec2 dy = dFdy(UV);
+	vec2 uv = vec2(UV.x * (1.0 + 2.0 * pad) - pad, UV.y);     // where this is in the drawing; x runs outside 0..1 in the spare card
+	bool inside = uv.x >= 0.0 && uv.x <= 1.0;
+	vec2 dx = dFdx(uv);
+	vec2 dy = dFdy(uv);
 	vec4 col = vec4(0.0);
-	if (UV.y <= hip_v) {
-		col = textureGrad(art, UV, dx, dy);
+	if (!inside) {
+		col = vec4(0.0);
+	} else if (uv.y <= hip_v) {
+		col = textureGrad(art, uv, dx, dy);
 	} else {
-		vec4 l = leg(UV, -1.0, lift_l, swing_l, dx, dy);
-		vec4 r = leg(UV, 1.0, lift_r, swing_r, dx, dy);
+		vec4 l = leg(uv, -1.0, lift_l, swing_l, dx, dy);
+		vec4 r = leg(uv, 1.0, lift_r, swing_r, dx, dy);
 		vec4 far = near_leg_right ? l : r;
 		vec4 near = near_leg_right ? r : l;
 		if (far.a > 0.5) {
@@ -124,18 +133,18 @@ void fragment() {
 		}
 	}
 	if (has_limbs) {
-		vec4 rest = textureLod(limbs, UV, 0.0);
+		vec4 rest = inside ? textureLod(limbs, uv, 0.0) : vec4(0.0);
 		if (arms_drawn_here && max(rest.r, rest.g) > 0.5) {
 			col.a = 0.0;   // the arm has moved away from where it was drawn
 		}
 		if (!far_arm_hidden) {
-			vec4 a = arm(arm_source(UV, arm_r_pivot, arm_r_angle), -1.0, false, dx, dy);
+			vec4 a = arm(arm_source(uv, arm_r_pivot, arm_r_angle), -1.0, false, dx, dy);
 			if (a.a > 0.5) {
 				col = a;
 			}
 		}
-		if (UV.y >= arm_l_top) {
-			vec4 a = arm(arm_source(UV - arm_l_shift, arm_l_pivot, arm_l_angle), 1.0, true, dx, dy);
+		if (uv.y >= arm_l_top) {
+			vec4 a = arm(arm_source(uv - arm_l_shift, arm_l_pivot, arm_l_angle), 1.0, true, dx, dy);
 			if (a.a > 0.5) {
 				col = a;
 			}

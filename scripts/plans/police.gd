@@ -16,14 +16,14 @@ const Props := preload("res://scripts/props.gd")
 
 static func build(p: Node3D) -> void:
 	p.setup("POLICE STATION", 16.0, 22.0)
-	var green := Kit.tex("painted_block", 1.2, Color(0.66, 0.74, 0.62), true, Color(0.72, 0.86, 0.76))    # institutional green
-	var grey := Kit.tex("painted_block", 1.2, Color(0.6, 0.62, 0.64), true, Color(0.6, 0.68, 0.95))        # the secure end: colder
+	var drab := Kit.tex("block_plain", 1.2, Color(0.76, 0.74, 0.7), true, Color(0.86, 0.84, 0.79))        # institutional beige
+	var grey := Kit.tex("block_plain", 1.2, Color(0.62, 0.64, 0.68), true, Color(0.68, 0.71, 0.78))        # the secure end: colder
 	var lino := Kit.tex("lino", 1.6, Color(0.6, 0.66, 0.6), true, Color(0.86, 0.84, 0.74))
 	var lino_dark := Kit.tex("lino", 1.6, Color(0.45, 0.5, 0.48), true, Color(0.6, 0.62, 0.6))
 	var concrete := Kit.tex("sidewalk", 2.4, Color(0.55, 0.55, 0.55), true, Color(0.72, 0.72, 0.76))
 	var carpet := Kit.tex("carpet", 2.0, Color(0.25, 0.3, 0.4), true, Color(0.5, 0.62, 0.9))
 	var brick := Kit.tex("brick", 1.5, Color(0.5, 0.26, 0.2), true, Color(0.9, 0.82, 0.8))
-	var tube := Color(0.88, 1.0, 0.92)       # strip-light white, a little green
+	var tube := Color(0.97, 0.98, 0.94)      # strip-light white
 	var steel_door := Color(0.36, 0.4, 0.44)
 
 	var st: int = p.street(-4.0, 20.0)
@@ -54,17 +54,17 @@ static func build(p: Node3D) -> void:
 		{"a": 7.2, "b": 9.4, "kind": "window", "sill": 1.1, "head": 2.3, "bars": true, "frame": Color(0.2, 0.22, 0.26)},
 		{"a": 12.2, "b": 15.0, "kind": "window", "sill": 1.1, "head": 2.3, "bars": true, "blinds": true, "frame": Color(0.2, 0.22, 0.26)},
 	], {"h": 4.0})
-	p.side(b1, 0.0, 17, 22, green)
-	p.side(b1, 16.0, 17, 22, green)
-	p.side(b1, 10.5, 17, 22, green, [{"a": 18.4, "b": 20.7, "kind": "window", "sill": 1.05, "head": 2.0, "frame": Props.STEEL}])
+	p.side(b1, 0.0, 17, 22, drab)
+	p.side(b1, 16.0, 17, 22, drab)
+	p.side(b1, 10.5, 17, 22, drab, [{"a": 18.4, "b": 20.7, "kind": "window", "sill": 1.05, "head": 2.0, "frame": Props.STEEL}])
 
-	p.cross(b2, 17.0, 0, 16, green, [
+	p.cross(b2, 17.0, 0, 16, drab, [
 		{"a": 8.2, "b": 9.1, "colour": steel_door, "name": "GATE"},
 		{"a": 10.9, "b": 11.8, "colour": steel_door},
 	])
-	p.side(b2, 0.0, 11, 17, green)
-	p.side(b2, 16.0, 11, 17, green)
-	p.side(b2, 12.0, 11, 17, green, [
+	p.side(b2, 0.0, 11, 17, drab)
+	p.side(b2, 16.0, 11, 17, drab)
+	p.side(b2, 12.0, 11, 17, drab, [
 		{"a": 11.8, "b": 14.6, "kind": "window", "sill": 0.95, "head": 2.1, "blinds": true},
 		{"a": 15.2, "b": 16.1, "hinge": "a", "swing": 1, "colour": Color(0.42, 0.3, 0.2)},
 	])

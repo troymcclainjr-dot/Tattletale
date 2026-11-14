@@ -22,6 +22,7 @@ const StreetSet := preload("res://scripts/street_set.gd")
 const FrontSet := preload("res://scripts/front_set.gd")
 const StudioSet := preload("res://scripts/studio_set.gd")
 const Door := preload("res://scripts/door.gd")
+const Portal := preload("res://scripts/portal.gd")
 
 const RADIUS := 0.26                 # paper_actor.gd's: how close a middle may come to a wall in front of him or behind
 const REACH := 0.4                   # and to a wall beside him: his hands and feet reach that far
@@ -45,6 +46,7 @@ var walls: Array = []
 var doors: Array = []
 var obstacles: Array = []
 var portals: Array = []              # none here; a Place may have some (stairs)
+var mic: Node3D                      # the booth microphone: E steps up to it (`to` is where he stands) and main.gd puts on the show
 var active := -1
 var title := "THE BACK ROOM"
 var arrive := Vector3(1.97, 0, 7.35)     # on the pavement, in front of the street door
@@ -81,6 +83,14 @@ func build() -> void:
 	# From inside the booth the wall with the window in it is worth seeing: the
 	# mic stands at the glass.
 	walls[2]["ghost"] = _ghost_of(control.wall_to_booth)
+	mic = Portal.new()
+	mic.name = "MicSpot"
+	mic.label = "STEP UP TO THE MIC"
+	mic.position = Vector3(-0.42, 0, -3.56)        # the pop filter
+	mic.to = Vector3(-0.6, 0, -3.92)               # behind it and a little to one side, so the filter is at his cheek and his mouth shows
+	mic.use_reach = 1.15
+	mic.label_height = 1.5
+	control.booth.add_child(mic)
 	obstacles = []
 	obstacles.append_array(street.OBSTACLES)
 	obstacles.append_array(front.OBSTACLES)
@@ -174,7 +184,9 @@ func show_room(n: int) -> void:
 
 
 func usables() -> Array:
-	return doors.duplicate()
+	var out := doors.duplicate()
+	out.append(mic)
+	return out
 
 
 ## Which room a spot is in, by how far back it is.

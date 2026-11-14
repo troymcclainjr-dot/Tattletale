@@ -1,8 +1,9 @@
 extends Node3D
 ## Pivot prototype: the lead, and the places he can travel to. The studio
 ## (building.gd) has a second character who wanders the control room and can be
-## talked to; the police station, the courthouse and the crib are built from
-## floor plans (place.gd, plans/*.gd). You arrive on the street, in front of
+## talked to; the police station, the courthouse, the crib, the corner store,
+## the liquor store, Large Fry's place and the hospital are built from floor
+## plans (place.gd, plans/*.gd). You arrive on the street, in front of
 ## the studio door. Only the place he is at is on show.
 ##
 ##   WASD / arrows  walk          E       use whatever is nearest: talk, open a door
@@ -13,13 +14,15 @@ extends Node3D
 ##   Space (hold)   move his mouth          F       close-up on / off
 ##   F8             save a PNG to user://shots
 ##   M              the travel list: pick a place and he arrives on the street outside it
+##   E at the booth microphone: he performs, seen through the control-room glass
+##                  with black bars top and bottom; Esc steps away
 ##
 ## In a conversation: click a line (it turns yellow under the mouse) or press
 ## its number; E, Space, Enter or a click moves on.
 ##
 ## Screenshot mode (used by tools/shot.py):
 ##   godot --path popup -- --shot=C:/out.png --cam=angle --char=e [--at=x,z] [--no-ceiling]
-##         [--place=police|court|crib] [--room=NAME] [--check-walk]
+##         [--place=police|court|crib|store|liquor|fry|hospital] [--room=NAME] [--check-walk]
 ##         [--face=angry] [--mouth=mouth_ah] [--close] [--talk=seconds]
 ##         [--walk=x,y,seconds] [--rest=seconds] [--fry-at=x,z] [--wander]
 ##         [--do=step,step,...] [--check-faces] [--eye=x,y,z,x,y,z]
@@ -35,6 +38,10 @@ const PLANS := {
 	"police": preload("res://scripts/plans/police.gd"),
 	"court": preload("res://scripts/plans/court.gd"),
 	"crib": preload("res://scripts/plans/crib.gd"),
+	"store": preload("res://scripts/plans/store.gd"),
+	"liquor": preload("res://scripts/plans/liquor.gd"),
+	"fry": preload("res://scripts/plans/fry.gd"),
+	"hospital": preload("res://scripts/plans/hospital.gd"),
 }
 const FlickerCheck := preload("res://scripts/flicker_check.gd")
 const PaperActor := preload("res://scripts/paper_actor.gd")
@@ -48,6 +55,11 @@ const FONT := preload("res://assets/fonts/Bungee-Regular.ttf")   # Pen Lucy's di
 ## the ceiling, or they hide the room.
 const FOLLOW_OFFSET := Vector3(2.3, 0.0, 4.6)
 
+const LEAD_SPEED := 1.25          # the lead walks this much faster than the plain walk (paper_actor.gd's WALK_SPEED)
+const BAR := 0.12                 # each black bar of a performance, as a fraction of the screen's height
+const PERFORM_ROOM := 2           # a performance is watched from the control room
+const MOODS := ["focused", "preachy", "smug", "shout", "happy"]     # his face changes every eight beats
+
 ## The travel list (M). Each place says where he arrives (its `arrive`). A row
 ## with "built": false is listed but cannot be picked.
 const PLACES := [
@@ -55,6 +67,10 @@ const PLACES := [
 	{"id": "police", "name": "POLICE STATION", "note": "PEN LUCY PRECINCT"},
 	{"id": "court", "name": "COURTHOUSE", "note": "DISTRICT COURT"},
 	{"id": "crib", "name": "TATTLETALE'S CRIB", "note": "HOME"},
+	{"id": "store", "name": "CORNER STORE", "note": "MISS BEA'S CORNER GROCERY"},
+	{"id": "liquor", "name": "LIQUOR STORE", "note": "PARKWAY SPIRITS"},
+	{"id": "fry", "name": "LARGE FRY'S PLACE", "note": "ARGONNE COURT, APT 1"},
+	{"id": "hospital", "name": "HOSPITAL", "note": "EMERGENCY DEPARTMENT"},
 ]
 
 ## name: [camera position, look-at point, vertical field of view]
@@ -99,6 +115,12 @@ var _shot_talk := 0.0
 var _shot_rest := 0.0
 var _shot_steps := PackedStringArray()
 var _shot_eye := PackedFloat64Array()   # x, y, z of the camera and x, y, z of what it looks at, for a picture from anywhere
+var _performing := false       # he is at the booth microphone (E there); Esc steps away
+var _perform_time := 0.0       # seconds since the show began
+var _mood_was := ""            # the face he had before it
+var _bars: Array = []          # the two black bars, top and bottom
+var _bar := 0.0                # 0 off the screen .. 1 all the way in
+var _bar_note: Label
 
 
 func _ready() -> void:
@@ -121,6 +143,7 @@ func _ready() -> void:
 
 	_actor = _new_actor("Player", Vector3.ZERO)
 	_actor.display_name = "TATTLETALE"       # a working name
+	_actor.speed = LEAD_SPEED
 	_fry = _new_actor("Fry", Vector3(-1.4, 0, 0.5))
 	_fry.set_rig(_rig_dir("fry"))
 	_fry.display_name = "LARGE FRY"          # a working name
@@ -181,6 +204,30 @@ func _ready() -> void:
 	_hint.offset_bottom = -30.0
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	layer.add_child(_hint)
+
+	# The black bars of a performance, under everything else on the screen.
+	var cinema := CanvasLayer.new()
+	cinema.layer = 5
+	add_child(cinema)
+	for preset: int in [Control.PRESET_TOP_WIDE, Control.PRESET_BOTTOM_WIDE]:
+		var bar := ColorRect.new()
+		bar.color = Color.BLACK
+		bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		bar.set_anchors_preset(preset)
+		cinema.add_child(bar)
+		_bars.append(bar)
+	_bar_note = Label.new()
+	_bar_note.text = "ESC   STEP AWAY"
+	_bar_note.add_theme_font_override("font", FONT)
+	_bar_note.add_theme_font_size_override("font_size", 16)
+	_bar_note.add_theme_color_override("font_color", Color(0.96, 0.94, 0.89))
+	_bar_note.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	_bar_note.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_bar_note.offset_top = -46.0
+	_bar_note.offset_bottom = -20.0
+	_bar_note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_bar_note.modulate.a = 0.0
+	cinema.add_child(_bar_note)
 
 	_talk = TalkBox.new()
 	add_child(_talk)
@@ -286,6 +333,7 @@ func _site(id: String) -> Node3D:
 		site = Building.new()
 		add_child(site)
 		site.build()
+		site.mic.used.connect(_start_perform)
 	else:
 		site = Place.new()
 		add_child(site)
@@ -568,7 +616,7 @@ func _show_doors() -> void:
 func _find_nearest() -> void:
 	_nearest = null
 	var best := INF
-	if not _talk.is_open():
+	if not _talk.is_open() and not _performing:
 		for thing: Node3D in _usables:
 			if not thing.is_visible_in_tree():
 				continue
@@ -610,9 +658,89 @@ func _end_talk() -> void:
 	_fry_brain.frozen = _scripted
 
 
+# ------------------------------------------------------------ at the microphone
+
+## He steps up to the booth microphone (E on it). The picture blacks out for
+## a moment and comes back on him seen from the control room, through the
+## glass, with black bars top and bottom; he performs until Esc.
+func _start_perform(spot: Vector3) -> void:
+	if _performing or _talk.is_open():
+		return
+	_performing = true
+	_perform_time = 0.0
+	var begin := func() -> void:
+		_actor.position = spot
+		_actor.performing = true
+		_actor.show_face()
+		if _actor.face:
+			_mood_was = _actor.face.expression
+			_actor.face.set_expression(MOODS[0])
+			_actor.face.talking = true
+		_building.show_room(PERFORM_ROOM)
+		_perform_cam(0.0)
+	if _scripted:
+		begin.call()
+		return
+	var tween := create_tween()
+	tween.tween_property(_fade, "color:a", 1.0, 0.18)
+	tween.tween_callback(begin)
+	tween.tween_interval(0.1)
+	tween.tween_property(_fade, "color:a", 0.0, 0.4)
+
+
+## Esc: he steps back from the microphone and the camera goes back to following him.
+func _stop_perform() -> void:
+	if not _performing or not _actor.performing:
+		return
+	var finish := func() -> void:
+		_performing = false
+		_actor.performing = false
+		if _actor.face:
+			_actor.face.talking = false
+			_actor.face.set_expression(_mood_was if _mood_was != "" else "neutral")
+		_room = _building.room_at_pos(_actor.position, _room)
+		_building.show_room(_room)
+		_set_camera(_cam_name)
+	if _scripted:
+		finish.call()
+		return
+	var tween := create_tween()
+	tween.tween_property(_fade, "color:a", 1.0, 0.18)
+	tween.tween_callback(finish)
+	tween.tween_interval(0.1)
+	tween.tween_property(_fade, "color:a", 0.0, 0.3)
+
+
+## The camera for a performance: in the control room, over the desk and close
+## to the window, a little above his head, drifting slowly from side to side
+## and always on him.
+func _perform_cam(delta: float) -> void:
+	_perform_time += delta
+	var spot: Vector3 = _building.mic.to
+	_cam_at = Vector3(spot.x + 0.1 + 0.5 * sin(_perform_time * 0.5), 1.62 + 0.03 * sin(_perform_time * 0.37), _building.control.Z0 + 0.95)
+	_cam_look = spot + Vector3(0.1, 0.95, 0.0)
+	_camera.fov = 42.0
+	_camera.look_at_from_position(_cam_at, _cam_look)
+	_face_cards()
+	if _actor.face:
+		var mood: String = MOODS[int(_perform_time / (8.0 * _actor.BEAT)) % MOODS.size()]
+		if _actor.face.expression != mood:
+			_actor.face.set_expression(mood)
+
+
+## Slide the black bars in or out, and fade the corner text with them.
+func _show_bars(delta: float) -> void:
+	_bar = move_toward(_bar, 1.0 if _performing and _actor.performing else 0.0, delta * 1.6)
+	var h := get_viewport().get_visible_rect().size.y * BAR * smoothstep(0.0, 1.0, _bar)
+	(_bars[0] as ColorRect).offset_bottom = h
+	(_bars[1] as ColorRect).offset_top = -h
+	_bar_note.modulate.a = 0.55 * _bar
+	_hud.modulate.a = 1.0 - _bar
+
+
 func _process(delta: float) -> void:
 	var dir := Vector2.ZERO
-	if not _scripted and not _talk.is_open() and not _travel.is_open():
+	if not _scripted and not _talk.is_open() and not _travel.is_open() and not _performing:
 		dir = Vector2(
 			Input.get_axis("ui_left", "ui_right") + float(Input.is_physical_key_pressed(KEY_D)) - float(Input.is_physical_key_pressed(KEY_A)),
 			Input.get_axis("ui_up", "ui_down") + float(Input.is_physical_key_pressed(KEY_S)) - float(Input.is_physical_key_pressed(KEY_W)))
@@ -621,19 +749,25 @@ func _process(delta: float) -> void:
 	if _place == "studio":
 		_fry_brain.tick(delta)
 	var now: int = _building.room_at_pos(_actor.position, _room)
-	if now != _room:
+	if _performing:
+		if _actor.performing:      # not until the picture has blacked out
+			_perform_cam(delta)
+	elif now != _room:
 		if _building.cut_of(now) != _building.cut_of(_room):
 			_change_room(now)      # a different cut of the building: fade
 		else:
 			_room = now            # the room next door: the camera just eases over
-	if _close:
+	if _performing:
+		pass
+	elif _close:
 		_frame_close()
 	elif _cam_name == "follow":
 		_follow(delta)
 	_find_nearest()
 	_show_doors()
+	_show_bars(delta)
 	if _actor.face:
-		if not _talk.is_open() and not _scripted:
+		if not _talk.is_open() and not _scripted and not _performing:
 			_actor.face.talking = Input.is_physical_key_pressed(KEY_SPACE)
 			if _actor.face.talking:
 				_actor.show_face()
@@ -644,6 +778,11 @@ func _process(delta: float) -> void:
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if not event.pressed or event.echo or _talk.is_open() or _travel.is_open():
+		return
+	if _performing:                 # nothing but Esc while he is at the microphone
+		if event.physical_keycode == KEY_ESCAPE:
+			_stop_perform()
+		get_viewport().set_input_as_handled()
 		return
 	match event.physical_keycode:
 		KEY_M:
@@ -744,7 +883,7 @@ func _take_shot() -> void:
 				press.pressed = true
 				Input.parse_input_event(press)
 				await _wait(0.15)
-				print("[shot] key %s: travel list %s, at %.2f, %.2f" % [bits[1], "open" if _travel.is_open() else "shut", _actor.position.x, _actor.position.z])
+				print("[shot] key %s: travel list %s, talk %s, performing %s, at %.2f, %.2f" % [bits[1], "open" if _travel.is_open() else "shut", "open" if _talk.is_open() else "shut", _performing, _actor.position.x, _actor.position.z])
 			"travel":
 				_travel.open(_place)
 			"travelhover":
@@ -768,12 +907,15 @@ func _take_shot() -> void:
 			shapes[_actor.face.shown_mouth()] = true
 		print("[shot] talked through %s" % ", ".join(shapes.keys()))
 	set_process(false)
-	_change_room(_building.room_at_pos(_actor.position, _room), true)
 	_fade.color.a = 0.0
-	if _close:
-		_frame_close()
-	elif _cam_name == "follow":
-		_follow(0.0, true)
+	if _performing:
+		_perform_cam(0.0)
+	else:
+		_change_room(_building.room_at_pos(_actor.position, _room), true)
+		if _close:
+			_frame_close()
+		elif _cam_name == "follow":
+			_follow(0.0, true)
 	_show_doors()
 	if _shot_eye.size() == 6:
 		_camera.fov = 50.0

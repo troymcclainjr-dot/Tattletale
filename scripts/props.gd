@@ -118,7 +118,7 @@ static func files(p: Node3D, b: int, u: float, v: float, yaw := 0.0, n := 2, loo
 	return g
 
 
-## Open shelving. stuff: "boxes", "books" or "none".
+## Open shelving. stuff: "boxes", "books", "none", or shop stock: "goods", "bottles", "cans".
 static func shelves(p: Node3D, b: int, u: float, v: float, yaw := 0.0, w := 2.0, stuff := "boxes", look := IRON, h := 1.9, d := 0.45) -> Node3D:
 	var g: Node3D = p.prop(b, u, v, yaw, w, d)
 	for x in [-w * 0.5 + 0.02, w * 0.5 - 0.02]:
@@ -128,6 +128,9 @@ static func shelves(p: Node3D, b: int, u: float, v: float, yaw := 0.0, w := 2.0,
 		var y := 0.1 + i * (h - 0.14) / float(rows - 1)
 		Kit.box(g, Vector3(w - 0.08, 0.03, d - 0.02), Vector3(0, y, 0), look.lightened(0.1))
 		if stuff == "none" or i == rows - 1:
+			continue
+		if stuff in ["goods", "bottles", "cans"]:      # shop stock (see stock, below)
+			stock(g, stuff, -w * 0.5 + 0.07, w * 0.5 - 0.07, y + 0.015, d * 0.5 - 0.05, d - 0.14, u * 7.3 + v * 3.1 + i * 11.7, (h - 0.14) / float(rows - 1))
 			continue
 		var x := -w * 0.5 + 0.1
 		var n := 0
@@ -405,21 +408,29 @@ static func tripod(p: Node3D, b: int, u: float, v: float, yaw := 0.0) -> Node3D:
 	return g
 
 
-## kind: "cruiser" or "van". The length runs front to back; the front is the front.
+## kind: "cruiser", "van" (the police one) or "ambulance". The length runs front to back; the front is the front.
 static func car(p: Node3D, b: int, u: float, v: float, yaw := 0.0, kind := "cruiser", solid := true) -> Node3D:
-	var van := kind == "van"
+	var amb := kind == "ambulance"
+	var van := kind == "van" or amb
 	var w := 1.95 if van else 1.82
 	var l := 4.3 if van else 4.5
 	var g: Node3D = p.prop(b, u, v, yaw, w, l, solid)
-	var paint := Color(0.2, 0.26, 0.42) if van else Color(0.9, 0.9, 0.86)
+	var paint := Color(0.2, 0.26, 0.42) if kind == "van" else Color(0.9, 0.9, 0.86)
 	var glass := Color(0.14, 0.19, 0.25)
 	if van:
 		Kit.block(g, Vector3(w, 1.55, l), Vector3(0, 0.32, 0), paint)
 		Kit.box(g, Vector3(w - 0.2, 0.55, 0.02), Vector3(0, 1.45, l * 0.5 + 0.005), glass)
-		Kit.box(g, Vector3(w + 0.02, 0.2, l + 0.02), Vector3(0, 0.75, 0), Color(0.9, 0.9, 0.86))
+		Kit.box(g, Vector3(w + 0.02, 0.2, l + 0.02), Vector3(0, 0.75, 0), Color(0.9, 0.45, 0.1) if amb else Color(0.9, 0.9, 0.86))
 		for side in [-1.0, 1.0]:
-			words(g, "POLICE", Vector3(side * (w * 0.5 + 0.012), 1.3, -0.3), 0.3, Color(0.92, 0.9, 0.8), 90.0 * side)
+			words(g, "AMBULANCE" if amb else "POLICE", Vector3(side * (w * 0.5 + 0.012), 1.3, -0.3), 0.2 if amb else 0.3, Color(0.75, 0.12, 0.1) if amb else Color(0.92, 0.9, 0.8), 90.0 * side)
 			Kit.box(g, Vector3(0.02, 0.4, 0.7), Vector3(side * (w * 0.5 + 0.005), 1.42, 1.5), glass)
+		if amb:       # the light bars, and the back doors with their windows
+			for z: float in [l * 0.5 - 0.5, -l * 0.5 + 0.3]:
+				Kit.box(g, Vector3(w - 0.3, 0.12, 0.24), Vector3(0, 1.93, z), Kit.flat(Color(0.9, 0.15, 0.12), 0.7))
+			for x: float in [-0.42, 0.42]:
+				Kit.box(g, Vector3(0.6, 0.45, 0.02), Vector3(x, 1.42, -l * 0.5 - 0.004), glass)
+			Kit.box(g, Vector3(0.02, 1.3, 0.02), Vector3(0, 1.1, -l * 0.5 - 0.004), IRON)
+			words(g, "AMBULANCE", Vector3(0, 1.0, -l * 0.5 - 0.02), 0.16, Color(0.75, 0.12, 0.1), 180.0)
 	else:
 		Kit.block(g, Vector3(w, 0.58, l), Vector3(0, 0.3, 0), paint)
 		Kit.block(g, Vector3(w - 0.22, 0.46, 2.1), Vector3(0, 0.88, -0.15), glass)
@@ -608,7 +619,7 @@ static func bed(p: Node3D, b: int, u: float, v: float, yaw := 0.0, w := 1.4, l :
 	Kit.box(g, Vector3(w - 0.06, 0.2, l - 0.06), Vector3(0, 0.4, 0), Color(0.9, 0.89, 0.85))
 	Kit.box(g, Vector3(w - 0.02, 0.22, l * 0.62), Vector3(0, 0.41, l * 0.5 - l * 0.31 - 0.01), cover)
 	Kit.box(g, Vector3(w * 0.7, 0.1, 0.38), Vector3(0, 0.55, -l * 0.5 + 0.3), Color(0.93, 0.92, 0.88))
-	Kit.box(g, Vector3(w, 0.95, 0.06), Vector3(0, 0.475, -l * 0.5 + 0.03), WOOD_DARK.lightened(0.08))
+	Kit.box(g, Vector3(w + 0.02, 0.95, 0.06), Vector3(0, 0.475, -l * 0.5 + 0.02), WOOD_DARK.lightened(0.08))
 	return g
 
 
@@ -790,3 +801,486 @@ static func globe_lamp(parent: Node3D, pos: Vector3, glow := Color(0.25, 0.45, 1
 	Kit.cyl(parent, 0.02, 0.2, pos + Vector3(0, 0.1, 0.32), IRON, Vector3.ZERO, 5)
 	Kit.ball(parent, 0.17, pos + Vector3(0, 0.36, 0.32), Kit.flat(glow, 1.6), 10)
 	Kit.omni(parent, pos + Vector3(0, 0.36, 0.6), glow, 0.7, 4.0)
+
+
+
+# ---------------------------------------------------------------------- shops
+
+const GOODS := [Color(0.82, 0.2, 0.18), Color(0.95, 0.75, 0.15), Color(0.2, 0.45, 0.75), Color(0.25, 0.6, 0.3), Color(0.9, 0.5, 0.15), Color(0.88, 0.86, 0.8), Color(0.55, 0.25, 0.55)]
+const BOTTLES := [Color(0.45, 0.25, 0.1), Color(0.16, 0.35, 0.2), Color(0.75, 0.6, 0.25), Color(0.8, 0.82, 0.8), Color(0.3, 0.12, 0.1), Color(0.15, 0.2, 0.4)]
+const CANS := [Color(0.8, 0.15, 0.15), Color(0.15, 0.3, 0.7), Color(0.2, 0.55, 0.3), Color(0.9, 0.6, 0.1), Color(0.85, 0.85, 0.85), Color(0.5, 0.2, 0.5)]
+const PLEXI := Color(0.72, 0.88, 0.84, 0.2)
+
+
+## Stock one shelf: a row of packets ("goods"), "bottles" or "cans" standing at
+## height y from x0 to x1, their fronts at z and `deep` from front to back.
+## `key` seeds the steady random numbers; `room` is the height to the shelf
+## above; `face` -1 stocks the far side of a two-sided unit.
+static func stock(g: Node3D, kind: String, x0: float, x1: float, y: float, z: float, deep: float, key: float, room := 0.3, face := 1.0) -> void:
+	var x := x0
+	var n := 0
+	while x < x1 - 0.05:
+		var k := key + n * 1.93
+		var run := key + floorf(n / 3.0) * 7.31         # bottles and cans stand three of a kind together
+		n += 1
+		var bw := 0.12 + 0.2 * rnd(k)
+		var bh := 0.1 + 0.2 * rnd(k + 5.0)
+		var tint: Color = GOODS[int(rnd(k + 2.0) * GOODS.size()) % GOODS.size()]
+		if kind == "bottles":
+			bw = 0.085
+			bh = 0.24 + 0.09 * rnd(run + 5.0)
+			tint = BOTTLES[int(rnd(run + 2.0) * BOTTLES.size()) % BOTTLES.size()]
+		elif kind == "cans":
+			bw = 0.075
+			bh = 0.13 + 0.08 * rnd(run + 5.0)
+			tint = CANS[int(rnd(run + 2.0) * CANS.size()) % CANS.size()]
+		bh = minf(bh, room - (0.13 if kind == "bottles" else 0.05))
+		if x + bw > x1:
+			break
+		var mid := Vector3(x + bw * 0.5, y, z - face * deep * 0.5)
+		Kit.block(g, Vector3(bw, bh, deep), mid, tint)
+		if kind == "bottles":
+			Kit.block(g, Vector3(0.03, 0.07, 0.03), Vector3(mid.x, y + bh, z - face * 0.045), tint.darkened(0.3))
+		if kind != "goods" or rnd(k + 7.0) > 0.4:
+			Kit.box(g, Vector3(bw * 0.8, bh * 0.35, 0.006), Vector3(mid.x, y + bh * 0.5, z + face * 0.002), PAPER if rnd(run + 3.0) > 0.4 else Color(0.95, 0.85, 0.3))
+		x += bw + (0.012 if kind != "goods" else 0.03 + 0.05 * rnd(k + 9.0))
+
+
+## Two-sided shop shelving, stocked on both faces. `w` is its length.
+static func gondola(p: Node3D, b: int, u: float, v: float, yaw := 0.0, w := 2.6, kind := "goods", h := 1.3, d := 0.7) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, w, d)
+	var metal := Color(0.82, 0.8, 0.72)
+	Kit.block(g, Vector3(w, 0.12, d), Vector3.ZERO, metal)
+	Kit.block(g, Vector3(w - 0.08, h, 0.04), Vector3.ZERO, metal.darkened(0.15))
+	for x: float in [-w * 0.5 + 0.015, w * 0.5 - 0.015]:
+		Kit.box(g, Vector3(0.03, h - 0.12, d - 0.02), Vector3(x, 0.12 + (h - 0.12) * 0.5, 0), metal)
+	var rows := 3
+	var gap := (h - 0.16) / float(rows)
+	for i in rows:
+		var y := 0.12 + i * gap
+		if i > 0:
+			Kit.box(g, Vector3(w - 0.06, 0.025, d - 0.04), Vector3(0, y - 0.0125, 0), metal.lightened(0.08))
+		for face: float in [1.0, -1.0]:
+			stock(g, kind, -w * 0.5 + 0.06, w * 0.5 - 0.06, y, face * (d * 0.5 - 0.04), d * 0.5 - 0.08, u * 7.3 + v * 3.1 + i * 11.7 + face * 2.9, gap, face)
+	return g
+
+
+## n glass-door coolers in a row, lit inside and stocked ("cans" or "bottles").
+static func fridge_case(p: Node3D, b: int, u: float, v: float, yaw := 0.0, n := 3, kind := "cans", label := "COLD DRINKS", ink := Color(0.15, 0.3, 0.7)) -> Node3D:
+	var w := 0.75 * n
+	var g: Node3D = p.prop(b, u, v, yaw, w, 0.7)
+	var shell := Color(0.84, 0.84, 0.82)
+	Kit.block(g, Vector3(w, 0.25, 0.7), Vector3.ZERO, DARK)
+	Kit.box(g, Vector3(w - 0.08, 1.48, 0.04), Vector3(0, 1.0, -0.33), Kit.flat(Color(0.82, 0.93, 1.0), 0.7))
+	Kit.box(g, Vector3(w, 0.3, 0.7), Vector3(0, 1.9, 0), shell)
+	for x: float in [-w * 0.5 + 0.02, w * 0.5 - 0.02]:
+		Kit.box(g, Vector3(0.04, 1.5, 0.7), Vector3(x, 1.0, 0), shell)
+	for i in n:
+		var x := -w * 0.5 + 0.375 + i * 0.75
+		for k in 4:
+			var y := 0.3 + k * 0.36
+			Kit.box(g, Vector3(0.68, 0.02, 0.56), Vector3(x, y - 0.01, -0.03), STEEL)
+			stock(g, kind, x - 0.32, x + 0.32, y, 0.24, 0.3, u * 5.3 + v * 2.1 + i * 13.1 + k * 3.7, 0.35)
+		Kit.box(g, Vector3(0.7, 1.46, 0.02), Vector3(x, 1.0, 0.335), Color(0.7, 0.88, 0.95, 0.16))
+		Kit.box(g, Vector3(0.025, 0.4, 0.03), Vector3(x + 0.3, 1.05, 0.365), STEEL)
+		if i > 0:
+			Kit.box(g, Vector3(0.04, 1.5, 0.05), Vector3(x - 0.375, 1.0, 0.33), shell)
+	words(g, label, Vector3(0, 1.9, 0.356), 0.13, ink)
+	return g
+
+
+## A plexiglass screen standing on a counter: `w` long, from y0 up to y1, at z
+## in the counter's group, with a slot in the middle to pass things through.
+static func screen(g: Node3D, w: float, z: float, y0 := 1.05, y1 := 2.2, slot := 0.5) -> void:
+	Kit.box(g, Vector3(w, y1 - y0 - 0.26, 0.03), Vector3(0, (y0 + 0.26 + y1) * 0.5, z), PLEXI)
+	var side := (w - slot) * 0.5
+	for x: float in [-(slot + side) * 0.5, (slot + side) * 0.5]:
+		Kit.box(g, Vector3(side, 0.26, 0.03), Vector3(x, y0 + 0.13, z), PLEXI)
+	var n := maxi(int(w / 1.2), 1)
+	for i in n + 1:
+		var x := -w * 0.5 + w * float(i) / float(n)
+		if absf(x) > slot * 0.5 + 0.03:
+			Kit.box(g, Vector3(0.04, y1 - y0 - 0.006, 0.05), Vector3(x, (y0 + y1) * 0.5 - 0.003, z), STEEL)
+	Kit.box(g, Vector3(w + 0.04, 0.05, 0.06), Vector3(0, y1 + 0.015, z), STEEL)
+
+
+## A cash register, to stand on a counter: give the group and where.
+static func till(parent: Node3D, pos: Vector3, yaw := 0.0) -> Node3D:
+	var g := Kit.group(parent, pos, Vector3(0, yaw, 0))
+	Kit.block(g, Vector3(0.38, 0.12, 0.36), Vector3.ZERO, Color(0.3, 0.3, 0.32))
+	Kit.box(g, Vector3(0.36, 0.14, 0.2), Vector3(0, 0.2, -0.06), Color(0.36, 0.36, 0.38), Vector3(-20, 0, 0))
+	Kit.box(g, Vector3(0.2, 0.06, 0.02), Vector3(0, 0.32, -0.15), Kit.flat(Color(0.3, 0.95, 0.5), 0.8))
+	return g
+
+
+## The lottery machine, to stand on a counter.
+static func lotto(parent: Node3D, pos: Vector3, yaw := 0.0) -> Node3D:
+	var g := Kit.group(parent, pos, Vector3(0, yaw, 0))
+	Kit.block(g, Vector3(0.3, 0.34, 0.26), Vector3.ZERO, Color(0.2, 0.3, 0.6))
+	Kit.box(g, Vector3(0.22, 0.16, 0.012), Vector3(0, 0.22, 0.134), Kit.flat(Color(0.5, 0.85, 1.0), 0.8))
+	words(g, "LOTTERY", Vector3(0, 0.4, 0), 0.06, Color(0.98, 0.85, 0.3))
+	return g
+
+
+## A chest freezer with sliding glass lids.
+static func chest_freezer(p: Node3D, b: int, u: float, v: float, yaw := 0.0, w := 1.3, text := "ICE CREAM", band := Color(0.85, 0.2, 0.3)) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, w, 0.7)
+	Kit.block(g, Vector3(w, 0.8, 0.7), Vector3.ZERO, Color(0.92, 0.92, 0.9))
+	Kit.box(g, Vector3(w - 0.08, 0.04, 0.62), Vector3(0, 0.83, 0), Color(0.62, 0.8, 0.88, 0.45))
+	Kit.box(g, Vector3(w, 0.22, 0.012), Vector3(0, 0.55, 0.357), band)
+	words(g, text, Vector3(0, 0.55, 0.366), 0.11, PAPER)
+	return g
+
+
+## The ice cabinet that stands outside a shop.
+static func ice_box(p: Node3D, b: int, u: float, v: float, yaw := 0.0) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, 1.2, 0.7)
+	Kit.block(g, Vector3(1.2, 1.6, 0.7), Vector3.ZERO, Color(0.9, 0.92, 0.94))
+	for x: float in [-0.29, 0.29]:
+		Kit.box(g, Vector3(0.54, 0.95, 0.02), Vector3(x, 0.6, 0.355), Color(0.82, 0.85, 0.88))
+		Kit.box(g, Vector3(0.03, 0.2, 0.03), Vector3(x * 0.3, 0.7, 0.375), STEEL)
+	words(g, "ICE", Vector3(0, 1.32, 0.356), 0.34, Color(0.15, 0.35, 0.75))
+	return g
+
+
+static func atm(p: Node3D, b: int, u: float, v: float, yaw := 0.0) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, 0.5, 0.5)
+	Kit.block(g, Vector3(0.5, 1.5, 0.5), Vector3.ZERO, Color(0.2, 0.26, 0.36))
+	Kit.box(g, Vector3(0.3, 0.22, 0.012), Vector3(0, 1.15, 0.254), Kit.flat(Color(0.4, 0.8, 0.95), 0.8))
+	Kit.box(g, Vector3(0.3, 0.14, 0.03), Vector3(0, 0.92, 0.26), STEEL, Vector3(-35, 0, 0))
+	Kit.box(g, Vector3(0.24, 0.03, 0.012), Vector3(0, 0.76, 0.254), DARK)
+	words(g, "ATM", Vector3(0, 1.38, 0.256), 0.12, Color(0.98, 0.9, 0.4))
+	return g
+
+
+## A wire rack of newspapers.
+static func news_rack(p: Node3D, b: int, u: float, v: float, yaw := 0.0) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, 0.55, 0.4)
+	for x: float in [-0.26, 0.26]:
+		Kit.block(g, Vector3(0.02, 0.9, 0.36), Vector3(x, 0, 0), IRON)
+	for k in 3:
+		Kit.box(g, Vector3(0.5, 0.02, 0.3), Vector3(0, 0.22 + k * 0.28, 0.0), IRON, Vector3(-20, 0, 0))
+		Kit.box(g, Vector3(0.44, 0.05, 0.28), Vector3(0, 0.26 + k * 0.28, 0.0), PAPER.darkened(0.06 * k), Vector3(-20, 0, 0))
+		Kit.box(g, Vector3(0.36, 0.052, 0.07), Vector3(0, 0.29 + k * 0.28, -0.08), DARK, Vector3(-20, 0, 0))
+	return g
+
+
+## Words that glow: a neon or lit sign in a window or on a wall.
+static func neon(parent: Node3D, text: String, pos: Vector3, height: float, colour: Color, yaw := 0.0) -> Label3D:
+	var l := words(parent, text, pos, height, colour, yaw)
+	l.outline_size = 14
+	l.outline_modulate = Color(colour.r, colour.g, colour.b, 0.28)
+	l.render_priority = 1
+	return l
+
+
+## A lit sign box with words on its front.
+static func sign_box(parent: Node3D, text: String, pos: Vector3, size: Vector2, look: Color, ink: Color, yaw := 0.0, glow := 0.7, letters := 0.0) -> Node3D:
+	var g := Kit.group(parent, pos, Vector3(0, yaw, 0))
+	Kit.box(g, Vector3(size.x, size.y, 0.12), Vector3.ZERO, Kit.flat(look, glow))
+	Kit.box(g, Vector3(size.x + 0.06, size.y + 0.06, 0.1), Vector3.ZERO, IRON)
+	words(g, text, Vector3(0, 0, 0.064), letters if letters > 0.0 else size.y * 0.6, ink)
+	return g
+
+
+## A stack of cases (beer, soda), each row one case shorter than the row under it.
+static func case_stack(p: Node3D, b: int, u: float, v: float, yaw := 0.0, cols := 3, rows := 3, look := Color(0.75, 0.16, 0.14)) -> Node3D:
+	var w := 0.42 * cols
+	var g: Node3D = p.prop(b, u, v, yaw, w, 0.66)
+	for r in rows:
+		for c in maxi(cols - r, 1):
+			var x := -w * 0.5 + 0.21 + c * 0.42 + r * 0.21
+			for z in 2:
+				Kit.block(g, Vector3(0.4, 0.25, 0.31), Vector3(x, r * 0.255, -0.165 + z * 0.33), look.darkened(0.1 * ((c + r + z) % 2)))
+			Kit.box(g, Vector3(0.24, 0.1, 0.006), Vector3(x, r * 0.255 + 0.125, 0.324), PAPER)
+	return g
+
+
+# ------------------------------------------------------------------- hospital
+
+## A hospital trolley bed. The head is at the back of its floor space.
+static func gurney(p: Node3D, b: int, u: float, v: float, yaw := 0.0, sheet := Color(0.82, 0.9, 0.92), rails := true, w := 0.85, l := 2.0) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, w, l)
+	for x: float in [-w * 0.5 + 0.07, w * 0.5 - 0.07]:
+		for z: float in [-l * 0.5 + 0.18, l * 0.5 - 0.18]:
+			Kit.cyl(g, 0.02, 0.46, Vector3(x, 0.31, z), STEEL, Vector3.ZERO, 5)
+			Kit.cyl(g, 0.06, 0.04, Vector3(x, 0.06, z), DARK, Vector3(0, 0, 90), 8)
+	Kit.box(g, Vector3(w, 0.05, l), Vector3(0, 0.565, 0), STEEL)
+	Kit.box(g, Vector3(w - 0.06, 0.1, l - 0.06), Vector3(0, 0.64, 0), Color(0.3, 0.42, 0.5))
+	Kit.box(g, Vector3(w - 0.04, 0.03, l * 0.6), Vector3(0, 0.705, l * 0.2 - 0.04), sheet)
+	Kit.box(g, Vector3(w * 0.6, 0.08, 0.32), Vector3(0, 0.73, -l * 0.5 + 0.25), PAPER)
+	if rails:
+		for x: float in [-w * 0.5 + 0.012, w * 0.5 - 0.012]:
+			Kit.box(g, Vector3(0.02, 0.03, l * 0.5), Vector3(x, 0.93, -l * 0.1), STEEL)
+			for z: float in [-l * 0.35 + 0.01, l * 0.15 - 0.01]:
+				Kit.box(g, Vector3(0.02, 0.33, 0.02), Vector3(x, 0.755, z), STEEL)
+	return g
+
+
+## A cubicle curtain hanging from a rail, `w` long.
+static func curtain(p: Node3D, b: int, u: float, v: float, yaw := 0.0, w := 1.4, cloth := Color(0.56, 0.68, 0.82)) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, w, 0.06)
+	Kit.box(g, Vector3(w, 0.03, 0.03), Vector3(0, 2.125, 0), STEEL)
+	var n := maxi(int(w / 0.16), 2)
+	for i in n:
+		Kit.box(g, Vector3(w / n, 1.8, 0.02), Vector3(-w * 0.5 + (i + 0.5) * w / n, 1.2, 0.012 if i % 2 == 0 else -0.012), cloth.darkened(0.12 * (i % 2)))
+	return g
+
+
+## A drip on a wheeled pole.
+static func iv_stand(p: Node3D, b: int, u: float, v: float) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, 0.0, 0.3, 0.3)
+	Kit.cyl(g, 0.14, 0.03, Vector3(0, 0.03, 0), STEEL, Vector3.ZERO, 5)
+	Kit.cyl(g, 0.012, 1.9, Vector3(0, 0.97, 0), STEEL, Vector3.ZERO, 5)
+	Kit.box(g, Vector3(0.26, 0.015, 0.015), Vector3(0, 1.9, 0), STEEL)
+	Kit.box(g, Vector3(0.11, 0.2, 0.03), Vector3(0.09, 1.77, 0), Color(0.85, 0.92, 0.95, 0.7))
+	Kit.box(g, Vector3(0.006, 0.9, 0.006), Vector3(0.09, 1.22, 0), Color(0.85, 0.9, 0.92))
+	return g
+
+
+## A heart monitor on a wheeled stand.
+static func monitor_stand(p: Node3D, b: int, u: float, v: float, yaw := 0.0) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, 0.4, 0.4)
+	Kit.cyl(g, 0.16, 0.04, Vector3(0, 0.04, 0), IRON, Vector3.ZERO, 5)
+	Kit.cyl(g, 0.02, 1.2, Vector3(0, 0.64, 0), STEEL, Vector3.ZERO, 6)
+	Kit.box(g, Vector3(0.36, 0.28, 0.24), Vector3(0, 1.36, 0), CREAM)
+	Kit.box(g, Vector3(0.28, 0.2, 0.01), Vector3(0, 1.37, 0.124), Color(0.06, 0.12, 0.1))
+	var trace := Kit.flat(Color(0.3, 1.0, 0.45), 1.2)
+	Kit.box(g, Vector3(0.22, 0.012, 0.004), Vector3(0, 1.36, 0.131), trace)
+	Kit.box(g, Vector3(0.02, 0.08, 0.004), Vector3(-0.03, 1.4, 0.131), trace)
+	return g
+
+
+static func wheelchair(p: Node3D, b: int, u: float, v: float, yaw := 0.0) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, 0.62, 0.8)
+	var cloth := Color(0.15, 0.2, 0.35)
+	Kit.box(g, Vector3(0.46, 0.04, 0.42), Vector3(0, 0.5, 0), cloth)
+	Kit.box(g, Vector3(0.46, 0.42, 0.04), Vector3(0, 0.75, -0.2), cloth)
+	for x: float in [-0.27, 0.27]:
+		Kit.cyl(g, 0.3, 0.04, Vector3(x, 0.3, -0.08), DARK, Vector3(0, 0, 90), 12)
+		Kit.cyl(g, 0.22, 0.045, Vector3(x, 0.3, -0.08), STEEL, Vector3(0, 0, 90), 10)
+		Kit.cyl(g, 0.08, 0.03, Vector3(x * 0.85, 0.08, 0.3), DARK, Vector3(0, 0, 90), 8)
+		Kit.box(g, Vector3(0.03, 0.03, 0.46), Vector3(x * 0.9, 0.68, -0.01), STEEL)
+		Kit.box(g, Vector3(0.03, 0.5, 0.03), Vector3(x * 0.85, 0.33, 0.22), STEEL)
+	Kit.box(g, Vector3(0.4, 0.02, 0.14), Vector3(0, 0.1, 0.36), STEEL)
+	Kit.box(g, Vector3(0.5, 0.03, 0.03), Vector3(0, 0.98, -0.24), STEEL)
+	return g
+
+
+## n plastic seats joined on a beam, as in a waiting room.
+static func seats(p: Node3D, b: int, u: float, v: float, yaw := 0.0, n := 4, look := Color(0.2, 0.45, 0.6)) -> Node3D:
+	var w := 0.52 * n
+	var g: Node3D = p.prop(b, u, v, yaw, w, 0.55)
+	Kit.box(g, Vector3(w, 0.05, 0.08), Vector3(0, 0.37, 0), STEEL)
+	for x: float in [-w * 0.5 + 0.12, w * 0.5 - 0.12]:
+		Kit.block(g, Vector3(0.05, 0.345, 0.5), Vector3(x, 0, 0), STEEL)
+	for i in n:
+		var x := -w * 0.5 + 0.26 + i * 0.52
+		Kit.box(g, Vector3(0.46, 0.05, 0.44), Vector3(x, 0.43, 0.03), look)
+		Kit.box(g, Vector3(0.46, 0.4, 0.05), Vector3(x, 0.7, -0.2), look)
+	return g
+
+
+## The red emergency trolley with the defibrillator on top.
+static func crash_cart(p: Node3D, b: int, u: float, v: float, yaw := 0.0) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, 0.6, 0.45)
+	Kit.block(g, Vector3(0.6, 0.85, 0.45), Vector3(0, 0.08, 0), Color(0.75, 0.15, 0.15))
+	for k in 4:
+		Kit.box(g, Vector3(0.52, 0.15, 0.02), Vector3(0, 0.22 + k * 0.19, 0.23), Color(0.85, 0.25, 0.22))
+		Kit.box(g, Vector3(0.16, 0.02, 0.02), Vector3(0, 0.22 + k * 0.19, 0.246), STEEL)
+	for x: float in [-0.24, 0.24]:
+		for z: float in [-0.16, 0.16]:
+			Kit.cyl(g, 0.04, 0.03, Vector3(x, 0.04, z), DARK, Vector3(0, 0, 90), 8)
+	Kit.block(g, Vector3(0.3, 0.16, 0.26), Vector3(-0.1, 0.93, 0), CREAM)
+	Kit.box(g, Vector3(0.14, 0.09, 0.01), Vector3(-0.1, 1.02, 0.134), Kit.flat(Color(0.3, 1.0, 0.45), 0.8))
+	return g
+
+
+## A bright examination lamp on a wheeled stand, its head leaning over towards `yaw`.
+static func exam_lamp(p: Node3D, b: int, u: float, v: float, yaw := 0.0) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, 0.4, 0.4)
+	Kit.cyl(g, 0.17, 0.04, Vector3(0, 0.04, 0), IRON, Vector3.ZERO, 5)
+	Kit.cyl(g, 0.02, 1.9, Vector3(0, 0.99, 0), STEEL, Vector3.ZERO, 6)
+	Kit.box(g, Vector3(0.04, 0.04, 0.7), Vector3(0, 1.95, 0.33), STEEL)
+	Kit.cyl(g, 0.3, 0.09, Vector3(0, 1.9, 0.72), Color(0.82, 0.84, 0.86), Vector3.ZERO, 12)
+	Kit.cyl(g, 0.25, 0.02, Vector3(0, 1.85, 0.72), Kit.flat(Color(1.0, 0.98, 0.9), 1.6), Vector3.ZERO, 12)
+	Kit.omni(g, Vector3(0, 1.6, 0.72), Color(1.0, 0.98, 0.92), 0.7, 4.0)
+	return g
+
+
+## The lit box X-rays are read on, on a wall.
+static func lightbox(p: Node3D, b: int, u: float, v: float, yaw := 0.0) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, 1.0, 0.08, false)
+	Kit.box(g, Vector3(1.0, 0.6, 0.06), Vector3(0, 1.6, 0.03), CREAM)
+	Kit.box(g, Vector3(0.92, 0.52, 0.01), Vector3(0, 1.6, 0.064), Kit.flat(Color(0.92, 0.97, 1.0), 1.0))
+	for x: float in [-0.23, 0.23]:
+		Kit.box(g, Vector3(0.36, 0.44, 0.006), Vector3(x, 1.6, 0.073), Color(0.1, 0.13, 0.18))
+		Kit.box(g, Vector3(0.05, 0.3, 0.004), Vector3(x, 1.6, 0.079), Color(0.78, 0.85, 0.92))
+		Kit.box(g, Vector3(0.2, 0.04, 0.004), Vector3(x, 1.68, 0.079), Color(0.78, 0.85, 0.92))
+	return g
+
+
+## n oxygen cylinders standing in a row.
+static func oxygen(p: Node3D, b: int, u: float, v: float, n := 2) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, 0.0, 0.3 * n, 0.3)
+	for i in n:
+		var x := -0.15 * (n - 1) + i * 0.3
+		Kit.cyl(g, 0.11, 1.2, Vector3(x, 0.6, 0), Color(0.2, 0.5, 0.32), Vector3.ZERO, 8)
+		Kit.cyl(g, 0.04, 0.12, Vector3(x, 1.26, 0), STEEL, Vector3.ZERO, 6)
+	return g
+
+
+## A television on a bracket high on a wall.
+static func wall_tv(p: Node3D, b: int, u: float, v: float, yaw := 0.0, y := 2.15) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, 0.7, 0.4, false)
+	Kit.box(g, Vector3(0.06, 0.06, 0.3), Vector3(0, y, 0.15), IRON)
+	Kit.box(g, Vector3(0.66, 0.5, 0.4), Vector3(0, y, 0.42), Color(0.2, 0.2, 0.22))
+	Kit.box(g, Vector3(0.52, 0.38, 0.01), Vector3(0, y, 0.624), Kit.flat(Color(0.5, 0.68, 0.8), 0.9))
+	return g
+
+
+# ------------------------------------------------------------ more of the home
+
+## A dining chair on four legs.
+static func seat(p: Node3D, b: int, u: float, v: float, yaw := 0.0, look := WOOD, pad := VINYL) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, 0.44, 0.44)
+	for x: float in [-0.18, 0.18]:
+		for z: float in [-0.18, 0.18]:
+			Kit.block(g, Vector3(0.04, 0.44, 0.04), Vector3(x, 0, z), look)
+		Kit.box(g, Vector3(0.04, 0.5, 0.04), Vector3(x, 0.74, -0.18), look)
+	Kit.box(g, Vector3(0.42, 0.05, 0.42), Vector3(0, 0.465, 0), pad)
+	Kit.box(g, Vector3(0.4, 0.14, 0.03), Vector3(0, 0.88, -0.18), look)
+	return g
+
+
+## A big projection television with a video recorder on top.
+static func big_tv(p: Node3D, b: int, u: float, v: float, yaw := 0.0) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, 1.5, 0.6)
+	Kit.block(g, Vector3(1.5, 1.25, 0.6), Vector3.ZERO, Color(0.12, 0.12, 0.14))
+	Kit.box(g, Vector3(1.3, 0.86, 0.02), Vector3(0, 0.74, 0.305), Kit.flat(Color(0.45, 0.62, 0.85), 0.9))
+	Kit.box(g, Vector3(1.3, 0.14, 0.02), Vector3(0, 0.16, 0.305), Color(0.22, 0.22, 0.25))
+	Kit.block(g, Vector3(0.44, 0.09, 0.3), Vector3(-0.3, 1.25, 0), Color(0.25, 0.25, 0.28))
+	Kit.box(g, Vector3(0.1, 0.02, 0.01), Vector3(-0.3, 1.3, 0.154), Kit.flat(Color(0.3, 0.95, 0.5), 1.0))
+	for k in 3:
+		Kit.block(g, Vector3(0.2, 0.03, 0.12), Vector3(0.35, 1.25 + k * 0.031, 0.02 * k), Color(0.15, 0.15, 0.17).lightened(0.12 * k))
+	return g
+
+
+## A loudspeaker cabinet.
+static func speaker(p: Node3D, b: int, u: float, v: float, yaw := 0.0, h := 1.1) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, 0.45, 0.4)
+	Kit.block(g, Vector3(0.45, h, 0.4), Vector3.ZERO, Color(0.14, 0.13, 0.13))
+	Kit.disc(g, 0.17, Vector3(0, h * 0.34, 0.203), Color(0.3, 0.3, 0.32), 0.012, 12)
+	Kit.disc(g, 0.09, Vector3(0, h * 0.34, 0.21), DARK, 0.012, 10)
+	Kit.disc(g, 0.08, Vector3(0, h * 0.74, 0.203), Color(0.3, 0.3, 0.32), 0.012, 10)
+	return g
+
+
+## An electric keyboard on its stand.
+static func keyboard(p: Node3D, b: int, u: float, v: float, yaw := 0.0) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, 1.3, 0.4)
+	for x: float in [-0.45, 0.45]:
+		Kit.box(g, Vector3(0.03, 0.92, 0.03), Vector3(x, 0.42, 0), IRON, Vector3(24, 0, 0))
+		Kit.box(g, Vector3(0.03, 0.92, 0.03), Vector3(x, 0.42, 0), IRON, Vector3(-24, 0, 0))
+	Kit.box(g, Vector3(1.3, 0.08, 0.36), Vector3(0, 0.86, 0), Color(0.12, 0.12, 0.14))
+	Kit.box(g, Vector3(1.2, 0.012, 0.16), Vector3(0, 0.906, 0.08), PAPER)
+	for i in 14:
+		Kit.box(g, Vector3(0.03, 0.014, 0.09), Vector3(-0.56 + i * 0.086, 0.915, 0.045), DARK)
+	Kit.box(g, Vector3(0.5, 0.01, 0.08), Vector3(-0.2, 0.905, -0.1), Color(0.25, 0.3, 0.4))
+	for i in 4:
+		Kit.box(g, Vector3(0.03, 0.012, 0.03), Vector3(0.2 + i * 0.09, 0.906, -0.1), Kit.flat(Color(1.0, 0.3, 0.2), 1.0))
+	return g
+
+
+## n milk crates of records in a row.
+static func crates(p: Node3D, b: int, u: float, v: float, yaw := 0.0, n := 2) -> Node3D:
+	var w := 0.38 * n
+	var g: Node3D = p.prop(b, u, v, yaw, w, 0.36)
+	for i in n:
+		var x := -w * 0.5 + 0.19 + i * 0.38
+		Kit.block(g, Vector3(0.36, 0.3, 0.34), Vector3(x, 0, 0), [Color(0.7, 0.15, 0.15), Color(0.15, 0.3, 0.65), Color(0.2, 0.5, 0.3), Color(0.85, 0.5, 0.1)][i % 4])
+		for k in 9:
+			Kit.box(g, Vector3(0.03, 0.31, 0.3), Vector3(x - 0.14 + k * 0.035, 0.2, 0), (GOODS[(k + i * 3) % GOODS.size()] as Color).darkened(0.25))
+	return g
+
+
+## A framed gold record, on a wall.
+static func gold_record(p: Node3D, b: int, u: float, v: float, yaw := 0.0, y := 1.8) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, 0.5, 0.05, false)
+	var gold := Color(0.9, 0.72, 0.2)
+	Kit.box(g, Vector3(0.46, 0.56, 0.02), Vector3(0, y, 0.012), DARK)
+	Kit.disc(g, 0.17, Vector3(0, y + 0.06, 0.03), gold, 0.012, 14)
+	Kit.disc(g, 0.05, Vector3(0, y + 0.06, 0.036), Color(0.75, 0.15, 0.12), 0.012, 10)
+	Kit.box(g, Vector3(0.22, 0.06, 0.008), Vector3(0, y - 0.2, 0.026), gold)
+	return g
+
+
+## A fish tank on a cupboard.
+static func aquarium(p: Node3D, b: int, u: float, v: float, yaw := 0.0, w := 1.1) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, w, 0.45)
+	Kit.block(g, Vector3(w, 0.7, 0.45), Vector3.ZERO, WOOD_DARK)
+	Kit.box(g, Vector3(w - 0.08, 0.04, 0.36), Vector3(0, 0.73, 0), Color(0.75, 0.68, 0.5))
+	Kit.box(g, Vector3(w - 0.04, 0.5, 0.4), Vector3(0, 0.96, 0), Color(0.3, 0.62, 0.82, 0.4))
+	Kit.box(g, Vector3(w - 0.06, 0.02, 0.38), Vector3(0, 1.19, 0), Kit.flat(Color(0.7, 0.95, 1.0), 1.0))
+	Kit.box(g, Vector3(w, 0.05, 0.45), Vector3(0, 1.235, 0), DARK)
+	for i in 4:
+		Kit.box(g, Vector3(0.08, 0.04, 0.02), Vector3(-w * 0.3 + i * w * 0.2, 0.85 + 0.08 * (i % 3), 0.05 * (i % 2)), Kit.flat(Color(1.0, 0.55, 0.1), 0.6))
+	return g
+
+
+static func wardrobe(p: Node3D, b: int, u: float, v: float, yaw := 0.0, w := 1.2, look := WOOD_DARK) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, w, 0.6)
+	Kit.block(g, Vector3(w, 2.0, 0.6), Vector3.ZERO, look)
+	for x: float in [-w * 0.25, w * 0.25]:
+		Kit.box(g, Vector3(w * 0.5 - 0.05, 1.8, 0.02), Vector3(x, 1.02, 0.305), look.lightened(0.08))
+		Kit.ball(g, 0.025, Vector3(x * 0.16, 1.0, 0.33), Color(0.8, 0.65, 0.3), 5)
+	return g
+
+
+## A bank of letter boxes, on a wall.
+static func mailboxes(p: Node3D, b: int, u: float, v: float, yaw := 0.0) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, 1.2, 0.1, false)
+	Kit.box(g, Vector3(1.24, 0.66, 0.08), Vector3(0, 1.35, 0.04), IRON)
+	for r in 2:
+		for c in 5:
+			Kit.box(g, Vector3(0.21, 0.27, 0.012), Vector3(-0.48 + c * 0.24, 1.2 + r * 0.3, 0.086), STEEL)
+			Kit.box(g, Vector3(0.1, 0.015, 0.006), Vector3(-0.48 + c * 0.24, 1.26 + r * 0.3, 0.095), DARK)
+	return g
+
+
+static func safe(p: Node3D, b: int, u: float, v: float, yaw := 0.0) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, 0.6, 0.55)
+	var green := Color(0.16, 0.24, 0.2)
+	Kit.block(g, Vector3(0.6, 0.75, 0.55), Vector3.ZERO, green)
+	Kit.box(g, Vector3(0.5, 0.62, 0.02), Vector3(0, 0.38, 0.28), green.lightened(0.08))
+	Kit.disc(g, 0.07, Vector3(-0.05, 0.42, 0.296), STEEL, 0.012, 12)
+	Kit.box(g, Vector3(0.03, 0.14, 0.03), Vector3(0.16, 0.4, 0.3), STEEL)
+	return g
+
+
+## A weights bench with a loaded bar on its rests.
+static func weights(p: Node3D, b: int, u: float, v: float, yaw := 0.0) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, 1.5, 1.3)
+	Kit.box(g, Vector3(0.3, 0.08, 1.2), Vector3(0, 0.44, 0.05), VINYL)
+	for z: float in [-0.45, 0.55]:
+		Kit.block(g, Vector3(0.26, 0.4, 0.05), Vector3(0, 0, z), IRON)
+	for x: float in [-0.45, 0.45]:
+		Kit.block(g, Vector3(0.05, 1.0, 0.05), Vector3(x, 0, -0.45), IRON)
+		Kit.cyl(g, 0.2, 0.05, Vector3(x * 1.4, 1.0, -0.45), DARK, Vector3(0, 0, 90), 12)
+	Kit.cyl(g, 0.015, 1.5, Vector3(0, 1.0, -0.45), STEEL, Vector3(0, 0, 90), 6)
+	return g
+
+
+
+## The front of a neighbouring rowhouse, flat on the building line at v: the
+## wall, a door, the windows, a cornice. `n` is the node to build it in (the
+## street's). u0 is its left edge.
+static func rowhouse(p: Node3D, n: Node3D, u0: float, v: float, look: Variant, boarded := false, lit := false, w := 5.0, h := 6.2) -> void:
+	p.slab(n, true, v, u0, u0 + w, 0.0, h, 0.15, look)
+	p.slab(n, true, v, u0, u0 + w, h, h + 0.3, 0.4, Color(0.3, 0.28, 0.27))
+	var wood := Color(0.55, 0.42, 0.26)
+	var glass: Variant = wood if boarded else Kit.flat(Color(0.95, 0.8, 0.5) if lit else Color(0.2, 0.24, 0.32), 0.45 if lit else 0.0)
+	p.slab(n, true, v + 0.085, u0 + 0.55, u0 + 1.5, 0.0, 2.1, 0.03, wood.darkened(0.25) if boarded else Color(0.24, 0.3, 0.26))
+	p.slab(n, true, v + 0.085, u0 + w - 2.4, u0 + w - 0.5, 0.9, 2.3, 0.03, glass)
+	for uu: float in [u0 + 0.55, u0 + w - 1.95]:
+		p.slab(n, true, v + 0.085, uu, uu + 1.4, 3.75, 5.05, 0.03, glass)

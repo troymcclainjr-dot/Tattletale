@@ -26,7 +26,7 @@ static func build(p: Node3D) -> void:
 	p.setup("TATTLETALE'S CRIB", 5.0, 15.8)
 	var paper := Kit.tex("stucco", 2.0, Color(0.85, 0.8, 0.66), true, Color(1.0, 1.0, 0.82))       # yellowed wallpaper
 	var blue := Kit.tex("stucco", 2.0, Color(0.6, 0.68, 0.8), true, Color(0.66, 0.84, 1.0))        # his room
-	var tile := Kit.tex("painted_block", 0.6, Color(0.8, 0.86, 0.84), true, Color(0.82, 1.0, 1.0)) # the bathroom
+	var tile := Kit.tex("block_plain", 0.6, Color(0.86, 0.88, 0.9), true, Color(0.9, 0.94, 0.97)) # the bathroom
 	var boards := Kit.tex("wood_panel", 1.6, Color(0.5, 0.36, 0.24), true, Color(0.62, 0.6, 0.62))
 	var lino := Kit.tex("lino", 1.2, Color(0.7, 0.66, 0.56), true, Color(1.0, 0.9, 0.8))
 	var concrete := Kit.tex("sidewalk", 2.4, Color(0.55, 0.55, 0.55), true, Color(0.72, 0.72, 0.76))

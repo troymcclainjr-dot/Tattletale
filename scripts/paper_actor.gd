@@ -16,6 +16,8 @@ const RADIUS := 0.26          # how close its middle may come to a wall or a pro
 const REACH := 0.4            # and to one beside it: the lead's hands and feet reach this far across the card
 const PULL := 0.5             # an open doorway this close to where he is pushing at a wall draws him into line with it
 const STEP_RATE := 9.0        # radians of walk cycle per second; two steps per turn
+const BEAT := 60.0 / 92.0     # seconds: the tempo he performs to at a microphone
+const ARM_ROOM := 0.45        # the card is this much wider than the drawing at each side, so a raised arm is not cut off
 
 ## Something the player can use, like a door: with a name set, E talks to it.
 signal used(by: Node3D)
@@ -26,7 +28,8 @@ var height := 1.8
 var areas: Array = [Rect2(-1.0, -1.0, 2.0, 2.0)]   # Rect2 in x, z: where its middle may be (rooms, open doorways)
 var obstacles: Array = []                        # Rect2 in x, z: props it must walk round
 var others: Array = []                           # other paper actors it must walk round
-var speed := 1.0                                 # 1 walks at WALK_SPEED
+var speed := 1.0                                 # 1 walks at WALK_SPEED; above 1 the steps come faster to match
+var performing := false                          # at a microphone: he bobs to the beat and his arms work (_perform_pose)
 var reach := REACH                               # how far the drawing reaches either side of its middle, metres
 var face: Node3D            # the loose face parts, or null when the drawing has its face baked in
 var view := "front"         # the drawing on show
@@ -40,6 +43,8 @@ var _want_yaw := 0.0        # 0 = as drawn, PI = mirrored
 var _yaw := 0.0
 var _phase := 0.0
 var _gait := 0.0            # 0 standing .. 1 walking; eases, so limbs settle and do not snap
+var _groove := 0.0          # 0 still .. 1 performing; eases the same way
+var _beat := 0.0            # beats since he started performing
 var _stride := 0.0          # side view: how far the feet are apart as drawn, as a fraction of the drawing's height
 var _arm_rest := 0.0        # how far the near arm is turned to hang straight in this drawing
 
@@ -140,7 +145,7 @@ func walk(dir: Vector2, screen: Vector2, delta: float) -> void:
 	var moving := dir.length() > 0.01
 	if moving:
 		_step(dir.limit_length(1.0) * WALK_SPEED * speed * delta)
-		_phase += delta * STEP_RATE
+		_phase += delta * STEP_RATE * maxf(speed, 1.0)
 		if _views.has("side") and absf(screen.x) >= absf(screen.y) * 0.7:
 			_want_view = "side"
 			_want_yaw = 0.0 if screen.x > 0.0 else PI
@@ -155,6 +160,11 @@ func walk(dir: Vector2, screen: Vector2, delta: float) -> void:
 	_gait = move_toward(_gait, 1.0 if moving else 0.0, delta * 7.0)
 	if _gait == 0.0:
 		_phase = 0.0
+	if performing:
+		_want_view = "front"
+		_want_yaw = 0.0
+	_groove = move_toward(_groove, 1.0 if performing and not moving else 0.0, delta * 2.5)
+	_beat = _beat + delta / BEAT if _groove > 0.0 else 0.0
 
 	# Changing drawing: turn the card edge-on, swap, turn back.
 	var aim := _want_yaw if view == _want_view else PI * 0.5
@@ -208,6 +218,29 @@ func _pose() -> void:
 		_mat.set_shader_parameter("arm_r_angle", 0.2 * s * g)
 		_card.position.y = 0.045 * absf(s) * g
 		_card.rotation.z = 0.045 * s * g
+		if _groove > 0.0:
+			_perform_pose()
+
+
+## At a microphone, feeling it. His knees dip on every beat (both boots
+## come up the card and the card comes down by as much, so his feet stay on
+## the floor and the rest of him drops), he rocks from foot to foot over two
+## beats, and his arms work: one hand up high, chopping at the beat, the
+## other lower and catching the off-beat. Every eight beats they change over.
+func _perform_pose() -> void:
+	var k := _groove
+	var hit := pow(0.5 + 0.5 * cos(TAU * _beat), 2.0)               # 1 on the beat, falling away fast
+	var off := pow(0.5 + 0.5 * cos(TAU * (_beat + 0.5)), 2.0)       # the same on the off-beat
+	var dip := 0.034 * hit * k                                        # as a fraction of the drawing's height
+	_mat.set_shader_parameter("lift_l", dip)
+	_mat.set_shader_parameter("lift_r", dip)
+	_card.position.y = -dip * height
+	_card.rotation.z = 0.04 * sin(PI * _beat) * k
+	var lead := smoothstep(-0.35, 0.35, sin(TAU * _beat / 16.0))     # 1: the arm on the left of the picture is the high one
+	var high := 1.5 + 0.65 * hit + 0.12 * sin(TAU * _beat * 2.0)
+	var low := 0.5 + 0.4 * off
+	_mat.set_shader_parameter("arm_l_angle", -lerpf(low, high, lead) * k)
+	_mat.set_shader_parameter("arm_r_angle", lerpf(low, high, 1.0 - lead) * k)
 
 
 ## Move by a step, sliding along walls and props instead of stopping dead.
@@ -329,11 +362,12 @@ func _show(wanted: String) -> void:
 	var data: Dictionary = v["data"]
 	var px := Vector2(art.get_size())
 	var quad := QuadMesh.new()
-	quad.size = Vector2(height * px.x / px.y, height)
+	quad.size = Vector2(height * px.x / px.y * (1.0 + 2.0 * ARM_ROOM), height)
 	quad.center_offset = Vector3(0, height * 0.5, 0)
 	_card.mesh = quad
 	_mat.set_shader_parameter("art", art)
 	_mat.set_shader_parameter("aspect", px.x / px.y)
+	_mat.set_shader_parameter("pad", ARM_ROOM)
 	_mat.set_shader_parameter("has_limbs", v["limbs"] != null)
 	_mat.set_shader_parameter("far_arm_hidden", bool(data.get("far_arm_hidden", false)))
 	_mat.set_shader_parameter("arm_art", v.get("arm_art", art))

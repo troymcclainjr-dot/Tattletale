@@ -1,6 +1,6 @@
 # Tattletale: pop-up prototype
 
-A playable test of a new direction for Tattletale: flat paper characters in small low-poly sets. You walk a rapper round four places in his neighbourhood: a small recording studio, the police station, the courthouse and his own house. It is a prototype: the studio has one other person in it and one short conversation with placeholder lines; the other three places are empty of people so far.
+A playable test of a new direction for Tattletale: flat paper characters in small low-poly sets. You walk a rapper round eight places in his neighbourhood: a small recording studio, the police station, the courthouse, his own house, a corner store, a liquor store, a friend's apartment and a hospital emergency department. It is a prototype: the studio has one other person in it and one short conversation with placeholder lines; the other places are empty of people so far.
 
 ![The street outside the studio](docs/street.jpg)
 
@@ -23,16 +23,18 @@ The art must be imported once before the game can show it. Opening the project i
 | Key | Does |
 |---|---|
 | WASD / arrows | Walk. He starts on the pavement outside the studio, walks round the furniture and the other character, and the camera follows him |
-| E | Use whatever is nearest and in reach: talk to someone, open or close a door, go up or down stairs. Its name shows over it. A doorway can only be walked through while its door is open |
+| E | Use whatever is nearest and in reach: talk to someone, open or close a door, go up or down stairs, step up to the microphone in the studio's booth. Its name shows over it. A doorway can only be walked through while its door is open |
 | 1 to 8 | Swap the lead between the character options (A to H). It starts on 5 (E), the only one with a walk cycle and loose face parts |
 | Z / X | Previous / next expression (neutral, happy, grin, laugh, wink, calm, preachy, focused, angry, shout, sad, nervous, cringe, shocked, suspicious, side_eye, smug, bored) |
 | Space (hold) | Move his mouth. If he has his back to you he turns round first |
 | F | Close-up on / off (head to waist) |
 | Tab | Next camera (follow, angle, angle_left, front, console, left, lounge, booth, top). In the studio only |
 | C | Control-room ceiling on / off. In the studio only |
-| M | The travel list: the places he can go. Click one or press its number and he arrives on the street outside it. M or Esc closes the list. The places are the studio, the police station, the courthouse and his house |
+| M | The travel list: the places he can go. Click one or press its number and he arrives on the street outside it. M or Esc closes the list. There are eight: the studio, the police station, the courthouse, his house, the corner store, the liquor store, Large Fry's place and the hospital |
 | F8 | Save a screenshot to the Godot user folder |
-| Esc | Quit |
+| Esc | Ends a conversation, or steps away from the microphone. Otherwise quits |
+
+At the microphone (E beside it, in the booth): black bars slide in top and bottom, the camera watches him through the control-room window and drifts slowly from side to side, and he performs: his mouth goes, his knees dip on the beat, he rocks from foot to foot and his arms work. There is no sound yet. Esc steps away.
 
 In a conversation: the things he can say are listed; the one under the mouse turns yellow. Click it, or press its number. E, Space, Enter or a click (on the box, its text, or anywhere else) finishes a line that is still typing, then moves on.
 
@@ -44,8 +46,12 @@ Press M to travel. He arrives on the pavement outside.
 - **Police station** (Pen Lucy Precinct): a worn old station house, 16 x 22 m. Lobby and the desk sergeant's office behind glass; the squad room and the captain's office; interview room, booking and the evidence cage; three cells, the drunk tank and the sally port at the back.
 - **Courthouse** (district court): 18 x 22.5 m. Security lobby and the clerk's windows; a public hall and a lawyer room; one courtroom with the lockup and holding cell on one side and the jury room on the other; the judge's chambers and a records room behind.
 - **Tattletale's crib**: a Baltimore rowhouse, 5 m wide. Living room, dining room, kitchen, back yard; press E at the foot of the stairs for his room, the bathroom and the back bedroom upstairs.
+- **Corner store** (Miss Bea's Corner Grocery): the ground floor of the last house in a row, where two streets meet, 9 x 11 m. The shop, with the clerk behind plexiglass down the left side (the way in behind the counter is round its far end), coolers along the back wall and two runs of shelves; a back office and a stock room.
+- **Liquor store** (Parkway Spirits): 10 x 12 m. The sales floor has the beer coolers, the wine and a stack of cases; the spirits are on a wall behind a sheet of plexiglass the width of the shop, reached by the steel door beside it; an office and a stock room behind.
+- **Large Fry's place**: the ground-floor flat of an apartment block, 11 x 9.6 m, all on one floor and nothing like the crib. The block's entry hall (the lift is out of order) leads to his door; living room, kitchen, bathroom, bedroom. He is not at home: he is still at the studio.
+- **Hospital** (the emergency department of Cator-Elkader Hospital): 18 x 18 m. Waiting room, triage and registration; a treatment room with three curtained bays and the nurses' station; a trauma room; the ambulance bay, a staff room and a supply room at the back.
 
-Every door opens with E. Floor plans of the three new places are drawn by `make_layouts.py` (in the full working folder: `../artifacts/flat-pivot-20261112/layouts/`).
+Every door opens with E. Floor plans of the police station, the courthouse and the crib are drawn by `make_layouts.py` (in the full working folder: `../artifacts/flat-pivot-20261112/layouts/`).
 
 ## The studio
 

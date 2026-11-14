@@ -10,7 +10,7 @@ extends CanvasLayer
 ## Lines type out, and the speaker's mouth moves while they do. Choices turn
 ## yellow under the mouse; click one, or press its number. E, Space, Enter or a
 ## click (on the box or anywhere else) finishes a line that is still typing,
-## then moves on.
+## then moves on. Esc ends the conversation there and then.
 
 signal closed
 
@@ -221,6 +221,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif key in [KEY_E, KEY_SPACE, KEY_ENTER, KEY_KP_ENTER]:
 			get_viewport().set_input_as_handled()
 			advance()
+		elif key == KEY_ESCAPE:           # walk away from the conversation
+			get_viewport().set_input_as_handled()
+			_typing = false
+			_close()
 	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		get_viewport().set_input_as_handled()
 		advance()
