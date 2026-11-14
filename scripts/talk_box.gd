@@ -19,6 +19,7 @@ const PAPER := Color("#f6f1e3")
 const TICKET := Color("#f2d24a")                                  # Pen Lucy's yellow
 const SHADE := Color(14 / 255.0, 20 / 255.0, 40 / 255.0, 0.88)
 const TYPE_RATE := 42.0        # characters a second
+const OPEN_TIME := 0.16        # seconds for the box to open out from a line, at the start of a conversation
 
 var _nodes := {}
 var _cast := {}                # "player" / "npc": the paper actor
@@ -32,6 +33,8 @@ var _typing := false
 var _typed := 0.0
 var _speaker: Node3D
 var _next := ""
+var _column: VBoxContainer     # everything in the box
+var _opening := false          # the box is still opening: nothing types yet
 
 
 func _init() -> void:
@@ -55,6 +58,7 @@ func _init() -> void:
 	add_child(_panel)
 
 	var column := VBoxContainer.new()
+	_column = column
 	column.add_theme_constant_override("separation", 8)
 	_panel.add_child(column)
 	_name = _label(30, TICKET)
@@ -78,11 +82,29 @@ func is_open() -> bool:
 	return visible
 
 
+## How far open the box is: 0 a line .. 1 fully open.
+func open_amount() -> float:
+	return _panel.scale.y
+
+
 func start(data: Dictionary, player: Node3D, npc: Node3D) -> void:
 	_nodes = data["nodes"]
 	_cast = {"player": player, "npc": npc}
 	visible = true
+	# The box starts as a thin line across its middle and opens up and down.
+	_opening = true
+	_set_open(0.0)
+	var tween := create_tween()
+	tween.tween_method(_set_open, 0.0, 1.0, OPEN_TIME).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_callback(func() -> void: _opening = false)
 	_go(data["start"])
+
+
+## How far open the box is: 0 a line, 1 the whole box. Its words fade in over the second half.
+func _set_open(t: float) -> void:
+	_panel.pivot_offset = _panel.size * 0.5
+	_panel.scale.y = lerpf(0.012, 1.0, t)
+	_column.modulate.a = smoothstep(0.55, 1.0, t)
 
 
 ## What the player can say right now (empty while a line is on show).
@@ -202,7 +224,7 @@ func _close() -> void:
 
 
 func _process(delta: float) -> void:
-	if not _typing:
+	if not _typing or _opening:
 		return
 	_typed += TYPE_RATE * delta
 	_line.visible_characters = int(_typed)

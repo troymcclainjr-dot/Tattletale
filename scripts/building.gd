@@ -46,6 +46,7 @@ var walls: Array = []
 var doors: Array = []
 var obstacles: Array = []
 var portals: Array = []              # none here; a Place may have some (stairs)
+var watchers: Array = []             # none here; a Place may have some (walk_light.gd)
 var mic: Node3D                      # the booth microphone: E steps up to it (`to` is where he stands) and main.gd puts on the show
 var active := -1
 var title := "THE BACK ROOM"
@@ -123,10 +124,11 @@ func _control_wall() -> Array:
 	door.name = "ControlDoor"
 	door.position = Vector3(CONTROL_DOOR[1] - 0.01, 0, zc)
 	add_child(door)
-	door.build_leaf(CONTROL_DOOR[1] - CONTROL_DOOR[0] - 0.02, 2.02, Color(0.45, 0.16, 0.14))    # padded red vinyl
+	# The leaf reaches a few millimetres up into the head of the frame and is most of the wall thick, so no gap shows round it.
+	door.build_leaf(CONTROL_DOOR[1] - CONTROL_DOOR[0] - 0.02, 2.036, Color(0.45, 0.16, 0.14), true, 0.1)    # padded red vinyl
 	for y in [0.45, 1.0, 1.55]:     # its studs
 		for x in [-0.22, -0.44, -0.66]:
-			Kit.ball(door.leaf, 0.022, Vector3(x, y, 0.03), Color(0.85, 0.68, 0.25), 5)
+			Kit.ball(door.leaf, 0.022, Vector3(x, y, 0.058), Color(0.85, 0.68, 0.25), 5)
 	return [node, door]
 
 

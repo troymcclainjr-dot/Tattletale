@@ -150,6 +150,7 @@ static func _front_rooms(p: Node3D, b: int) -> void:
 	Props.chair(p, b, 6.5, 15.4, 90.0)
 	Props.desk(p, b, 2.8, 13.9, 180.0, Props.CREAM, 2)
 	Props.chair(p, b, 2.8, 14.9, 180.0, Color(0.2, 0.45, 0.6))
+	p.person(b, "nurse", 1.7, 15.4)                              # triage
 	Props.gurney(p, b, 0.56, 15.6, 0.0, Color(0.82, 0.9, 0.92), false)
 	Props.monitor_stand(p, b, 0.5, 14.1)
 	Props.lockers(p, b, 0.9, 12.83, 0.0, 2, WHITE)
@@ -185,6 +186,8 @@ static func _ward(p: Node3D, b: int) -> void:
 	for k in 4:
 		Kit.box(desk, Vector3(0.03, 0.3, 0.22), Vector3(1.1 + k * 0.06, 1.25, -0.05), [Color(0.75, 0.2, 0.2), Color(0.2, 0.4, 0.7), Color(0.25, 0.55, 0.3), Color(0.85, 0.7, 0.2)][k], Vector3(0, 0, 6))
 	Props.chair(p, b, 13.9, 10.4, 0.0)
+	p.person(b, "nurse", 14.6, 10.35)                            # at the station
+	p.person(b, "nurse", 12.55, 8.4, {"face": "happy"})         # at a bedside
 	# The rest of the room.
 	Props.basin(p, b, 6.62, 6.82)
 	Props.crash_cart(p, b, 6.33, 8.6, 90.0)

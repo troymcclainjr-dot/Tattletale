@@ -26,7 +26,7 @@ extends Node3D
 ##         [--face=angry] [--mouth=mouth_ah] [--close] [--talk=seconds]
 ##         [--walk=x,y,seconds] [--rest=seconds] [--fry-at=x,z] [--wander]
 ##         [--do=step,step,...] [--check-faces] [--eye=x,y,z,x,y,z]
-##   Steps run in order after the walk: use (press E), wait:seconds, hover:n,
+##   Steps run in order after the walk: use (press E), wait:seconds, frames:n, hover:n,
 ##   pick:n, next (E in a conversation), clickbox (click the talk box), walk:x:y:seconds (hold an arrow key:
 ##   a direction on screen), go:x:z (walk straight to that spot on
 ##   the floor), frywalk:x:y:seconds (walk the other character on screen), travel (open the travel list),
@@ -94,6 +94,9 @@ var _fade: ColorRect           # blacks the picture out for a moment when he cha
 var _actor: Node3D             # the lead
 var _fry: Node3D               # the second character
 var _fry_brain: Node
+var _cast := {}                # place id: the people there, each {"actor", "brain" (or null), "talk" (a file, or "")}
+var _talk_with: Node3D         # who he is talking to
+var _wander := false           # screenshot mode: let the wanderers wander
 var _usables: Array = []       # everything E can be used on
 var _nearest: Node3D           # the usable thing in reach right now, or null
 var _camera: Camera3D
@@ -149,12 +152,13 @@ func _ready() -> void:
 	_fry.display_name = "LARGE FRY"          # a working name
 	_fry.speed = 0.7
 	_fry.reach = 0.5                         # he is wider than the lead
-	_fry.used.connect(_start_talk)
+	_fry.used.connect(_start_talk.bind(_fry, "talk_fry.json"))
 	_fry.others = [_actor]
 	_fry_brain = Wanderer.new()
 	_fry_brain.actor = _fry
 	_fry_brain.to_screen = _screen_dir
 	add_child(_fry_brain)
+	_cast["studio"] = [{"actor": _fry, "brain": _fry_brain, "talk": "talk_fry.json"}]
 	var first := "studio"
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--place="):
@@ -249,7 +253,6 @@ func _ready() -> void:
 	var who := "e"
 	var face := ""
 	var mouth := ""
-	var wander := false
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--shot="):
 			_shot_path = arg.trim_prefix("--shot=")
@@ -279,7 +282,7 @@ func _ready() -> void:
 		elif arg == "--close":
 			_close = true
 		elif arg == "--wander":
-			wander = true
+			_wander = true
 		elif arg.begins_with("--rest="):   # stand still for this long after the walk
 			_shot_rest = float(arg.trim_prefix("--rest="))
 		elif arg.begins_with("--talk="):   # move his mouth for this long before the shot
@@ -310,7 +313,10 @@ func _ready() -> void:
 	_set_camera(_cam_name)
 	if _shot_path != "":
 		_scripted = true
-		_fry_brain.frozen = not wander
+		for id: String in _cast:
+			for member: Dictionary in _cast[id]:
+				if member["brain"]:
+					member["brain"].frozen = not _wander
 		_hud.visible = false
 		_take_shot.call_deferred()
 
@@ -340,6 +346,7 @@ func _site(id: String) -> Node3D:
 		PLANS[id].build(site)
 		for portal: Node3D in site.portals:
 			portal.used.connect(_teleport)
+		_people(id, site)
 	site.name = id.capitalize()
 	site.visible = false           # _open_place shows the one he is at
 	_sites[id] = site
@@ -353,17 +360,51 @@ func _open_place(id: String) -> void:
 		_sites[key].visible = _sites[key] == _building
 		if _sites[key] == _building:
 			_place = key
-	var studio := _place == "studio"
-	_fry.visible = studio
-	_actor.others = [_fry] if studio else []
+	_fry.visible = _place == "studio"
+	_actor.others = []
 	_actor.obstacles = _building.obstacles
 	_usables = _building.usables()
-	if studio:
-		_usables.append(_fry)
+	for member: Dictionary in _cast.get(_place, []):
+		_actor.others.append(member["actor"])
+		if member["talk"] != "":
+			_usables.append(member["actor"])
 	_actor.position = _building.arrive
 	_actor.areas = _building.walk_areas()
 	_room = _building.room_at_pos(_actor.position, 0)
 	_building.show_room(_room)
+
+
+## Make the people a place's plan asks for (place.gd's `people`). Each is a
+## paper actor standing in its band's node, so it is hidden when that band is.
+func _people(id: String, site: Node3D) -> void:
+	var cast: Array = []
+	for who: Dictionary in site.people:
+		var npc: Node3D = PaperActor.new()
+		npc.name = String(who["rig"]).capitalize()
+		site.node_of(who["band"]).add_child(npc, true)
+		npc.set_rig(_rig_dir(who["rig"]))
+		npc.position = who["at"]
+		npc.display_name = who.get("name", "")
+		npc.speed = who.get("speed", 0.7)
+		npc.reach = who.get("reach", npc.REACH)
+		npc.obstacles = site.obstacles
+		npc.others = [_actor]
+		if npc.face and who.has("face"):
+			npc.face.set_expression(who["face"], true)
+		var brain: Node = null
+		if who.has("roam"):
+			brain = Wanderer.new()
+			brain.actor = npc
+			brain.to_screen = _screen_dir
+			brain.home = (who["roam"] as Rect2).grow_individual(-npc.reach, -npc.RADIUS, -npc.reach, -npc.RADIUS)
+			brain.frozen = _scripted and not _wander
+			npc.areas = [brain.home]
+			add_child(brain)
+		var talk: String = who.get("talk", "")
+		if talk != "":
+			npc.used.connect(_start_talk.bind(npc, talk))
+		cast.append({"actor": npc, "brain": brain, "talk": talk})
+	_cast[id] = cast
 
 
 ## The studio's ceiling (C and the top camera hide it); null anywhere else.
@@ -442,6 +483,14 @@ func _check_walk() -> void:
 			bad += 1
 		print("[shot] walk: %-18s %5.1f of %5.1f sq m  %s" % [room["name"], got * step * step, can * step * step, verdict])
 	print("[shot] walk: %d rooms, %d doors, %d with a problem" % [_building.rooms.size(), _building.doors.size(), bad])
+	# Is anyone standing in a wall or a prop?
+	var misplaced := 0
+	for member: Dictionary in _cast.get(_place, []):
+		var npc: Node3D = member["actor"]
+		if not _actor.can_stand(Vector2(npc.position.x, npc.position.z)):
+			misplaced += 1
+			print("[shot] people: %s at %.2f, %.2f is IN A WALL OR A PROP" % [npc.name, npc.position.x, npc.position.z])
+	print("[shot] people: %d here, %d misplaced" % [_cast.get(_place, []).size(), misplaced])
 
 
 func _rig_dir(folder: String) -> String:
@@ -485,8 +534,8 @@ func _set_camera(cam: String) -> void:
 func _face_cards() -> void:
 	var back := _camera.global_transform.basis.z
 	_actor.rotation.y = atan2(back.x, back.z)
-	if _fry:
-		_fry.rotation.y = _actor.rotation.y
+	for member: Dictionary in _cast.get(_place, []):
+		member["actor"].rotation.y = _actor.rotation.y
 
 
 ## Ease the camera to a place and a point to look at (snap: go there at once).
@@ -508,7 +557,7 @@ func _follow(delta: float, snap := false) -> void:
 	var look := _actor.position + Vector3(0, float(room["look_y"]), 0)
 	var fov := 40.0
 	if _talk and _talk.is_open():
-		var mid := (_actor.position + _fry.position) * 0.5
+		var mid := (_actor.position + _talk_with.position) * 0.5
 		want = mid + FOLLOW_OFFSET * 0.85
 		look = mid + Vector3(0, 0.6, 0)       # low, so they stand clear of the talk box
 		fov = 36.0
@@ -630,7 +679,7 @@ func _find_nearest() -> void:
 	if _nearest:
 		_tag.text = _nearest.use_name()
 		_tag.position = _nearest.label_spot()
-		_hint.text = "E   TALK" if _nearest == _fry else "E   " + _nearest.use_name()
+		_hint.text = "E   TALK" if _nearest.has_method("face_side") else "E   " + _nearest.use_name()
 
 
 func _use_nearest() -> void:
@@ -641,21 +690,30 @@ func _use_nearest() -> void:
 			_nearest.use(_actor)
 
 
-func _start_talk(_by: Node3D) -> void:
-	var data = JSON.parse_string(FileAccess.get_file_as_string("res://assets/data/talk_fry.json"))
+## E on someone who has something to say: `file` is their conversation, in assets/data.
+func _start_talk(_by: Node3D, npc: Node3D, file: String) -> void:
+	var data = JSON.parse_string(FileAccess.get_file_as_string("res://assets/data/" + file))
 	if typeof(data) != TYPE_DICTIONARY:
-		push_warning("Could not read talk_fry.json")
+		push_warning("Could not read %s" % file)
 		return
-	_fry_brain.frozen = true
+	_talk_with = npc
+	_set_frozen(npc, true)
 	# They turn side-on to face each other.
-	var across := _screen_dir(Vector2(_fry.position.x - _actor.position.x, _fry.position.z - _actor.position.z)).x
+	var across := _screen_dir(Vector2(npc.position.x - _actor.position.x, npc.position.z - _actor.position.z)).x
 	_actor.face_side(across)
-	_fry.face_side(-across)
-	_talk.start(data, _actor, _fry)
+	npc.face_side(-across)
+	_talk.start(data, _actor, npc)
 
 
 func _end_talk() -> void:
-	_fry_brain.frozen = _scripted
+	_set_frozen(_talk_with, _scripted)
+
+
+## Stop or release whoever walks `npc` about (nothing, for someone who only stands).
+func _set_frozen(npc: Node3D, frozen: bool) -> void:
+	for member: Dictionary in _cast.get(_place, []):
+		if member["actor"] == npc and member["brain"]:
+			member["brain"].frozen = frozen
 
 
 # ------------------------------------------------------------ at the microphone
@@ -746,8 +804,13 @@ func _process(delta: float) -> void:
 			Input.get_axis("ui_up", "ui_down") + float(Input.is_physical_key_pressed(KEY_S)) - float(Input.is_physical_key_pressed(KEY_W)))
 	_actor.areas = _building.walk_areas()      # doorways open and shut
 	_actor.walk(_floor_dir(dir), dir, delta)
-	if _place == "studio":
-		_fry_brain.tick(delta)
+	for member: Dictionary in _cast.get(_place, []):
+		if member["brain"]:
+			member["brain"].tick(delta)
+		else:
+			member["actor"].walk(Vector2.ZERO, Vector2.ZERO, delta)
+	for watcher: Node3D in _building.watchers:
+		watcher.watch(_actor.position, delta)
 	var now: int = _building.room_at_pos(_actor.position, _room)
 	if _performing:
 		if _actor.performing:      # not until the picture has blacked out
@@ -849,6 +912,10 @@ func _take_shot() -> void:
 				_use_nearest()
 			"wait":
 				await _wait(float(bits[1]))
+			"frames":       # frames:n: let n frames go by (to catch something part-way through)
+				for i in int(bits[1]):
+					await get_tree().process_frame
+				print("[shot] after %s frames: talk box open %.2f" % [bits[1], _talk.open_amount()])
 			"hover":
 				_talk.hover(int(bits[1]))
 			"pick":

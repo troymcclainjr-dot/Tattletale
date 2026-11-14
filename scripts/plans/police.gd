@@ -151,6 +151,8 @@ static func _lobby(p: Node3D, b: int) -> void:
 	Props.files(p, b, 15.6, 20.3, 270.0, 2)
 	Props.board(p, b, 15.92, 18.6, 270.0, 1.2, "notices")
 	Props.clock(p, b, 13.3, 17.08)
+	p.person(b, "cop", 12.5, 19.3, {"face": "bored"})          # the desk sergeant
+	p.person(b, "cop", 9.7, 18.2)                             # on the gate
 
 
 static func _squad(p: Node3D, b: int) -> void:
@@ -168,6 +170,9 @@ static func _squad(p: Node3D, b: int) -> void:
 	Props.cooler(p, b, 11.6, 11.3)
 	Props.flag(p, b, 10.0, 16.55, Color(0.6, 0.12, 0.14))      # clear of the door to the front desk
 	Props.clock(p, b, 8.0, 11.08)
+	p.person(b, "cop", 3.8, 12.2, {"face": "focused"})
+	p.person(b, "cop", 7.0, 16.0)
+	p.person(b, "cop", 10.6, 12.5, {"face": "happy"})         # by the coffee
 	# The captain's office.
 	Props.desk(p, b, 14.1, 12.9, 180.0, Props.WOOD, 2, true, 2.0, 0.85)
 	Props.chair(p, b, 13.6, 14.1, 180.0, Props.VINYL)
@@ -200,6 +205,7 @@ static func _booking(p: Node3D, b: int) -> void:
 	Props.lockers(p, b, 10.65, 6.55, 270.0, 3)
 	Props.counter(p, b, 10.7, 8.2, 270.0, 1.4, 0.4, 1.0, Props.OFFICE.darkened(0.15))
 	Props.words(p.node_of(b), "PROPERTY", p.pt(10.91, 8.2, 2.25), 0.13, Color(0.9, 0.9, 0.85), 270.0)
+	p.person(b, "cop", 5.6, 8.4, {"face": "focused"})          # booking
 	# Evidence: rows of shelving behind the cage door.
 	Props.shelves(p, b, 13.6, 5.42, 0.0, 4.2)
 	for v in [7.3, 8.6, 9.9]:
@@ -219,6 +225,8 @@ static func _cells(p: Node3D, b: int) -> void:
 	Props.desk(p, b, 10.9, 4.45, 0.0, Props.OFFICE.darkened(0.2), 1, false, 1.4, 0.6)
 	Props.chair(p, b, 9.75, 4.45, 90.0)
 	Props.board(p, b, 0.08, 3.8, 90.0, 1.2, "notices")
+	p.person(b, "cop", 6.0, 3.9, {"face": "bored"})            # the turnkey
+	p.person(b, "cop", 13.3, 3.0)                             # waiting on the van
 	# The sally port: the roll-up door is up and the prisoner van stands half
 	# in, half out on the back lot. (A whole van indoors hid him from the camera.)
 	Props.car(p, b, 14.0, -0.55, 0.0, "van")

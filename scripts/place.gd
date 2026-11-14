@@ -56,6 +56,12 @@ var bands: Array = []                # "node", "level", "order" (0 is nearest th
 var doors: Array = []
 var portals: Array = []
 var obstacles: Array = []
+var watchers: Array = []             # things that want to know where he is each frame (walk_light.gd): main.gd calls their `watch`
+## Who stands about here. Each is a Dictionary: "rig" (a folder of
+## assets/characters), "band", "at" (on the floor), and optionally "name",
+## "face" (an expression), "roam" (a Rect2 of floor they wander), "talk" (a
+## conversation in assets/data), "speed", "reach". main.gd makes them.
+var people: Array = []
 var active := -1                     # the room on show
 
 var _fronts: Array = []              # walls that are cut away: "band", "node", "stub", "doors"
@@ -224,6 +230,20 @@ func prop(b: int, u: float, v: float, yaw: float, w: float, d: float, solid := t
 		var sz := w if turned else d
 		obstacles.append(Rect2(at.x - sx * 0.5, at.z - sz * 0.5, sx, sz))
 	return Kit.group(node_of(b), at, Vector3(0, yaw, 0))
+
+
+## Someone standing at (u, v): `rig` names their folder in assets/characters.
+## opts: "name", "face", "talk", "speed", "reach", and "roam": [u0, v0, u1, v1],
+## the floor they wander (without it they stand where they are put).
+func person(b: int, rig: String, u: float, v: float, opts := {}) -> void:
+	var who := opts.duplicate()
+	who["rig"] = rig
+	who["band"] = b
+	who["at"] = pt(u, v)
+	if opts.has("roam"):
+		var r: Array = opts["roam"]
+		who["roam"] = rect(r[0], r[1], r[2], r[3]).grow_individual(-T * 0.5, -T * 0.5, -T * 0.5, -T * 0.5)
+	people.append(who)
 
 
 ## Floor space nobody may walk on.

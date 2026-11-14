@@ -119,6 +119,7 @@ static func _shop(p: Node3D, b: int) -> void:
 	Props.words(counter, "NO CREDIT", Vector3(1.5, 1.9, 0.222), 0.1, Color(0.75, 0.12, 0.1))
 	Props.shelves(p, b, 0.21, 8.6, 90.0, 3.6, "goods", Color(0.3, 0.3, 0.32), 1.9, 0.26)
 	Props.chair(p, b, 1.3, 10.3, 90.0)
+	p.person(b, "clerk", 1.45, 8.5, {"face": "happy"})
 	# Along the back wall: the coolers.
 	Props.fridge_case(p, b, 4.7, 4.63, 0.0, 4)
 	Props.words(n, "STAFF ONLY", p.pt(7.65, 4.29, 2.3), 0.1, Color(0.3, 0.3, 0.32))

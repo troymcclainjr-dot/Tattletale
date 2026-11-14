@@ -128,6 +128,9 @@ static func _lobby(p: Node3D, b: int) -> void:
 	p.rail(b, true, 20.2, 0.1, 3.9, Props.IRON)
 	p.rail(b, true, 20.2, 6.65, 10.9, Props.IRON)
 	Props.desk(p, b, 8.2, 19.2, 180.0, Props.OFFICE, 3, true, 1.4)
+	p.person(b, "cop", 7.0, 18.7, {"face": "focused"})          # the far side of the arch
+	p.person(b, "cop", 9.5, 19.2, {"face": "bored"})
+	p.person(b, "cop", 3.2, 19.3)                              # watching the belt
 	Props.words(n, "EMPTY YOUR POCKETS", p.pt(0.09, 21.3, 1.9), 0.13, Color(0.6, 0.12, 0.1), 90.0)
 	Props.bench(p, b, 0.36, 18.75, 90.0, 2.0, Props.WOOD)
 	Props.board(p, b, 2.6, 17.58, 0.0, 2.0, "notices")

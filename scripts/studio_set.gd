@@ -135,7 +135,7 @@ func _shell() -> void:
 	hinge.name = "BoothDoor"
 	hinge.position = Vector3(BOOTH_DOOR[1] - 0.01, 0, zc)
 	get_parent().add_child(hinge)
-	hinge.build_leaf(BOOTH_DOOR[1] - BOOTH_DOOR[0] - 0.02, 2.02, Color(0.33, 0.47, 0.5))
+	hinge.build_leaf(BOOTH_DOOR[1] - BOOTH_DOOR[0] - 0.02, 2.036, Color(0.33, 0.47, 0.5), true, 0.1)
 	booth_door = hinge
 	Kit.box(wall_to_booth, Vector3(0.78, 0.2, 0.08), Vector3(2.25, 2.36, Z0 + 0.04), BLACK)
 	Kit.box(wall_to_booth, Vector3(0.72, 0.15, 0.02), Vector3(2.25, 2.36, Z0 + 0.085), Kit.flat(Color(0.95, 0.12, 0.1), 1.6))

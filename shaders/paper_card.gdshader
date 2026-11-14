@@ -33,6 +33,7 @@ uniform vec2 arm_r_pivot = vec2(0.7, 0.55);
 uniform float arm_l_angle = 0.0;       // radians, positive swings the hand to the right of the picture
 uniform float arm_r_angle = 0.0;
 uniform float arm_reach = 0.1;
+uniform float arm_joint = 0.034;       // what was drawn this close to a shoulder stays put under the moving arm, so the join never opens
 uniform float arm_ink = 0.0;           // width of the line inked where an arm was cut from the body (0: none)
 
 uniform sampler2D legs : filter_linear, repeat_disable;    // white: the leg on the right of the picture
@@ -135,7 +136,14 @@ void fragment() {
 	if (has_limbs) {
 		vec4 rest = inside ? textureLod(limbs, uv, 0.0) : vec4(0.0);
 		if (arms_drawn_here && max(rest.r, rest.g) > 0.5) {
-			col.a = 0.0;   // the arm has moved away from where it was drawn
+			// The arm has moved away from where it was drawn. Right at the shoulder
+			// the drawing is kept, like the disc at a paper puppet's joint: a bent
+			// arm pulls its armpit corner away from the stub it hangs from, and
+			// without this the background shows through the crack.
+			vec2 pv = rest.r > 0.5 ? arm_l_pivot : arm_r_pivot;
+			if (length((uv - pv) * vec2(aspect, 1.0)) > arm_joint) {
+				col.a = 0.0;
+			}
 		}
 		if (!far_arm_hidden) {
 			vec4 a = arm(arm_source(uv, arm_r_pivot, arm_r_angle), -1.0, false, dx, dy);

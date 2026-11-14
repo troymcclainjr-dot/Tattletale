@@ -94,8 +94,10 @@ func set_rig(dir: String) -> bool:
 	height = float(rig["height_m"])
 	for name: String in rig["views"]:
 		var data: Dictionary = rig["views"][name]
-		_views[name] = {"art": load(dir.path_join(data["art"])), "limbs": load(dir.path_join(data["limbs"])), "data": data}
-		_views[name]["legs"] = load(dir.path_join(data["legs"]))
+		# A drawing with no "limbs" or "legs" stands still (the people in the places: build_npc.py).
+		_views[name] = {"art": load(dir.path_join(data["art"])), "limbs": load(dir.path_join(data["limbs"])) if data.has("limbs") else null, "data": data}
+		if data.has("legs"):
+			_views[name]["legs"] = load(dir.path_join(data["legs"]))
 		if data.has("arm_art"):      # this drawing has no arms: they are taken from another one
 			_views[name]["arm_art"] = load(dir.path_join(data["arm_art"]))
 	var body: Texture2D = _views["front"]["art"]
@@ -123,10 +125,12 @@ func use(by: Node3D = null) -> void:
 	used.emit(by)
 
 
-## Turn side-on to face left or right on screen without walking (to talk to someone).
+## Turn side-on to face left or right on screen without walking (to talk to
+## someone). Someone with only a front drawing stays as they are.
 func face_side(screen_x: float) -> void:
-	if _views.has("side"):
-		_want_view = "side"
+	if not _views.has("side"):
+		return
+	_want_view = "side"
 	_want_yaw = 0.0 if screen_x >= 0.0 else PI
 
 

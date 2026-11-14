@@ -1,6 +1,6 @@
 # Tattletale: pop-up prototype
 
-A playable test of a new direction for Tattletale: flat paper characters in small low-poly sets. You walk a rapper round eight places in his neighbourhood: a small recording studio, the police station, the courthouse, his own house, a corner store, a liquor store, a friend's apartment and a hospital emergency department. It is a prototype: the studio has one other person in it and one short conversation with placeholder lines; the other places are empty of people so far.
+A playable test of a new direction for Tattletale: flat paper characters in small low-poly sets. You walk a rapper round eight places in his neighbourhood: a small recording studio, the police station, the courthouse, his own house, a corner store, a liquor store, a friend's apartment and a hospital emergency department. It is a prototype. Large Fry is at the studio and at home and has a short conversation in each, with placeholder lines. A clerk stands behind each shop's counter, police officers stand about the station and the court's security lobby, and nurses work the hospital; they blink and watch you but have nothing to say yet.
 
 ![The street outside the studio](docs/street.jpg)
 
@@ -36,7 +36,7 @@ The art must be imported once before the game can show it. Opening the project i
 
 At the microphone (E beside it, in the booth): black bars slide in top and bottom, the camera watches him through the control-room window and drifts slowly from side to side, and he performs: his mouth goes, his knees dip on the beat, he rocks from foot to foot and his arms work. There is no sound yet. Esc steps away.
 
-In a conversation: the things he can say are listed; the one under the mouse turns yellow. Click it, or press its number. E, Space, Enter or a click (on the box, its text, or anywhere else) finishes a line that is still typing, then moves on.
+In a conversation: the box opens out from a thin line, then the things he can say are listed; the one under the mouse turns yellow. Click it, or press its number. E, Space, Enter or a click (on the box, its text, or anywhere else) finishes a line that is still typing, then moves on.
 
 ## The places
 
@@ -48,7 +48,7 @@ Press M to travel. He arrives on the pavement outside.
 - **Tattletale's crib**: a Baltimore rowhouse, 5 m wide. Living room, dining room, kitchen, back yard; press E at the foot of the stairs for his room, the bathroom and the back bedroom upstairs.
 - **Corner store** (Miss Bea's Corner Grocery): the ground floor of the last house in a row, where two streets meet, 9 x 11 m. The shop, with the clerk behind plexiglass down the left side (the way in behind the counter is round its far end), coolers along the back wall and two runs of shelves; a back office and a stock room.
 - **Liquor store** (Parkway Spirits): 10 x 12 m. The sales floor has the beer coolers, the wine and a stack of cases; the spirits are on a wall behind a sheet of plexiglass the width of the shop, reached by the steel door beside it; an office and a stock room behind.
-- **Large Fry's place**: the ground-floor flat of an apartment block, 11 x 9.6 m, all on one floor and nothing like the crib. The block's entry hall (the lift is out of order) leads to his door; living room, kitchen, bathroom, bedroom. He is not at home: he is still at the studio.
+- **Large Fry's place**: the ground-floor flat of an apartment block, 11 x 9.6 m, all on one floor and nothing like the crib. The block's entry hall (the lift is out of order) leads to his door; living room, kitchen, bathroom, bedroom. He is at home, wandering the living room, and will talk (he is also still at the studio).
 - **Hospital** (the emergency department of Cator-Elkader Hospital): 18 x 18 m. Waiting room, triage and registration; a treatment room with three curtained bays and the nurses' station; a trauma room; the ambulance bay, a staff room and a supply room at the back.
 
 Every door opens with E. Floor plans of the police station, the courthouse and the crib are drawn by `make_layouts.py` (in the full working folder: `../artifacts/flat-pivot-20261112/layouts/`).

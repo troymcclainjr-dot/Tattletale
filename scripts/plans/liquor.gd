@@ -121,6 +121,7 @@ static func _counter(p: Node3D, b: int) -> void:
 	Kit.block(counter, Vector3(0.34, 0.28, 0.3), Vector3(-2.6, 1.0, 0.0), Props.CREAM)
 	Kit.box(counter, Vector3(0.26, 0.2, 0.01), Vector3(-2.6, 1.15, 0.154), Kit.flat(Color(0.55, 0.6, 0.62), 0.6))
 	Props.chair(p, b, 0.75, 5.4, 90.0)
+	p.person(b, "clerk", 4.6, 5.45, {"face": "bored"})
 
 
 static func _back(p: Node3D, b: int) -> void:

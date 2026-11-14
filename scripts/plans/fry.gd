@@ -8,6 +8,7 @@ extends RefCounted
 ##   living room | entry hall (the lift is out of order)
 ##   kitchen | bathroom | bedroom
 ##
+## He is at home, wandering the living room, and will talk.
 ## The money is on show: a projection television and a wall of gold records,
 ## a leather couch, a fish tank, a keyboard under the window.
 ## Numbers are metres on the plan (see place.gd): u from the left wall, v from
@@ -122,6 +123,8 @@ static func _front_rooms(p: Node3D, b: int) -> void:
 	Props.chair(p, b, 6.4, 8.7, 0.0, leather)
 	var deck := Props.table(p, b, 7.55, 9.25, 0.0, 0.7, 0.5, Props.WOOD_DARK)
 	Props.boombox(deck, Vector3(0, 0.74, 0), 180.0)
+	# The man himself, at home: he wanders the living room and will talk.
+	p.person(b, "fry", 5.6, 7.4, {"name": "LARGE FRY", "roam": [0, 5, 8.4, 9.6], "talk": "talk_fry_home.json", "reach": 0.5})
 	# The entry hall: the lift that does not work, the letter boxes, his door.
 	p.slab(n, true, 5.09, 9.05, 10.35, 0.0, 2.15, 0.03, Props.IRON)
 	p.slab(n, true, 5.1, 9.12, 9.69, 0.0, 2.08, 0.03, Props.STEEL)

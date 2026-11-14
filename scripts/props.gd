@@ -12,6 +12,7 @@ extends RefCounted
 ## wall, and the yaw the wall faces.
 
 const FONT := preload("res://assets/fonts/Bungee-Regular.ttf")
+const WalkLight := preload("res://scripts/walk_light.gd")
 
 const STEEL := Color(0.62, 0.64, 0.67)
 const IRON := Color(0.3, 0.32, 0.36)
@@ -508,13 +509,18 @@ static func lectern(p: Node3D, b: int, u: float, v: float, yaw := 0.0) -> Node3D
 	return g
 
 
-## A walk-through metal detector: two posts and a beam. He walks between them.
+## A walk-through metal detector: two posts and a beam. He walks between them,
+## and the lamps on the posts, plain until then, blink green (walk_light.gd).
 static func detector(p: Node3D, b: int, u: float, v: float) -> Node3D:
 	var g: Node3D = p.prop(b, u, v, 0.0, 1.3, 0.55, false)
 	var grey := Color(0.72, 0.72, 0.7)
+	var lamps: Node3D = WalkLight.new()
+	lamps.zone = p.rect(u - 0.5, v - 0.3, u + 0.5, v + 0.3)
+	g.add_child(lamps)
+	p.watchers.append(lamps)
 	for side in [-1.0, 1.0]:
 		Kit.block(g, Vector3(0.14, 2.05, 0.55), Vector3(side * 0.57, 0, 0), grey)
-		Kit.box(g, Vector3(0.04, 0.3, 0.02), Vector3(side * 0.57, 1.5, 0.285), Kit.flat(Color(0.3, 0.95, 0.4), 1.0))
+		lamps.add_lamp(Vector3(0.04, 0.3, 0.02), Vector3(side * 0.57, 1.5, 0.285))
 		p.block(u + side * 0.57 - 0.07, v - 0.275, u + side * 0.57 + 0.07, v + 0.275)
 	Kit.box(g, Vector3(1.28, 0.16, 0.55), Vector3(0, 2.13, 0), grey)
 	return g

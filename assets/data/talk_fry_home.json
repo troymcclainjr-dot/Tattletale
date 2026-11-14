@@ -1,0 +1,43 @@
+{
+	"about": "What Large Fry says at home. The lines are placeholders written on 2026-11-13, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {
+			"choices": [
+				{
+					"say": "Your elevator is out of order. I reported it. Twice.",
+					"face": "focused",
+					"next": "lift"
+				},
+				{
+					"say": "Nice fish. You got paperwork for those?",
+					"face": "suspicious",
+					"next": "fish"
+				},
+				{
+					"say": "Is that a gold record? What for?",
+					"face": "happy",
+					"next": "gold"
+				}
+			]
+		},
+		"lift": {
+			"speaker": "npc",
+			"face": "bored",
+			"line": "I live on the ground floor, playboy. Report the stairs next.",
+			"next": ""
+		},
+		"fish": {
+			"speaker": "npc",
+			"face": "smug",
+			"line": "They got better paperwork than you. Don't tap the glass.",
+			"next": ""
+		},
+		"gold": {
+			"speaker": "npc",
+			"face": "happy",
+			"line": "For selling records. You should try it sometime.",
+			"next": ""
+		}
+	}
+}

@@ -95,8 +95,8 @@ func _facade() -> void:
 	door.name = "StreetDoor"
 	door.position = Vector3(DOOR[1] - 0.01, 0, zc)
 	get_parent().add_child(door)
-	door.build_leaf(DOOR[1] - DOOR[0] - 0.02, 2.06, Color(0.2, 0.3, 0.26))
-	Kit.box(door.leaf, Vector3(0.36, 0.5, 0.07), Vector3(-0.47, 1.55, 0), Color(0.75, 0.85, 0.7, 0.35))    # a small pane
+	door.build_leaf(DOOR[1] - DOOR[0] - 0.02, 2.086, Color(0.2, 0.3, 0.26), true, 0.1)
+	Kit.box(door.leaf, Vector3(0.36, 0.5, 0.12), Vector3(-0.47, 1.55, 0), Color(0.75, 0.85, 0.7, 0.35))    # a small pane
 	Kit.block(facade, Vector3(0.1, 0.16, 0.03), Vector3(DOOR[1] + 0.22, 1.25, WALL_Z1 + 0.015), STEEL)
 	Kit.box(facade, Vector3(0.03, 0.03, 0.012), Vector3(DOOR[1] + 0.22, 1.36, WALL_Z1 + 0.035), Kit.flat(Color(1.0, 0.3, 0.15), 1.5))
 
