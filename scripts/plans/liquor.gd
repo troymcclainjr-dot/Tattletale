@@ -122,6 +122,9 @@ static func _counter(p: Node3D, b: int) -> void:
 	Kit.box(counter, Vector3(0.26, 0.2, 0.01), Vector3(-2.6, 1.15, 0.154), Kit.flat(Color(0.55, 0.6, 0.62), 0.6))
 	Props.chair(p, b, 0.75, 5.4, 90.0)
 	p.person(b, "clerk", 4.6, 5.45, {"face": "bored"})
+	# Two customers (working names: parodies of the type, not of anyone): one at the counter, one by the wine.
+	p.person(p.rooms[1]["band"], "snoozy", 4.5, 7.7, {"name": "SNOOZY D", "face": "calm"})
+	p.person(p.rooms[1]["band"], "doc", 7.7, 10.4, {"name": "DOC DRAY", "face": "focused"})
 
 
 static func _back(p: Node3D, b: int) -> void:

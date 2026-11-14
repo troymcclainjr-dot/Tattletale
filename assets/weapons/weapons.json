@@ -1,0 +1,65 @@
+{
+ "about": "Built by build_weapons.py. Sizes and points are pixels of the lead's body drawing: px_per_m to the metre. Each is drawn pointing right; the PNG files are stored at twice this size.",
+ "px_per_m": 660.0,
+ "weapons": {
+  "pistol": {
+   "file": "pistol.png",
+   "hands": "pistol_hands.png",
+   "w": 252,
+   "h": 190,
+   "grip": [
+    76,
+    122
+   ],
+   "butt": [
+    24,
+    45
+   ],
+   "muzzle": [
+    236,
+    45
+   ]
+  },
+  "uzi": {
+   "file": "uzi.png",
+   "hands": "uzi_hands.png",
+   "w": 316,
+   "h": 266,
+   "grip": [
+    142,
+    132
+   ],
+   "butt": [
+    14,
+    62
+   ],
+   "muzzle": [
+    298,
+    62
+   ]
+  },
+  "ak": {
+   "file": "ak.png",
+   "hands": "ak_hands.png",
+   "w": 690,
+   "h": 280,
+   "grip": [
+    238,
+    148
+   ],
+   "fore": [
+    426,
+    106
+   ],
+   "butt": [
+    57,
+    95
+   ],
+   "muzzle": [
+    676,
+    66
+   ],
+   "size": 0.85
+  }
+ }
+}

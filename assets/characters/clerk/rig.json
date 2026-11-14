@@ -78,136 +78,255 @@
   },
   "eye_half": {
    "file": "parts/eye_half.png",
-   "w": 59.9,
-   "h": 72.1
+   "w": 73.6,
+   "h": 113.9
   },
-  "eye_shut": {
-   "file": "parts/eye_shut.png",
-   "w": 65.3,
-   "h": 27.0
-  },
-  "eye_happy": {
-   "file": "parts/eye_happy.png",
-   "w": 65.3,
-   "h": 29.0
-  },
-  "eye_wide": {
-   "file": "parts/eye_wide.png",
-   "w": 79.5,
-   "h": 84.4
-  },
-  "eye_squint": {
-   "file": "parts/eye_squint.png",
-   "w": 59.4,
-   "h": 36.8
+  "eye_sleepy": {
+   "file": "parts/eye_sleepy.png",
+   "w": 85.4,
+   "h": 113.9
   },
   "eye_glare": {
    "file": "parts/eye_glare.png",
-   "w": 60.4,
-   "h": 66.7
+   "w": 56.9,
+   "h": 107.0
   },
-  "eye_side": {
-   "file": "parts/eye_side.png",
-   "w": 76.6,
-   "h": 58.9,
-   "mirror": false
+  "eye_squint": {
+   "file": "parts/eye_squint.png",
+   "w": 75.6,
+   "h": 39.3
+  },
+  "eye_shut": {
+   "file": "parts/eye_shut.png",
+   "w": 75.6,
+   "h": 54.0
+  },
+  "eye_happy": {
+   "file": "parts/eye_happy.png",
+   "w": 77.5,
+   "h": 43.2
+  },
+  "eye_pinch": {
+   "file": "parts/eye_pinch.png",
+   "w": 65.8,
+   "h": 78.5
+  },
+  "eye_wide": {
+   "file": "parts/eye_wide.png",
+   "w": 87.4,
+   "h": 124.7
+  },
+  "eye_fear": {
+   "file": "parts/eye_fear.png",
+   "w": 85.4,
+   "h": 126.6
   },
   "eye_look": {
    "file": "parts/eye_look.png",
-   "w": 79.5,
-   "h": 130.6,
+   "w": 89.3,
+   "h": 125.6,
+   "mirror": false
+  },
+  "eye_side": {
+   "file": "parts/eye_side.png",
+   "w": 109.9,
+   "h": 82.5,
+   "mirror": false
+  },
+  "eye_shine": {
+   "file": "parts/eye_shine.png",
+   "w": 63.8,
+   "h": 131.5,
+   "mirror": false
+  },
+  "eye_spiral": {
+   "file": "parts/eye_spiral.png",
+   "w": 90.3,
+   "h": 100.1
+  },
+  "eye_heart": {
+   "file": "parts/eye_heart.png",
+   "w": 87.4,
+   "h": 101.1,
    "mirror": false
   },
   "brow_straight": {
    "file": "parts/brow_straight.png",
-   "w": 62.8,
-   "h": 16.2
+   "w": 68.7,
+   "h": 23.6
   },
   "brow_arched": {
    "file": "parts/brow_arched.png",
-   "w": 62.3,
-   "h": 24.5
+   "w": 66.7,
+   "h": 29.4
   },
   "brow_tapered": {
    "file": "parts/brow_tapered.png",
-   "w": 57.9,
-   "h": 18.2
+   "w": 72.6,
+   "h": 26.5
+  },
+  "brow_worried": {
+   "file": "parts/brow_worried.png",
+   "w": 68.7,
+   "h": 34.4
   },
   "mouth_neutral": {
    "file": "parts/mouth_neutral.png",
-   "w": 135.5,
-   "h": 17.2
+   "w": 133.5,
+   "h": 21.6,
+   "lip": 10.8
   },
   "mouth_smile": {
    "file": "parts/mouth_smile.png",
-   "w": 154.1,
-   "h": 34.4
+   "w": 153.1,
+   "h": 48.1,
+   "lip": 23.6
   },
   "mouth_frown": {
    "file": "parts/mouth_frown.png",
-   "w": 153.6,
-   "h": 32.9
+   "w": 140.4,
+   "h": 44.2,
+   "lip": 22.6
   },
   "mouth_smirk": {
    "file": "parts/mouth_smirk.png",
-   "w": 162.0,
-   "h": 48.1,
-   "lip": 40.2
-  },
-  "mouth_grit": {
-   "file": "parts/mouth_grit.png",
-   "w": 245.4,
-   "h": 93.3
-  },
-  "mouth_ah": {
-   "file": "parts/mouth_ah.png",
-   "w": 129.1,
-   "h": 139.9,
-   "lip": 23.6
-  },
-  "mouth_oh": {
-   "file": "parts/mouth_oh.png",
-   "w": 77.5,
-   "h": 86.4
-  },
-  "mouth_ee": {
-   "file": "parts/mouth_ee.png",
-   "w": 217.4,
-   "h": 63.8
-  },
-  "mouth_small": {
-   "file": "parts/mouth_small.png",
-   "w": 103.1,
-   "h": 74.1,
-   "lip": 11.8
-  },
-  "mouth_ff": {
-   "file": "parts/mouth_ff.png",
-   "w": 136.0,
-   "h": 29.0,
-   "lip": 6.9
-  },
-  "mouth_shout": {
-   "file": "parts/mouth_shout.png",
-   "w": 228.2,
-   "h": 198.8,
-   "lip": 27.5
+   "w": 148.2,
+   "h": 44.2,
+   "lip": 29.4
   },
   "mouth_firm": {
    "file": "parts/mouth_firm.png",
-   "w": 91.3,
-   "h": 18.7
+   "w": 96.2,
+   "h": 24.5,
+   "lip": 12.3
   },
   "mouth_wavy": {
    "file": "parts/mouth_wavy.png",
-   "w": 147.7,
-   "h": 28.0
+   "w": 140.4,
+   "h": 33.4,
+   "lip": 16.7
+  },
+  "mouth_skew": {
+   "file": "parts/mouth_skew.png",
+   "w": 120.7,
+   "h": 39.8,
+   "lip": 17.7
+  },
+  "mouth_wobble": {
+   "file": "parts/mouth_wobble.png",
+   "w": 98.2,
+   "h": 36.3,
+   "lip": 18.7
+  },
+  "mouth_grit": {
+   "file": "parts/mouth_grit.png",
+   "w": 193.4,
+   "h": 72.6,
+   "lip": 16.7
+  },
+  "mouth_yikes": {
+   "file": "parts/mouth_yikes.png",
+   "w": 204.2,
+   "h": 73.1,
+   "lip": 15.7
+  },
+  "mouth_eek": {
+   "file": "parts/mouth_eek.png",
+   "w": 188.5,
+   "h": 74.1,
+   "lip": 22.6
+  },
+  "mouth_snarl": {
+   "file": "parts/mouth_snarl.png",
+   "w": 198.3,
+   "h": 103.6,
+   "lip": 17.2
+  },
+  "mouth_ah": {
+   "file": "parts/mouth_ah.png",
+   "w": 122.7,
+   "h": 104.5,
+   "lip": 8.3
+  },
+  "mouth_oh": {
+   "file": "parts/mouth_oh.png",
+   "w": 76.6,
+   "h": 92.8,
+   "lip": 16.2
+  },
+  "mouth_ee": {
+   "file": "parts/mouth_ee.png",
+   "w": 188.5,
+   "h": 61.4,
+   "lip": 7.4
+  },
+  "mouth_small": {
+   "file": "parts/mouth_small.png",
+   "w": 99.1,
+   "h": 64.3,
+   "lip": 13.3
+  },
+  "mouth_ff": {
+   "file": "parts/mouth_ff.png",
+   "w": 141.4,
+   "h": 32.9,
+   "lip": 10.3
+  },
+  "mouth_shout": {
+   "file": "parts/mouth_shout.png",
+   "w": 214.0,
+   "h": 115.3,
+   "lip": 19.1
   },
   "mouth_laugh": {
    "file": "parts/mouth_laugh.png",
-   "w": 197.3,
-   "h": 118.8,
-   "lip": 19.6
+   "w": 196.3,
+   "h": 108.5,
+   "lip": 20.6
+  },
+  "mouth_wail": {
+   "file": "parts/mouth_wail.png",
+   "w": 176.7,
+   "h": 119.8,
+   "lip": 20.1
+  },
+  "mouth_bleh": {
+   "file": "parts/mouth_bleh.png",
+   "w": 123.7,
+   "h": 75.6,
+   "lip": 14.2
+  },
+  "mouth_whistle": {
+   "file": "parts/mouth_whistle.png",
+   "w": 82.5,
+   "h": 63.3,
+   "lip": 20.6
+  },
+  "fx_sweat": {
+   "file": "parts/fx_sweat.png",
+   "w": 49.1,
+   "h": 67.7,
+   "mirror": false
+  },
+  "fx_tear": {
+   "file": "parts/fx_tear.png",
+   "w": 62.8,
+   "h": 228.7
+  },
+  "fx_blush": {
+   "file": "parts/fx_blush.png",
+   "w": 70.7,
+   "h": 37.3
+  },
+  "fx_vein": {
+   "file": "parts/fx_vein.png",
+   "w": 60.9,
+   "h": 60.9
   }
- }
+ },
+ "skin": [
+  200.0,
+  100.0,
+  42.0
+ ]
 }

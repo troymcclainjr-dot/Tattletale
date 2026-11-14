@@ -50,6 +50,8 @@ var width := 10.0
 var depth := 10.0
 var wall_h := 2.9
 var arrive := Vector3.ZERO           # where he stands when he travels here
+var ambient := 0.62                  # how bright the light that falls on everything is here, and the low sun: main.gd
+var sun_energy := 0.55               # sets both when he arrives. Lower them and a place is night, lit by its own lamps
 ## "name", "band", "rect" (x, z), "areas" (where a middle may be), and the camera
 ## numbers main.gd reads: "cam_max_x", "cam_near", "cam_y", "look_y".
 var rooms: Array = []

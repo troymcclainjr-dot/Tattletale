@@ -1,6 +1,7 @@
 shader_type spatial;
 render_mode unshaded, cull_disabled;
-// A flat character drawing whose limbs can move without redrawing it.
+// A flat character drawing whose limbs can move without redrawing it, and
+// whose clothes can change colour.
 //
 // Legs: everything below the hip line belongs to one leg or the other; a mask
 // says which, following the drawn inseam. Each leg is its own layer hung from
@@ -9,8 +10,28 @@ render_mode unshaded, cull_disabled;
 // staying flat. The two legs swing separately, so one can pass in front of the
 // other. The far leg can be darkened, and the edge where the legs were cut
 // apart can be inked, so each reads as a whole leg.
-// Arms: a mask says which pixels are arm. Each arm bends round its shoulder like
-// a noodle: no turn at the shoulder, the full angle from `arm_reach` outwards.
+//
+// Arms: a mask says which pixels are arm. Each arm is a rubber hose hung from
+// its shoulder. It turns (`angle`: nothing at the shoulder itself, all of it
+// from `arm_reach` outwards), it bows (`curl`: more turn the further along the
+// arm, so it arcs like a bent elbow), and it gets longer or shorter along its
+// own length (`stretch`), never thicker. It can be cut off at the wrist
+// (`cut`), for when a fist drawn with the thing he holds takes the hand's
+// place (paper_actor.gd, paper_prop.gdshader).
+//
+// Side-on only one arm is drawn. With both hands on something the far arm is
+// drawn too (`far_arm_copy`): a second copy of the near one, hung from a point
+// behind his chest and drawn UNDER his body, so it comes out from behind him.
+//
+// Clothes: `regions` says which piece of clothing each pixel belongs to (its
+// red channel: 1 hat, 2 jacket, 3 shirt, 4 trousers, 5 shoes, 6 the bare arm
+// a long sleeve would cover). A piece is repainted by scaling its new colour
+// by how light the drawing is there against the colour it was drawn in, so the
+// ink lines and soft edges stay.
+//
+// `layer` draws part of him: 1 everything but the near arm, 2 the near arm
+// alone. paper_actor.gd lays a second card over what he holds, with the near
+// arm on it, so that arm passes in front of a rifle.
 //
 // Positions are UV (0..1 across and down the drawing); lengths are fractions of
 // the drawing's height.
@@ -20,18 +41,33 @@ uniform float aspect = 0.58;           // drawing width / height
 uniform float pad = 0.0;               // the card is this much wider than the drawing at each side (a fraction of the
                                        // drawing's width): room for an arm raised out past the drawing's edge
 uniform vec3 ink : source_color = vec3(0.03, 0.0, 0.0);
+uniform float toward = 0.0;            // metres nearer the eye than the card really is (the copy that carries the near arm)
+uniform int layer = 0;                 // 0 all of him, 1 all but the near arm, 2 the near arm only
 
 uniform sampler2D limbs : filter_linear, repeat_disable;   // red: arm on the left of the picture, green: on the right
 uniform sampler2D arm_art : source_color, filter_linear_mipmap, repeat_disable;   // the drawing the arms are taken from
 uniform bool arms_drawn_here = true;   // false: this drawing has no arms of its own, they come from arm_art
 uniform bool has_limbs = false;
 uniform bool far_arm_hidden = false;   // the right-hand arm is not drawn (the body hides it side-on)
+uniform bool far_arm_copy = false;     // side-on, both hands on something: the far arm is a copy of the near one, under the body
+uniform vec2 far_arm_shift = vec2(0.0);   // where that copy hangs from, measured from the near arm's shoulder
+uniform bool arms_under = false;       // the arms go behind the body (seen from the back, hands in front of him)
 uniform vec2 arm_l_shift = vec2(0.0);  // the left-hand arm is drawn this far from where it is in arm_art
-uniform float arm_l_top = 0.0;         // and nothing of it is drawn above this line (a sleeve covers it)
+uniform float arm_l_top = 0.0;         // and nothing of it is drawn above this line (a sleeve covers it)...
+uniform vec2 arm_l_top_x = vec2(-9.0, 9.0);   // ...between these two x (the sleeve's sides): raised, the arm comes out past them
 uniform vec2 arm_l_pivot = vec2(0.3, 0.55);
 uniform vec2 arm_r_pivot = vec2(0.7, 0.55);
 uniform float arm_l_angle = 0.0;       // radians, positive swings the hand to the right of the picture
 uniform float arm_r_angle = 0.0;
+uniform float arm_l_curl = 0.0;        // radians more by the fingertips: the arm bows
+uniform float arm_r_curl = 0.0;
+uniform float arm_l_stretch = 1.0;     // length, against how it was drawn
+uniform float arm_r_stretch = 1.0;
+uniform float arm_l_cut = 9.0;         // nothing drawn further than this along the arm (the wrist, when a fist takes over)
+uniform float arm_r_cut = 9.0;
+uniform vec2 arm_l_axis = vec2(0.0, 1.0);   // the way each arm runs as drawn, shoulder to hand (a unit vector, y down)
+uniform vec2 arm_r_axis = vec2(0.0, 1.0);
+uniform float arm_len = 0.21;          // shoulder to fingertips, for the bow
 uniform float arm_reach = 0.1;
 uniform float arm_joint = 0.034;       // what was drawn this close to a shoulder stays put under the moving arm, so the join never opens
 uniform float arm_ink = 0.0;           // width of the line inked where an arm was cut from the body (0: none)
@@ -46,6 +82,41 @@ uniform float swing_r = 0.0;
 uniform bool near_leg_right = true;    // which leg is in front when they cross
 uniform float far_leg_shade = 1.0;     // the far leg's colour is multiplied by this
 uniform float leg_ink = 0.0;           // width of the line inked where the legs were cut apart (0: none)
+
+uniform sampler2D regions : filter_nearest, repeat_disable;       // this drawing's clothes (see the top)
+uniform sampler2D arm_regions : filter_nearest, repeat_disable;   // and those of the drawing the arms come from
+uniform bool has_regions = false;
+uniform vec3 dress_from[7] : source_color;    // the colour each piece was drawn in (index: the region's number)
+uniform vec3 dress_to[7] : source_color;      // the colour it is to be; the same as dress_from leaves it alone
+uniform bool cuffs = false;            // long sleeves: ink the line at the wrist where the sleeve ends
+
+const vec3 LUMA = vec3(0.2126, 0.7152, 0.0722);
+
+void vertex() {
+	vec4 v = MODELVIEW_MATRIX * vec4(VERTEX, 1.0);
+	v.xyz -= normalize(v.xyz) * toward;
+	POSITION = PROJECTION_MATRIX * v;
+}
+
+// The colour c, drawn at src of a drawing whose clothes are `map`, in the clothes he has on now.
+vec3 dress(vec3 c, vec2 src, sampler2D map) {
+	if (!has_regions) {
+		return c;
+	}
+	vec4 m = textureLod(map, src, 0.0);
+	int id = int(m.r * 255.0 / 40.0 + 0.5);
+	if (id < 1 || id > 6) {
+		return c;
+	}
+	if (id == 6 && cuffs && m.g > 0.5) {
+		return ink;
+	}
+	if (dress_from[id] == dress_to[id]) {
+		return c;
+	}
+	float light = clamp(dot(c, LUMA) / max(dot(dress_from[id], LUMA), 0.02), 0.0, 1.0);
+	return dress_to[id] * light;
+}
 
 // Where in the drawing the pixel at uv comes from if it shows this leg; x < -1 if it does not.
 vec2 leg_source(vec2 uv, float side, float lift, float swing) {
@@ -71,6 +142,7 @@ vec4 leg(vec2 uv, float side, float lift, float swing, vec2 dx, vec2 dy) {
 		return vec4(0.0);
 	}
 	vec4 c = textureGrad(art, src, dx, dy);
+	c.rgb = dress(c.rgb, src, regions);
 	if (leg_ink > 0.0 && c.a > 0.5) {
 		// Close to the other leg's side of the cut: this is the cut edge.
 		bool other = textureLod(legs, src - vec2(side * leg_ink / aspect, 0.0), 0.0).r > 0.5;
@@ -81,19 +153,25 @@ vec4 leg(vec2 uv, float side, float lift, float swing, vec2 dx, vec2 dy) {
 	return c;
 }
 
-vec2 arm_source(vec2 uv, vec2 pivot, float angle) {
+// Where in arm_art the pixel at uv comes from, for an arm that has turned, bowed and stretched.
+vec2 arm_source(vec2 uv, vec2 pivot, float angle, float curl, float stretch, vec2 axis) {
 	vec2 d = (uv - pivot) * vec2(aspect, 1.0);
-	float turn = angle * smoothstep(0.0, arm_reach, length(d));
+	float r = length(d) / stretch;               // how far along the arm this was drawn (near enough: the arm is thin)
+	float turn = angle * smoothstep(0.0, arm_reach, r) + curl * clamp((r - arm_reach) / max(arm_len - arm_reach, 0.01), 0.0, 1.2);
 	float c = cos(turn);
 	float s = sin(turn);
 	d = vec2(d.x * c - d.y * s, d.x * s + d.y * c);
+	d -= axis * dot(d, axis) * (1.0 - 1.0 / stretch);      // take the stretch back out, along the arm only
 	return pivot + d / vec2(aspect, 1.0);
 }
 
 // One arm's colour from where it sits in arm_art (alpha 0 where src is not arm).
 // `body_side` is +1 if the body is to the right of this arm in the drawing.
-vec4 arm(vec2 src, float body_side, bool left, vec2 dx, vec2 dy) {
+vec4 arm(vec2 src, vec2 pivot, float cut, float body_side, bool left, vec2 dx, vec2 dy) {
 	if (src.x < 0.0 || src.x > 1.0 || src.y < 0.0 || src.y > 1.0) {
+		return vec4(0.0);
+	}
+	if (length((src - pivot) * vec2(aspect, 1.0)) > cut) {
 		return vec4(0.0);
 	}
 	vec4 m = textureLod(limbs, src, 0.0);
@@ -101,6 +179,7 @@ vec4 arm(vec2 src, float body_side, bool left, vec2 dx, vec2 dy) {
 		return vec4(0.0);
 	}
 	vec4 c = textureGrad(arm_art, src, dx, dy);
+	c.rgb = dress(c.rgb, src, arm_regions);
 	if (arm_ink > 0.0 && c.a > 0.5) {
 		vec2 beside = src + vec2(body_side * arm_ink / aspect, 0.0);
 		vec4 mb = textureLod(limbs, beside, 0.0);
@@ -111,54 +190,82 @@ vec4 arm(vec2 src, float body_side, bool left, vec2 dx, vec2 dy) {
 	return c;
 }
 
+// The left-hand arm (the near one, side-on) at uv, where it is now.
+vec4 near_arm(vec2 uv, vec2 dx, vec2 dy) {
+	if (uv.y < arm_l_top && uv.x > arm_l_top_x.x && uv.x < arm_l_top_x.y) {
+		return vec4(0.0);
+	}
+	return arm(arm_source(uv - arm_l_shift, arm_l_pivot, arm_l_angle, arm_l_curl, arm_l_stretch, arm_l_axis), arm_l_pivot, arm_l_cut, 1.0, true, dx, dy);
+}
+
 void fragment() {
 	vec2 uv = vec2(UV.x * (1.0 + 2.0 * pad) - pad, UV.y);     // where this is in the drawing; x runs outside 0..1 in the spare card
 	bool inside = uv.x >= 0.0 && uv.x <= 1.0;
 	vec2 dx = dFdx(uv);
 	vec2 dy = dFdy(uv);
 	vec4 col = vec4(0.0);
-	if (!inside) {
-		col = vec4(0.0);
-	} else if (uv.y <= hip_v) {
-		col = textureGrad(art, uv, dx, dy);
+	if (layer == 2) {
+		if (has_limbs) {
+			col = near_arm(uv, dx, dy);
+		}
+		ALBEDO = col.rgb;
+		ALPHA = col.a;
+		ALPHA_SCISSOR_THRESHOLD = 0.5;
 	} else {
-		vec4 l = leg(uv, -1.0, lift_l, swing_l, dx, dy);
-		vec4 r = leg(uv, 1.0, lift_r, swing_r, dx, dy);
-		vec4 far = near_leg_right ? l : r;
-		vec4 near = near_leg_right ? r : l;
-		if (far.a > 0.5) {
-			col = vec4(far.rgb * far_leg_shade, far.a);
+		if (!inside) {
+			col = vec4(0.0);
+		} else if (uv.y <= hip_v) {
+			col = textureGrad(art, uv, dx, dy);
+			col.rgb = dress(col.rgb, uv, regions);
+		} else {
+			vec4 l = leg(uv, -1.0, lift_l, swing_l, dx, dy);
+			vec4 r = leg(uv, 1.0, lift_r, swing_r, dx, dy);
+			vec4 far = near_leg_right ? l : r;
+			vec4 near = near_leg_right ? r : l;
+			if (far.a > 0.5) {
+				col = vec4(far.rgb * far_leg_shade, far.a);
+			}
+			if (near.a > 0.5) {
+				col = near;
+			}
 		}
-		if (near.a > 0.5) {
-			col = near;
+		if (has_limbs) {
+			vec4 rest = inside ? textureLod(limbs, uv, 0.0) : vec4(0.0);
+			if (arms_drawn_here && max(rest.r, rest.g) > 0.5) {
+				// The arm has moved away from where it was drawn. Right at the shoulder
+				// the drawing is kept, like the disc at a paper puppet's joint: a bent
+				// arm pulls its armpit corner away from the stub it hangs from, and
+				// without this the background shows through the crack.
+				vec2 pv = rest.r > 0.5 ? arm_l_pivot : arm_r_pivot;
+				if (length((uv - pv) * vec2(aspect, 1.0)) > arm_joint) {
+					col.a = 0.0;
+				}
+			}
+			bool body_here = col.a > 0.5;
+			if (far_arm_copy) {
+				// Behind him: it shows only where his body does not.
+				if (!body_here) {
+					vec2 from = arm_l_shift + far_arm_shift;
+					vec4 a = arm(arm_source(uv - from, arm_l_pivot, arm_r_angle, arm_r_curl, arm_r_stretch, arm_l_axis), arm_l_pivot, arm_r_cut, 1.0, true, dx, dy);
+					if (a.a > 0.5) {
+						col = a;
+					}
+				}
+			} else if (!far_arm_hidden && !(arms_under && body_here)) {
+				vec4 a = arm(arm_source(uv, arm_r_pivot, arm_r_angle, arm_r_curl, arm_r_stretch, arm_r_axis), arm_r_pivot, arm_r_cut, -1.0, false, dx, dy);
+				if (a.a > 0.5) {
+					col = a;
+				}
+			}
+			if (layer == 0 && !(arms_under && body_here)) {
+				vec4 a = near_arm(uv, dx, dy);
+				if (a.a > 0.5) {
+					col = a;
+				}
+			}
 		}
+		ALBEDO = col.rgb;
+		ALPHA = col.a;
+		ALPHA_SCISSOR_THRESHOLD = 0.5;
 	}
-	if (has_limbs) {
-		vec4 rest = inside ? textureLod(limbs, uv, 0.0) : vec4(0.0);
-		if (arms_drawn_here && max(rest.r, rest.g) > 0.5) {
-			// The arm has moved away from where it was drawn. Right at the shoulder
-			// the drawing is kept, like the disc at a paper puppet's joint: a bent
-			// arm pulls its armpit corner away from the stub it hangs from, and
-			// without this the background shows through the crack.
-			vec2 pv = rest.r > 0.5 ? arm_l_pivot : arm_r_pivot;
-			if (length((uv - pv) * vec2(aspect, 1.0)) > arm_joint) {
-				col.a = 0.0;
-			}
-		}
-		if (!far_arm_hidden) {
-			vec4 a = arm(arm_source(uv, arm_r_pivot, arm_r_angle), -1.0, false, dx, dy);
-			if (a.a > 0.5) {
-				col = a;
-			}
-		}
-		if (uv.y >= arm_l_top) {
-			vec4 a = arm(arm_source(uv - arm_l_shift, arm_l_pivot, arm_l_angle), 1.0, true, dx, dy);
-			if (a.a > 0.5) {
-				col = a;
-			}
-		}
-	}
-	ALBEDO = col.rgb;
-	ALPHA = col.a;
-	ALPHA_SCISSOR_THRESHOLD = 0.5;
 }

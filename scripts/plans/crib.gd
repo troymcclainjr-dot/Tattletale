@@ -191,6 +191,7 @@ static func _ground(p: Node3D, g1: int, g2: int, g3: int, g4: int) -> void:
 static func _upstairs(p: Node3D, h1: int, h2: int, h3: int) -> void:
 	# His room: the bed, the desk where the rhymes get written, the boombox, the plaques.
 	Props.bed(p, h1, UP + 4.15, 12.32, 0.0, 1.4, 2.0, Color(0.2, 0.3, 0.55))
+	p.use_point(h1, "SLEEP", UP + 2.95, 12.4, "sleep")          # the day ends here: the next one begins (main.gd's _use_point)
 	var chest := Props.dresser(p, h1, UP + 0.36, 14.0, 90.0, 1.6)
 	Props.boombox(chest, Vector3(0, 0.9, 0))
 	Props.desk(p, h1, UP + 3.5, 15.32, 180.0, Props.WOOD, 2, true, 1.6)

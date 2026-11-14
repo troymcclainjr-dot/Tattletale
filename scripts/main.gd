@@ -7,6 +7,8 @@ extends Node3D
 ## the studio door. Only the place he is at is on show.
 ##
 ##   WASD / arrows  walk          E       use whatever is nearest: talk, open a door
+##   Shift (hold)   run           Q       what he holds: nothing, pistol, Uzi, AK
+##   Right mouse button or Ctrl (hold)    point it (he turns side-on, towards the mouse)
 ##   1 - 9          swap the lead between the character options
 ##   Tab            next camera (starts on the one that follows him)
 ##   C              ceiling on / off
@@ -31,27 +33,36 @@ extends Node3D
 ##         [--walk=x,y,seconds] [--rest=seconds] [--fry-at=x,z] [--wander]
 ##         [--do=step,step,...] [--check-faces] [--eye=x,y,z,x,y,z]
 ##         [--title] [--settings] [--choose] [--choose=angel|devil]
+##         [--lineup=weapon:rig:pose+pose+...]   a row of one character on a plain backdrop, one for each pose,
+##             to judge how things are held: --lineup=ak:e:sc+sa+fc (weapon may be none). A pose is two or three
+##             letters: s side, f front, b back; then c carrying, a pointing it; then m mirrored (facing left),
+##             w walking, r running. So sam is side-on, pointing it to the left; fcr is running at the camera.
 ##   Steps run in order after the walk: use (press E), wait:seconds, frames:n, hover:n,
 ##   pick:n, next (E in a conversation), clickbox (click the talk box), walk:x:y:seconds (hold an arrow key:
 ##   a direction on screen), go:x:z (walk straight to that spot on
 ##   the floor), frywalk:x:y:seconds (walk the other character on screen), travel (open the travel list),
-##   travelhover:n, travelpick:n, key:name (a real key press: key:M, key:Escape, key:1).
+##   travelhover:n, travelpick:n, key:name (a real key press: key:M, key:Escape, key:1),
+##   weapon:name (pistol, uzi, ak, or none), aim:1 / aim:0, sprint:1 / sprint:0,
+##   face:front|side|back|left (turn him without walking; left is side-on, mirrored),
+##   wear:piece:colour (wear:hat:#cc2222; wear: alone puts his own clothes back),
+##   arm:who:weapon[:aim] (give someone else here a weapon: arm:TRE:ak:aim), day:n (make it day n).
 
 const Building := preload("res://scripts/building.gd")
 const Place := preload("res://scripts/place.gd")
+## Each place's plan, loaded when he first goes there (so a plan that does not compile spoils only its own place).
 const PLANS := {
-	"police": preload("res://scripts/plans/police.gd"),
-	"court": preload("res://scripts/plans/court.gd"),
-	"crib": preload("res://scripts/plans/crib.gd"),
-	"store": preload("res://scripts/plans/store.gd"),
-	"liquor": preload("res://scripts/plans/liquor.gd"),
-	"fry": preload("res://scripts/plans/fry.gd"),
-	"hospital": preload("res://scripts/plans/hospital.gd"),
-	"park": preload("res://scripts/plans/park.gd"),
-	"park2": preload("res://scripts/plans/park2.gd"),
-	"street": preload("res://scripts/plans/street.gd"),
-	"bea": preload("res://scripts/plans/bea.gd"),
-	"clothes": preload("res://scripts/plans/clothes.gd"),
+	"police": "res://scripts/plans/police.gd",
+	"court": "res://scripts/plans/court.gd",
+	"crib": "res://scripts/plans/crib.gd",
+	"store": "res://scripts/plans/store.gd",
+	"liquor": "res://scripts/plans/liquor.gd",
+	"fry": "res://scripts/plans/fry.gd",
+	"hospital": "res://scripts/plans/hospital.gd",
+	"park": "res://scripts/plans/park.gd",
+	"park2": "res://scripts/plans/park2.gd",
+	"street": "res://scripts/plans/street.gd",
+	"bea": "res://scripts/plans/bea.gd",
+	"clothes": "res://scripts/plans/clothes.gd",
 }
 const FlickerCheck := preload("res://scripts/flicker_check.gd")
 const PaperActor := preload("res://scripts/paper_actor.gd")
@@ -71,6 +82,20 @@ const LEAD_SPEED := 1.25          # the lead walks this much faster than the pla
 const BAR := 0.12                 # each black bar of a performance, as a fraction of the screen's height
 const PERFORM_ROOM := 2           # a performance is watched from the control room
 const MOODS := ["focused", "preachy", "smug", "shout", "happy"]     # his face changes every eight beats
+const WEAPONS := ["", "pistol", "uzi", "ak"]      # Q goes round these
+
+## What is on the racks of the clothing store: the colours each piece of
+## clothing comes in. E at a rack (a use point "outfit:<piece>") takes the next
+## one; after the last he is back in what he was drawn in. A jacket colour
+## ending in + has long sleeves. The people of the neighbourhood dress from the
+## same racks, differently each day (_dress_for_day).
+const WARDROBE := {
+	"hat": ["#c62828", "#1c1c22", "#f2c230", "#2e7d32", "#f4f1e8", "#7b3fa0", "#e8731c"],
+	"jacket": ["#b3261e", "#b3261e+", "#22252b", "#22252b+", "#2e7d32", "#d9a514+", "#6a3d9a", "#e9e4d6+", "#0e7c86"],
+	"shirt": ["#f2c230", "#d84a3a", "#22252b", "#8fd0c8", "#f4a6b8", "#9ccc65"],
+	"trousers": ["#23355c", "#1f1f24", "#c9a567", "#5b6b3a", "#8a8f98", "#7a4a2a"],
+	"shoes": ["#f4f1e8", "#1c1c22", "#c62828", "#2a5caa", "#7a4a2a"],
+}
 
 const SAVE := "user://save.json"              # where the game has got to: {"side", "place"}
 const SETTINGS := "user://settings.json"      # {"fullscreen"}
@@ -88,7 +113,7 @@ const PLACES := [
 	{"id": "hospital", "name": "HOSPITAL", "note": "EMERGENCY DEPARTMENT"},
 	{"id": "park", "name": "PEN LUCY PARK", "note": "THE COURT"},
 	{"id": "park2", "name": "THE GREEN", "note": "THE OTHER PARK"},
-	{"id": "street", "name": "ROSEDALE STREET", "note": "THE BLOCK"},
+	{"id": "street", "name": "ROSE HILL TERRACE", "note": "THE BLOCK"},
 	{"id": "bea", "name": "MISS BEA'S HOUSE", "note": "PORCH-FRONT HOUSE"},
 	{"id": "clothes", "name": "CLOTHING STORE", "note": "FRESH THREADS"},
 ]
@@ -150,10 +175,17 @@ var _title: CanvasLayer
 var _choose: Node3D
 var _save_path := SAVE         # a screenshot run may name another file with --save= (it never touches the real one)
 var _shot_screen := ""         # screenshot mode: "title", "settings", "choose" or "choose=angel" to photograph that screen
+var _env: Environment          # the light on everything: a place may turn it down (place.gd's `ambient`, `sun_energy`)
+var _sun: DirectionalLight3D
+var _wear := {}                # the clothes he has changed: piece ("hat", "jacket", ...) to Color
+var _picks := {}               # which colour of WARDROBE each of those is: piece to its number in the list
+var _day := 0                  # days since the game began; he sleeps in his own bed to end one
+var _shot_lineup := ""         # screenshot mode: --lineup's weapon:rig:poses
 
 
 func _ready() -> void:
 	var env := Environment.new()
+	_env = env
 	env.background_mode = Environment.BG_COLOR
 	env.background_color = Color(0.09, 0.08, 0.16)
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
@@ -165,6 +197,7 @@ func _ready() -> void:
 	add_child(world_env)
 
 	var sun := DirectionalLight3D.new()   # a soft front fill so box faces read as different planes
+	_sun = sun
 	sun.rotation_degrees = Vector3(-38, 24, 0)
 	sun.light_energy = 0.55
 	sun.light_color = Color(1.0, 0.96, 0.9)
@@ -328,6 +361,8 @@ func _ready() -> void:
 			_shot_steps = arg.trim_prefix("--do=").split(",")
 		elif arg.begins_with("--eye="):    # x,y,z,x,y,z: put the camera at the first point, looking at the second
 			_shot_eye = arg.trim_prefix("--eye=").split_floats(",")
+		elif arg.begins_with("--lineup="):
+			_shot_lineup = arg.trim_prefix("--lineup=")
 		elif arg.begins_with("--save="):   # keep the game in this file instead (for trying CONTINUE)
 			_save_path = arg.trim_prefix("--save=")
 		elif arg == "--title" or arg == "--settings" or arg.begins_with("--choose"):
@@ -398,7 +433,14 @@ func _site(id: String) -> Node3D:
 	else:
 		site = Place.new()
 		add_child(site)
-		PLANS[id].build(site)
+		var plan: GDScript = load(PLANS[id])
+		if plan and plan.can_instantiate():
+			plan.build(site)
+		else:
+			push_warning("The plan for %s did not load" % id)
+			site.setup(id.to_upper(), 10.0, 8.0)
+			site.street(-4.0, 14.0)
+			site.arrive = site.pt(5.0, 9.2)
 		for portal: Node3D in site.portals:
 			portal.used.connect(_teleport)
 		for point: Node3D in site.use_points:
@@ -418,6 +460,8 @@ func _open_place(id: String) -> void:
 		if _sites[key] == _building:
 			_place = key
 	_fry.visible = _place == "studio"
+	_env.ambient_light_energy = _building.ambient if "ambient" in _building else 0.62
+	_sun.light_energy = _building.sun_energy if "sun_energy" in _building else 0.55
 	_actor.others = []
 	_actor.obstacles = _building.obstacles
 	_usables = _building.usables()
@@ -444,6 +488,8 @@ func _people(id: String, site: Node3D) -> void:
 		npc.display_name = who.get("name", "")
 		npc.speed = who.get("speed", 0.7)
 		npc.reach = who.get("reach", npc.REACH)
+		npc.weapon = who.get("weapon", "")
+		npc.aiming = who.get("aiming", false)
 		npc.obstacles = site.obstacles
 		npc.others = [_actor]
 		if npc.face and who.has("face"):
@@ -462,6 +508,7 @@ func _people(id: String, site: Node3D) -> void:
 			npc.used.connect(_start_talk.bind(npc, talk))
 		cast.append({"actor": npc, "brain": brain, "talk": talk})
 	_cast[id] = cast
+	_dress_for_day()
 
 
 ## The studio's ceiling (C and the top camera hide it); null anywhere else.
@@ -768,8 +815,67 @@ func _end_talk() -> void:
 
 
 ## E at a use point (use_point.gd, place.gd's `use_point`): what happens depends on its id.
+##   outfit:<piece>   a rack in the clothing store: the next colour of that piece (hat, jacket, shirt, trousers, shoes)
+##   outfit:reset     the mirror: back into what he was drawn in
+##   sleep            his bed: the picture blacks out and it is the next day
 func _use_point(id: String, _by: Node3D) -> void:
 	print("[use] ", id)
+	if id == "outfit:reset":
+		_picks = {}
+		_dress_lead()
+		_save_game()
+	elif id.begins_with("outfit:"):
+		var piece := id.trim_prefix("outfit:")
+		var rack: Array = WARDROBE.get(piece, [])
+		if rack.is_empty() or not piece in _actor.clothes():
+			return
+		var next: int = int(_picks.get(piece, -1)) + 1
+		if next >= rack.size():
+			_picks.erase(piece)
+		else:
+			_picks[piece] = next
+		_dress_lead()
+		_save_game()
+	elif id == "sleep":
+		_cut_to(func() -> void:
+			_day += 1
+			_dress_for_day()
+			_save_game()
+			print("[use] day %d" % _day))
+
+
+## Put the lead in what he has picked off the racks (_picks).
+func _dress_lead() -> void:
+	_wear = {}
+	for piece: String in _picks:
+		var rack: Array = WARDROBE.get(piece, [])
+		var n := int(_picks[piece])
+		if n < 0 or n >= rack.size():
+			continue
+		var colour: String = rack[n]
+		_wear[piece] = Color(colour.trim_suffix("+"))
+		if piece == "jacket" and colour.ends_with("+"):
+			_wear["sleeve"] = _wear[piece]
+	_actor.set_outfit(_wear)
+
+
+## Dress everyone for today. On the first day they wear what they were drawn
+## in; after that each person takes two or three pieces off the racks, the
+## same ones all that day and different ones the next. Only people whose
+## drawings know their clothes (outfit.py) change: uniforms stay uniforms.
+func _dress_for_day() -> void:
+	for id: String in _cast:
+		for member: Dictionary in _cast[id]:
+			var npc: Node3D = member["actor"]
+			var wear := {}
+			if _day > 0:
+				for piece: String in npc.clothes():
+					var rack: Array = WARDROBE.get(piece, [])
+					var roll := hash("%s/%s/%d" % [npc.name, piece, _day])
+					if rack.is_empty() or roll % 3 == 0:
+						continue                       # this piece is as drawn today
+					wear[piece] = Color(String(rack[(roll / 3) % rack.size()]).trim_suffix("+"))
+			npc.set_outfit(wear)
 
 
 ## Stop or release whoever walks `npc` about (nothing, for someone who only stands).
@@ -797,7 +903,7 @@ func _write(path: String, data: Dictionary) -> void:
 ## Remember where the game has got to, for CONTINUE. A screenshot run never saves.
 func _save_game() -> void:
 	if _mode == "play" and not (_scripted and _save_path == SAVE):
-		_write(_save_path, {"side": _side, "place": _place})
+		_write(_save_path, {"side": _side, "place": _place, "day": _day, "wear": _picks})
 
 
 ## Which screen is up. The places are hidden behind the choice (it has its own
@@ -851,6 +957,10 @@ func _begin_game(side: String) -> void:
 	_cut_to(func() -> void:
 		_choose.close()
 		_side = side
+		_day = 0
+		_picks = {}
+		_dress_lead()
+		_dress_for_day()
 		_set_mode("play")
 		_open_place("studio")
 		_actor.show_face()
@@ -864,6 +974,13 @@ func _continue_game() -> void:
 	_cut_to(func() -> void:
 		_title.close()
 		_side = String(data.get("side", ""))
+		_day = int(data.get("day", 0))
+		_picks = {}
+		var kept = data.get("wear", {})
+		if typeof(kept) == TYPE_DICTIONARY:
+			for piece: String in kept:
+				_picks[piece] = int(kept[piece])
+		_dress_lead()
 		_set_mode("play")
 		var id := String(data.get("place", "studio"))
 		_open_place(id if PLANS.has(id) else "studio")
@@ -967,6 +1084,13 @@ func _process(delta: float) -> void:
 			Input.get_axis("ui_left", "ui_right") + float(Input.is_physical_key_pressed(KEY_D)) - float(Input.is_physical_key_pressed(KEY_A)),
 			Input.get_axis("ui_up", "ui_down") + float(Input.is_physical_key_pressed(KEY_S)) - float(Input.is_physical_key_pressed(KEY_W)))
 	_actor.areas = _building.walk_areas()      # doorways open and shut
+	if not _scripted:
+		var free: bool = not _talk.is_open() and not _travel.is_open() and not _performing and _mode == "play"
+		_actor.sprinting = free and Input.is_physical_key_pressed(KEY_SHIFT)
+		var mouse := Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT)
+		_actor.aiming = free and (mouse or Input.is_physical_key_pressed(KEY_CTRL))
+		# With the mouse he points it at the side of the screen the pointer is on; with Ctrl, the way he is facing.
+		_actor.aim_to = signf(get_viewport().get_mouse_position().x - _camera.unproject_position(_actor.position + Vector3(0, 1, 0)).x) if mouse else 0.0
 	_actor.walk(_floor_dir(dir), dir, delta)
 	for member: Dictionary in _cast.get(_place, []):
 		if member["brain"]:
@@ -998,7 +1122,7 @@ func _process(delta: float) -> void:
 			_actor.face.talking = Input.is_physical_key_pressed(KEY_SPACE)
 			if _actor.face.talking:
 				_actor.show_face()
-		_hud.text = "M travel    face: %s    Z / X change   hold Space to move his mouth   F close-up%s" % [_actor.face.expression, "" if _side == "" else "    listening to the %s" % _side]
+		_hud.text = "day %d   M travel   Shift run   Q weapon (%s)   right mouse: point it    face: %s   Z / X change   Space: mouth   F close-up%s" % [_day + 1, "none" if _actor.weapon == "" else _actor.weapon, _actor.face.expression, "" if _side == "" else "    listening to the %s" % _side]
 	else:
 		_hud.text = "M travel    this drawing has its face baked in (5 has loose face parts)"
 
@@ -1018,6 +1142,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_E:
 			_use_nearest()
 			get_viewport().set_input_as_handled()    # or the same press would also answer the talk box it just opened
+		KEY_Q:
+			_actor.weapon = WEAPONS[(WEAPONS.find(_actor.weapon) + 1) % WEAPONS.size()]
 		KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9:
 			var pick: int = event.physical_keycode - KEY_1
 			if pick < _characters.size():
@@ -1047,6 +1173,54 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 
 # ------------------------------------------------------------- screenshot mode
+
+## A row of one character, one for each pose asked for, on a plain backdrop far
+## above the places, seen square-on. See --lineup at the top.
+func _lineup(spec: String) -> void:
+	var bits := spec.split(":")
+	var rigs := (bits[1] if bits.size() > 1 else "e").split(",")        # one for all, or one for each pose
+	var poses := (bits[2] if bits.size() > 2 else "sc+sa+fc").split("+")
+	var origin := Vector3(0, 600, 0)
+	var grey := StandardMaterial3D.new()
+	grey.albedo_color = Color(0.56, 0.6, 0.66)
+	grey.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	Kit.box(self, Vector3(60, 30, 0.1), origin + Vector3(0, 0, -1.2), grey)
+	var floor_look := StandardMaterial3D.new()
+	floor_look.albedo_color = Color(0.44, 0.47, 0.52)
+	floor_look.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	Kit.box(self, Vector3(60, 0.1, 6), origin + Vector3(0, -0.05, 0), floor_look)
+	var gap := 2.5
+	var tall := 1.8
+	for i in poses.size():
+		var pose: String = poses[i]
+		var who: Node3D = PaperActor.new()
+		add_child(who)
+		if not who.set_rig(_rig_dir(rigs[i % rigs.size()])):
+			continue
+		tall = maxf(tall, who.height + 0.25)
+		var spot := origin + Vector3((i - (poses.size() - 1) * 0.5) * gap, 0, 0)
+		who.position = spot
+		who.areas = [Rect2(-99, -99, 198, 198)]
+		who.weapon = "" if bits[0] == "none" else bits[0]
+		who.aiming = pose.substr(1, 1) == "a"
+		var way: String = {"s": "side", "f": "front", "b": "back"}.get(pose.substr(0, 1), "front")
+		var mirrored := pose.contains("m")
+		who.face_way(way, mirrored)
+		for f in 90:
+			who.walk(Vector2.ZERO, Vector2.ZERO, 1.0 / 60.0)
+		if pose.contains("w") or pose.contains("r"):
+			who.sprinting = pose.contains("r")
+			var dir := Vector2(-1.0 if mirrored else 1.0, 0.0) if way == "side" else Vector2(0.0, 1.0 if way == "front" else -1.0)
+			for f in (47 if pose.contains("w") else 38):
+				who.walk(dir, dir, 1.0 / 60.0)
+		who.position = spot
+	_camera.fov = 24.0
+	var wide := poses.size() * gap
+	var far := maxf(wide / (16.0 / 9.0), tall) * 0.5 / tan(deg_to_rad(12.0))
+	_camera.look_at_from_position(origin + Vector3(0, tall * 0.5 - 0.08, far), origin + Vector3(0, tall * 0.5 - 0.08, 0))
+	_tag.visible = false
+	_hint.visible = false
+
 
 func _save_frame(path: String) -> void:
 	var err := get_viewport().get_texture().get_image().save_png(path)
@@ -1138,6 +1312,28 @@ func _take_shot() -> void:
 				_travel.pick(int(bits[1]))
 				await _wait(0.9)
 				print("[shot] arrived at %.2f, %.2f; list open: %s" % [_actor.position.x, _actor.position.z, _travel.is_open()])
+			"weapon":       # weapon:pistol, weapon:uzi, weapon:ak, weapon:none
+				_actor.weapon = "" if bits[1] == "none" else bits[1]
+			"aim":          # aim:1 points it, aim:0 lowers it
+				_actor.aiming = bits[1] == "1"
+			"sprint":
+				_actor.sprinting = bits[1] == "1"
+			"face":         # face:front, face:side, face:back, face:left (side-on, mirrored)
+				_actor.face_way("side" if bits[1] == "left" else bits[1], bits[1] == "left")
+			"wear":         # wear:hat:#cc2222 ... ; wear: alone puts his own clothes back
+				if bits.size() < 3:
+					_wear = {}
+				else:
+					_wear[bits[1]] = Color(bits[2])
+				_actor.set_outfit(_wear)
+			"arm":          # arm:TRE:ak or arm:TRE:ak:aim: give someone else here a weapon
+				for member: Dictionary in _cast.get(_place, []):
+					if String(member["actor"].name).to_lower() == bits[1].to_lower():
+						member["actor"].weapon = "" if bits[2] == "none" else bits[2]
+						member["actor"].aiming = bits.size() > 3
+			"day":          # day:n: make it day n (0 is the first), and dress everyone for it
+				_day = int(bits[1])
+				_dress_for_day()
 			"frywalk":
 				var way := Vector2(float(bits[1]), float(bits[2]))
 				for i in int(float(bits[3]) * 60.0):
@@ -1169,6 +1365,8 @@ func _take_shot() -> void:
 		_camera.look_at_from_position(Vector3(_shot_eye[0], _shot_eye[1], _shot_eye[2]), Vector3(_shot_eye[3], _shot_eye[4], _shot_eye[5]))
 		_face_cards()
 	_find_nearest()
+	if _shot_lineup != "":
+		_lineup(_shot_lineup)
 	print("[shot] %s: in the %s at %.2f, %.2f; nearest: %s; window at %s" % [_place, _building.rooms[_room]["name"], _actor.position.x, _actor.position.z, _nearest.use_name() if _nearest else "-", DisplayServer.window_get_position()])
 	for i in 12:
 		await get_tree().process_frame

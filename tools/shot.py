@@ -129,11 +129,21 @@ class Unfocused:
 
 
 def run(cmd, timeout):
-    p = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout, creationflags=QUIET)
-    lines = [l for l in (p.stdout + p.stderr).splitlines() if l.strip()]
+    # A run that never ends (a script error stopped the game before it could quit) is killed, and what
+    # it printed is still shown: that is where the error is.
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace", creationflags=QUIET)
+    try:
+        out, err = p.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        if os.name == "nt":       # the console build starts the real one: stop both
+            subprocess.call(["taskkill", "/T", "/F", "/PID", str(p.pid)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=QUIET)
+        p.kill()
+        out, err = p.communicate()
+        err += os.linesep + "ERROR: the run did not finish in %d seconds and was stopped" % timeout
+    lines = [l for l in (out + err).splitlines() if l.strip()]
     errors = [l for l in lines if l.lstrip().startswith(("ERROR:", "SCRIPT ERROR:", "SHADER ERROR:", "Parse Error"))]
     for i, l in enumerate(lines):
-        if l in errors or "WARNING:" in l or "[shot]" in l or (i and lines[i - 1] in errors):
+        if l in errors or "WARNING:" in l or "[shot]" in l or "[use]" in l or (i and lines[i - 1] in errors):
             print(l)
     return p.returncode, bool(errors)
 
@@ -152,7 +162,7 @@ def main():
             os.remove(out)
         with Unfocused():
             code, bad = run([GODOT, "--path", POPUP, "--windowed", "--resolution", "%dx%d" % SIZE] + window_place()
-                            + ["--", "--shot=" + out] + args[1:], 180)
+                            + ["--", "--shot=" + out] + args[1:], 90)
         if bad or not os.path.exists(out):
             raise SystemExit(f"shot failed (exit {code}, errors {bad}, written {os.path.exists(out)})")
 

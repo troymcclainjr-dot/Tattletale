@@ -1,19 +1,339 @@
 extends RefCounted
-## A street to walk down: a short copy of Rosedale Street from the old Pen Lucy.
-## NOT BUILT YET: this is a stand-in (a pavement and one bare room) so that the
-## travel list has somewhere to go. Numbers are metres on the plan (see
-## place.gd): u from the left wall, v from the back wall.
+## Rose Hill Terrace: a street to walk down. A short copy of the old Pen Lucy's
+## Rose Hill Terrace, the side street that runs one long block (166 m) west
+## from Old York Road to Greenmount Avenue. This is its east end: about 57 m of
+## the north side, 516 to 532, up to the corner of Old York Road, with 508 to
+## 514 running on to the left beyond where he can walk. Two-storey rowhouses
+## about 6.4 m wide, mirrored in pairs so the doors and the steps come two
+## together, each with an open porch on a solid grey deck, four steps down to a
+## paved strip, and the street's own mark: a three-sided sash bay upstairs
+## standing on the porch roof. 532 at the corner has no porch, only marble steps.
+## The road is 9.5 m kerb to kerb, two-way, parked along the north kerb only.
+##
+## One band, all out of doors, so nothing is ever hidden. One room:
+##
+##   ROSE HILL TERRACE   the paved strip in front of the porches, the north
+##                       pavement, the road, the corner, and Old York Road from
+##                       10 m up it across to a step onto its far pavement. The
+##                       cars, poles, lamps, steps and the rest stand in it.
+##
+## The camera stands on the near (south) side looking across, so only the far
+## side is built; the near pavement is bare. The houses have no insides and
+## their doors do not open.
+##
+## Copied from the old game (pen_lucy_level.json, kits.py and the measured
+## street): the house numbers, widths and heights, each house's wall, trim and
+## door colours, which side its door is on, its bay's cladding, its lintels and
+## chimney; the 0.7 m floor, the porch and stoop sizes; the 2.0 m paved strip,
+## the 2.4 m pavement, the 9.5 m road and its worn yellow dash pairs every 12 m;
+## the utility poles (north side, 29 m apart, the wires at 9.2 m) and the cobra
+## lamps (42 m apart); the parked cars (8 m apart, facing west) in the old
+## game's paints. No street trees, no fences in front, no corner shop.
+##
+## Where it departs: the kerb is a 6 cm step, not 15 cm (he walks on one flat
+## floor); the second street lamp stands on the north pavement (the real one is
+## across the street, on the camera's side); the stop sign is on the corner post
+## facing the eastbound lane (the real one stands on the south corner); the
+## curb-side trash cans, the lit windows, curtains, blinds, painted screens,
+## porch chairs, ferns and pots, the mural on 532's end wall, the mailbox, the
+## bus stop and its bench, and Old York Road's houses and lamp are the pop-up's
+## own; the trees are only behind the houses, their crowns over the roofs.
+## The old game's two residents here (Pearl Sutton, mid-block on the north
+## pavement; Camille Porter across from her) are not added.
+##
+## Invented words (placeholders): "BUS STOP", "MAIL". "STOP" is the road sign.
+## The house numbers are the old game's.
+##
+## Numbers are metres on the plan (see place.gd): u from the left end of 516,
+## v from behind the houses. The fronts are on v = 10, the porches run to 12,
+## the paved strip to 14, the pavement to 16.4, the road 16.4 to 25.9.
 
 const Props := preload("res://scripts/props.gd")
+const Street := preload("res://scripts/props_street.gd")
+const Outdoor := preload("res://scripts/outdoor.gd")
+
+const NAME := "ROSE HILL TERRACE"
+const SIGN := "ROSE HILL TER"
+
+const D := 10.0           # the house fronts
+const STRIP := 12.0       # the porch fronts; the paved strip to 14
+const PAVE := 14.0        # the pavement, 14 to 16.4
+const KERB := 16.25       # the kerb stone
+const ROAD := 16.4        # the road: Rose Hill's 9.5 m
+const FAR := 25.9
+const MID := 21.15        # the middle of the road
+const NEAR := 28.45       # the back of the near pavement
+const CORNER := 56.68     # 532's end wall; Old York Road's pavement beyond it
+const OY0 := 59.08        # Old York Road, kerb to kerb
+const OY1 := 68.58
+const OYE := 70.98        # the back of Old York's far pavement
+const EAST := 72.9        # the fronts across Old York Road
+const LEFT := -32.0       # how far the street is drawn to the left
+const BACK := -60.0       # and up Old York Road
+const FRONT := 40.0       # and down it
 
 
 static func build(p: Node3D) -> void:
-	p.setup("ROSEDALE STREET", 10.0, 8.0)
-	var st: int = p.street(-4.0, 14.0)
-	var b1: int = p.band()
-	p.arrive = p.pt(5.0, 9.2)
-	p.room("ROOM", b1, 0, 0, 10, 8, Kit.tex("lino", 1.2, Color(0.7, 0.68, 0.6)), {"light": Color(1.0, 0.95, 0.85), "energy": 0.6})
-	p.cross(b1, 8.0, 0, 10, Kit.tex("brick", 1.5, Color(0.5, 0.26, 0.2)), [{"a": 4.5, "b": 5.5}], {"h": 3.2})
-	p.side(b1, 0.0, 0, 8, Color(0.8, 0.78, 0.7))
-	p.side(b1, 10.0, 0, 8, Color(0.8, 0.78, 0.7))
-	p.cross(b1, 0.0, 0, 10, Color(0.8, 0.78, 0.7), [], {"back": true})
+	p.setup(NAME, 60.0, D)
+	var st: int = p.band()
+	p.arrive = p.pt(53.4, 15.0)
+	var right := OY1 + 1.0                                  # a step onto Old York's far pavement
+	var street: int = p.room(NAME, st, 0.0, 2.0, right, FAR, null, {
+		"street": true,
+		"areas": [[0.0, STRIP, right, FAR], [51.78, D, CORNER, PAVE], [CORNER, 2.0, right, PAVE]],
+		"cam_near": 1.6, "cam_y": 4.0, "look_y": 2.45})
+	p.rooms[street]["cam_max_x"] = p.pt(EAST - 2.6, 0.0).x  # never up against the houses across Old York Road
+	_ground(p, st)
+	_row(p, st)
+	_kerbside(p, st)
+	_corner(p, st)
+	_context(p, st)
+
+
+## A box on the plan: u0..u1, v0..v1, y0..y1.
+static func _gb(p: Node3D, n: Node3D, u0: float, u1: float, v0: float, v1: float, y0: float, y1: float, look: Variant) -> MeshInstance3D:
+	return Kit.box(n, Vector3(u1 - u0, y1 - y0, v1 - v0), p.pt((u0 + u1) * 0.5, (v0 + v1) * 0.5, (y0 + y1) * 0.5), look)
+
+
+static func _brick(tint: Color) -> Material:
+	return Kit.tex("brick", 1.5, Color(0.54, 0.29, 0.23), true, tint)
+
+
+# ------------------------------------------------------------------ ground
+
+static func _ground(p: Node3D, st: int) -> void:
+	var n: Node3D = p.node_of(st)
+	var walk := Kit.tex("sidewalk", 2.4, Color(0.66, 0.64, 0.6), true, Color(0.88, 0.87, 0.84))
+	var paved := Kit.tex("sidewalk", 1.6, Color(0.6, 0.58, 0.55), true, Color(0.76, 0.75, 0.72))
+	var tar := Kit.tex("asphalt", 3.0, Color(0.23, 0.23, 0.25), true, Color(0.9, 0.88, 0.86))
+	var alley := Kit.tex("asphalt", 2.0, Color(0.3, 0.3, 0.32), true, Color(0.72, 0.72, 0.72))
+	var kerb := Color(0.78, 0.77, 0.72)
+	var dirt := Color(0.28, 0.25, 0.21)
+	_gb(p, n, LEFT - 30.0, 120.0, BACK - 20.0, FRONT + 10.0, -0.8, -0.5, Color(0.12, 0.13, 0.12))
+	# Behind the row: the back yards, the alley, the next street's yards.
+	_gb(p, n, LEFT, CORNER, BACK, D, -0.3, -0.02, dirt)
+	_gb(p, n, LEFT, CORNER - 0.02, -7.5, -4.0, -0.3, -0.01, alley)
+	# The paved strip in front of the porches (under them too), the pavement,
+	# Old York Road's near pavement round the corner.
+	_gb(p, n, LEFT, CORNER, D, PAVE, -0.3, 0.0, paved)
+	_gb(p, n, LEFT, OY0 - 0.15, PAVE, KERB, -0.3, 0.0, walk)
+	_gb(p, n, CORNER, OY0 - 0.15, BACK, PAVE, -0.3, 0.0, walk)
+	# Kerbs, a little proud of the pavement, and the roads.
+	_gb(p, n, LEFT, OY0, KERB, ROAD, -0.3, 0.015, kerb)
+	_gb(p, n, OY0 - 0.15, OY0, BACK, KERB, -0.3, 0.015, kerb)
+	_gb(p, n, LEFT, OY0, FAR, FAR + 0.15, -0.3, 0.015, kerb)
+	_gb(p, n, OY0 - 0.15, OY0, FAR + 0.15, FRONT, -0.3, 0.015, kerb)
+	_gb(p, n, OY1, OY1 + 0.15, BACK, FRONT, -0.3, 0.015, kerb)
+	_gb(p, n, LEFT, OY0, ROAD, FAR, -0.36, -0.06, tar)
+	_gb(p, n, OY0, OY1, BACK, FRONT, -0.36, -0.06, tar)
+	# The near pavement (bare), Old York Road's far pavement and the yards behind it.
+	_gb(p, n, LEFT, OY0 - 0.15, FAR + 0.15, NEAR, -0.3, 0.0, walk)
+	_gb(p, n, CORNER, OY0 - 0.15, NEAR, FRONT, -0.3, 0.0, walk)
+	_gb(p, n, OY1 + 0.15, OYE, BACK, FRONT, -0.3, 0.0, walk)
+	_gb(p, n, OYE, EAST + 12.0, BACK, FRONT, -0.3, 0.0, paved)
+	# Rose Hill's paint: pairs of worn yellow dashes every 12 m down the middle,
+	# no lines along it. Old York Road has its double yellow line.
+	var yellow := Color(0.84, 0.69, 0.25)
+	var u := 3.0 - 24.0
+	while u < OY0 - 2.0:
+		for v: float in [MID - 0.15, MID + 0.15]:
+			_gb(p, n, u - 0.6, u + 0.6, v - 0.09, v + 0.09, -0.06, -0.055, yellow)
+		u += 12.0
+	for c: float in [63.71, 63.95]:
+		_gb(p, n, c - 0.05, c + 0.05, BACK, FRONT, -0.06, -0.055, Color(0.9, 0.74, 0.22))
+	# A storm drain in the gutter, manhole covers.
+	_gb(p, n, 52.4, 53.3, ROAD + 0.02, ROAD + 0.4, -0.06, -0.053, Color(0.1, 0.1, 0.11))
+	for i in 5:
+		_gb(p, n, 52.47 + i * 0.17, 52.53 + i * 0.17, ROAD + 0.06, ROAD + 0.36, -0.053, -0.05, Color(0.3, 0.3, 0.32))
+	for at: Vector2 in [Vector2(17.0, 22.4), Vector2(41.5, 19.6), Vector2(63.0, 8.5)]:
+		Kit.cyl(n, 0.36, 0.012, p.pt(at.x, at.y, -0.054), Color(0.26, 0.26, 0.28), Vector3.ZERO, 12)
+
+
+# -------------------------------------------------------------------- the row
+
+## The north side of Rose Hill Terrace as the old game builds it: 510 to 532
+## are one row (508 ends the next, 0.7 m along). Each house's width, height,
+## wall, trim and door colours, which side its door is on, the bay's cladding,
+## the lintels and the chimney are the old game's (kits.py style(), seeded by
+## its map id); the lit windows, curtains and porch things are the pop-up's.
+static func _row(p: Node3D, st: int) -> void:
+	var formstone := Kit.tex("painted_block", 0.7, Color(0.6, 0.59, 0.55), true, Color(0.7, 0.72, 1.0))
+	var tan := Kit.tex("painted_block", 0.7, Color(0.71, 0.65, 0.54), true, Color(0.8, 0.78, 0.98))
+	var stone := Color(0.72, 0.71, 0.68)          # the formstone lintels
+	var dc: Dictionary = Street.DOORS
+	var houses := [
+		[-27.5, 7.51, {"no": "508", "wall": formstone, "trim": Street.WHITE, "door": dc["white"], "door_left": true, "bay": "white", "height": 8.43, "chimney": true, "lit": "10100", "curtain": Color(0.9, 0.7, 0.2)}],
+		[-19.29, 6.54, {"no": "510", "wall": _brick(Color(0.92, 0.86, 0.86)), "trim": Street.CREAM, "door": dc["red"], "door_left": true, "bay": "grey", "lintel": Street.WHITE, "height": 8.22, "chimney": true, "lit": "00011", "curtain": Color(0.85, 0.3, 0.3), "porch_light": true}],
+		[-12.75, 6.37, {"no": "512", "wall": _brick(Color(0.86, 0.82, 0.86)), "trim": Street.BROWN, "door": dc["black"], "door_left": false, "bay": "grey", "lintel": Street.WHITE, "height": 8.15, "chimney": true, "lit": "01100", "curtain": Color(0.4, 0.65, 0.4)}],
+		[-6.38, 6.38, {"no": "514", "wall": _brick(Color(0.95, 0.9, 0.92)), "trim": Street.WHITE, "door": dc["black"], "door_left": true, "bay": "white", "lintel": stone, "height": 8.01, "lit": "1t001", "curtain": Color(0.95, 0.93, 0.86), "porch_light": true, "chairs": true}],
+		[0.0, 6.33, {"no": "516", "wall": _brick(Color(0.84, 0.8, 0.84)), "trim": Street.RED, "door": dc["red"], "door_left": false, "bay": "grey", "lintel": Street.WHITE, "height": 8.02, "lit": "10010", "curtain": Color(0.9, 0.6, 0.3), "screens": true}],
+		[6.33, 6.53, {"no": "518", "wall": _brick(Color(0.9, 0.84, 0.84)), "trim": Street.WHITE, "door": dc["green"], "door_left": true, "bay": "grey", "lintel": Street.CREAM, "height": 7.99, "chimney": true, "lit": "00100", "curtain": Color(0.62, 0.5, 0.78), "fern": true}],
+		[12.86, 6.38, {"no": "520", "wall": _brick(Color(1.0, 0.96, 0.94)), "trim": Street.WHITE, "door": dc["green"], "door_left": false, "bay": "white", "height": 7.91, "chimney": true, "lit": "11101", "curtain": Color(0.85, 0.22, 0.22), "porch_light": true, "chairs": true}],
+		[19.24, 6.4, {"no": "522", "wall": formstone, "trim": Street.BROWN, "door": dc["green"], "door_left": true, "bay": "white", "height": 7.85, "lit": "01011", "curtain": Color(0.95, 0.75, 0.25), "screens": true, "fern": true}],
+		[25.64, 6.38, {"no": "524", "wall": tan, "trim": Street.WHITE, "door": dc["blue"], "door_left": false, "bay": "cream", "height": 7.83, "lit": "10110", "blinds": true, "curtain": Color(0.9, 0.88, 0.78), "pots": true, "porch_light": true}],
+		[32.02, 6.51, {"no": "526", "wall": _brick(Color(0.86, 0.8, 0.82)), "trim": Street.BROWN, "door": dc["red"], "door_left": true, "bay": "grey", "lintel": Street.WHITE, "height": 7.71, "chimney": true, "lit": "t1001", "curtain": Color(0.35, 0.6, 0.4), "chairs": true}],
+		[38.53, 6.47, {"no": "528", "wall": _brick(Color(1.0, 0.98, 0.96)), "trim": Street.BROWN, "door": dc["blue"], "door_left": false, "bay": "white", "lintel": stone, "height": 8.0, "chimney": true, "lit": "11011", "curtain": Color(0.92, 0.5, 0.62), "screens": true, "porch_light": true, "fern": true}],
+		[45.0, 6.78, {"no": "530", "wall": _brick(Color(0.9, 0.86, 0.86)), "trim": Street.CREAM, "door": dc["wood"], "door_left": true, "bay": "cream", "lintel": stone, "height": 8.41, "chimney": true, "lit": "10111", "curtain": Color(0.95, 0.93, 0.86), "pots": true, "porch_light": true}],
+		[51.78, 4.9, {"no": "532", "wall": formstone, "trim": Street.WHITE, "door": dc["green"], "door_left": false, "bay": "cream", "height": 8.27, "chimney": true, "porch": false, "lit": "10011", "curtain": Color(0.55, 0.32, 0.62), "porch_light": true}],
+	]
+	for row: Array in houses:
+		var u0: float = row[0]
+		var w: float = row[1]
+		var h: Dictionary = row[2]
+		Street.porch_house(p, st, u0, D, w, h)
+		# The steps take up floor.
+		var door: float = u0 + (0.9 if h.get("door_left", true) else w - 0.9)
+		if h.get("porch", true):
+			p.block(door - 0.625, STRIP, door + 0.625, STRIP + 0.9)
+		else:
+			p.block(door - 0.7, D, door + 0.7, D + 1.35)
+	# The gap between 508's row and 510's, dark.
+	_gb(p, p.node_of(st), -19.99, -19.29, 1.0, D - 0.3, 0.0, 6.5, Color(0.08, 0.08, 0.1))
+
+
+# ---------------------------------------------------------------- kerbside
+
+static func _kerbside(p: Node3D, st: int) -> void:
+	var n: Node3D = p.node_of(st)
+	# The utility poles along the north kerb, 29 m apart, and their three wires.
+	var poles := [50.37, 21.37, -7.63]
+	for u: float in poles:
+		Street.utility_pole(p, st, u, ROAD - 0.42)
+	var ends: Array = poles.duplicate()
+	ends.append(LEFT)
+	for i in range(ends.size() - 1):
+		for z: float in Street.WIRES:
+			_wire(n, p.pt(ends[i], ROAD - 0.42 + z, 9.2), p.pt(ends[i + 1], ROAD - 0.42 + z, 9.2), 0.65)
+	# The cobra-head lamps, 42 m apart.
+	Street.cobra_lamp(p, st, 39.46, ROAD - 0.65)
+	Street.cobra_lamp(p, st, -2.54, ROAD - 0.65)
+	# Parked along the north kerb only, 8 m apart, facing west the way that
+	# lane goes; the old game's kinds and paints in turn.
+	var kinds := ["box_sedan", "compact", "minivan", "midsize", "hatchback", "long_sedan"]
+	for i in 9:
+		var kind: String = kinds[i % kinds.size()]
+		var w: float = Street.CAR_KINDS[kind][1]
+		Street.parked_car(p, st, 45.46 - i * 8.0, ROAD + 0.22 + w * 0.5, 270.0, kind, Street.PAINT[(i * 5) % Street.PAINT.size()])
+	# Cans out for the morning, bags beside them.
+	Props.bin(p, st, 22.6, PAVE - 0.45)
+	Props.bin(p, st, 23.15, PAVE - 0.45)
+	Street.bags(n, p.pt(23.85, PAVE - 0.5), 2)
+	Props.bin(p, st, 41.9, PAVE - 0.45)
+	Street.bags(n, p.pt(9.8, PAVE - 0.5), 1)
+	# Litter, about every 4 m: in the gutter, on the pavement, in the strip.
+	for i in 24:
+		var lu := -6.0 + i * 3.9 + Props.rnd(i * 1.37) * 1.6
+		var at: Vector3
+		match i % 3:
+			0:
+				at = p.pt(lu, ROAD + 0.08 + Props.rnd(i * 2.1) * 0.14, -0.06)
+			1:
+				at = p.pt(lu, PAVE + 0.25 + Props.rnd(i * 3.3) * 1.6)
+			_:
+				at = p.pt(lu, STRIP + 1.0 + Props.rnd(i * 4.7) * 0.8)
+		Street.litter(n, at, i)
+
+
+## A wire hanging between two points, sagging `sag` in the middle.
+static func _wire(n: Node3D, a: Vector3, b: Vector3, sag: float) -> void:
+	var last := a
+	for k in range(1, 7):
+		var t := k / 6.0
+		var at := a.lerp(b, t) - Vector3(0, 4.0 * sag * t * (1.0 - t), 0)
+		Street.pipe(n, last, at, 0.014, Props.DARK, 4)
+		last = at
+
+
+# ------------------------------------------------------------------ corner
+
+static func _corner(p: Node3D, st: int) -> void:
+	Street.street_sign(p, st, OY0 - 0.5, ROAD - 0.5, SIGN, "OLD YORK RD", 270.0)
+	Props.hydrant(p, st, 54.9, ROAD - 0.45)
+	Street.mailbox(p, st, OY0 - 0.6, 11.2, 90.0)
+	Street.bus_stop(p, st, OY0 - 0.45, 5.0, 0.0)
+	Props.bench(p, st, CORNER + 0.55, 6.4, 90.0, 1.5, Color(0.3, 0.45, 0.32), true, 0.5)
+	Street.cobra_lamp(p, st, OY0 - 0.65, 1.2, 90.0)
+	_mural(p, st)
+	# 532's back yard along Old York Road: a board fence.
+	p.fence(st, false, CORNER - 0.08, -4.0, 1.0, [], 1.8, "wood")
+
+
+## 532's end wall, along Old York Road: a sunset over the rooftops, and a rose.
+static func _mural(p: Node3D, st: int) -> void:
+	var g := Street.face(p, st, CORNER, D, 90.0)
+	var s0 := 1.0
+	var s1 := 8.7
+	Street.fb(g, s0 - 0.12, s1 + 0.12, 0.35, 6.75, 0.0, 0.012, Color(0.96, 0.95, 0.9))
+	var bands := [[0.45, 1.9, Color(1.0, 0.62, 0.22)], [1.9, 3.1, Color(0.98, 0.42, 0.38)], [3.1, 4.4, Color(0.78, 0.3, 0.55)], [4.4, 5.6, Color(0.45, 0.26, 0.6)], [5.6, 6.65, Color(0.2, 0.2, 0.48)]]
+	for band: Array in bands:
+		Street.fb(g, s0, s1, band[0], band[1], 0.012, 0.022, band[2])
+	Kit.disc(g, 1.1, Vector3(5.9, 2.4, 0.03), Color(1.0, 0.86, 0.3), 0.012, 16)
+	# Rooftops against the sun, their windows lit.
+	var roofs := [[s0, 2.3, 1.6], [2.3, 3.9, 2.0], [3.9, 5.1, 1.35], [5.1, 6.9, 1.8], [6.9, s1, 1.5]]
+	for r: Array in roofs:
+		Street.fb(g, r[0], r[1], 0.45, r[2], 0.022, 0.04, Color(0.18, 0.12, 0.2))
+		for k in int((r[1] - r[0]) / 0.45):
+			Street.fb(g, r[0] + 0.18 + k * 0.45, r[0] + 0.36 + k * 0.45, r[2] - 0.55, r[2] - 0.32, 0.04, 0.046, Color(1.0, 0.85, 0.4))
+	# Stars in the top band.
+	for i in 9:
+		var ss := s0 + 0.4 + Props.rnd(i * 5.1) * (s1 - s0 - 0.8)
+		var sy := 5.75 + Props.rnd(i * 7.3) * 0.75
+		Street.fb(g, ss - 0.05, ss + 0.05, sy - 0.05, sy + 0.05, 0.022, 0.03, Color(1.0, 0.97, 0.85))
+	# The rose: a stem, two leaves, the bloom.
+	Street.fb(g, 2.55, 2.75, 1.6, 4.3, 0.04, 0.058, Color(0.2, 0.55, 0.25))
+	Kit.box(g, Vector3(0.9, 0.36, 0.02), Vector3(2.25, 2.7, 0.052), Color(0.25, 0.65, 0.3), Vector3(0, 0, 28))
+	Kit.box(g, Vector3(0.9, 0.36, 0.02), Vector3(3.05, 3.3, 0.052), Color(0.25, 0.65, 0.3), Vector3(0, 0, -28))
+	Kit.disc(g, 0.95, Vector3(2.65, 4.75, 0.07), Color(0.86, 0.12, 0.2), 0.02, 14)
+	Kit.disc(g, 0.66, Vector3(2.62, 4.82, 0.09), Color(0.95, 0.28, 0.35), 0.02, 12)
+	Kit.disc(g, 0.36, Vector3(2.6, 4.88, 0.11), Color(0.7, 0.06, 0.14), 0.02, 10)
+
+
+# ----------------------------------------------------------------- context
+
+## Old York Road's houses either side of the end of the street, the backs of
+## the next street over the alley, trees in the back yards: plain, for the
+## glimpse up Old York Road and the overview.
+static func _context(p: Node3D, st: int) -> void:
+	var brick_a := _brick(Color(0.82, 0.76, 0.78))
+	var brick_b := _brick(Color(0.95, 0.88, 0.86))
+	var formstone := Kit.tex("painted_block", 0.7, Color(0.6, 0.59, 0.55), true, Color(0.7, 0.72, 1.0))
+	var siding := Color(0.82, 0.78, 0.62)
+	var looks := [brick_a, formstone, brick_b, brick_a, formstone, brick_b, brick_a, brick_b]
+	var trims := [Street.WHITE, Street.BROWN, Street.CREAM, Street.WHITE, Street.GREEN, Street.WHITE, Street.RED, Street.CREAM]
+	var dc: Dictionary = Street.DOORS
+	var doors := [dc["red"], dc["blue"], dc["black"], dc["green"], dc["wood"], dc["red"], dc["white"], dc["black"]]
+	# Old York Road, west side, beyond the alley: fronts facing the road (+x).
+	var v := -7.5
+	for i in 8:
+		var w := 4.5
+		Street.plain_house(Street.face(p, st, CORNER, v, 90.0), w, 8.5 if i % 3 == 1 else 8.2, looks[i], trims[i], doors[i], ["10100", "0101", "1001", "0110", "1100", "0011", "1010", "0100"][i], 2, i % 2 == 0)
+		v -= w
+	# East side, facing back across it (-x): 4027 (a detached frame house) and the rows either side.
+	Street.plain_house(Street.face(p, st, EAST, 7.6, 270.0), 6.0, 6.3, siding, Street.WHITE, dc["blue"], "1010", 2, false)
+	var east := [[14.6, 4.8], [19.4, 4.4], [23.8, 4.7], [28.5, 4.5], [33.0, 4.6]]
+	for i in east.size():
+		var e: Array = east[i]
+		Street.plain_house(Street.face(p, st, EAST, e[0], 270.0), e[1], 8.5, looks[(i + 2) % 8], trims[(i + 1) % 8], doors[(i + 3) % 8], ["0101", "1001", "0110", "1000", "0010"][i], 2, i % 2 == 1)
+	v = 6.6
+	for i in 8:
+		Street.plain_house(Street.face(p, st, EAST, v - 4.6, 270.0), 4.6, 8.3, looks[i], trims[(i + 3) % 8], doors[(i + 5) % 8], ["0110", "1001", "0101", "0010", "1100", "0001", "1010", "0100"][i], 2, i % 2 == 0)
+		v -= 4.6
+	# The backs of the next street's houses, across the alley.
+	var back := Street.face(p, st, LEFT, -7.5, 0.0)
+	var long := CORNER - 9.0 - LEFT
+	Street.fb(back, 0.0, long, 0.0, 7.2, -10.0, 0.0, _brick(Color(0.66, 0.6, 0.62)))
+	Street.fb(back, 0.0, long, 7.2, 7.25, -10.0, -0.02, Street.TAR)
+	var s := 1.2
+	var k := 0
+	while s < long - 1.0:
+		Street.sash(back, s, 1.2, 0.8, 1.4, Street.WHITE, Street.LIT if Props.rnd(k * 1.3) > 0.62 else null, Color(0.85, 0.75, 0.5))
+		Street.sash(back, s + 1.6, 4.3, 0.8, 1.4, Street.WHITE, Street.LIT if Props.rnd(k * 2.9) > 0.7 else null, Color(0.7, 0.8, 0.9))
+		s += 3.1
+		k += 1
+	# Rose Hill's own back yards: a board fence along the alley, trees whose
+	# crowns stand over the roofs.
+	_gb(p, p.node_of(st), LEFT, CORNER - 0.13, -4.05, -3.95, 0.0, 1.8, Color(0.45, 0.33, 0.23))
+	Outdoor.tree(p, st, 9.5, -1.6, "a", 1.15, 30.0)
+	Outdoor.tree(p, st, 30.5, -2.0, "b", 1.3, 140.0)
+	Outdoor.tree(p, st, 47.5, -1.4, "a", 1.0, 250.0)
+	Outdoor.tree(p, st, -15.0, -2.2, "b", 1.2, 80.0)
