@@ -29,8 +29,10 @@ const REGIONS := ["", "hat", "jacket", "shirt", "trousers", "shoes", "sleeve"]  
 const ARM_BEND := 0.1            # an arm swinging at his side has turned all the way this far from its shoulder (paper_card.gdshader's arm_reach)
 const ARM_BEND_HELD := 0.06     # holding something it turns at the shoulder, stiffly, or it would hook
 const ARM_JOINT := 0.034        # what was drawn this close to a shoulder stays put under the moving arm (paper_card.gdshader's arm_joint)...
-const ARM_JOINT_HELD := 0.046   # ...and a little more of it when the arm is turned a long way, to something he holds
+const ARM_JOINT_HELD := 0.04    # ...and a little more of it when the arm is turned a long way, to something he holds
 const FIST_IN := 13.0           # the arm runs this many pixels past the wrist, into the fist that covers its end
+const FORE_IN := 3.0            # the second arm, which comes at its fist from below, stops shorter, or its end shows under the fist
+const FORE_BACK := 9.0          # and aims this many pixels behind that fist's middle (towards the butt), to end well inside it
 const LEAD_ARM := 0.083       # metres: how thick the lead's arm is drawn. What someone holds is sized to their own arm against this
 
 ## How each thing is held, for each way he can face and for carrying it or
@@ -58,7 +60,7 @@ const HOLDS := {
 	},
 	"uzi": {
 		"side_carry": {"grip": [0.74, 1.08], "angle": 52.0, "curl": 0.3},
-		"side_aim": {"grip": [1.36, 0.46], "angle": 0.0, "curl": 0.24},
+		"side_aim": {"grip": [1.4, 0.56], "angle": 0.0, "curl": 0.24},
 		"front_carry": {"angle": 80.0, "flip": true, "gun_under": true},
 		"front_aim": {"grip": [-1.12, 0.04], "angle": 0.0, "flip": true, "curl": -0.3},
 		"back_carry": {"angle": 80.0, "arm": "r", "gun_under": true},
@@ -66,8 +68,8 @@ const HOLDS := {
 	"ak": {
 		"side_carry": {"grip": [0.62, 1.02], "angle": 20.0, "curl": 0.5, "fore_curl": 0.3, "far": [0.45, 0.6], "over": true},
 		"side_aim": {"grip": [0.98, 0.8], "angle": 0.0, "curl": 0.45, "fore_curl": 0.35, "far": [0.45, 0.78], "over": true},
-		"front_carry": {"grip": [0.44, 1.0], "angle": -21.0, "curl": 0.2, "fore_curl": -0.7},
-		"back_carry": {"at": [-0.44, 1.0], "angle": -24.0, "flip": true, "arm": "r", "grip": [-0.72, 0.9], "curl": -0.6, "fore_at": [0.6, 0.72], "fore_curl": 0.6, "under": true},
+		"front_carry": {"grip": [0.44, 1.0], "angle": -21.0, "curl": 0.0, "fore_curl": -0.7},
+		"back_carry": {"at": [-0.44, 1.0], "angle": -24.0, "flip": true, "arm": "r", "grip": [-0.5, 0.96], "curl": -0.3, "fore_at": [0.45, 0.86], "fore_curl": 0.3, "under": true},
 	},
 }
 
@@ -700,6 +702,8 @@ func _hold() -> void:
 	if flip:
 		off.x = -off.x
 	var fore := at + off.rotated(deg_to_rad(dip) * (-1.0 if flip else 1.0))      # where that fist is, in pixels of his drawing
+	fore -= Vector2(-FORE_BACK if flip else FORE_BACK, 0.0).rotated(deg_to_rad(dip) * (-1.0 if flip else 1.0))
+	var fore_cut := (wrist + FORE_IN) / _px.y if k > 0.5 and not under else 9.0
 	if under and carry.has("fore_at") and _arms.has(other):
 		fore = Vector2(_arms[other]["pivot"][0], _arms[other]["pivot"][1]) + Vector2(carry["fore_at"][0], carry["fore_at"][1]) * float(_arms[other]["wrist_r"])
 	var fore_curl := lerpf(carry.get("fore_curl", 0.0), point.get("fore_curl", 0.0), a)
@@ -714,7 +718,7 @@ func _hold() -> void:
 		_put("arm_r_angle", far_reach.x)
 		_put("arm_r_curl", fore_curl)
 		_put("arm_r_stretch", far_reach.y)
-		_put("arm_r_cut", cut)
+		_put("arm_r_cut", fore_cut)
 		return
 	_put("far_arm_copy", false)
 	var arm2: Dictionary = _arms[other]
@@ -728,7 +732,7 @@ func _hold() -> void:
 	_put(pre2 + "angle", lerp_angle(float(_mat.get_shader_parameter(pre2 + "angle")), reach2.x, k))
 	_put(pre2 + "curl", lerpf(float(_mat.get_shader_parameter(pre2 + "curl")), fore_curl, k))
 	_put(pre2 + "stretch", lerpf(1.0, reach2.y, k))
-	_put(pre2 + "cut", (wrist2 + FIST_IN) / _px.y if k > 0.5 and not under else 9.0)
+	_put(pre2 + "cut", (wrist2 + FORE_IN) / _px.y if k > 0.5 and not under else 9.0)
 
 
 ## Where a hold puts the fist on the grip, from the shoulder, in pixels. With no

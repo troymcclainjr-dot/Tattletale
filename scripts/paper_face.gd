@@ -38,7 +38,7 @@ const EXPRESSIONS := {
 	"crying": {"eyes": "eye_pinch", "mouth": "mouth_wail", "brows": "brow_worried", "l": [-0.04, -22.0], "r": [-0.04, -22.0], "fx": ["tears"], "talk": "sad"},
 	"hurt": {"eyes": "eye_pinch", "mouth": "mouth_grit", "brows": "brow_worried", "l": [-0.08, -20.0], "r": [-0.08, -20.0], "fx": ["sweat"], "talk": "angry"},
 	"disgusted": {"eyes": "eye_half", "eye_l": "eye_squint", "mouth": "mouth_bleh", "brows": "brow_tapered", "l": [-0.18, 16.0], "r": [-0.04, -4.0]},
-	"confused": {"eyes": "eye_open", "eye_r": "eye_wide", "mouth": "mouth_skew", "brows": "brow_arched", "l": [-0.12, 10.0], "r": [0.1, -8.0]},
+	"confused": {"eyes": "eye_open", "eye_l": "eye_wide", "mouth": "mouth_skew", "brows": "brow_arched", "l": [0.1, -8.0], "r": [-0.12, 10.0]},
 	"embarrassed": {"eyes": "eye_happy", "mouth": "mouth_wavy", "brows": "brow_worried", "l": [0.0, -14.0], "r": [0.0, -14.0], "fx": ["blush"], "talk": "scared"},
 	"guilty": {"eyes": "eye_side", "mouth": "mouth_eek", "brows": "brow_worried", "l": [0.0, -14.0], "r": [0.0, -14.0], "fx": ["sweat"], "talk": "scared"},
 	"pleading": {"eyes": "eye_shine", "mouth": "mouth_wobble", "brows": "brow_worried", "l": [-0.04, -24.0], "r": [-0.04, -24.0], "talk": "sad"},
