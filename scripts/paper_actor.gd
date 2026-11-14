@@ -31,6 +31,13 @@ const ARM_BEND_HELD := 0.06     # holding something it turns at the shoulder, st
 const ARM_JOINT := 0.034        # what was drawn this close to a shoulder stays put under the moving arm (paper_card.gdshader's arm_joint)...
 const ARM_JOINT_HELD := 0.04    # ...and a little more of it when the arm is turned a long way, to something he holds
 const FIST_IN := 13.0           # the arm runs this many pixels past the wrist, into the fist that covers its end
+const RIM_INK := 11.0           # a held arm's cut end and the rim of its shoulder disc are inked this wide, pixels of his drawing
+const THIN_ARM := 4.3           # an arm longer than this many of its own widths (the lead's) bows less, or it loops
+const WIDE_ARM := 3.5           # an arm shorter than this many of its own widths is a wide sleeve: holding something it bends at the elbow (_hold)
+const ELBOW := 0.4              # ...which is this far down it, of its length
+const ELBOW_BEND := 0.025      # ...where it turns this sharply (the card's arm_reach)
+const ELBOW_STUB := 0.1         # ...below which this much of the forearm's length stays as drawn, for the forearm to come out of
+const ELBOW_FLAT := 0.4         # ...and a rifle across the chest lies this much flatter, or a short forearm must fold back to reach it
 const FORE_IN := 3.0            # the second arm, which comes at its fist from below, stops shorter, or its end shows under the fist
 const FORE_BACK := 9.0          # and aims this many pixels behind that fist's middle (towards the butt), to end well inside it
 const LEAD_ARM := 0.083       # metres: how thick the lead's arm is drawn. What someone holds is sized to their own arm against this
@@ -67,7 +74,7 @@ const HOLDS := {
 	},
 	"ak": {
 		"side_carry": {"grip": [0.62, 1.02], "angle": 20.0, "curl": 0.5, "fore_curl": 0.3, "far": [0.45, 0.6], "over": true},
-		"side_aim": {"grip": [0.98, 0.8], "angle": 0.0, "curl": 0.45, "fore_curl": 0.35, "far": [0.45, 0.78], "over": true},
+		"side_aim": {"grip": [0.98, 0.84], "angle": 0.0, "curl": 0.72, "fore_curl": 0.35, "far": [0.45, 0.78], "over": true},
 		"front_carry": {"grip": [0.44, 1.0], "angle": -21.0, "curl": 0.0, "fore_curl": -0.7},
 		"back_carry": {"at": [-0.44, 1.0], "angle": -24.0, "flip": true, "arm": "r", "grip": [-0.5, 0.96], "curl": -0.3, "fore_at": [0.45, 0.86], "fore_curl": 0.3, "under": true},
 	},
@@ -112,6 +119,7 @@ var _armed := 0.0           # 0 hands empty .. 1 the thing is in his hands; ease
 var _aim := 0.0             # 0 carrying it .. 1 pointing it; eases
 var _rig := {}              # rig.json
 var _px := Vector2.ONE      # the drawing on show, in pixels
+var _pivots := {}           # where each arm turns as drawn (the card's arm_l_pivot, arm_r_pivot), "l" and "r"
 var _arms := {}             # how its arms are drawn (rig.json's "arms": outfit.py's arm_info), "l" and "r"
 var _arm_from := Vector2.ZERO   # where the near arm hangs from in this drawing, against where it is in the drawing it comes from (pixels)
 var _outfit := {}           # piece of clothing: the Color he wears it in
@@ -521,8 +529,10 @@ func _show(wanted: String) -> void:
 	_arm_rest = float(data.get("arm_l_rest", 0.0))
 	if v["limbs"] != null:
 		_put("limbs", v["limbs"])
-		_put("arm_l_pivot", Vector2(data["arm_l"][0], data["arm_l"][1]) / px)
-		_put("arm_r_pivot", Vector2(data["arm_r"][0], data["arm_r"][1]) / px)
+		_pivots = {"l": Vector2(data["arm_l"][0], data["arm_l"][1]) / px, "r": Vector2(data["arm_r"][0], data["arm_r"][1]) / px}
+		_put("arm_l_pivot", _pivots["l"])
+		_put("arm_r_pivot", _pivots["r"])
+		_put("arm_elbow", Vector2.ZERO)
 	# How the arms are drawn: this drawing's own, or those of the drawing its arms are taken from.
 	_arms = data.get("arms", {})
 	if _arms.is_empty() and v.has("arm_art") and _views.has("front"):
@@ -633,9 +643,14 @@ func _hold() -> void:
 		_bend = ARM_BEND
 		_put("arm_reach", _bend)
 		_put("arm_joint", ARM_JOINT)
+		_put("rim_ink", 0.0)
+		_put("joint_half", false)
+		_put("arm_elbow", Vector2.ZERO)
 		for side: String in ["l", "r"]:
 			_put("arm_%s_stretch" % side, 1.0)
 			_put("arm_%s_cut" % side, 9.0)
+			if _pivots.has(side):
+				_put("arm_%s_pivot" % side, _pivots[side])
 		_put("far_arm_copy", false)
 		_put("arms_under", view == "back" and _run * _gait > 0.3)      # running away from us, his fists pump in front of him
 		if _armed <= 0.0:
@@ -644,8 +659,22 @@ func _hold() -> void:
 	var m := height / _px.y                                   # metres to a pixel of his drawing
 	_bend = lerpf(ARM_BEND, ARM_BEND_HELD, k)
 	_put("arm_reach", _bend)
-	_put("arm_joint", lerpf(ARM_JOINT, ARM_JOINT_HELD, k))
 	var arm: Dictionary = _arms[key]
+	# A wide sleeve (a jersey, a puffer jacket) cannot turn at the shoulder like a hose: its cut edge would swing
+	# out as a shard. It bends at the elbow: the sleeve above stays as drawn and the forearm goes to the fist.
+	# Pointing it, the whole arm goes out from the shoulder, sleeve and all.
+	var stout: bool = float(arm["len"]) < WIDE_ARM * float(arm["width"])
+	var wide: bool = stout and k > 0.5 and view != "side" and _aim < 0.5
+	var down := ELBOW * float(arm["len"]) if wide else 0.0                  # shoulder to where it bends, pixels
+	if not wide:
+		for side: String in _pivots:
+			_put("arm_%s_pivot" % side, _pivots[side])
+	_put("arm_joint", lerpf(ARM_JOINT, ARM_JOINT_HELD, k))
+	_put("arm_stub", ELBOW_STUB * (float(arm["len"]) - down) / _px.y)
+	_put("rim_ink", RIM_INK / _px.y if k > 0.5 else 0.0)
+	_put("joint_half", k > 0.5 and view != "side" and not stout)
+	var thin := minf(1.0, THIN_ARM * float(arm["width"]) / float(arm["len"]))      # 1 for an arm as stout as the lead's or stouter
+	thin *= thin
 	var unit := clampf(float(arm["width"]) * m / LEAD_ARM, 0.8, 1.3) * float(info.get("size", 1.0)) / float(weapons()["px_per_m"])    # metres to a unit of the thing's drawing
 	if _held_name != held:
 		_take(held, info, unit)
@@ -653,7 +682,9 @@ func _hold() -> void:
 	var a := smoothstep(0.0, 1.0, _aim)
 	var flip: bool = carry.get("flip", false)
 	var dip := lerpf(carry.get("angle", 0.0), point.get("angle", 0.0), a)
-	var curl := lerpf(carry.get("curl", 0.0), point.get("curl", 0.0), a)
+	var curl := lerpf(carry.get("curl", 0.0), point.get("curl", 0.0), a) * thin
+	if wide and info.has("fore") and not carry.get("under", false):
+		dip *= ELBOW_FLAT
 
 	# The arm that holds the grip.
 	var pivot := Vector2(arm["pivot"][0], arm["pivot"][1])
@@ -664,22 +695,35 @@ func _hold() -> void:
 	var hangs := axis.rotated(-_arm_rest if view == "side" else 0.0) * hand   # where the hand is with the arm at rest
 	var want := _grip(carry, hangs, wrist).lerp(_grip(point, hangs, wrist), a)
 	want += Vector2(0.03 * sin(_phase), 0.02 * absf(sin(_phase))) * wrist * _gait * (1.0 - a)      # it moves a little as he walks
-	var reach := _reach_for(axis, hand / _px.y, float(arm["len"]) / _px.y, want / _px.y, curl)
+	var elbow := Vector2.ZERO                                                 # which arms bend at the elbow, for the card
+	if wide:
+		# From here on the arm is its forearm: everything is measured from the elbow.
+		shoulder += axis * down
+		want -= axis * down
+		hand -= down
+		wrist -= down
+		curl = 0.0
+		elbow[0 if key == "l" else 1] = 1.0
+		_bend = ELBOW_BEND                  # an elbow is a sharp joint: turned gently, a short forearm swirls
+		_put("arm_reach", _bend)
+		_put("arm_%s_pivot" % key, (pivot + axis * down) / _px)
+	var length := float(arm["len"]) - down
+	var reach := _reach_for(axis, hand / _px.y, length / _px.y, want / _px.y, curl)
 	var pre := "arm_%s_" % key
 	var angle := lerp_angle(float(_mat.get_shader_parameter(pre + "angle")), reach.x, k)
 	var bow := lerpf(float(_mat.get_shader_parameter(pre + "curl")), curl, k)
 	var stretch := lerpf(1.0, reach.y, k)
 	var under: bool = carry.get("under", false)
-	var cut := (wrist + FIST_IN) / _px.y if k > 0.5 and not under else 9.0
+	var cut := (wrist + FIST_IN / maxf(stretch, 1.0)) / _px.y if k > 0.5 and not under else 9.0
 	_put(pre + "angle", angle)
 	_put(pre + "curl", bow)
 	_put(pre + "stretch", stretch)
 	_put(pre + "cut", cut)
 
 	# The thing itself, its grip in that hand.
-	var at := shoulder + _hand_at(axis, hand / _px.y, float(arm["len"]) / _px.y, angle, bow, stretch) * _px.y
+	var at := shoulder + _hand_at(axis, hand / _px.y, length / _px.y, angle, bow, stretch) * _px.y
 	if under and carry.has("at"):
-		at = shoulder + Vector2(carry["at"][0], carry["at"][1]) * wrist
+		at = shoulder - axis * down + Vector2(carry["at"][0], carry["at"][1]) * (wrist + down)
 	_held.visible = k > 0.5
 	_held.position = Vector3((at.x - _px.x * 0.5) * m, (_px.y - at.y) * m, 0.0)
 	_held.rotation.z = deg_to_rad(dip) * (1.0 if flip else -1.0)
@@ -694,6 +738,7 @@ func _hold() -> void:
 	# The other hand, on the second fist.
 	var other := "r" if key == "l" else "l"
 	if not info.has("fore"):
+		_put("arm_elbow", elbow)
 		_put("far_arm_copy", false)
 		_put("arm_%s_stretch" % other, 1.0)
 		_put("arm_%s_cut" % other, 9.0)
@@ -706,13 +751,14 @@ func _hold() -> void:
 	var fore_cut := (wrist + FORE_IN) / _px.y if k > 0.5 and not under else 9.0
 	if under and carry.has("fore_at") and _arms.has(other):
 		fore = Vector2(_arms[other]["pivot"][0], _arms[other]["pivot"][1]) + Vector2(carry["fore_at"][0], carry["fore_at"][1]) * float(_arms[other]["wrist_r"])
-	var fore_curl := lerpf(carry.get("fore_curl", 0.0), point.get("fore_curl", 0.0), a)
+	var fore_curl := lerpf(carry.get("fore_curl", 0.0), point.get("fore_curl", 0.0), a) * thin
 	if view == "side" or not _arms.has(other):
 		# One arm is drawn: the far one is a copy of it, hung from a point behind his chest.
 		var far0: Array = carry.get("far", [0.4, 0.1])
 		var far1: Array = point.get("far", far0)
 		var far := Vector2(far0[0], far0[1]).lerp(Vector2(far1[0], far1[1]), a) * wrist
-		var far_reach := _reach_for(axis, hand / _px.y, float(arm["len"]) / _px.y, (fore - shoulder - far) / _px.y, fore_curl)
+		var far_reach := _reach_for(axis, hand / _px.y, length / _px.y, (fore - shoulder - far) / _px.y, fore_curl)
+		_put("arm_elbow", elbow)
 		_put("far_arm_copy", k > 0.5)
 		_put("far_arm_shift", far / _px)
 		_put("arm_r_angle", far_reach.x)
@@ -727,7 +773,18 @@ func _hold() -> void:
 	var axis2 := (Vector2(arm2["wrist"][0], arm2["wrist"][1]) - pivot2).normalized()
 	var wrist2 := float(arm2["wrist_r"])
 	var hand2 := wrist2 + 0.25 * (float(arm2["len"]) - wrist2)
-	var reach2 := _reach_for(axis2, hand2 / _px.y, float(arm2["len"]) / _px.y, (fore - shoulder2) / _px.y, fore_curl)
+	var length2 := float(arm2["len"])
+	if wide:
+		var down2 := ELBOW * length2
+		shoulder2 += axis2 * down2
+		hand2 -= down2
+		wrist2 -= down2
+		length2 -= down2
+		fore_curl = 0.0
+		elbow[0 if other == "l" else 1] = 1.0
+		_put("arm_%s_pivot" % other, (pivot2 + axis2 * down2) / _px)
+	_put("arm_elbow", elbow)
+	var reach2 := _reach_for(axis2, hand2 / _px.y, length2 / _px.y, (fore - shoulder2) / _px.y, fore_curl)
 	var pre2 := "arm_%s_" % other
 	_put(pre2 + "angle", lerp_angle(float(_mat.get_shader_parameter(pre2 + "angle")), reach2.x, k))
 	_put(pre2 + "curl", lerpf(float(_mat.get_shader_parameter(pre2 + "curl")), fore_curl, k))
@@ -749,7 +806,7 @@ func _grip(hold: Dictionary, hangs: Vector2, wrist: float) -> Vector2:
 ## drawing's height. Returns (angle, stretch) for paper_card.gdshader.
 func _reach_for(axis: Vector2, hand: float, length: float, to: Vector2, curl: float) -> Vector2:
 	var bow := curl * clampf((hand - _bend) / maxf(length - _bend, 0.01), 0.0, 1.2)
-	return Vector2(wrapf(axis.angle() - to.angle() - bow, -PI, PI), clampf(to.length() / hand, 0.55, 1.9))
+	return Vector2(wrapf(axis.angle() - to.angle() - bow, -PI, PI), clampf(to.length() / hand, 0.42, 1.9))
 
 
 ## And the other way: where the hand is, from the shoulder, for an arm turned, bowed and stretched like that.

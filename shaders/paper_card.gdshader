@@ -71,6 +71,10 @@ uniform float arm_len = 0.21;          // shoulder to fingertips, for the bow
 uniform float arm_reach = 0.1;
 uniform float arm_joint = 0.034;       // what was drawn this close to a shoulder stays put under the moving arm, so the join never opens
 uniform float arm_ink = 0.0;           // width of the line inked where an arm was cut from the body (0: none)
+uniform bool joint_half = false;       // keep less of that disc on the far side of the arm from the body (the armpit side matters; the other is a flap)
+uniform float arm_stub = 0.02;         // an arm that bends at its elbow keeps this much below the elbow as drawn, for the forearm to come out of
+uniform vec2 arm_elbow = vec2(0.0);    // x the left-hand arm, y the right: above 0.5 its pivot is its elbow, and what is above that stays as drawn
+uniform float rim_ink = 0.0;           // width of the line inked across an arm's cut end and round the shoulder disc (0: none)
 
 uniform sampler2D legs : filter_linear, repeat_disable;    // white: the leg on the right of the picture
 uniform float hip_v = 2.0;             // above 1: no legs to move
@@ -180,6 +184,9 @@ vec4 arm(vec2 src, vec2 pivot, float cut, float body_side, bool left, vec2 dx, v
 	}
 	vec4 c = textureGrad(arm_art, src, dx, dy);
 	c.rgb = dress(c.rgb, src, arm_regions);
+	if (rim_ink > 0.0 && cut < 8.0 && c.a > 0.5 && length((src - pivot) * vec2(aspect, 1.0)) > cut - rim_ink) {
+		c.rgb = ink;       // the cut end: whatever of it a fist does not cover is closed with a line
+	}
 	if (arm_ink > 0.0 && c.a > 0.5) {
 		vec2 beside = src + vec2(body_side * arm_ink / aspect, 0.0);
 		vec4 mb = textureLod(limbs, beside, 0.0);
@@ -190,12 +197,33 @@ vec4 arm(vec2 src, vec2 pivot, float cut, float body_side, bool left, vec2 dx, v
 	return c;
 }
 
+// The forearm of an arm that bends at its elbow (arm_elbow): `a` is the arm's colour at uv, taken from src.
+// Nothing from above the elbow turns; and where the forearm's cut end shows, past the sleeve it comes out of, it is inked.
+vec4 forearm(vec4 a, vec2 uv, vec2 src, vec2 pivot, vec2 axis, float bends, bool left) {
+	if (bends < 0.5) {
+		return a;
+	}
+	float along = dot((src - pivot) * vec2(aspect, 1.0), axis);
+	if (along < 0.0) {
+		return vec4(0.0);
+	}
+	if (a.a > 0.5 && rim_ink > 0.0 && along < rim_ink) {
+		vec4 m = textureLod(limbs, uv, 0.0);
+		bool kept = (left ? m.r : m.g) > 0.5 && dot((uv - pivot) * vec2(aspect, 1.0), axis) < arm_stub;
+		if (!kept) {
+			a.rgb = ink;
+		}
+	}
+	return a;
+}
+
 // The left-hand arm (the near one, side-on) at uv, where it is now.
 vec4 near_arm(vec2 uv, vec2 dx, vec2 dy) {
 	if (uv.y < arm_l_top && uv.x > arm_l_top_x.x && uv.x < arm_l_top_x.y) {
 		return vec4(0.0);
 	}
-	return arm(arm_source(uv - arm_l_shift, arm_l_pivot, arm_l_angle, arm_l_curl, arm_l_stretch, arm_l_axis), arm_l_pivot, arm_l_cut, 1.0, true, dx, dy);
+	vec2 src = arm_source(uv - arm_l_shift, arm_l_pivot, arm_l_angle, arm_l_curl, arm_l_stretch, arm_l_axis);
+	return forearm(arm(src, arm_l_pivot, arm_l_cut, 1.0, true, dx, dy), uv, src, arm_l_pivot, arm_l_axis, arm_elbow.x, true);
 }
 
 void fragment() {
@@ -237,8 +265,26 @@ void fragment() {
 				// arm pulls its armpit corner away from the stub it hangs from, and
 				// without this the background shows through the crack.
 				vec2 pv = rest.r > 0.5 ? arm_l_pivot : arm_r_pivot;
-				if (length((uv - pv) * vec2(aspect, 1.0)) > arm_joint) {
-					col.a = 0.0;
+				vec2 ax = rest.r > 0.5 ? arm_l_axis : arm_r_axis;
+				vec2 off = (uv - pv) * vec2(aspect, 1.0);
+				float from_pivot = length(off);
+				float inward = dot(off, rest.r > 0.5 ? vec2(ax.y, -ax.x) : vec2(-ax.y, ax.x));     // towards the body, across the arm
+				if ((rest.r > 0.5 ? arm_elbow.x : arm_elbow.y) > 0.5) {
+					// An arm that bends at the elbow: above it, and a short stub below, it is as drawn.
+					float along = dot(off, ax);
+					if (along > arm_stub) {
+						col.a = 0.0;
+					} else if (rim_ink > 0.0 && along > arm_stub - rim_ink) {
+						col.rgb = ink;     // the stub's end, where the forearm does not cover it
+					}
+				} else {
+					// On the far side of the arm from the body, a held arm keeps less of the disc: more is a flap.
+					float keep = joint_half && inward < 0.0 ? arm_joint * 0.6 : arm_joint;
+					if (from_pivot > keep) {
+						col.a = 0.0;
+					} else if (rim_ink > 0.0 && from_pivot > keep - rim_ink) {
+						col.rgb = ink;     // the disc's own edge, where the moved arm does not cover it
+					}
 				}
 			}
 			bool body_here = col.a > 0.5;
@@ -252,7 +298,8 @@ void fragment() {
 					}
 				}
 			} else if (!far_arm_hidden && !(arms_under && body_here)) {
-				vec4 a = arm(arm_source(uv, arm_r_pivot, arm_r_angle, arm_r_curl, arm_r_stretch, arm_r_axis), arm_r_pivot, arm_r_cut, -1.0, false, dx, dy);
+				vec2 src = arm_source(uv, arm_r_pivot, arm_r_angle, arm_r_curl, arm_r_stretch, arm_r_axis);
+				vec4 a = forearm(arm(src, arm_r_pivot, arm_r_cut, -1.0, false, dx, dy), uv, src, arm_r_pivot, arm_r_axis, arm_elbow.y, false);
 				if (a.a > 0.5) {
 					col = a;
 				}
