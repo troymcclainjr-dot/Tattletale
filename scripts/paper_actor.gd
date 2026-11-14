@@ -31,7 +31,8 @@ const ARM_BEND := 0.1            # an arm swinging at his side has turned all th
 const ARM_BEND_HELD := 0.06     # holding something it turns at the shoulder, stiffly, or it would hook
 const ARM_JOINT := 0.034        # what was drawn this close to a shoulder stays put under the moving arm (paper_card.gdshader's arm_joint)...
 const ARM_JOINT_HELD := 0.04    # ...and a little more of it when the arm is turned a long way, to something he holds
-const AWAY_LEAN := 0.7           # pointing away, it leans no further than this from straight up the screen, radians
+const AWAY_LEAN := 0.3           # pointing away, it leans no further than this from straight up the screen, radians
+const ARM_ROOT := 0.075           # an arm that goes behind him to a rifle's handguard: this much of it, from the shoulder, is not drawn
 const FIST_NEAR := 0.05         # the fists are drawn this much nearer the eye than his card: over what he holds and over his arm's end
 const FIST_IN := 13.0           # the arm runs this many pixels past the wrist, into the fist that covers its end
 const RIM_INK := 11.0           # a held arm's cut end and the rim of its shoulder disc are inked this wide, pixels of his drawing
@@ -75,7 +76,7 @@ const HOLDS := {
 		"front_aim": {"grip": [-1.18, -0.06], "angle": 0.0, "flip": true, "curl": -0.2},
 		"back_carry": {"angle": 82.0, "arm": "r"},
 		"front_point": {"art": "toward", "grip": [0.56, 0.46], "angle": 0.0, "flip": true},
-		"back_point": {"art": "away", "arms_under": true, "behind": true, "flip": false, "arm": "r", "grip": [0.95, -0.5]},
+		"back_point": {"art": "away", "arms_under": true, "behind": true, "flip": true, "arm": "r", "grip": [0.62, -0.86]},
 	},
 	"uzi": {
 		"side_carry": {"grip": [0.74, 1.08], "angle": 52.0, "curl": 0.3},
@@ -84,7 +85,7 @@ const HOLDS := {
 		"front_aim": {"grip": [-1.12, 0.04], "angle": 0.0, "flip": true, "curl": -0.3},
 		"back_carry": {"angle": 80.0, "arm": "r", "gun_under": true},
 		"front_point": {"art": "toward", "grip": [0.56, 0.5], "angle": 0.0, "flip": true},
-		"back_point": {"art": "away", "arms_under": true, "behind": true, "flip": false, "arm": "r", "grip": [0.95, -0.5]},
+		"back_point": {"art": "away", "arms_under": true, "behind": true, "flip": true, "arm": "r", "grip": [0.62, -0.86]},
 	},
 	"ak": {
 		"side_carry": {"grip": [0.62, 1.02], "angle": 20.0, "curl": 0.5, "fore_curl": 0.3, "far": [0.45, 0.6], "over": true},
@@ -92,7 +93,7 @@ const HOLDS := {
 		"front_carry": {"grip": [0.44, 1.0], "angle": -21.0, "curl": 0.0, "fore_curl": -0.7},
 		"back_carry": {"at": [-0.44, 1.0], "angle": -24.0, "flip": true, "arm": "r", "grip": [-0.5, 0.96], "curl": -0.3, "fore_at": [0.45, 0.86], "fore_curl": 0.3, "under": true},
 		"front_point": {"art": "toward", "grip": [0.3, 0.5], "angle": 0.0, "curl": 0.0, "fore_curl": 0.0},
-		"back_point": {"art": "away", "arms_under": true, "behind": true, "flip": false, "arm": "r", "grip": [0.9, -0.22], "curl": 0.0, "fore_curl": 0.0},
+		"back_point": {"art": "away", "arms_under": true, "behind": true, "flip": true, "arm": "r", "grip": [0.56, -0.5], "curl": 0.0, "fore_curl": 0.0},
 	},
 }
 
@@ -116,7 +117,7 @@ var sprinting := false                           # running: faster, longer steps
 var weapon := ""                                 # what is in his hands: "" nothing, "pistol", "uzi" or "ak" (assets/weapons)
 var aiming := false                              # he points it. Side-on if he has a side drawing; not while walking towards or away
 var aim_way := ""                                # along the line of sight instead: "toward" the camera or "away" from it ("": across the screen)
-var aim_lean := 0.6                              # pointing away, how far to the right of straight up the screen it points, radians
+var aim_lean := 0.2                              # pointing away, how far to the right of straight up the screen it points, radians
 var aim_pitch := 0.0                             # side-on, how far above level he points it, radians (below zero: down)
 var aim_to := 0.0                                # which side of the screen he points it at (-1 left, 1 right); 0: the way he is facing
 var reach := REACH                               # how far the drawing reaches either side of its middle, metres
@@ -891,6 +892,7 @@ func _hold() -> void:
 		_put("arm_joint", ARM_JOINT)
 		_put("rim_ink", 0.0)
 		_put("joint_half", false)
+		_put("arm_from", Vector2.ZERO)
 		_put("arm_elbow", Vector2.ZERO)
 		for side: String in ["l", "r"]:
 			_put("arm_%s_stretch" % side, 1.0)
@@ -941,13 +943,20 @@ func _hold() -> void:
 	if pose.get("hidden", false):       # nothing of it shows: his arms are whole, with no cut ends to ink
 		_put("rim_ink", 0.0)
 		_put("joint_half", false)
+	if pose.get("arms_under", false):   # his arms go behind him from the shoulder: straight from it, no joint disc left outside his body
+		_bend = 0.012
+		_put("arm_reach", _bend)
+		_put("arm_joint", 0.0)
+		_put("joint_half", false)
 	if _held_name != held or _held_art != art:
 		_take(held, info, unit)
 		_held_art = art
 	var flip: bool = pose.get("flip", carry.get("flip", false))
 	var dip := lerpf(carry.get("angle", 0.0), point.get("angle", 0.0), a)
 	if art == "away":         # it points up the screen, at the cross
-		dip = -(90.0 - rad_to_deg(clampf(aim_lean, -AWAY_LEAN, AWAY_LEAN)))
+		# (the drawing is flipped so that its grip is on the side of his head and the rest of it stands clear)
+		var lean := rad_to_deg(clampf(aim_lean, -AWAY_LEAN, AWAY_LEAN))
+		dip = -(90.0 + lean) if flip else -(90.0 - lean)
 	var curl := lerpf(carry.get("curl", 0.0), point.get("curl", 0.0), a) * thin
 	var pitch := aim_pitch * a if view == "side" else 0.0        # side-on he points it up or down at what the cross is on
 	dip -= rad_to_deg(pitch)
@@ -1000,6 +1009,7 @@ func _hold() -> void:
 	_held.rotation.z = deg_to_rad(dip) * (1.0 if flip else -1.0)
 	_held.scale = Vector3(-1.0 if flip else 1.0, 1.0, 1.0)
 	var behind: bool = pose.get("behind", false)
+	_put("arm_from", Vector2.ZERO)
 	(_gun.material_override as ShaderMaterial).set_shader_parameter("toward", -0.03 if under or behind or pose.get("gun_under", false) else 0.03)
 	(_fist.material_override as ShaderMaterial).set_shader_parameter("toward", -0.02 if behind else FIST_NEAR)
 	_fist.visible = not under
@@ -1062,7 +1072,9 @@ func _hold() -> void:
 		elbow[0 if other == "l" else 1] = 1.0
 		_put("arm_%s_pivot" % other, (pivot2 + axis2 * down2) / _px)
 	_put("arm_elbow", elbow)
-	var reach2 := _reach_for(axis2, hand2 / _px.y, length2 / _px.y, (fore - shoulder2) / _px.y, fore_curl)
+	var reach2 := _reach_for(axis2, hand2 / _px.y, length2 / _px.y, (fore - shoulder2) / _px.y, fore_curl, 3.2 if pose.get("arms_under", false) else 1.9)      # behind him it may be as long as it must
+	if pose.get("arms_under", false) and k > 0.5:      # ...and its root, which would stick out of his far shoulder, is not drawn
+		_put("arm_from", Vector2(ARM_ROOT, 0.0) if other == "l" else Vector2(0.0, ARM_ROOT))
 	var pre2 := "arm_%s_" % other
 	_put(pre2 + "angle", lerp_angle(float(_mat.get_shader_parameter(pre2 + "angle")), reach2.x, k))
 	_put(pre2 + "curl", lerpf(float(_mat.get_shader_parameter(pre2 + "curl")), fore_curl, k))

@@ -63,6 +63,7 @@ uniform float arm_l_curl = 0.0;        // radians more by the fingertips: the ar
 uniform float arm_r_curl = 0.0;
 uniform float arm_l_stretch = 1.0;     // length, against how it was drawn
 uniform float arm_r_stretch = 1.0;
+uniform vec2 arm_from = vec2(0.0);     // nothing of an arm is drawn nearer its shoulder than this (x the left-hand arm, y the right): its root, when it goes behind him
 uniform float arm_l_cut = 9.0;         // nothing drawn further than this along the arm (the wrist, when a fist takes over)
 uniform float arm_r_cut = 9.0;
 uniform vec2 arm_l_axis = vec2(0.0, 1.0);   // the way each arm runs as drawn, shoulder to hand (a unit vector, y down)
@@ -189,7 +190,8 @@ vec4 arm(vec2 src, vec2 pivot, float cut, float body_side, bool left, vec2 dx, v
 	if (src.x < 0.0 || src.x > 1.0 || src.y < 0.0 || src.y > 1.0) {
 		return vec4(0.0);
 	}
-	if (length((src - pivot) * vec2(aspect, 1.0)) > cut) {
+	float along_arm = length((src - pivot) * vec2(aspect, 1.0));
+	if (along_arm > cut || along_arm < (left ? arm_from.x : arm_from.y)) {
 		return vec4(0.0);
 	}
 	vec4 m = textureLod(limbs, src, 0.0);
