@@ -57,7 +57,9 @@ const LEAD_ARM := 0.083       # metres: how thick the lead's arm is drawn. What 
 ##   under  seen from the back, both hands on it in front of him: it goes behind him, the fists are not drawn, and his
 ##          arms go to spots of their own behind his body: "grip" for the arm that holds it, "fore_at" for the other
 ##          (each from its own shoulder), while "at" says where the thing's grip is (from the holding arm's shoulder)
-##   art    which drawing of the thing this pose shows: "toward" is the muzzle-on one (weapons.json); left out, the side-on one
+##   art    which drawing of the thing this pose shows: "toward" is the muzzle-on one, "away" the one from behind (weapons.json);
+##          left out, the side-on one
+##   arms_under  his arms go behind his body (he faces away, they are in front of him) while the thing and its fists stay in front
 ##   hidden the thing and its fists are not drawn at all (pointed away from us, his body is in the way)
 ## view_carry is how it is carried and view_aim how it is pointed across the screen; view_point is how it is pointed
 ## along the line of sight: front_point at the camera, back_point away from it (aim_way).
@@ -70,7 +72,7 @@ const HOLDS := {
 		"front_aim": {"grip": [-1.18, -0.06], "angle": 0.0, "flip": true, "curl": -0.2},
 		"back_carry": {"angle": 82.0, "arm": "r"},
 		"front_point": {"art": "toward", "grip": [0.56, 0.46], "angle": 0.0, "flip": true},
-		"back_point": {"hidden": true, "under": true, "arm": "r", "grip": [-0.6, 0.3], "curl": -0.5},
+		"back_point": {"art": "away", "arms_under": true, "arm": "r", "grip": [0.5, -0.2]},
 	},
 	"uzi": {
 		"side_carry": {"grip": [0.74, 1.08], "angle": 52.0, "curl": 0.3},
@@ -79,15 +81,15 @@ const HOLDS := {
 		"front_aim": {"grip": [-1.12, 0.04], "angle": 0.0, "flip": true, "curl": -0.3},
 		"back_carry": {"angle": 80.0, "arm": "r", "gun_under": true},
 		"front_point": {"art": "toward", "grip": [0.56, 0.5], "angle": 0.0, "flip": true},
-		"back_point": {"hidden": true, "under": true, "arm": "r", "grip": [-0.6, 0.3], "curl": -0.5},
+		"back_point": {"art": "away", "arms_under": true, "arm": "r", "grip": [0.5, -0.2]},
 	},
 	"ak": {
 		"side_carry": {"grip": [0.62, 1.02], "angle": 20.0, "curl": 0.5, "fore_curl": 0.3, "far": [0.45, 0.6], "over": true},
 		"side_aim": {"grip": [0.98, 0.84], "angle": 0.0, "curl": 0.72, "fore_curl": 0.35, "far": [0.45, 0.78], "over": true},
 		"front_carry": {"grip": [0.44, 1.0], "angle": -21.0, "curl": 0.0, "fore_curl": -0.7},
 		"back_carry": {"at": [-0.44, 1.0], "angle": -24.0, "flip": true, "arm": "r", "grip": [-0.5, 0.96], "curl": -0.3, "fore_at": [0.45, 0.86], "fore_curl": 0.3, "under": true},
-		"front_point": {"art": "toward", "grip": [0.42, 1.24], "angle": 0.0, "curl": 0.0, "fore_curl": 0.0},
-		"back_point": {"hidden": true, "under": true, "arm": "r", "grip": [-0.62, 0.3], "curl": -0.9, "fore_at": [0.62, 0.3], "fore_curl": 0.9},
+		"front_point": {"art": "toward", "grip": [0.3, 0.5], "angle": 0.0, "curl": 0.0, "fore_curl": 0.0},
+		"back_point": {"art": "away", "arms_under": true, "arm": "r", "grip": [0.36, -0.12], "curl": 0.0, "fore_at": [0.8, 0.15], "fore_curl": 0.0},
 	},
 }
 
@@ -932,6 +934,9 @@ func _hold() -> void:
 	else:
 		art = ""
 	var unit := clampf(float(arm["width"]) * m / LEAD_ARM, 0.8, 1.3) * float(info.get("size", 1.0)) / float(weapons()["px_per_m"])    # metres to a unit of the thing's drawing
+	if pose.get("hidden", false):       # nothing of it shows: his arms are whole, with no cut ends to ink
+		_put("rim_ink", 0.0)
+		_put("joint_half", false)
 	if _held_name != held or _held_art != art:
 		_take(held, info, unit)
 		_held_art = art
@@ -990,26 +995,28 @@ func _hold() -> void:
 	_held.scale = Vector3(-1.0 if flip else 1.0, 1.0, 1.0)
 	(_gun.material_override as ShaderMaterial).set_shader_parameter("toward", -0.03 if under or pose.get("gun_under", false) else 0.03)
 	_fist.visible = not under
-	_put("arms_under", under and k > 0.5)
+	_put("arms_under", (under or pose.get("arms_under", false)) and k > 0.5)
 	var over: bool = pose.get("over", false) and key == "l" and k > 0.5
 	_over.visible = over
 	_mat.set_shader_parameter("layer", 1 if over else 0)
 
 	# The other hand, on the second fist.
 	var other := "r" if key == "l" else "l"
-	if not info.has("fore"):
+	if not info.has("fore") and not pose.has("fore_at"):
 		_put("arm_elbow", elbow)
 		_put("far_arm_copy", false)
 		_put("arm_%s_stretch" % other, 1.0)
 		_put("arm_%s_cut" % other, 9.0)
 		return
-	var off := Vector2(float(info["fore"][0]) - float(info["grip"][0]), float(info["fore"][1]) - float(info["grip"][1])) * (unit / m)
-	if flip:
-		off.x = -off.x
-	var fore := at + off.rotated(deg_to_rad(dip) * (-1.0 if flip else 1.0))      # where that fist is, in pixels of his drawing
-	fore -= Vector2(-FORE_BACK if flip else FORE_BACK, 0.0).rotated(deg_to_rad(dip) * (-1.0 if flip else 1.0))
-	var fore_cut := (wrist + FORE_IN) / _px.y if k > 0.5 and not under else 9.0
-	if under and pose.has("fore_at") and _arms.has(other):
+	var fore := at
+	if info.has("fore"):
+		var off := Vector2(float(info["fore"][0]) - float(info["grip"][0]), float(info["fore"][1]) - float(info["grip"][1])) * (unit / m)
+		if flip:
+			off.x = -off.x
+		fore = at + off.rotated(deg_to_rad(dip) * (-1.0 if flip else 1.0))      # where that fist is, in pixels of his drawing
+		fore -= Vector2(-FORE_BACK if flip else FORE_BACK, 0.0).rotated(deg_to_rad(dip) * (-1.0 if flip else 1.0))
+	var fore_cut := (wrist + FORE_IN) / _px.y if k > 0.5 and not under and info.has("fore") else 9.0
+	if pose.has("fore_at") and _arms.has(other) and (under or not info.has("fore")):       # a spot of its own for the other hand
 		fore = Vector2(_arms[other]["pivot"][0], _arms[other]["pivot"][1]) + Vector2(pose["fore_at"][0], pose["fore_at"][1]) * float(_arms[other]["wrist_r"])
 	var fore_curl := lerpf(carry.get("fore_curl", 0.0), point.get("fore_curl", 0.0), a) * thin
 	if view == "side" or not _arms.has(other):
@@ -1017,6 +1024,9 @@ func _hold() -> void:
 		var far0: Array = carry.get("far", [0.4, 0.1])
 		var far1: Array = point.get("far", far0)
 		var far := Vector2(far0[0], far0[1]).lerp(Vector2(far1[0], far1[1]), a) * wrist
+		if pitch > 0.0:        # pointing up, the far arm comes out higher and straighter, or it hangs below the thing like a strap
+			far += Vector2(-0.1, -0.75) * pitch * wrist
+			fore_curl *= maxf(1.0 - 1.6 * pitch, 0.0)
 		var far_reach := _reach_for(axis, hand / _px.y, length / _px.y, (fore - shoulder - far) / _px.y, fore_curl, 3.2)      # most of it is behind him
 		_put("arm_elbow", elbow)
 		_put("far_arm_copy", k > 0.5)

@@ -1,5 +1,5 @@
 {
- "about": "Built by build_weapons.py. Sizes and points are pixels of the lead's body drawing: px_per_m to the metre. Each is drawn pointing right; the PNG files are stored at twice this size. \"toward\" is the same thing drawn muzzle-on, as it looks pointed at the camera, with its own fists and points.",
+ "about": "Built by build_weapons.py. Sizes and points are pixels of the lead's body drawing: px_per_m to the metre. Each is drawn pointing right; the PNG files are stored at twice this size. \"toward\" is the same thing drawn muzzle-on, as it looks pointed at the camera, with its own fists and points; \"away\" the same from behind.",
  "px_per_m": 660.0,
  "weapons": {
   "pistol": {
@@ -29,6 +29,17 @@
      188
     ],
     "size": 1.15
+   },
+   "away": {
+    "file": "pistol_away.png",
+    "hands": "pistol_away_hands.png",
+    "w": 170,
+    "h": 250,
+    "grip": [
+     85,
+     180
+    ],
+    "size": 1.0
    }
   },
   "uzi": {
@@ -58,6 +69,17 @@
      184
     ],
     "size": 1.1
+   },
+   "away": {
+    "file": "uzi_away.png",
+    "hands": "uzi_away_hands.png",
+    "w": 200,
+    "h": 350,
+    "grip": [
+     100,
+     182
+    ],
+    "size": 0.95
    }
   },
   "ak": {
@@ -86,14 +108,25 @@
     "file": "ak_toward.png",
     "hands": "ak_toward_hands.png",
     "w": 300,
-    "h": 470,
+    "h": 430,
     "grip": [
-     98,
-     356
+     86,
+     152
     ],
     "fore": [
-     158,
-     262
+     164,
+     232
+    ],
+    "size": 0.92
+   },
+   "away": {
+    "file": "ak_away.png",
+    "hands": "ak_away_hands.png",
+    "w": 250,
+    "h": 330,
+    "grip": [
+     174,
+     236
     ],
     "size": 1.0
    }
