@@ -36,7 +36,7 @@ const THIN_ARM := 4.3           # an arm longer than this many of its own widths
 const WIDE_ARM := 3.5           # an arm shorter than this many of its own widths is a wide sleeve: holding something it bends at the elbow (_hold)
 const ELBOW := 0.4              # ...which is this far down it, of its length
 const ELBOW_BEND := 0.008      # ...where it turns this sharply (the card's arm_reach)
-const ELBOW_STUB := 0.1         # ...below which this much of the forearm's length stays as drawn, for the forearm to come out of
+const ELBOW_STUB := 0.2         # ...below which this much of the forearm's length stays as drawn, for the forearm to come out of
 const ELBOW_FLAT := 0.4         # ...and a rifle across the chest lies this much flatter, or a short forearm must fold back to reach it
 const FORE_IN := 3.0            # the second arm, which comes at its fist from below, stops shorter, or its end shows under the fist
 const FORE_BACK := 9.0          # and aims this many pixels behind that fist's middle (towards the butt), to end well inside it
@@ -81,6 +81,7 @@ const HOLDS := {
 }
 
 static var _weapon_data := {}       # assets/weapons/weapons.json, read once
+static var _holds_for := {}         # assets/weapons/holds_for.json, read with it: one character's own numbers for a hold
 
 ## Something the player can use, like a door: with a name set, E talks to it.
 signal used(by: Node3D)
@@ -118,6 +119,7 @@ var _run := 0.0             # 0 walking .. 1 running; eases
 var _armed := 0.0           # 0 hands empty .. 1 the thing is in his hands; eases
 var _aim := 0.0             # 0 carrying it .. 1 pointing it; eases
 var _rig := {}              # rig.json
+var _who := ""              # the folder it came from: "fry"
 var _px := Vector2.ONE      # the drawing on show, in pixels
 var _pivots := {}           # where each arm turns as drawn (the card's arm_l_pivot, arm_r_pivot), "l" and "r"
 var _arms := {}             # how its arms are drawn (rig.json's "arms": outfit.py's arm_info), "l" and "r"
@@ -206,6 +208,7 @@ func set_rig(dir: String) -> bool:
 		return false
 	_clear()
 	_rig = rig
+	_who = dir.get_file()
 	height = float(rig["height_m"])
 	for name: String in rig["views"]:
 		var data: Dictionary = rig["views"][name]
@@ -612,7 +615,22 @@ static func weapons() -> Dictionary:
 		var data = JSON.parse_string(FileAccess.get_file_as_string(WEAPONS + "weapons.json"))
 		if typeof(data) == TYPE_DICTIONARY:
 			_weapon_data = data
+		var own = JSON.parse_string(FileAccess.get_file_as_string(WEAPONS + "holds_for.json"))
+		if typeof(own) == TYPE_DICTIONARY:
+			_holds_for = own
 	return _weapon_data
+
+
+## How this character holds `held` facing `way` ("side_aim"): HOLDS, with its own
+## numbers from assets/weapons/holds_for.json laid over (a big belly, short arms).
+func _hold_row(held: String, way: String) -> Dictionary:
+	var row: Dictionary = HOLDS.get(held, {}).get(way, {})
+	var own: Dictionary = _holds_for.get(_who, {}).get(held, {}).get(way, {})
+	if own.is_empty():
+		return row
+	row = row.duplicate()
+	row.merge(own, true)
+	return row
 
 
 ## Face a way without walking: "front", "side" or "back", and whether the
@@ -631,8 +649,8 @@ func face_way(way: String, mirrored := false) -> void:
 ## from behind his chest.
 func _hold() -> void:
 	var held := weapon if weapon != "" else _held_name
-	var holds: Dictionary = HOLDS.get(held, {})
-	var carry: Dictionary = holds.get(view + "_carry", {})
+	weapons()
+	var carry := _hold_row(held, view + "_carry")
 	var info: Dictionary = weapons().get("weapons", {}).get(held, {})
 	var key: String = carry.get("arm", "l")
 	var k := smoothstep(0.0, 1.0, _armed)
@@ -681,7 +699,9 @@ func _hold() -> void:
 	var unit := clampf(float(arm["width"]) * m / LEAD_ARM, 0.8, 1.3) * float(info.get("size", 1.0)) / float(weapons()["px_per_m"])    # metres to a unit of the thing's drawing
 	if _held_name != held:
 		_take(held, info, unit)
-	var point: Dictionary = holds.get(view + "_aim", carry)
+	var point := _hold_row(held, view + "_aim")
+	if point.is_empty():
+		point = carry
 	var a := smoothstep(0.0, 1.0, _aim)
 	var flip: bool = carry.get("flip", false)
 	var dip := lerpf(carry.get("angle", 0.0), point.get("angle", 0.0), a)
