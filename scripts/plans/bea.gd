@@ -39,6 +39,7 @@ extends RefCounted
 const Props := preload("res://scripts/props.gd")
 const Bea := preload("res://scripts/props_bea.gd")
 const Outdoor := preload("res://scripts/outdoor.gd")
+const In := preload("res://scripts/props_in.gd")
 
 const UP := 40.0
 const FRONT := 11.0           # the house front
@@ -193,6 +194,31 @@ static func build(p: Node3D) -> void:
 	_back_rooms(p, g3, sun_paint)
 	_bedroom(p, h1)
 	_upstairs_back(p, h2)
+	_lights(p, g1, g2, g3, h1, h2)
+
+
+## The lights in her ceilings and on her walls (props_in.gd), the kitchen's
+## tiled walls, and the night outside the upstairs windows.
+static func _lights(p: Node3D, g1: int, g2: int, g3: int, h1: int, h2: int) -> void:
+	var brass := In.BRASS
+	In.pendant(p, g1, 7.7, 7.3, 2.3, brass, "globe")                                    # the front hall: back by the arch, clear of her hats
+	In.chandelier(p, g2, 2.65, 4.9, 2.34, 0.32, 5, brass)                              # over the dining table, up clear of her plates
+	In.pendant(p, g2, 6.9, 4.6, 2.2, brass, "globe")                                    # the kitchen
+	In.pendant(p, g3, 2.6, 1.6, 2.42, Color(0.82, 0.66, 0.4), "drum")                   # the sun room: a rattan shade, up over the window heads
+	In.pendant(p, g3, 7.0, 1.6, 2.25, Props.STEEL, "bulb")                              # the pantry
+	In.pendant(p, h2, UP + 2.5, 4.3, 2.2, Color(0.3, 0.5, 0.45), "cone")                # the sewing room
+	In.wall_strip(p, h2, UP + 8.2, 2.685, 0.0, 0.5, 1.97, In.WARM)                     # a strip light over the bathroom mirror
+	# The kitchen's side walls: white tile to a red rail, a skirting; her wall
+	# phone by the back door's arch.
+	var kitchen := {"lower": Kit.tex("in_tile", 0.6, Color(0.92, 0.9, 0.84), true, Color(1.0, 0.98, 0.92)), "dado": Color(0.78, 0.18, 0.16),
+			"dado_y": 1.2, "skirt": Color(0.5, 0.16, 0.14), "skirt_h": 0.12}
+	var calendar := {"a": 4.625, "b": 5.075, "kind": "window", "sill": 1.122, "head": 1.978, "bare": true}     # the tile and rail stop round her calendar
+	In.dress(p, g2, false, 5.0, 1.0, 3.075, 6.325, [{"a": 5.3, "b": 6.2}, calendar], kitchen)
+	In.dress(p, g2, false, 9.0, -1.0, 3.075, 6.325, [], kitchen)
+	In.wall_phone(p, g2, 8.915, 3.8, 270.0, 1.5, Color(0.92, 0.86, 0.66))
+	# Out of the upstairs windows: the night over the roofs.
+	In.night_view(p, h2, true, 2.6, -1.0, UP + 1.6, UP + 3.2, 1.1, 2.2, "sky")
+	In.night_view(p, h1, false, UP, -1.0, 9.4, 10.5, 0.85, 2.15, "sky")
 
 
 ## A papered wall face: props_bea.papered in band b's node. `overlay` lays the

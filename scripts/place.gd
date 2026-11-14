@@ -110,9 +110,15 @@ func street(u0: float, u1: float, pave := 2.5) -> int:
 	var n := node_of(b)
 	var mid := (u0 + u1) * 0.5
 	var long := u1 - u0 + 16.0
-	Kit.box(n, Vector3(long, 0.3, pave), pt(mid, depth + pave * 0.5, -0.15), Kit.tex("sidewalk", 2.4, Color(0.66, 0.64, 0.6)))
-	Kit.box(n, Vector3(long, 0.3, 0.2), pt(mid, depth + pave + 0.1, -0.15), Color(0.78, 0.76, 0.72))
-	Kit.box(n, Vector3(long, 0.3, 7.0), pt(mid, depth + pave + 3.7, -0.29), Kit.tex("asphalt", 3.0, Color(0.2, 0.22, 0.27)))
+	# Concrete slabs, a kerb standing a little proud of them, the gutter along its
+	# foot and the road (outdoor.gd's textures, with the old ones to fall back on).
+	var outdoor = load("res://scripts/outdoor.gd")
+	var walk: Variant = outdoor.pavement() if outdoor else Kit.tex("sidewalk", 2.4, Color(0.66, 0.64, 0.6))
+	var tar: Variant = outdoor.road() if outdoor else Kit.tex("asphalt", 3.0, Color(0.2, 0.22, 0.27))
+	Kit.box(n, Vector3(long, 0.3, pave), pt(mid, depth + pave * 0.5, -0.15), walk)
+	Kit.box(n, Vector3(long, 0.32, 0.2), pt(mid, depth + pave + 0.1, -0.14), Color(0.84, 0.82, 0.77))
+	Kit.box(n, Vector3(long, 0.3, 7.0), pt(mid, depth + pave + 3.7, -0.29), tar)
+	Kit.box(n, Vector3(long - 0.02, 0.012, 0.36), pt(mid, depth + pave + 0.38, -0.136), Color(0.42, 0.43, 0.46))
 	for i in int(long / 3.4):
 		Kit.box(n, Vector3(1.4, 0.01, 0.12), pt(mid - long * 0.5 + 1.5 + i * 3.4, depth + pave + 3.4, -0.135), Color(0.85, 0.8, 0.55))
 	return b
@@ -298,12 +304,17 @@ func fence(b: int, along_u: bool, at: float, from: float, to: float, gaps := [],
 		_always.append(_passage(along_u, at, g[0], g[1]))
 	runs.append([cursor, to])
 	var colour: Variant = look if look != null else {"rail": Color(0.14, 0.15, 0.17), "chain": Color(0.55, 0.58, 0.6), "wood": Color(0.5, 0.36, 0.24)}[kind]
+	var dark: Variant = (colour as Color).darkened(0.25) if colour is Color else colour
+	# The out-of-doors pass's materials (outdoor.gd): see-through chain link, weathered boards.
+	var outdoor = load("res://scripts/outdoor.gd")
+	var lying := Vector3(0, 0, 90) if along_u else Vector3(90, 0, 0)       # turns a cylinder to lie along the fence
 	for run: Array in runs:
 		var length: float = run[1] - run[0]
 		if length < 0.05:
 			continue
 		var bay: float = {"rail": 0.14, "chain": 2.4, "wood": 1.8}[kind]
 		var n := maxi(int(round(length / bay)), 1)
+		var mid: float = (run[0] + run[1]) * 0.5
 		match kind:
 			"rail":
 				slab(node, along_u, at, run[0], run[1], h - 0.09, h - 0.04, 0.05, colour)
@@ -312,20 +323,44 @@ func fence(b: int, along_u: bool, at: float, from: float, to: float, gaps := [],
 					var w: float = run[0] + length * float(i) / float(n)
 					var post := i % 8 == 0 or i == n
 					Kit.cyl(node, 0.03 if post else 0.011, h + (0.08 if post else 0.0), pt(w, at, (h + (0.08 if post else 0.0)) * 0.5) if along_u else pt(at, w, (h + (0.08 if post else 0.0)) * 0.5), colour, Vector3.ZERO, 5)
+					if post:                       # a ball on each post
+						Kit.ball(node, 0.048, pt(w, at, h + 0.11) if along_u else pt(at, w, h + 0.11), colour, 8)
 			"chain":
-				slab(node, along_u, at, run[0], run[1], h - 0.05, h, 0.05, colour)
-				slab(node, along_u, at, run[0], run[1], 0.02, 0.06, 0.04, colour)
-				slab(node, along_u, at, run[0], run[1], 0.06, h - 0.05, 0.012, Kit.tex("chain_link", 0.5, Color(0.7, 0.74, 0.76, 0.3)) if ResourceLoader.exists(Kit.TEX_DIR + "chain_link.png") else Color(0.72, 0.76, 0.78, 0.22))
+				# Round top rail and a tension wire along the foot; the mesh in one
+				# see-through panel a bay, between line posts with caps, the ends heavier.
+				Kit.cyl(node, 0.024, length, pt(mid, at, h - 0.03) if along_u else pt(at, mid, h - 0.03), colour, lying, 8)
+				Kit.cyl(node, 0.008, length, pt(mid, at, 0.07) if along_u else pt(at, mid, 0.07), dark, lying, 4)
+				var wire: Material = outdoor.chain_link() if outdoor else Kit.flat(Color(0.72, 0.76, 0.78, 0.22))
+				for i in n:
+					var a: float = run[0] + length * float(i) / float(n)
+					var c: float = run[0] + length * float(i + 1) / float(n)
+					var panel := MeshInstance3D.new()
+					var q := QuadMesh.new()
+					q.size = Vector2(c - a - 0.04, h - 0.1)
+					panel.mesh = q
+					panel.material_override = wire
+					panel.position = pt((a + c) * 0.5, at, 0.06 + (h - 0.1) * 0.5) if along_u else pt(at, (a + c) * 0.5, 0.06 + (h - 0.1) * 0.5)
+					panel.rotation_degrees = Vector3.ZERO if along_u else Vector3(0, 90, 0)
+					node.add_child(panel)
 				for i in n + 1:
 					var w: float = run[0] + length * float(i) / float(n)
-					Kit.cyl(node, 0.04, h + 0.1, pt(w, at, (h + 0.1) * 0.5) if along_u else pt(at, w, (h + 0.1) * 0.5), colour, Vector3.ZERO, 6)
+					var end := i == 0 or i == n
+					var r := 0.05 if end else 0.036
+					var top := h + (0.1 if end else 0.04)
+					Kit.cyl(node, r, top, pt(w, at, top * 0.5) if along_u else pt(at, w, top * 0.5), colour, Vector3.ZERO, 8)
+					Kit.cyl(node, r + 0.012, 0.05, pt(w, at, top + 0.015) if along_u else pt(at, w, top + 0.015), dark, Vector3.ZERO, 8)
 			_:
-				slab(node, along_u, at, run[0], run[1], 0.05, h, 0.04, colour)
+				# Boards (out_boards, tinted to the fence's colour), two rails behind, square posts.
+				var face: Variant = colour
+				if colour is Color and outdoor:
+					var cc: Color = colour
+					face = outdoor.tex("out_boards", 1.2, cc, Color(minf(cc.r / 0.54, 1.0), minf(cc.g / 0.48, 1.0), minf(cc.b / 0.41, 1.0)))
+				slab(node, along_u, at, run[0], run[1], 0.05, h, 0.04, face)
 				slab(node, along_u, at - 0.03, run[0], run[1], h * 0.3, h * 0.3 + 0.08, 0.03, (colour as Color).darkened(0.18) if colour is Color else colour)
 				slab(node, along_u, at - 0.03, run[0], run[1], h * 0.8, h * 0.8 + 0.08, 0.03, (colour as Color).darkened(0.18) if colour is Color else colour)
 				for i in n + 1:
 					var w: float = run[0] + length * float(i) / float(n)
-					Kit.box(node, Vector3(0.1, h + 0.06, 0.1), pt(w, at, (h + 0.06) * 0.5) if along_u else pt(at, w, (h + 0.06) * 0.5), (colour as Color).darkened(0.25) if colour is Color else colour)
+					Kit.box(node, Vector3(0.1, h + 0.06, 0.1), pt(w, at, (h + 0.06) * 0.5) if along_u else pt(at, w, (h + 0.06) * 0.5), dark)
 		if along_u:
 			block(run[0], at - 0.04, run[1], at + 0.04)
 		else:

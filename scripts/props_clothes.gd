@@ -41,6 +41,19 @@ static func pick(list: Array, key: float) -> Variant:
 	return list[int(Props.rnd(key) * list.size()) % list.size()]
 
 
+## A pair of display spotlights over a wall display, one each side of its sign:
+## a plate on the wall at each of `xs` (the display's back is at z = `back`,
+## the plate's middle at height y), an arm out from it, and a black can on the
+## end tipped down and back at the display, its lens lit.
+static func spots(g: Node3D, xs: Array, y: float, back: float, reach := 0.32, tilt := 42.0) -> void:
+	for x: float in xs:
+		Kit.box(g, Vector3(0.07, 0.07, 0.02), Vector3(x, y, back + 0.01), DARK)
+		Kit.box(g, Vector3(0.022, 0.022, reach), Vector3(x, y, back + 0.02 + reach * 0.5), DARK)
+		var can := Kit.group(g, Vector3(x, y - 0.02, back + 0.02 + reach), Vector3(tilt, 0, 0))
+		Kit.cyl(can, 0.05, 0.13, Vector3(0, -0.05, 0), DARK, Vector3.ZERO, 10, 0.04)
+		Kit.cyl(can, 0.043, 0.008, Vector3(0, -0.113, 0), Kit.flat(Color(1.0, 0.93, 0.75), 2.2), Vector3.ZERO, 10)
+
+
 # ------------------------------------------------------------------- hats
 
 ## A baseball cap facing +z, the bottom of its crown at `pos`. `lean` tips it
@@ -102,6 +115,7 @@ static func hat_wall(p: Node3D, b: int, u: float, v: float, yaw := 0.0, w := 1.8
 			var hat := cap(g, Vector3(x, y, front + 0.13), crown, brim, 16.0, WHITE if crown != WHITE else Color(0.86, 0.14, 0.12))
 			hat.scale = Vector3.ONE * 1.3
 	Props.sign_box(g, "HATS", Vector3(0, 2.68, back + 0.07), Vector2(1.0, 0.32), Color(0.98, 0.78, 0.12), DARK, 0.0, 0.5)
+	spots(g, [-0.72, 0.72], 2.72, back)
 	return g
 
 
@@ -178,6 +192,7 @@ static func jacket_rail(p: Node3D, b: int, u: float, v: float, yaw := 0.0, w := 
 			trim = DARK if shell != DARK else Color(0.86, 0.14, 0.12)
 		puffer_front(g, Vector3(x, 2.3, back + 0.13), shell, trim, i % 2 == 1, i % 2 == 0)
 	Props.sign_box(g, "JACKETS", Vector3(0, 2.68, back + 0.07), Vector2(1.5, 0.32), Color(0.86, 0.14, 0.12), WHITE, 0.0, 0.5)
+	spots(g, [-1.0, 1.0], 2.72, back)
 	return g
 
 
@@ -212,6 +227,7 @@ static func jeans_wall(p: Node3D, b: int, u: float, v: float, yaw := 0.0, w := 2
 				var y := y0 + r * ch + 0.0125 + k * 0.058
 				Kit.block(g, Vector3(cw - 0.08, 0.052, 0.3), Vector3(x + 0.012 * (Props.rnd(key + k) - 0.5), y, 0.03 + 0.01 * Props.rnd(key + k + 0.5)), look.lightened(0.07) if k % 2 == 0 else look)
 	Props.sign_box(g, "DENIM", Vector3(0, 2.6, -d * 0.5 + 0.07), Vector2(1.2, 0.32), Color(0.16, 0.24, 0.52), WHITE, 0.0, 0.5)
+	spots(g, [-0.82, 0.82], 2.66, -d * 0.5)
 	return g
 
 
@@ -263,6 +279,7 @@ static func sneaker_wall(p: Node3D, b: int, u: float, v: float, yaw := 0.0, w :=
 		for r in 5:
 			shoe_box(g, Vector3(-n * 0.1075 + 0.1075 + c * 0.215, r * 0.125, front + 0.17), u * 0.9 + v * 1.3 + c * 3.1 + r * 1.7)
 	Props.sign_box(g, "KICKS", Vector3(0, 2.68, back + 0.07), Vector2(1.2, 0.32), Color(0.95, 0.95, 0.92), Color(0.86, 0.14, 0.12), 0.0, 0.6)
+	spots(g, [-0.85, 0.85], 2.72, back)
 	return g
 
 

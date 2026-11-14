@@ -90,7 +90,7 @@ static func sash(g: Node3D, s: float, y0: float, ww: float, wh: float, trim: Col
 	fb(g, s - half - 0.15, s + half + 0.15, y0 - 0.13, y0 - 0.01, 0.0, 0.17, trim)
 	if lintel != null:
 		fb(g, s - half - 0.13, s + half + 0.13, y0 + wh + 0.04, y0 + wh + 0.24, 0.0, 0.08, lintel)
-	fb(g, s - half, s + half, y0 + 0.07, y0 + wh - 0.07, 0.05, 0.075, Kit.flat(lit, 0.85) if lit != null else PANE)
+	fb(g, s - half, s + half, y0 + 0.07, y0 + wh - 0.07, 0.05, 0.075, Kit.flat(lit, 1.1) if lit != null else PANE)
 	var cloth: Variant = curtain
 	if cloth != null and lit == null:
 		cloth = (cloth as Color).darkened(0.6)
@@ -263,7 +263,7 @@ static func _porch(g: Node3D, w: float, door_s: float, into: float, h: Dictionar
 	fb(g, door_s - 0.09, door_s + 0.09, CEIL - 0.05, CEIL, PD - 0.45, PD - 0.27, IRON)
 	Kit.ball(g, 0.1, Vector3(door_s, CEIL - 0.13, PD - 0.36), Kit.flat(Color(1.0, 0.86, 0.55), 1.8) if on else Color(0.62, 0.6, 0.55), 8)
 	if on:
-		Kit.omni(g, Vector3(door_s, CEIL - 0.35, PD + 0.2), Color(1.0, 0.84, 0.58), 0.6, 4.5)
+		Kit.omni(g, Vector3(door_s, CEIL - 0.35, PD + 0.2), Color(1.0, 0.84, 0.58), 2.4, 5.5)
 	# The pop-up's own: things on the porch.
 	if h.get("chairs", false):
 		var cs := w * 0.5 + into * 1.2
@@ -303,7 +303,7 @@ static func _stoop(g: Node3D, door_s: float, into: float, h: Dictionary) -> void
 	fb(g, lamp_s - 0.08, lamp_s + 0.08, F0 + 2.0, F0 + 2.32, 0.0, 0.04, IRON)
 	Kit.box(g, Vector3(0.14, 0.24, 0.14), Vector3(lamp_s, F0 + 2.1, 0.12), Kit.flat(Color(1.0, 0.86, 0.55), 1.6) if on else Color(0.5, 0.48, 0.42))
 	if on:
-		Kit.omni(g, Vector3(lamp_s, F0 + 2.0, 0.8), Color(1.0, 0.84, 0.58), 0.55, 4.0)
+		Kit.omni(g, Vector3(lamp_s, F0 + 2.0, 0.8), Color(1.0, 0.84, 0.58), 2.0, 4.8)
 
 
 ## The three-sided sash bay upstairs: a sash in each face, a clapboard apron
@@ -402,24 +402,38 @@ static func plain_house(g: Node3D, w: float, height: float, wall: Variant, trim:
 ## A street lamp as the old game's network lamps: a dark pole straight up to
 ## 4.68 m, a gooseneck, and a cobra head whose lens hangs out over the road.
 ## It stands 0.65 m behind the kerb; `reach` is from the pole to the lens
-## (the head reaches towards +z: turn the group to aim it).
-static func cobra_lamp(p: Node3D, b: int, u: float, v: float, yaw := 0.0, reach := 1.17) -> Node3D:
+## (the head reaches towards +z: turn the group to aim it). Its light is a spot
+## from the lens tipped a little back over the pavement, `energy` strong: a pool
+## with a soft edge on the pavement and the kerbside (0: only the lens glows,
+## for lamps far off up a road).
+static func cobra_lamp(p: Node3D, b: int, u: float, v: float, yaw := 0.0, reach := 1.17, energy := 8.0) -> Node3D:
 	var g: Node3D = p.prop(b, u, v, yaw, 0.3, 0.3)
 	var pole := Color(0.18, 0.18, 0.2)          # (42, 42, 46), a little lifted
 	Kit.cyl(g, 0.11, 0.5, Vector3(0, 0.25, 0), pole, Vector3.ZERO, 8, 0.08)
 	Kit.cyl(g, 0.065, 4.68, Vector3(0, 2.34, 0), pole, Vector3.ZERO, 8, 0.055)
 	pipe(g, Vector3(0, 4.62, 0), Vector3(0, 4.98, 0.3), 0.05, pole)
 	pipe(g, Vector3(0, 4.98, 0.3), Vector3(0, 5.04, reach - 0.25), 0.05, pole)
-	Kit.box(g, Vector3(0.3, 0.17, 0.66), Vector3(0, 5.05, reach), Color(0.5, 0.52, 0.55))
-	Kit.box(g, Vector3(0.32, 0.07, 0.42), Vector3(0, 5.16, reach - 0.06), Color(0.42, 0.44, 0.47))
+	Kit.bevel(g, Vector3(0.3, 0.17, 0.66), Vector3(0, 5.05, reach), Color(0.5, 0.52, 0.55), 0.05)
+	Kit.bevel(g, Vector3(0.32, 0.07, 0.42), Vector3(0, 5.16, reach - 0.06), Color(0.42, 0.44, 0.47), 0.025)
 	Kit.box(g, Vector3(0.24, 0.05, 0.46), Vector3(0, 4.945, reach + 0.04), Kit.flat(LAMP, 2.6))
-	Kit.omni(g, Vector3(0, 4.6, reach), LAMP, 2.4, 13.0)
+	if energy > 0.0:
+		var spot := SpotLight3D.new()
+		spot.light_color = LAMP
+		spot.light_energy = energy
+		spot.spot_range = 9.5
+		spot.spot_angle = 56.0
+		spot.spot_angle_attenuation = 1.5
+		spot.spot_attenuation = 0.6
+		spot.position = Vector3(0, 4.88, reach)
+		spot.rotation_degrees = Vector3(-76, 0, 0)
+		g.add_child(spot)
 	return g
 
 
 ## A wooden utility pole, as along Rose Hill's north kerb: 9.6 m tall, a 2 m
 ## cross-arm at 8.93 m with three insulators for the wires, which run along u.
-static func utility_pole(p: Node3D, b: int, u: float, v: float) -> Node3D:
+## `transformer`: a grey transformer can hung on its street side.
+static func utility_pole(p: Node3D, b: int, u: float, v: float, transformer := false) -> Node3D:
 	var g: Node3D = p.prop(b, u, v, 0.0, 0.36, 0.36)
 	var wood := Color(0.48, 0.39, 0.29)         # (118, 94, 69)
 	Kit.cyl(g, 0.15, 9.6, Vector3(0, 4.8, 0), wood, Vector3.ZERO, 8, 0.11)
@@ -429,6 +443,12 @@ static func utility_pole(p: Node3D, b: int, u: float, v: float) -> Node3D:
 	for y: float in [1.6, 2.1]:
 		Kit.box(g, Vector3(0.16, 0.012, 0.012), Vector3(0, y, 0.15), Color(0.7, 0.7, 0.68))   # old staples, a tag
 	Kit.box(g, Vector3(0.12, 0.16, 0.012), Vector3(0, 2.6, 0.151), Color(0.85, 0.8, 0.3))
+	if transformer:
+		var can := Color(0.52, 0.55, 0.57)
+		Kit.box(g, Vector3(0.1, 0.6, 0.2), Vector3(0, 7.6, 0.22), can.darkened(0.25))
+		Kit.cyl(g, 0.3, 0.9, Vector3(0, 7.6, 0.45), can, Vector3.ZERO, 10)
+		Kit.cyl(g, 0.33, 0.08, Vector3(0, 8.07, 0.45), can.darkened(0.15), Vector3.ZERO, 10)
+		pipe(g, Vector3(0, 8.11, 0.45), Vector3(0, 8.95, 0.8), 0.014, Props.DARK, 4)
 	return g
 
 
@@ -450,8 +470,21 @@ const CAR_KINDS := {
 }
 
 
-## A parked car; its front is the front (turn it with `yaw`).
-static func parked_car(p: Node3D, b: int, u: float, v: float, yaw: float, kind: String, paint: Color) -> Node3D:
+## A parked car; its front is the front (turn it with `yaw`). Chunky and
+## toy-like: a rounded body, a glasshouse with a raked windscreen and back
+## window under a roof, the pillars, a grille and lamps, bumpers and plates,
+## dark wheel wells. `ground`: the height of the road under it.
+static func parked_car(p: Node3D, b: int, u: float, v: float, yaw: float, kind: String, paint: Color, ground := 0.0) -> Node3D:
+	var c: Array = CAR_KINDS[kind]
+	var car: Node3D = p.prop(b, u, v, yaw, c[1], c[0])
+	car_model(car, Vector3(0, ground, 0), 0.0, kind, paint)
+	return car
+
+
+## The car itself (see parked_car) built into `parent` at `at` (the road under
+## it), its front facing `yaw`. It takes no floor: for cars in streets nobody
+## walks.
+static func car_model(parent: Node3D, at: Vector3, yaw: float, kind: String, paint: Color) -> Node3D:
 	var c: Array = CAR_KINDS[kind]
 	var l: float = c[0]
 	var w: float = c[1]
@@ -459,30 +492,151 @@ static func parked_car(p: Node3D, b: int, u: float, v: float, yaw: float, kind: 
 	var cl: float = c[3]
 	var cz: float = c[4]
 	var ch: float = c[5]
-	var g: Node3D = p.prop(b, u, v, yaw, w, l)
+	var g := Kit.group(parent, at, Vector3(0, yaw, 0))
 	var glass := Color(0.16, 0.21, 0.28)
 	var chrome := Color(0.78, 0.8, 0.82)
+	var rubber := Color(0.07, 0.07, 0.08)
+	var seam := paint.darkened(0.45)
 	var old := kind == "box_sedan" or kind == "long_sedan"
+	var van := kind == "minivan"
 	var floor_y := 0.3
-	Kit.block(g, Vector3(w, bh, l), Vector3(0, floor_y, 0), paint)
 	var top := floor_y + bh
-	var cw := w - (0.14 if kind == "minivan" else 0.18)
-	Kit.block(g, Vector3(cw, ch, cl), Vector3(0, top, cz), glass)
-	Kit.box(g, Vector3(cw + 0.04, 0.06, cl - (0.1 if kind == "minivan" else 0.3)), Vector3(0, top + ch + 0.03, cz - 0.05), paint)
-	for x: float in [-cw * 0.5 - 0.006, cw * 0.5 + 0.006]:
-		for z: float in [cz - cl * 0.5 + 0.06, cz + 0.05, cz + cl * 0.5 - 0.06]:
-			Kit.box(g, Vector3(0.012, ch - 0.01, 0.1), Vector3(x, top + (ch - 0.01) * 0.5, z), paint)
-	for z: float in [l * 0.5 + 0.03, -l * 0.5 - 0.03]:
-		Kit.box(g, Vector3(w + 0.04, 0.16, 0.12), Vector3(0, floor_y + 0.1, z), chrome if old else Color(0.2, 0.2, 0.22))
-	for x: float in [-w * 0.5 + 0.28, w * 0.5 - 0.28]:
-		Kit.box(g, Vector3(0.32, 0.13, 0.02), Vector3(x, top - 0.14, l * 0.5 + 0.01), Kit.flat(Color(0.95, 0.93, 0.8), 0.3))
-		Kit.box(g, Vector3(0.3, 0.13, 0.02), Vector3(x, top - 0.14, -l * 0.5 - 0.01), Kit.flat(Color(0.8, 0.12, 0.1), 0.35))
-	Kit.box(g, Vector3(w + 0.012, 0.05, l - 0.6), Vector3(0, floor_y + bh * 0.45, 0), paint.darkened(0.3))
+	# The body, the old boxy sedans squarer.
+	Kit.bevel_block(g, Vector3(w, bh, l), Vector3(0, floor_y, 0), paint, 0.05 if old else 0.11)
+	# The glasshouse: the glass sides, the raked windscreen and back window (a
+	# minivan's and a hatchback's back is near upright), the roof on top (a
+	# cream vinyl one on the long sedan), the pillars.
+	var cw := w - (0.16 if van else 0.22)
+	var rf := 0.42 if van else 0.55
+	var rb := 0.14 if van or kind == "hatchback" else 0.42
+	var zf := cz + cl * 0.5
+	var zb := cz - cl * 0.5
+	var mid := cl - rf - rb
+	var mz := (zf - rf + zb + rb) * 0.5
+	var gy := top + ch * 0.5
+	Kit.box(g, Vector3(cw, ch, mid), Vector3(0, gy, mz), glass)
+	Kit.prism(g, Vector3(rf, ch, cw), Vector3(0, gy, zf - rf * 0.5), glass, Vector3(0, 90, 0), 1.0)
+	Kit.prism(g, Vector3(rb, ch, cw), Vector3(0, gy, zb + rb * 0.5), glass, Vector3(0, 90, 0), 0.0)
+	Kit.bevel(g, Vector3(cw + 0.06, 0.08, mid + 0.12), Vector3(0, top + ch + 0.03, mz), Color(0.9, 0.87, 0.78) if kind == "long_sedan" else paint, 0.03)
+	for s: float in [-1.0, 1.0]:
+		var x := s * (cw * 0.5 + 0.006)
+		Kit.tube(g, Vector3(x, top, zf), Vector3(x, top + ch, zf - rf), 0.04, paint, 4)
+		Kit.tube(g, Vector3(x, top, zb), Vector3(x, top + ch, zb + rb), 0.04, paint, 4)
+		Kit.box(g, Vector3(0.02, ch, 0.12), Vector3(s * (cw * 0.5 + 0.012), gy, mz), paint)
+		Kit.bevel(g, Vector3(0.1, 0.09, 0.07), Vector3(s * (cw * 0.5 + 0.09), top + 0.1, zf - 0.08), paint, 0.02)   # a mirror
+		# Along the side: a trim strip (chrome on the old ones), the door seams.
+		Kit.box(g, Vector3(0.02, 0.05, l - 0.8), Vector3(s * (w * 0.5 + 0.005), floor_y + bh * 0.55, 0), chrome if old else seam)
+		var seams: Array = [zf - 0.05, mz - 0.3] if van else [zf - 0.05, mz, zb + rb - 0.05]
+		for z: float in seams:
+			Kit.box(g, Vector3(0.012, bh * 0.78, 0.02), Vector3(s * (w * 0.5 + 0.004), floor_y + bh * 0.5, z), seam)
+	if van:     # a roof rack
+		for x: float in [-cw * 0.36, cw * 0.36]:
+			Kit.box(g, Vector3(0.05, 0.05, mid - 0.1), Vector3(x, top + ch + 0.1, mz), Color(0.2, 0.2, 0.22))
+	# The front: a grille (chrome bars on the old ones), the lamps; the tail lamps.
+	var nose := l * 0.5 + 0.006
+	var ly := top - bh * 0.42
+	Kit.box(g, Vector3(w * 0.42, bh * 0.4, 0.02), Vector3(0, ly, nose), Color(0.12, 0.12, 0.14))
+	if old:
+		for k in 3:
+			Kit.box(g, Vector3(w * 0.42, 0.025, 0.02), Vector3(0, ly - bh * 0.12 + k * bh * 0.12, nose + 0.012), chrome)
+	for x: float in [-w * 0.5 + 0.3, w * 0.5 - 0.3]:
+		Kit.box(g, Vector3(0.3, 0.14, 0.02), Vector3(x, ly, nose), Kit.flat(Color(0.98, 0.95, 0.8), 0.35))
+		Kit.box(g, Vector3(0.32, 0.14, 0.02), Vector3(x, top - bh * 0.35, -nose), Kit.flat(Color(0.85, 0.12, 0.1), 0.45))
+	# The bumpers, chrome on the old ones, and the plates on them.
+	for s: float in [1.0, -1.0]:
+		Kit.bevel(g, Vector3(w + 0.06, 0.17, 0.16), Vector3(0, floor_y + 0.1, s * (l * 0.5 + 0.02)), chrome if old else Color(0.22, 0.22, 0.24), 0.05)
+		Kit.box(g, Vector3(0.38, 0.14, 0.02), Vector3(0, floor_y + 0.1, s * (l * 0.5 + 0.105)), Color(0.94, 0.93, 0.86))
+	# The wheels: a dark well behind each, the tyre, a hubcap, the hub.
 	for x: float in [-w * 0.5 + 0.08, w * 0.5 - 0.08]:
 		for z: float in [-l * 0.5 + 0.85, l * 0.5 - 0.85]:
-			Kit.cyl(g, 0.32, 0.24, Vector3(x, 0.32, z), Color(0.07, 0.07, 0.08), Vector3(0, 0, 90), 12)
-			Kit.cyl(g, 0.16, 0.25, Vector3(x, 0.32, z), chrome, Vector3(0, 0, 90), 8)
+			Kit.cyl(g, 0.41, 0.03, Vector3(signf(x) * (w * 0.5 + 0.004), 0.36, z), rubber, Vector3(0, 0, 90), 12)
+			Kit.cyl(g, 0.32, 0.24, Vector3(x, 0.32, z), rubber, Vector3(0, 0, 90), 12)
+			Kit.cyl(g, 0.17, 0.25, Vector3(x, 0.32, z), chrome, Vector3(0, 0, 90), 8)
+			Kit.cyl(g, 0.06, 0.26, Vector3(x, 0.32, z), Color(0.3, 0.3, 0.33), Vector3(0, 0, 90), 6)
 	return g
+
+
+## The watcher that fades the parked cars that would hide him (see CarFade):
+## hand it each car as it is parked.
+static func car_fade(p: Node3D, b: int) -> CarFade:
+	var f := CarFade.new()
+	f.name = "CarFade"
+	p.node_of(b).add_child(f)
+	p.watchers.append(f)
+	return f
+
+
+## The parked cars stand between the camera and the pavement, so any car that
+## would hide him fades to a ghost of itself until he has walked on. The place
+## tells it where he is (place.watchers), or it finds him (main.gd's "Player")
+## when it has not been told yet; it finds the camera itself, each frame.
+class CarFade extends Node3D:
+	const GHOST := 0.2            # how much of a car still shows while it is in the way
+	const SPEED := 5.0            # a whole fade in a fifth of a second
+	var _cars: Array = []         # [the car, its box in its own space, its own materials, how much shows]
+	var _at := Vector3.INF
+	var _eye := Vector3.INF
+	var _lead: Node3D = null
+
+	## A car to look after: its parts get materials of their own, so it fades alone.
+	func add(car: Node3D) -> void:
+		var mats := {}
+		var box := AABB()
+		var first := true
+		for node: Node in car.find_children("*", "MeshInstance3D", true, false):
+			var mi := node as MeshInstance3D
+			var xf := mi.transform
+			var up := mi.get_parent()
+			while up != car and up is Node3D:
+				xf = (up as Node3D).transform * xf
+				up = up.get_parent()
+			var part: AABB = xf * mi.mesh.get_aabb()
+			box = part if first else box.merge(part)
+			first = false
+			var m := mi.material_override as StandardMaterial3D
+			if m == null:
+				continue
+			if not mats.has(m):
+				var own := m.duplicate() as StandardMaterial3D
+				own.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+				own.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_ALWAYS
+				mats[m] = own
+			mi.material_override = mats[m]
+		_cars.append([car, box.grow(0.1), mats.values(), 1.0])
+
+	func watch(at: Vector3, _delta: float) -> void:
+		_at = at
+
+	func _process(delta: float) -> void:
+		var cam := get_viewport().get_camera_3d()
+		if cam == null or not is_visible_in_tree():
+			return
+		if _lead == null and get_tree().current_scene:
+			_lead = get_tree().current_scene.get_node_or_null("Player") as Node3D
+		if _lead:
+			_at = _lead.global_position
+		if _at == Vector3.INF:
+			return
+		var eye := cam.global_position
+		var cut := _eye == Vector3.INF or eye.distance_to(_eye) > 2.0     # the camera jumped: no fading, just be right
+		_eye = eye
+		var near := eye.distance_to(_at) < 16.0                            # the game camera, not a view of the whole street
+		for car: Array in _cars:
+			var box: AABB = (car[0] as Node3D).global_transform * (car[1] as AABB)
+			var hides := false
+			if near:
+				for o: Vector3 in [Vector3(0, 0.1, 0), Vector3(-0.4, 0.1, 0), Vector3(0.4, 0.1, 0), Vector3(0, 0.8, 0), Vector3(0, 1.5, 0)]:
+					if box.intersects_segment(eye, _at + o) != null:
+						hides = true
+						break
+			var want := GHOST if hides else 1.0
+			var a: float = want if cut else move_toward(float(car[3]), want, delta * SPEED)
+			if a != float(car[3]):
+				car[3] = a
+				for m: StandardMaterial3D in car[2]:
+					var col := m.albedo_color
+					col.a = a
+					m.albedo_color = col
 
 
 ## A blue mailbox on its four legs, the slot under the round top.

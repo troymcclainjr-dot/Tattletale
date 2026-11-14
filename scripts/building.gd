@@ -101,7 +101,7 @@ func build() -> void:
 ## The wall between the front room and the control room, and its padded door.
 func _control_wall() -> Array:
 	var node := Kit.group(self, Vector3.ZERO, Vector3.ZERO, "WallToControl")
-	var look := Kit.tex("stucco", 2.0, Color(0.86, 0.74, 0.68))
+	var look := Kit.tex("kit_memphis", 1.5, Color(0.95, 0.92, 0.85))     # the front room's wallpaper (only its side is ever seen)
 	var z0: float = control.Z1
 	var z1: float = front.Z0
 	var zc := (z0 + z1) * 0.5

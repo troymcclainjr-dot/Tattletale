@@ -13,6 +13,8 @@ extends RefCounted
 ## the back wall; the street is at v = 12.
 
 const Props := preload("res://scripts/props.gd")
+const In := preload("res://scripts/props_in.gd")
+const F := 12.075            # the shop's street face
 
 
 static func build(p: Node3D) -> void:
@@ -57,21 +59,43 @@ static func build(p: Node3D) -> void:
 	p.side(b3, 4.0, 0, 4.2, cream, [{"a": 1.6, "b": 2.5, "hinge": "a", "swing": -1, "colour": Color(0.42, 0.3, 0.2)}])
 	p.cross(b3, 0.0, 0, 10, cream, [], {"back": true})
 
-	_street(p, st, front)
+	_street(p, st, front, black_brick)
 	_floor(p, b1)
 	_counter(p, b2)
 	_back(p, b3)
+	_dress(p, b1, b2, b3)
 
 
-static func _street(p: Node3D, st: int, front: Node3D) -> void:
+static func _street(p: Node3D, st: int, front: Node3D, black_brick: Variant) -> void:
 	var n: Node3D = p.node_of(st)
 	var yellow := Color(0.98, 0.85, 0.3)
-	# The front: the name on a red board, the grate rolled up over the window, neon in it.
+	var stone := Color(0.86, 0.82, 0.72)
+	var coal := Color(0.2, 0.18, 0.2)
+	# The front: the name on a red board in a yellow lip under a coping, lit by
+	# three lamps; the grate rolled up over the window in its box, its tracks
+	# down each side; a tiled riser; over it all a stepped parapet on a stone
+	# belt, a stone diamond in its middle.
 	p.slab(front, true, 12.1, 0.5, 9.5, 2.75, 3.85, 0.08, Color(0.6, 0.1, 0.1))
 	Props.words(front, "PARKWAY SPIRITS", p.pt(5.0, 12.145, 3.42), 0.5, yellow)
 	Props.words(front, "BEER  /  WINE  /  LIQUOR", p.pt(5.0, 12.145, 2.97), 0.2, yellow, 0.0, false)
-	p.slab(front, true, 12.0, -0.05, 10.05, 4.2, 4.4, 0.3, Color(0.2, 0.18, 0.2))
+	for lip: Array in [[0.5, 9.5, 3.81, 3.85], [0.5, 9.5, 2.75, 2.79], [0.5, 0.54, 2.79, 3.81], [9.46, 9.5, 2.79, 3.81]]:
+		p.slab(front, true, 12.1475, lip[0], lip[1], lip[2], lip[3], 0.015, yellow)
+	_proud(p, front, 0.42, 9.58, 3.85, 3.92, 0.14, coal)
+	for u: float in [2.0, 5.0, 8.0]:
+		In.gooseneck(p, front, u, 12.0, 4.02, Color(0.14, 0.14, 0.16))
+	p.slab(front, true, 12.0, -0.05, 10.05, 4.2, 4.3, 0.3, stone)                 # the belt
+	for part: Array in [[0.0, 3.24, 4.75], [6.76, 10.0, 4.75], [3.24, 6.76, 5.25]]:
+		p.slab(front, true, 12.0, part[0], part[1], 4.3, part[2], 0.15, black_brick)
+		p.slab(front, true, 12.0, part[0] - (0.06 if part[0] < 0.1 or part[2] > 5.0 else 0.0), part[1] + (0.06 if part[1] > 9.9 or part[2] > 5.0 else 0.0), part[2], part[2] + 0.1, 0.27, stone)
+	Kit.box(front, Vector3(0.38, 0.38, 0.04), p.pt(5.0, F + 0.015, 4.78), stone, Vector3(0, 0, 45))
+	Kit.box(front, Vector3(0.2, 0.2, 0.05), p.pt(5.0, F + 0.02, 4.78), Color(0.6, 0.1, 0.1), Vector3(0, 0, 45))
+	for u: float in [3.75, 6.25]:
+		Kit.box(front, Vector3(0.16, 0.16, 0.04), p.pt(u, F + 0.015, 4.78), stone, Vector3(0, 0, 45))
 	p.slab(front, true, 12.12, 0.9, 6.3, 2.42, 2.62, 0.14, Color(0.45, 0.47, 0.5))
+	for rail: Array in [[0.875, 0.94], [6.26, 6.325]]:
+		_proud(p, front, rail[0], rail[1], 0.0, 2.42, 0.06, Color(0.38, 0.4, 0.43))
+	_proud(p, front, 0.945, 6.255, 0.0, 0.68, 0.04, Kit.tex("in_tile", 0.5, Color(0.45, 0.12, 0.1), true, Color(0.66, 0.2, 0.17)))
+	_proud(p, front, 0.94, 6.26, 0.68, 0.745, 0.09, stone)
 	Props.neon(front, "LIQUOR", p.pt(2.5, 12.03, 1.85), 0.3, Color(1.0, 0.3, 0.25))
 	Props.neon(front, "COLD BEER", p.pt(4.9, 12.03, 1.95), 0.15, Color(0.4, 0.75, 1.0))
 	Props.neon(front, "OPEN", p.pt(5.3, 12.03, 1.3), 0.2, Color(0.4, 1.0, 0.5))
@@ -80,6 +104,11 @@ static func _street(p: Node3D, st: int, front: Node3D) -> void:
 	p.slab(n, true, 12.0, -12.0, 0.0, 0.0, 3.6, 0.15, Kit.tex("stucco", 2.0, Color(0.7, 0.66, 0.4), true, Color(1.0, 0.95, 0.6)))
 	p.slab(n, true, 12.085, -8.8, -3.6, 0.6, 2.3, 0.03, Kit.flat(Color(1.0, 0.95, 0.75), 0.9))
 	p.slab(n, true, 12.1, -2.7, -1.8, 0.0, 2.1, 0.03, Color(0.5, 0.52, 0.55))
+	var trim := Color(0.62, 0.12, 0.1)
+	for piece: Array in [[-8.9, -3.5, 2.3, 2.38], [-8.9, -3.5, 0.52, 0.6], [-8.9, -8.8, 0.6, 2.3], [-3.6, -3.5, 0.6, 2.3],
+			[-2.78, -2.7, 0.0, 2.18], [-1.8, -1.72, 0.0, 2.18], [-2.7, -1.8, 2.1, 2.18]]:
+		p.slab(n, true, 12.1, piece[0], piece[1], piece[2], piece[3], 0.05, trim)       # frames round its window and door
+	p.slab(n, true, 12.0, -12.0, -0.06, 3.6, 3.7, 0.27, Color(0.9, 0.86, 0.6))           # its coping
 	Props.words(n, "CARRY OUT", p.pt(-6.2, 12.09, 2.95), 0.36, Color(0.75, 0.12, 0.1))
 	Props.words(n, "CHICKEN BOX  -  LAKE TROUT  -  SUBS", p.pt(-6.2, 12.12, 1.0), 0.12, Color(0.75, 0.12, 0.1), 0.0, false)
 	var old_brick := Kit.tex("brick", 1.5, Color(0.4, 0.22, 0.2), true, Color(0.72, 0.68, 0.74))
@@ -142,3 +171,62 @@ static func _back(p: Node3D, b: int) -> void:
 	for k in 2:
 		Kit.cyl(kegs, 0.28, 0.6, Vector3(0, 0.3, -0.3 + k * 0.6), Props.STEEL, Vector3.ZERO, 10)
 		Kit.cyl(kegs, 0.29, 0.04, Vector3(0, 0.3, -0.3 + k * 0.6), Props.IRON, Vector3.ZERO, 10)
+
+
+## A piece standing `d` proud of the shop's street face, its back 1 cm into the wall.
+static func _proud(p: Node3D, n: Node3D, a: float, b: float, y0: float, y1: float, d: float, look: Variant) -> void:
+	p.slab(n, true, F + (d - 0.01) * 0.5, a, b, y0, y1, d + 0.01, look)
+
+
+## The rooms' walls, floors and lights. The customers' side is oxblood over a
+## steel tread-plate wainscot; behind the glass the bottles stand against the
+## same red over dark panelling; the office is green panelling and gold stripes;
+## the stock room green block.
+static func _dress(p: Node3D, b1: int, b2: int, b3: int) -> void:
+	var n1: Node3D = p.node_of(b1)
+	var black := Color(0.13, 0.13, 0.15)
+	var walnut := Color(0.32, 0.2, 0.12)
+	var cream := Color(0.94, 0.9, 0.78)
+	var oxblood := Kit.tex("painted_block", 1.2, Color(0.6, 0.18, 0.16), true, Color(0.76, 0.22, 0.2))
+	# The sales floor. The glass is bare: its steel ledge is its sill.
+	var sales := {"lower": Kit.tex("in_diamond", 0.5, Color(0.62, 0.64, 0.67), true, Color(0.8, 0.82, 0.86)), "upper": oxblood,
+			"dado": Props.STEEL.darkened(0.15), "dado_y": 0.95, "skirt": black, "skirt_h": 0.1, "cornice": cream, "surround": Props.STEEL.darkened(0.15)}
+	In.room_walls(p, b1, 0.0, 6.6, 10.0, 12.0, sales,
+			[{"a": 0.6, "b": 7.4, "kind": "window", "sill": 1.05, "head": 2.25, "bare": true}, {"a": 8.3, "b": 9.2}], [], [])
+	In.border(p, b1, 0.0, 6.6, 10.0, 12.0, black, 0.22)
+	In.mat(p, b1, 7.85, 11.45, 1.1, 0.7, Color(0.22, 0.22, 0.24), Color(0.12, 0.12, 0.13))
+	In.mat(p, b1, 4.0, 7.25, 6.8, 0.06, Color(0.98, 0.8, 0.15))          # stand behind the line
+	# Dark plates behind the words on the glass wall, so they read.
+	p.slab(n1, true, 6.6855, 3.3, 4.7, 2.38, 2.62, 0.003, Color(0.14, 0.12, 0.13))
+	p.slab(n1, true, 6.6855, 2.85, 5.15, 0.52, 0.68, 0.003, Color(0.12, 0.12, 0.13))
+	In.wall_strip(p, b1, 0.075, 8.9, 90.0, 2.6, 2.45)
+	In.lightbox(p, b1, 9.915, 9.2, 270.0, 2.4, 0.3, 2.15, [Color(0.55, 0.1, 0.16), Color(0.95, 0.78, 0.3), Color(0.25, 0.45, 0.25), Color(0.55, 0.1, 0.16)])
+	In.camera(p, b1, 0.3, 6.675, 20.0, 2.5)
+	# Behind the counter: the same red over dark panelling, a strip light along
+	# the bottles, the licence by the chair, a mat where the clerk stands.
+	var back_bar := {"lower": Kit.tex("in_planks", 1.2, Color(0.4, 0.26, 0.16), true, Color(0.62, 0.4, 0.26)), "upper": oxblood,
+			"dado": walnut, "dado_y": 1.0, "skirt": black, "skirt_h": 0.1, "cornice": cream, "surround": walnut}
+	In.room_walls(p, b2, 0.0, 4.2, 10.0, 6.6, back_bar, [{"a": 8.0, "b": 8.9}], [], [])
+	In.wall_strip(p, b2, 3.9, 4.275, 0.0, 6.4, 2.42)
+	In.picture(p, b2, 0.085, 5.3, 90.0, 0.42, 0.52, "certificate", Color(0.78, 0.6, 0.22), 1.7)
+	In.mat(p, b2, 4.0, 5.55, 6.0, 0.7, Color(0.2, 0.2, 0.22), Color(0.11, 0.11, 0.12))
+	# The office: green panelling, gold stripes, a gilt rail, a night city over the
+	# desk's end, a green drum on the flex.
+	var office := {"lower": Kit.tex("in_panel", 0.8, Color(0.3, 0.45, 0.34), true, Color(0.46, 0.66, 0.5)),
+			"upper": Kit.tex("in_stripe", 1.0, Color(0.9, 0.78, 0.5), true, Color(1.0, 0.88, 0.56)),
+			"dado": Color(0.8, 0.64, 0.3), "skirt": Color(0.12, 0.24, 0.17), "cornice": cream, "surround": walnut}
+	In.room_walls(p, b3, 0.0, 0.0, 4.0, 4.2, office, [], [], [{"a": 1.6, "b": 2.5}])
+	In.picture(p, b3, 0.085, 1.3, 90.0, 0.8, 0.55, "city", Color(0.78, 0.6, 0.22), 1.65)
+	In.pendant(p, b3, 2.0, 2.0, 2.1, Color(0.18, 0.4, 0.28), "drum", In.WARM, 0.25)
+	# The stock room: green block, a strip over the shelves, a cage lamp over
+	# the office door, the extinguisher, the kegs' bay painted on the floor.
+	var stock := {"lower": Kit.tex("painted_block", 1.2, Color(0.4, 0.55, 0.45), true, Color(0.56, 0.74, 0.6)),
+			"dado": black, "dado_y": 1.2, "skirt": black, "skirt_h": 0.1, "surround": black}
+	In.room_walls(p, b3, 4.0, 0.0, 10.0, 4.2, stock, [], [{"a": 1.6, "b": 2.5}], [])
+	In.wall_strip(p, b3, 7.3, 0.075, 0.0, 3.0, 2.42)
+	In.sconce(p, b3, 4.075, 2.05, 90.0, "cage", 2.4)
+	In.extinguisher(p, b3, 4.075, 3.3, 90.0, 0.55)
+	var yellow := Color(0.98, 0.8, 0.15)
+	In.mat(p, b3, 9.45, 1.6, 0.9, 0.05, yellow)
+	In.mat(p, b3, 9.45, 3.2, 0.9, 0.05, yellow)
+	In.mat(p, b3, 9.025, 2.4, 0.05, 1.55, yellow)

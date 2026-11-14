@@ -43,6 +43,10 @@ static func build(p: Node3D) -> void:
 	p.setup("THE GREEN", 32.0, 22.0)
 	var st: int = p.street(-1.5, 33.5)
 	p.arrive = p.pt(16.0, 23.25)
+	# Twilight: the sun just down, the sky still bright over the roofs in the
+	# west, the lamps lit. main.gd's sun is off; _sky hangs the evening's own light.
+	p.ambient = 0.16
+	p.sun_energy = 0.0
 	p.room("PLAYGROUND", st, 0.0, 0.0, 10.6, 8.6, null, {"street": true})
 	p.room("SQUARE", st, 0.0, 0.0, 32.0, 22.0, null, {"street": true})
 	_ground(p, st)
@@ -55,12 +59,23 @@ static func build(p: Node3D) -> void:
 	_trees(p, st)
 	_streets(p, st)
 	_backdrop(p, st)
+	_sky(p, st)
+
+
+## The evening over the square: the sky's cool light from above, the last warm
+## light low from the west, and far off the glow over the city where the sun went.
+static func _sky(p: Node3D, st: int) -> void:
+	var n: Node3D = p.node_of(st)
+	Outdoor.moonlight(n, 0.2, Color(0.62, 0.68, 1.0))
+	var glow := Outdoor.moonlight(n, 0.3, Color(1.0, 0.68, 0.5))
+	glow.rotation_degrees = Vector3(-16, -70, 0)
+	Outdoor.backdrop(n, p.pt(16.0, -40.0), [Color(1.0, 0.72, 0.42), Color(0.88, 0.48, 0.56), Color(0.3, 0.25, 0.54)], Vector3.INF, 9.0, 900.0, Vector2(-0.85, -0.5))
 
 
 ## The lawns, the paths, the brick ring and the playground's soft ground.
 static func _ground(p: Node3D, st: int) -> void:
 	var n: Node3D = p.node_of(st)
-	var grass := Kit.tex("stucco", 2.2, Color(0.4, 0.62, 0.3), true, Color(0.5, 0.9, 0.44))
+	var grass := Outdoor.tex("out_grass", 3.0, Color(0.4, 0.62, 0.3))
 	for i in 4:
 		for j in 4:
 			Kit.box(n, Vector3(8.0, 0.3, 5.5), p.pt(4.0 + i * 8.0, 2.75 + j * 5.5, -0.15), grass)
@@ -205,9 +220,9 @@ static func _trees(p: Node3D, st: int) -> void:
 ## The pavements and roads round the square, cars parked along them.
 static func _streets(p: Node3D, st: int) -> void:
 	var n: Node3D = p.node_of(st)
-	var pave := Kit.tex("sidewalk", 2.4, Color(0.66, 0.64, 0.6))
-	var tar := Kit.tex("asphalt", 3.0, Color(0.2, 0.22, 0.27))
-	var kerb := Color(0.78, 0.76, 0.72)
+	var pave := Outdoor.pavement()
+	var tar := Outdoor.road()
+	var kerb := Outdoor.KERB
 	# the pavements next to the railings
 	_slab(p, n, -2.4, -2.4, 34.4, 0.0, 0.0, pave)
 	_slab(p, n, -2.4, 0.0, 0.0, 22.0, 0.0, pave)
@@ -233,12 +248,12 @@ static func _streets(p: Node3D, st: int) -> void:
 	_slab(p, n, 41.8, -8.6, 44.0, 22.0, 0.0, pave)
 	_slab(p, n, 41.6, -8.6, 41.8, 22.0, 0.0, kerb)
 	_slab(p, n, -7.2, -12.5, 6.7, -11.0, 0.0, Kit.tex("sidewalk", 1.2, Color(0.7, 0.68, 0.62), true, Color(0.9, 0.88, 0.84)))   # the church's forecourt
-	# parked cars
-	Park.sedan(n, p.pt(2.5, -7.55), 90.0, Color(0.6, 0.13, 0.13))
-	Park.sedan(n, p.pt(12.0, -7.55), 90.0, Color(0.22, 0.36, 0.58))
-	Park.sedan(n, p.pt(27.5, -3.65), 270.0, Color(0.86, 0.83, 0.72))
-	Park.sedan(n, p.pt(-8.55, 6.5), 180.0, Color(0.2, 0.42, 0.3))
-	Park.sedan(n, p.pt(40.55, 9.0), 0.0, Color(0.5, 0.48, 0.52))
+	# parked cars, standing on the road (its top is 0.14 below the pavements)
+	Park.sedan(n, p.pt(2.5, -7.55, -0.14), 90.0, Color(0.6, 0.13, 0.13), "long_sedan")
+	Park.sedan(n, p.pt(12.0, -7.55, -0.14), 90.0, Color(0.22, 0.36, 0.58), "box_sedan")
+	Park.sedan(n, p.pt(27.5, -3.65, -0.14), 270.0, Color(0.86, 0.83, 0.72), "minivan")
+	Park.sedan(n, p.pt(-8.55, 6.5, -0.14), 180.0, Color(0.2, 0.42, 0.3), "midsize")
+	Park.sedan(n, p.pt(40.55, 9.0, -0.14), 0.0, Color(0.5, 0.48, 0.52), "compact")
 	# on the pavement in front: a street lamp, a hydrant, a litter basket
 	Props.street_lamp(p, st, 6.0, 24.25)
 	Props.street_lamp(p, st, 26.5, 24.25)

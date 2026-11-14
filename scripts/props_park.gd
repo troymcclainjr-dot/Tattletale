@@ -104,9 +104,10 @@ static func ground_words(parent: Node3D, text: String, pos: Vector3, height: flo
 
 ## The painted court: its long side runs along u from u0 to u1, the far
 ## sideline at v0, the near one at v1. The asphalt round it is laid by the
-## plan; this is the coloured surface (in two halves, so no one mesh takes more
-## lamps than the renderer allows), the keys, the centre circle and every line,
-## each a few millimetres over the last.
+## plan; this is the coloured surface (in quarters, so no one mesh is lit by
+## more lamps than the renderer takes: the alley's reach the far half, the
+## street's the near), the keys, the centre circle and every line, each a few
+## millimetres over the last.
 static func court(p: Node3D, b: int, u0: float, v0: float, u1: float, v1: float, surface: Variant, paint: Variant) -> Node3D:
 	var n := Kit.group(p.node_of(b), Vector3.ZERO, Vector3.ZERO, "Court")
 	var white := Kit.flat(LINE)
@@ -115,7 +116,8 @@ static func court(p: Node3D, b: int, u0: float, v0: float, u1: float, v1: float,
 	var wide := v1 - v0
 	# The surface (0.031 .. 0.045), the keys and circle (0.046 .. 0.052), the lines (0.053 .. 0.059).
 	for half: Array in [[u0, mid_u], [mid_u, u1]]:
-		Kit.box(n, Vector3(half[1] - half[0], 0.014, wide), p.pt((half[0] + half[1]) * 0.5, mid_v, 0.038), surface)
+		for depth: Array in [[v0, mid_v], [mid_v, v1]]:
+			Kit.box(n, Vector3(half[1] - half[0], 0.014, depth[1] - depth[0]), p.pt((half[0] + half[1]) * 0.5, (depth[0] + depth[1]) * 0.5, 0.038), surface)
 	var ky := 0.049
 	var ly := 0.056
 	var lw := 0.1
@@ -204,11 +206,14 @@ static func ball(parent: Node3D, pos: Vector3, turn := 0.0) -> Node3D:
 
 # ------------------------------------------------------------------ the lights
 
-## A floodlight on a tall galvanised pole at (u, v). Its lamps lean towards
-## `yaw`, and the light (a real lamp, `energy`) is hung `reach` metres out in
-## front, so the pool falls on the court and not on the pole's foot. `beam`
-## draws a faint cone of light under each lamp.
-static func floodlight(p: Node3D, b: int, u: float, v: float, yaw: float, h := 7.6, heads := 2, energy := 4.0, reach := 4.5, beam := true) -> Node3D:
+## A floodlight on a tall galvanised pole at (u, v), its bar across `yaw`. The
+## light is a real spot from the heads, `energy` strong, thrown at `aim` (a
+## point on the plan; without it, `reach` metres straight ahead), the heads
+## turned and tipped to it: it lays a pool on the ground `spread` degrees wide
+## (the half angle) with an edge as soft as `edge` (higher is harder), and
+## gives out a little past twice the throw. `beam` draws a faint cone of light
+## under each lamp; `spill` (an energy) hangs a small lamp round the pole's top.
+static func floodlight(p: Node3D, b: int, u: float, v: float, yaw: float, h := 7.6, heads := 2, energy := 4.0, reach := 4.5, beam := true, aim := Vector2(INF, INF), spread := 34.0, edge := 1.6, spill := 0.0) -> Node3D:
 	var g: Node3D = p.prop(b, u, v, yaw, 0.5, 0.5)
 	Kit.block(g, Vector3(0.5, 0.3, 0.5), Vector3.ZERO, CONCRETE)
 	Kit.cyl(g, 0.13, h, Vector3(0, h * 0.5, 0), GALV, Vector3.ZERO, 8, 0.085)
@@ -219,33 +224,48 @@ static func floodlight(p: Node3D, b: int, u: float, v: float, yaw: float, h := 7
 	var bar := heads * 0.78 + 0.2
 	Kit.box(g, Vector3(bar, 0.1, 0.1), Vector3(0, h - 0.12, 0.0), GALV)
 	Kit.box(g, Vector3(bar, 0.08, 0.08), Vector3(0, h + 0.32, 0.0), GALV)
-	var glow := Kit.flat(LAMP_COOL, 3.2)
-	var cone := Kit.flat(Color(0.85, 0.92, 1.0, 0.05), 0.4)
+	var glow := Kit.flat(LAMP_COOL, 4.0)
+	var cone := Kit.flat(Color(0.85, 0.92, 1.0, 0.06), 0.6)
+	# Where the light falls, in the pole's own space, and the way the heads turn and tip to it.
+	var target: Vector3 = g.to_local(p.pt(aim.x, aim.y)) if aim.x != INF else Vector3(0, 0, reach + 1.8)
+	var flat_reach := Vector2(target.x, target.z).length()
+	var turn := rad_to_deg(atan2(target.x, target.z))
+	var tip := rad_to_deg(atan2(h + 0.1, flat_reach))
 	for i in heads:
 		var x := (float(i) - float(heads - 1) * 0.5) * 0.78
-		var head := Kit.group(g, Vector3(x, h + 0.1, 0.16), Vector3(36, 0, 0))     # tipped down to the front
+		var head := Kit.group(g, Vector3(x, h + 0.1, 0.16), Vector3(tip, turn, 0))
 		Kit.box(head, Vector3(0.64, 0.5, 0.24), Vector3.ZERO, Color(0.28, 0.3, 0.33))
 		Kit.box(head, Vector3(0.54, 0.4, 0.02), Vector3(0, 0, 0.125), glow)
 		Kit.box(head, Vector3(0.7, 0.05, 0.32), Vector3(0, 0.27, 0.05), Color(0.28, 0.3, 0.33))   # the visor
 		if beam:
-			# A cone from the lamp face to the ground ahead, opening out as it falls.
+			# A cone from the lamp face to the ground where it shines, opening out as it falls.
 			var from := Vector3(x, h + 0.02, 0.28)
-			var to := Vector3(x * 1.6, 0.06, reach + 1.8)
+			var to := Vector3(target.x + x * 0.6, 0.06, target.z)
 			var d := from - to
-			var c := Kit.cyl(g, 2.0, d.length(), (from + to) * 0.5, cone, Vector3.ZERO, 14, 0.24)
+			var c := Kit.cyl(g, d.length() * tan(deg_to_rad(spread * 0.42)), d.length(), (from + to) * 0.5, cone, Vector3.ZERO, 14, 0.24)
 			c.quaternion = Quaternion(Vector3.UP, d.normalized())
 			(c.mesh as CylinderMesh).cap_top = false
 			(c.mesh as CylinderMesh).cap_bottom = false
-	# The lamp itself hangs lower than the heads and reaches less far than a real
-	# one would: the scene's own fill light is strong, and a low, short lamp is
-	# what makes a pool you can see on the ground.
-	Kit.omni(g, Vector3(0, minf(h - 1.4, 4.5), reach), LAMP_COOL, energy, 12.0)
+	# The lamp: a spot from the heads. Its pool has an edge, and outside it the
+	# court is left to the dark.
+	var spot := SpotLight3D.new()
+	spot.light_color = LAMP_COOL
+	spot.light_energy = energy
+	spot.spot_angle = spread
+	spot.spot_angle_attenuation = edge
+	spot.spot_attenuation = 0.45
+	g.add_child(spot)
+	spot.position = Vector3(0, h + 0.05, 0.3)
+	spot.spot_range = (target - spot.position).length() * 2.1
+	spot.look_at(g.to_global(target), Vector3.UP)
+	if spill > 0.0:
+		Kit.omni(g, Vector3(0, h - 1.2, 0.9), LAMP_COOL, spill, 6.5)
 	return g
 
 
 ## An alley light: a cobra head on an arm, hung from a pole's group at height y,
 ## reaching `out` metres to the group's front. Sodium orange.
-static func cobra(g: Node3D, y: float, out := 1.6, energy := 1.4, reach := 8.0) -> void:
+static func cobra(g: Node3D, y: float, out := 1.6, energy := 3.6, reach := 11.0) -> void:
 	rod(g, Vector3(0, y - 0.35, 0.12), Vector3(0, y, out * 0.5), 0.035, GALV, 5)
 	Kit.box(g, Vector3(0.07, 0.07, out), Vector3(0, y, out * 0.5 + 0.1), GALV)
 	Kit.box(g, Vector3(0.36, 0.16, 0.62), Vector3(0, y - 0.02, out + 0.3), Color(0.55, 0.57, 0.58))
@@ -453,9 +473,21 @@ static func house_back(p: Node3D, n: Node3D, u0: float, w: float, back: float, a
 	Kit.box(n, Vector3(bb_w, bb_h, bb_d), p.pt(bb_u0 + bb_w * 0.5, back - bb_d * 0.5, bb_h * 0.5), bb_look)
 	Kit.box(n, Vector3(bb_w - 0.02, 0.04, bb_d - 0.3), p.pt(bb_u0 + bb_w * 0.5, back - bb_d * 0.5 - 0.1, bb_h + 0.02), TAR)
 	Kit.box(n, Vector3(bb_w, 0.16, 0.3), p.pt(bb_u0 + bb_w * 0.5, back - 0.09, bb_h + 0.08), COPING)
+	# Gutters under both copings, and their downspouts, both on the light court's
+	# side of the back building (clear of the fences between the yards): the back
+	# building's just past its rear corner, its gutter run on to meet it, the main
+	# block's down the inside corner. Each kicks out at the foot towards the alley.
+	var tin := Color(0.88, 0.87, 0.82)
+	var out_u := bb_u1 if side == "l" else bb_u0          # the back building's light-court side
+	var s_sign := 1.0 if side == "l" else -1.0
+	Kit.box(n, Vector3(bb_w + 0.13, 0.1, 0.1), p.pt(bb_u0 + bb_w * 0.5 + s_sign * 0.075, back + 0.11, bb_h - 0.08), tin)
+	Kit.box(n, Vector3(w - 0.02, 0.1, 0.1), p.pt(u0 + w * 0.5, main_back + 0.11, h - 0.08), tin)
+	for s: Array in [[out_u + s_sign * 0.1, back, bb_h], [out_u + s_sign * 0.07, main_back, h]]:
+		Kit.box(n, Vector3(0.08, s[2] - 0.28, 0.08), p.pt(s[0], s[1] + 0.11, (s[2] - 0.28) * 0.5 + 0.15), tin)
+		Kit.box(n, Vector3(0.08, 0.08, 0.24), p.pt(s[0], s[1] + 0.27, 0.15), tin)
 	# (The yard's top is the ground, y = 0, where the walls stand: were it any
 	# higher, its ends would lie in the same plane as the walls' and the fences'.)
-	Kit.box(n, Vector3(w, 0.1, alley - main_back), p.pt(u0 + w * 0.5, (main_back + alley) * 0.5, -0.05), o.get("yard", Kit.flat(CONCRETE)))
+	Kit.box(n, Vector3(w, 0.1, alley - main_back), p.pt(u0 + w * 0.5, (main_back + alley) * 0.5, -0.05), o.get("yard", Outdoor.tex("out_paving", 4.8, CONCRETE, Color(0.92, 0.92, 0.9))))
 	if o.get("chimney", false):
 		Kit.box(n, Vector3(0.55, 1.1, 0.75), p.pt(u0 + (0.4 if side == "l" else w - 0.4), main_back - 2.8, h + 0.55), brick)
 		Kit.box(n, Vector3(0.62, 0.08, 0.82), p.pt(u0 + (0.4 if side == "l" else w - 0.4), main_back - 2.8, h + 1.14), COPING)
@@ -513,7 +545,7 @@ static func _yard(p: Node3D, n: Node3D, u0: float, w: float, back: float, main_b
 			_chain(p, n, false, u0 + 0.03, side_from, at, 1.2)
 			# The rest of it is down: a post leaning out, the wire lying in the weeds.
 			rod(n, p.pt(g1 + 0.3, at, 0.0), p.pt(g1 + 0.7, at + 0.6, 1.05), 0.03, GALV, 5)
-			Kit.box(n, Vector3(w - (g1 - u0) - 0.3, 0.012, 0.9), p.pt((g1 + u0 + w) * 0.5 + 0.1, at - 0.35, 0.03), CHAIN, Vector3(0, 0, 4))
+			Kit.box(n, Vector3(w - (g1 - u0) - 0.3, 0.012, 0.9), p.pt((g1 + u0 + w) * 0.5 + 0.1, at - 0.35, 0.03), Outdoor.chain_link(), Vector3(0, 0, 4))
 		_:
 			_chain(p, n, true, at, u0, g0, 1.2)
 			_chain(p, n, true, at, g1, u0 + w, 1.2)
@@ -650,12 +682,12 @@ static func _window(n: Node3D, at: Vector3, yaw: float, w: float, y0: float, y1:
 	Kit.box(g, Vector3(w, f, 0.08), Vector3(0, y1 - f * 0.5, 0.0), trim)
 	var glass_h := h - f
 	var glass_y := y0 + glass_h * 0.5
-	Kit.box(g, Vector3(w - 2.0 * f, glass_h, 0.04), Vector3(0, glass_y, 0.0), Kit.flat(WARM, 0.75) if lit else Kit.flat(NIGHT_GLASS))
+	Kit.box(g, Vector3(w - 2.0 * f, glass_h, 0.04), Vector3(0, glass_y, 0.0), Kit.flat(WARM, 1.15) if lit else Kit.flat(NIGHT_GLASS))
 	Kit.box(g, Vector3(w - 2.0 * f + 0.02, 0.05, 0.05), Vector3(0, glass_y, 0.01), trim)   # the sash rail, its ends in the frame
 	if lit:
 		var cloth: Color = o.get("curtain", Color(0.75, 0.3, 0.25))
 		for x: float in [-1.0, 1.0]:
-			Kit.box(g, Vector3((w - 2.0 * f) * 0.26, glass_h, 0.01), Vector3(x * (w - 2.0 * f) * 0.37, glass_y, 0.027), Kit.flat(cloth, 0.25))
+			Kit.box(g, Vector3((w - 2.0 * f) * 0.26, glass_h, 0.01), Vector3(x * (w - 2.0 * f) * 0.37, glass_y, 0.027), Kit.flat(cloth, 0.5))
 	elif o.get("blinds", true):
 		Kit.box(g, Vector3(w - 2.0 * f, glass_h * 0.4, 0.01), Vector3(0, y1 - f - glass_h * 0.2, 0.027), Color(0.82, 0.8, 0.72))
 	if ground and o.get("bars", false):
@@ -692,7 +724,7 @@ static func _door(n: Node3D, at: Vector3, yaw: float, floor_y: float, o: Diction
 		return
 	Kit.box(g, Vector3(dw, 2.05, 0.05), Vector3(0, floor_y + 1.025, 0.0), colour)
 	var lit: bool = o.get("porch", false)
-	Kit.box(g, Vector3(dw * 0.56, 0.5, 0.01), Vector3(0, floor_y + 1.55, 0.03), Kit.flat(WARM, 0.5) if "k" in o.get("lit", []) else Kit.flat(NIGHT_GLASS))
+	Kit.box(g, Vector3(dw * 0.56, 0.5, 0.01), Vector3(0, floor_y + 1.55, 0.03), Kit.flat(WARM, 0.9) if "k" in o.get("lit", []) else Kit.flat(NIGHT_GLASS))
 	Kit.box(g, Vector3(0.03, 0.5, 0.012), Vector3(0, floor_y + 1.55, 0.036), colour)
 	Kit.box(g, Vector3(dw * 0.56, 0.03, 0.012), Vector3(0, floor_y + 1.55, 0.036), colour)
 	Kit.box(g, Vector3(dw - 0.12, 0.22, 0.01), Vector3(0, floor_y + 0.16, 0.03), ALUMINIUM)
@@ -784,10 +816,10 @@ static func _chain(p: Node3D, n: Node3D, along_u: bool, at: float, from: float, 
 		return
 	var mid := (from + to) * 0.5
 	if along_u:
-		Kit.box(n, Vector3(length, h - 0.08, 0.01), p.pt(mid, at, (h - 0.08) * 0.5 + 0.04), CHAIN)
+		Kit.box(n, Vector3(length, h - 0.08, 0.01), p.pt(mid, at, (h - 0.08) * 0.5 + 0.04), Outdoor.chain_link())
 		rod(n, p.pt(from, at, h), p.pt(to, at, h), 0.02, GALV, 5)
 	else:
-		Kit.box(n, Vector3(0.01, h - 0.08, length), p.pt(at, mid, (h - 0.08) * 0.5 + 0.04), CHAIN)
+		Kit.box(n, Vector3(0.01, h - 0.08, length), p.pt(at, mid, (h - 0.08) * 0.5 + 0.04), Outdoor.chain_link())
 		rod(n, p.pt(at, from, h), p.pt(at, to, h), 0.02, GALV, 5)
 	var posts := maxi(int(round(length / 2.4)), 1)
 	for i in posts + 1:
@@ -799,7 +831,7 @@ static func _chain(p: Node3D, n: Node3D, along_u: bool, at: float, from: float, 
 static func _chain_gate(p: Node3D, n: Node3D, at: float, g0: float, g1: float, h: float, open: bool, look: Color) -> void:
 	var leaf := Kit.group(n, p.pt(g0 + 0.04, at), Vector3(0, 70.0 if open else 0.0, 0))
 	var w := g1 - g0 - 0.08
-	Kit.box(leaf, Vector3(w, h - 0.12, 0.01), Vector3(w * 0.5, h * 0.5, 0), CHAIN)
+	Kit.box(leaf, Vector3(w, h - 0.12, 0.01), Vector3(w * 0.5, h * 0.5, 0), Outdoor.chain_link())
 	for y: float in [0.06, h - 0.06]:
 		rod(leaf, Vector3(0, y, 0), Vector3(w, y, 0), 0.018, look, 4)
 	for x: float in [0.0, w]:
@@ -813,7 +845,7 @@ static func _boards(p: Node3D, n: Node3D, along_u: bool, at: float, from: float,
 	if length < 0.05:
 		return
 	var mid := (from + to) * 0.5
-	var look := Kit.tex("wood_panel", 1.2, Color(0.45, 0.38, 0.3), true, Color(0.62, 0.58, 0.55))
+	var look := Outdoor.tex("out_boards", 1.2, Color(0.45, 0.38, 0.3))
 	var rail := Color(0.36, 0.32, 0.28)
 	if along_u:
 		Kit.box(n, Vector3(length, h, 0.04), p.pt(mid, at, h * 0.5), look)
@@ -829,7 +861,7 @@ static func _boards(p: Node3D, n: Node3D, along_u: bool, at: float, from: float,
 static func _board_gate(p: Node3D, n: Node3D, at: float, g0: float, g1: float, h: float, open: bool) -> void:
 	var leaf := Kit.group(n, p.pt(g0 + 0.02, at), Vector3(0, 80.0 if open else 0.0, 0))
 	var w := g1 - g0 - 0.04
-	Kit.box(leaf, Vector3(w, h - 0.05, 0.04), Vector3(w * 0.5, h * 0.5, 0.0), Kit.tex("wood_panel", 1.2, Color(0.45, 0.38, 0.3), false, Color(0.62, 0.58, 0.55)))
+	Kit.box(leaf, Vector3(w, h - 0.05, 0.04), Vector3(w * 0.5, h * 0.5, 0.0), Outdoor.tex("out_boards", 1.2, Color(0.45, 0.38, 0.3), Color.WHITE, false))
 	Kit.box(leaf, Vector3(w, 0.1, 0.03), Vector3(w * 0.5, 0.4, -0.035), Color(0.36, 0.32, 0.28))
 	Kit.box(leaf, Vector3(w, 0.1, 0.03), Vector3(w * 0.5, h - 0.4, -0.035), Color(0.36, 0.32, 0.28))
 	Kit.box(leaf, Vector3(0.1, 0.03, 0.03), Vector3(w - 0.12, 1.0, 0.035), IRON)
@@ -862,5 +894,5 @@ static func utility_pole(p: Node3D, n: Node3D, u: float, v: float, h := 9.4, tra
 		Kit.cyl(g, 0.32, 0.05, Vector3(0, h - 2.4, -0.42), Color(0.45, 0.47, 0.46), Vector3.ZERO, 10)
 		Kit.box(g, Vector3(0.08, 0.5, 0.2), Vector3(0, h - 2.9, -0.15), Color(0.4, 0.42, 0.42))
 	if light:
-		cobra(g, h - 3.3, 1.7)
+		cobra(g, h - 3.3, 1.7, 6.0, 10.0)
 	return tops

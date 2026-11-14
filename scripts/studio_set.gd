@@ -56,6 +56,7 @@ const CREAM := Color(0.9, 0.87, 0.78)
 const EDGE := Color(0.07, 0.06, 0.12)
 
 const Door := preload("res://scripts/door.gd")
+const Props := preload("res://scripts/props.gd")
 
 var ceiling: Node3D
 var wall_to_booth: Node3D   # the back wall: window, door frame, and what hangs on it
@@ -165,11 +166,11 @@ func _booth() -> void:
 	var bcx := (BOOTH_X0 + BOOTH_X1) * 0.5
 	var bcz := (BOOTH_Z0 + Z0 - T) * 0.5
 	var foam := Kit.tex("foam", 0.6, Color(0.2, 0.2, 0.22))
-	var eggs := Kit.tex("egg_carton", 0.6, Color(0.62, 0.55, 0.45))
+	var quilt := Kit.tex("kit_quilt", 0.9, Color(0.55, 0.2, 0.26), true, Color(0.74, 0.28, 0.34))     # buttoned burgundy padding
 
 	Kit.box(booth, Vector3(bw + T * 2, 0.3, bd + T), Vector3(bcx, -0.15, bcz - T * 0.5),
 		Kit.tex("carpet", 2.0, Color(0.3, 0.12, 0.2), true, Color(0.62, 0.6, 0.78)))
-	Kit.box(booth, Vector3(bw + T * 2, H, T), Vector3(bcx, H * 0.5, BOOTH_Z0 - T * 0.5), eggs)
+	Kit.box(booth, Vector3(bw + T * 2, H, T), Vector3(bcx, H * 0.5, BOOTH_Z0 - T * 0.5), quilt)
 	Kit.box(booth, Vector3(T, H, bd), Vector3(BOOTH_X0 - T * 0.5, H * 0.5, bcz), foam)
 	Kit.box(booth, Vector3(T, H, bd), Vector3(BOOTH_X1 + T * 0.5, H * 0.5, bcz), foam)
 	Kit.box(booth, Vector3(bw + T * 2, 0.1, bd + T), Vector3(bcx, H + 0.05, bcz - T * 0.5), CHARCOAL)
@@ -206,9 +207,12 @@ func _booth() -> void:
 
 	# A mattress propped on the back wall and a moving blanket: budget soundproofing.
 	var mattress := Kit.group(booth, Vector3(-1.45, 0, -4.78), Vector3(-7, 0, 0), "Mattress")
-	Kit.block(mattress, Vector3(1.0, 1.9, 0.2), Vector3.ZERO, Color(0.86, 0.85, 0.8))
+	Kit.bevel_block(mattress, Vector3(1.0, 1.9, 0.2), Vector3.ZERO, Color(0.86, 0.85, 0.8), 0.06)
 	for i in 6:
-		Kit.box(mattress, Vector3(0.05, 1.9, 0.005), Vector3(-0.4 + i * 0.16, 0.95, 0.102), Color(0.42, 0.52, 0.72))
+		Kit.box(mattress, Vector3(0.05, 1.76, 0.005), Vector3(-0.4 + i * 0.16, 0.95, 0.102), Color(0.42, 0.52, 0.72))
+	for i in 3:
+		for k in 4:
+			Kit.disc(mattress, 0.018, Vector3(-0.32 + i * 0.32, 0.35 + k * 0.4, 0.106), Color(0.7, 0.68, 0.62), 0.006, 8)
 	Kit.box(booth, Vector3(1.3, 1.5, 0.04), Vector3(1.9, 1.75, BOOTH_Z0 + 0.03), Color(0.2, 0.26, 0.45), Vector3(0, 0, 2))
 	for i in 3:
 		Kit.box(booth, Vector3(1.3, 0.02, 0.045), Vector3(1.9, 1.3 + i * 0.42, BOOTH_Z0 + 0.03), Color(0.14, 0.18, 0.33), Vector3(0, 0, 2))
@@ -223,14 +227,25 @@ func _booth() -> void:
 # ------------------------------------------------------------------- console
 
 func _console() -> void:
+	# The desk: a bevelled top on a dark edge, two pedestals: drawers on the
+	# right, a bay of outboard gear on the left.
 	var desk := Kit.group(self, Vector3(-0.3, 0, -1.98), Vector3.ZERO, "ConsoleDesk")
-	Kit.box(desk, Vector3(2.8, 0.05, 0.95), Vector3(0, 0.715, 0), WOOD_MID)
-	Kit.block(desk, Vector3(0.5, 0.69, 0.85), Vector3(-1.13, 0, 0), WOOD_DARK)
-	Kit.block(desk, Vector3(0.5, 0.69, 0.85), Vector3(1.13, 0, 0), WOOD_DARK)
-	Kit.box(desk, Vector3(1.76, 0.5, 0.03), Vector3(0, 0.44, -0.4), WOOD_DARK)
+	Kit.bevel(desk, Vector3(2.8, 0.05, 0.95), Vector3(0, 0.715, 0), WOOD_MID, 0.015)
+	Kit.box(desk, Vector3(2.76, 0.03, 0.91), Vector3(0, 0.675, 0), WOOD_DARK)
+	for x: float in [-1.13, 1.13]:
+		Kit.bevel_block(desk, Vector3(0.5, 0.66, 0.85), Vector3(x, 0, 0), WOOD_DARK, 0.02)
+	Kit.box(desk, Vector3(1.76, 0.47, 0.03), Vector3(0, 0.425, -0.4), WOOD_DARK)
 	for y in [0.2, 0.45]:
-		Kit.box(desk, Vector3(0.42, 0.2, 0.02), Vector3(1.13, y, 0.43), Color(0.3, 0.21, 0.14))
-		Kit.box(desk, Vector3(0.1, 0.02, 0.03), Vector3(1.13, y, 0.45), STEEL)
+		Kit.bevel(desk, Vector3(0.42, 0.2, 0.025), Vector3(1.13, y, 0.43), Color(0.3, 0.21, 0.14), 0.01)
+		Kit.bevel(desk, Vector3(0.12, 0.025, 0.03), Vector3(1.13, y + 0.05, 0.455), STEEL, 0.008)
+	var gear := [Color(0.22, 0.22, 0.25), Color(0.56, 0.57, 0.6), Color(0.16, 0.2, 0.32)]
+	var leds := [Color(0.3, 1.0, 0.35), Color(1.0, 0.25, 0.15), Color(1.0, 0.75, 0.2)]
+	for k in 3:
+		var y := 0.14 + k * 0.17
+		Kit.box(desk, Vector3(0.44, 0.14, 0.02), Vector3(-1.13, y, 0.435), gear[k])
+		for j in 3:
+			Kit.cyl(desk, 0.016, 0.02, Vector3(-1.29 + j * 0.06, y, 0.45), CREAM, Vector3(90, 0, 0), 6)
+		Kit.box(desk, Vector3(0.018, 0.018, 0.01), Vector3(-0.98, y + 0.03, 0.45), Kit.flat(leds[k], 1.5))
 
 	# The board: a modest 12-channel mixer, raked up towards the glass.
 	var board := Kit.group(desk, Vector3(-0.1, 0.83, 0.02), Vector3(12, 0, 0), "Mixer")
@@ -272,15 +287,11 @@ func _console() -> void:
 	Kit.block(desk, Vector3(0.2, 0.012, 0.28), Vector3(0.98, 0.74, 0.02), Color(0.96, 0.86, 0.3), Vector3(0, -12, 0))
 	Kit.box(desk, Vector3(0.012, 0.012, 0.15), Vector3(1.0, 0.76, 0.02), Color(0.15, 0.25, 0.7), Vector3(0, 30, 0))
 
-	# The engineer's chair: swivel base, torn red seat.
-	var chair := Kit.group(self, Vector3(-0.45, 0, -0.95), Vector3(0, 22, 0), "EngineerChair")
-	Kit.box(chair, Vector3(0.56, 0.04, 0.07), Vector3(0, 0.05, 0), BLACK)
-	Kit.box(chair, Vector3(0.07, 0.04, 0.56), Vector3(0, 0.05, 0), BLACK)
-	Kit.cyl(chair, 0.03, 0.4, Vector3(0, 0.26, 0), STEEL, Vector3.ZERO, 6)
-	Kit.box(chair, Vector3(0.46, 0.09, 0.46), Vector3(0, 0.5, 0), Color(0.5, 0.14, 0.13))
-	Kit.box(chair, Vector3(0.04, 0.3, 0.04), Vector3(0, 0.68, 0.24), BLACK)
-	Kit.box(chair, Vector3(0.44, 0.46, 0.07), Vector3(0, 0.98, 0.25), Color(0.5, 0.14, 0.13), Vector3(8, 0, 0))
-	Kit.box(chair, Vector3(0.14, 0.05, 0.005), Vector3(0.08, 1.02, 0.292), Color(0.6, 0.6, 0.62), Vector3(8, 0, 20))
+	# The engineer's chair (props.gd's swivel chair), facing the desk: torn red
+	# seat, a strip of tape across the back.
+	var chair := Kit.group(self, Vector3(-0.45, 0, -0.95), Vector3(0, 202, 0), "EngineerChair")
+	Props.chair_on(chair, Color(0.5, 0.14, 0.13))
+	Kit.box(chair, Vector3(0.14, 0.05, 0.005), Vector3(-0.08, 0.88, -0.243), Color(0.6, 0.6, 0.62), Vector3(-6, 0, 20))
 
 
 # ------------------------------------------------------- tape machine & rack
@@ -399,33 +410,27 @@ func _dj_table() -> void:
 # -------------------------------------------------------------------- lounge
 
 func _lounge() -> void:
-	# A sagging thrift-store couch against the right wall.
-	var couch := Kit.group(self, Vector3(3.0, 0, 0.55), Vector3(0, -90, 0), "Couch")
-	var cloth := Color(0.52, 0.36, 0.15)
-	var cushion := Color(0.66, 0.47, 0.2)
-	for x in [-0.85, 0.85]:
-		for z in [-0.3, 0.3]:
-			Kit.block(couch, Vector3(0.07, 0.1, 0.07), Vector3(x, 0, z), WOOD_DARK)
-	Kit.block(couch, Vector3(1.95, 0.24, 0.86), Vector3(0, 0.1, 0), cloth)
-	Kit.block(couch, Vector3(1.95, 0.52, 0.22), Vector3(0, 0.34, -0.32), cloth)
-	for x in [-1.07, 1.07]:
-		Kit.block(couch, Vector3(0.2, 0.34, 0.86), Vector3(x, 0.3, 0), cloth)
-	Kit.block(couch, Vector3(0.93, 0.14, 0.62), Vector3(-0.47, 0.34, 0.1), cushion)
-	Kit.block(couch, Vector3(0.93, 0.14, 0.62), Vector3(0.47, 0.31, 0.1), cushion, Vector3(-4, 0, 3))
-	Kit.box(couch, Vector3(0.22, 0.004, 0.08), Vector3(0.5, 0.465, 0.2), Color(0.62, 0.62, 0.64), Vector3(-4, 28, 3))
-	Kit.box(couch, Vector3(0.75, 0.34, 0.26), Vector3(-0.5, 0.75, -0.32), Color(0.78, 0.36, 0.14), Vector3(0, 0, -3))
+	# A sagging thrift-store couch against the right wall (props.gd's sofa): a
+	# split seat cushion with its foam showing, a striped afghan thrown over the
+	# back.
+	var couch := Kit.group(self, Vector3(3.03, 0, 0.55), Vector3(0, -90, 0), "Couch")
+	Props.couch_on(couch, 1.9, Color(0.52, 0.36, 0.15), 0.86, Color(0.66, 0.47, 0.2))
+	Kit.box(couch, Vector3(0.22, 0.006, 0.08), Vector3(0.4, 0.493, 0.16), Color(0.93, 0.88, 0.66), Vector3(0, 28, 0))
+	var afghan := Color(0.85, 0.42, 0.15)
+	Kit.box(couch, Vector3(0.7, 0.44, 0.03), Vector3(-0.394, 0.67, -0.02), afghan, Vector3(-9, 0, 0))
+	Kit.box(couch, Vector3(0.7, 0.05, 0.3), Vector3(-0.394, 0.885, -0.27), afghan)
 	for i in 3:
-		Kit.box(couch, Vector3(0.76, 0.03, 0.265), Vector3(-0.5, 0.65 + i * 0.1, -0.32), Color(0.35, 0.2, 0.1), Vector3(0, 0, -3))
+		Kit.box(couch, Vector3(0.71, 0.035, 0.035), Vector3(-0.394, 0.55 + i * 0.12, -0.001 - i * 0.019), [Color(0.35, 0.2, 0.1), CREAM, Color(0.35, 0.2, 0.1)][i], Vector3(-9, 0, 0))
 
 	# Rug and coffee table with last night's pizza.
 	Kit.box(self, Vector3(1.5, 0.012, 2.1), Vector3(2.05, 0.006, 0.55), Color(0.18, 0.27, 0.38))
 	Kit.box(self, Vector3(1.2, 0.014, 1.8), Vector3(2.05, 0.007, 0.55), Color(0.76, 0.62, 0.34))
 	Kit.box(self, Vector3(0.9, 0.016, 1.5), Vector3(2.05, 0.008, 0.55), Color(0.18, 0.27, 0.38))
 	var table := Kit.group(self, Vector3(2.05, 0, 0.55), Vector3(0, 4, 0), "CoffeeTable")
-	Kit.box(table, Vector3(0.56, 0.04, 1.05), Vector3(0, 0.38, 0), WOOD_MID)
-	for x in [-0.23, 0.23]:
-		for z in [-0.46, 0.46]:
-			Kit.block(table, Vector3(0.05, 0.36, 0.05), Vector3(x, 0, z), WOOD_DARK)
+	Props.table_on(table, 0.56, 1.05, WOOD_MID, 0.4)
+	Kit.box(table, Vector3(0.44, 0.02, 0.93), Vector3(0, 0.12, 0), WOOD_DARK)     # a shelf underneath, with tapes on it
+	for k in 3:
+		Kit.box(table, Vector3(0.11, 0.025, 0.19), Vector3(-0.1 + k * 0.12, 0.1425, 0.2 - k * 0.06), [BLACK, Color(0.85, 0.2, 0.18), CREAM][k], Vector3(0, k * 11.0 - 8.0, 0))
 	Kit.block(table, Vector3(0.38, 0.045, 0.38), Vector3(0.02, 0.4, 0.25), Color(0.9, 0.87, 0.78), Vector3(0, 18, 0))
 	Kit.block(table, Vector3(0.2, 0.004, 0.2), Vector3(0.02, 0.445, 0.25), Color(0.82, 0.16, 0.12), Vector3(0, 18, 0))
 	for c in [Vector3(-0.12, 0.45, -0.1), Vector3(0.1, 0.45, -0.22)]:
@@ -434,14 +439,17 @@ func _lounge() -> void:
 
 	# Mini fridge with a rabbit-ear TV on top.
 	var fridge := Kit.group(self, Vector3(3.15, 0, -2.15), Vector3(0, -14, 0), "Fridge")
-	Kit.block(fridge, Vector3(0.56, 0.86, 0.56), Vector3.ZERO, Color(0.9, 0.9, 0.85))
-	Kit.box(fridge, Vector3(0.56, 0.012, 0.005), Vector3(0, 0.62, 0.282), Color(0.55, 0.55, 0.52))
-	Kit.box(fridge, Vector3(0.03, 0.16, 0.03), Vector3(-0.22, 0.42, 0.295), STEEL)
+	Kit.bevel_block(fridge, Vector3(0.56, 0.86, 0.56), Vector3.ZERO, Color(0.9, 0.9, 0.85), 0.04)
+	Kit.box(fridge, Vector3(0.5, 0.012, 0.01), Vector3(0, 0.62, 0.283), Color(0.55, 0.55, 0.52))
+	Kit.bevel(fridge, Vector3(0.035, 0.2, 0.04), Vector3(-0.21, 0.42, 0.3), STEEL, 0.012)
 	Kit.box(fridge, Vector3(0.07, 0.07, 0.006), Vector3(0.1, 0.74, 0.284), Color(0.95, 0.75, 0.1), Vector3(0, 0, 12))
 	Kit.box(fridge, Vector3(0.05, 0.05, 0.006), Vector3(0.18, 0.5, 0.284), Color(0.85, 0.2, 0.2), Vector3(0, 0, -8))
+	Kit.box(fridge, Vector3(0.09, 0.12, 0.004), Vector3(-0.02, 0.36, 0.283), Color(0.96, 0.95, 0.88), Vector3(0, 0, 5))     # a takeaway menu under a magnet
 	var tv := Kit.group(fridge, Vector3(0, 0.86, 0), Vector3(0, -8, 0), "TV")
-	Kit.block(tv, Vector3(0.46, 0.38, 0.42), Vector3.ZERO, Color(0.28, 0.26, 0.26))
-	Kit.box(tv, Vector3(0.3, 0.25, 0.01), Vector3(-0.05, 0.2, 0.212), Kit.flat(Color(0.45, 0.62, 0.72), 0.9))
+	Kit.bevel_block(tv, Vector3(0.46, 0.38, 0.42), Vector3.ZERO, Color(0.28, 0.26, 0.26), 0.05)
+	Kit.bevel(tv, Vector3(0.34, 0.29, 0.02), Vector3(-0.05, 0.2, 0.21), Color(0.12, 0.12, 0.13), 0.01)
+	Kit.box(tv, Vector3(0.3, 0.25, 0.01), Vector3(-0.05, 0.2, 0.222), Kit.flat(Color(0.45, 0.62, 0.72), 0.9))
+	Kit.ball(tv, 0.035, Vector3(0, 0.38, -0.05), STEEL, 8)
 	for k in 2:
 		Kit.cyl(tv, 0.018, 0.012, Vector3(0.17, 0.26 - k * 0.09, 0.214), CREAM, Vector3(90, 0, 0), 6)
 	for a in [28.0, -32.0]:

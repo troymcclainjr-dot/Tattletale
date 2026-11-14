@@ -15,6 +15,7 @@ extends RefCounted
 ## facing +z before turning, and take no floor.
 
 const Props := preload("res://scripts/props.gd")
+const Street := preload("res://scripts/props_street.gd")
 
 const IRON := Color(0.11, 0.14, 0.13)          # railings, lamp posts, bench ends: black-green paint
 const GILT := Color(0.92, 0.72, 0.26)
@@ -71,7 +72,7 @@ static func lamp_post(p: Node3D, b: int, u: float, v: float, arms := 1, h := 3.3
 		Kit.cyl(g, 0.11, 0.1, t + Vector3(0, 0.05, 0), IRON, Vector3.ZERO, 8, 0.13)
 		Kit.ball(g, 0.21, t + Vector3(0, 0.3, 0), Kit.flat(GLOBE, 1.8), 10)
 		Kit.cyl(g, 0.06, 0.06, t + Vector3(0, 0.53, 0), IRON, Vector3.ZERO, 6, 0.02)
-	Kit.omni(g, Vector3(0, h + 0.15, 0), WARM, 1.15, 7.5)
+	Kit.omni(g, Vector3(0, h + 0.15, 0), WARM, 5.0, 7.0)
 	return g
 
 
@@ -114,7 +115,7 @@ static func pier(p: Node3D, b: int, u: float, v: float, h := 1.55, top := "ball"
 		Kit.cyl(g, 0.12, 0.08, Vector3(0, h + 0.42, 0), IRON, Vector3.ZERO, 8, 0.15)
 		Kit.ball(g, 0.23, Vector3(0, h + 0.68, 0), Kit.flat(GLOBE, 1.8), 10)
 		Kit.cyl(g, 0.06, 0.08, Vector3(0, h + 0.94, 0), IRON, Vector3.ZERO, 6, 0.02)
-		Kit.omni(g, Vector3(0, h + 0.75, 0.2), WARM, 0.9, 6.0)
+		Kit.omni(g, Vector3(0, h + 0.75, 0.2), WARM, 2.3, 6.0)
 	elif top == "cap":
 		Kit.box(g, Vector3(0.46, 0.08, 0.46), Vector3(0, h + 0.22, 0), STONE)
 	else:
@@ -187,7 +188,7 @@ static func gate_arch(p: Node3D, b: int, u0: float, u1: float, v: float, title: 
 		Kit.cyl(g, 0.015, 0.1, Vector3(x, low + 0.57, 0), IRON, Vector3.ZERO, 5)
 		Kit.cyl(g, 0.1, 0.07, Vector3(x, low + 0.53, 0), IRON, Vector3.ZERO, 8, 0.03)
 		Kit.ball(g, 0.17, Vector3(x, low + 0.34, 0), Kit.flat(GLOBE, 1.8), 10)
-	Kit.omni(g, Vector3(0, low - 0.4, 0.6), WARM, 1.0, 6.5)
+	Kit.omni(g, Vector3(0, low - 0.4, 0.6), WARM, 3.6, 6.5)
 	Kit.box(g, Vector3(half * 2.0 - 0.1, 0.46, 0.05), Vector3(0, low + 0.23, 0), green)
 	Kit.box(g, Vector3(half * 2.0 - 0.12, 0.04, 0.08), Vector3(0, low + 0.015, 0), GILT)
 	Kit.box(g, Vector3(half * 2.0 - 0.12, 0.04, 0.08), Vector3(0, low + 0.45, 0), GILT)
@@ -381,8 +382,9 @@ static func chess_table(p: Node3D, b: int, u: float, v: float, key := 0.0) -> No
 		var tall := 0.04 + Props.rnd(key + i * 1.9) * 0.05
 		Kit.cyl(g, 0.02, tall, Vector3(x, 0.792 + tall * 0.5, z), colour, Vector3.ZERO, 6, 0.012)
 		Kit.ball(g, 0.017, Vector3(x, 0.8 + tall, z), colour, 6)
-	for s: float in [-1.0, 1.0]:
-		Kit.cyl(g, 0.21, 0.44, Vector3(s * 0.78, 0.22, 0), conc, Vector3.ZERO, 8)
+	for s: float in [-1.0, 1.0]:      # the stools: a stem, a round seat on it
+		Kit.cyl(g, 0.17, 0.38, Vector3(s * 0.78, 0.19, 0), conc, Vector3.ZERO, 8, 0.12)
+		Kit.cyl(g, 0.22, 0.07, Vector3(s * 0.78, 0.415, 0), conc.lightened(0.12), Vector3.ZERO, 10)
 	return g
 
 
@@ -463,7 +465,7 @@ static func bandstand(p: Node3D, b: int, u: float, v: float) -> Node3D:
 	# the lamp inside, high under the ceiling, and its light
 	Kit.cyl(g, 0.012, 0.12, Vector3(0, eave - 0.07, 0), IRON, Vector3.ZERO, 5)
 	Kit.ball(g, 0.13, Vector3(0, eave - 0.2, 0), Kit.flat(GLOBE, 2.0), 10)
-	Kit.omni(g, Vector3(0, eave - 0.6, 0), WARM, 1.0, 6.5)
+	Kit.omni(g, Vector3(0, eave - 0.6, 0), WARM, 3.6, 6.5)
 	# chairs and a music stand the band left behind
 	for c: Array in [[-0.9, -1.1, 20.0], [0.5, -1.4, -15.0], [1.4, -0.5, -60.0]]:
 		var ch := Kit.group(g, Vector3(c[0], deck, c[1]), Vector3(0, c[2], 0))
@@ -657,28 +659,12 @@ static func hopscotch(p: Node3D, b: int, u: float, v: float) -> void:
 
 # ------------------------------------------------------- round the square
 
-## A parked car of the time, a boxy four-door. Built into `parent` at `at`, its
-## front facing `yaw`; it takes no floor (it stands in a street nobody walks).
-static func sedan(parent: Node3D, at: Vector3, yaw: float, paint: Color) -> Node3D:
-	var g := Kit.group(parent, at, Vector3(0, yaw, 0))
-	var glass := Color(0.18, 0.22, 0.3)
-	var chrome := Color(0.7, 0.72, 0.74)
-	Kit.box(g, Vector3(1.78, 0.6, 4.7), Vector3(0, 0.56, 0), paint)
-	Kit.box(g, Vector3(1.58, 0.54, 2.3), Vector3(0, 1.12, -0.25), paint.lightened(0.04))
-	Kit.box(g, Vector3(1.6, 0.4, 2.0), Vector3(0, 1.13, -0.25), glass)
-	Kit.box(g, Vector3(1.44, 0.4, 2.32), Vector3(0, 1.13, -0.25), glass)
-	Kit.box(g, Vector3(1.62, 0.38, 0.1), Vector3(0, 1.12, -0.3), paint.lightened(0.04))      # the pillar between the doors
-	for x: float in [-0.82, 0.82]:
-		for z: float in [-1.45, 1.45]:
-			Kit.cyl(g, 0.33, 0.22, Vector3(x, 0.33, z), Color(0.08, 0.08, 0.09), Vector3(0, 0, 90), 10)
-			Kit.cyl(g, 0.16, 0.24, Vector3(x, 0.33, z), chrome, Vector3(0, 0, 90), 8)
-	for z: float in [-2.39, 2.39]:
-		Kit.box(g, Vector3(1.82, 0.16, 0.1), Vector3(0, 0.36, z), chrome)
-	for x: float in [-0.56, 0.56]:
-		Kit.box(g, Vector3(0.34, 0.14, 0.02), Vector3(x, 0.7, 2.361), Kit.flat(Color(1.0, 0.95, 0.75), 0.4))
-		Kit.box(g, Vector3(0.3, 0.12, 0.02), Vector3(x, 0.7, -2.361), Color(0.75, 0.1, 0.1))
-	Kit.box(g, Vector3(0.62, 0.16, 0.02), Vector3(0, 0.7, 2.361), Color(0.12, 0.12, 0.13))
-	return g
+## A parked car of the time: the street's chunky cars (props_street.gd's
+## car_model; `kind` one of its CAR_KINDS). Built into `parent` at `at` (the
+## road under it), its front facing `yaw`; it takes no floor (it stands in a
+## street nobody walks).
+static func sedan(parent: Node3D, at: Vector3, yaw: float, paint: Color, kind := "box_sedan") -> Node3D:
+	return Street.car_model(parent, at, yaw, kind, paint)
 
 
 ## One window in a wall's face: a stone surround, the glass (lit or dark), a
@@ -894,7 +880,7 @@ static func church(parent: Node3D, at: Vector3, title: String, lines: Array) -> 
 	# the lamp over the doors and the notice board
 	Kit.box(g, Vector3(0.06, 0.06, 0.4), Vector3(0, 4.9, 0.3), IRON)
 	Kit.ball(g, 0.16, Vector3(0, 4.75, 0.5), Kit.flat(GLOBE, 1.8), 8)
-	Kit.omni(g, Vector3(0, 4.2, 1.6), WARM, 1.0, 7.0)
+	Kit.omni(g, Vector3(0, 4.2, 1.6), WARM, 2.6, 7.0)
 	notice_board(g, Vector3(3.3, 0, 1.3), 0.0, 2.4, 1.3, title, lines, Color(0.12, 0.12, 0.16), Color(0.97, 0.95, 0.88), 0.7, 0.1)
 	return g
 

@@ -16,6 +16,7 @@ extends RefCounted
 ## v from the alley; the street is at v = 15.8.
 
 const Props := preload("res://scripts/props.gd")
+const In := preload("res://scripts/props_in.gd")
 const UP := 40.0
 const STAIR_U := 0.6          # the middle of the flight, on both floors
 const STAIR_V := 9.15
@@ -27,8 +28,9 @@ static func build(p: Node3D) -> void:
 	var paper := Kit.tex("stucco", 2.0, Color(0.85, 0.8, 0.66), true, Color(1.0, 1.0, 0.82))       # yellowed wallpaper
 	var blue := Kit.tex("stucco", 2.0, Color(0.6, 0.68, 0.8), true, Color(0.66, 0.84, 1.0))        # his room
 	var tile := Kit.tex("block_plain", 0.6, Color(0.86, 0.88, 0.9), true, Color(0.9, 0.94, 0.97)) # the bathroom
-	var boards := Kit.tex("wood_panel", 1.6, Color(0.5, 0.36, 0.24), true, Color(0.62, 0.6, 0.62))
+	var boards := Kit.tex("in_boards", 1.3, Color(0.5, 0.36, 0.24), true, Color(0.74, 0.48, 0.3))  # stained oak boards
 	var lino := Kit.tex("lino", 1.2, Color(0.7, 0.66, 0.56), true, Color(1.0, 0.9, 0.8))
+	var check := Kit.tex("in_check", 0.5, Color(0.8, 0.8, 0.82), true, Color(0.97, 0.97, 1.0))     # small bathroom tiles
 	var concrete := Kit.tex("sidewalk", 2.4, Color(0.55, 0.55, 0.55), true, Color(0.72, 0.72, 0.76))
 	var brick := Kit.tex("brick", 1.5, Color(0.5, 0.26, 0.2))
 	var warm := Color(1.0, 0.86, 0.62)
@@ -51,16 +53,16 @@ static func build(p: Node3D) -> void:
 	# The back yard runs round the side of the kitchen wing.
 	p.room("BACK YARD", g4, 0, 0, 5, 3.4, concrete, {"areas": [[0, 0, 5, 3.4], [3.6, 2.4, 5, 7.2]], "cam_y": 2.9, "look_y": 1.0})
 	Kit.box(p.node_of(g4), Vector3(1.4, 0.3, 3.8), p.pt(4.3, 5.3, -0.15), concrete)
-	p.room("HIS ROOM", h1, UP, 11.2, UP + 5, 15.8, boards, {"light": warm, "energy": 0.6})
+	p.room("HIS ROOM", h1, UP, 11.2, UP + 5, 15.8, boards, {"light": Color(0.9, 0.94, 1.0), "energy": 0.6})     # a cool light: his room is the blue one
 	p.room("HALL", h2, UP, 7.2, UP + 2.5, 11.2, boards, {"light": warm, "energy": 0.4, "hole": [UP + STAIR_U - 0.475, STAIR_V - STAIR_L * 0.5, UP + STAIR_U + 0.475, STAIR_V + STAIR_L * 0.5]})
-	p.room("BATHROOM", h2, UP + 2.5, 7.2, UP + 5, 11.2, lino, {"light": Color(0.95, 1.0, 1.0), "energy": 0.4})
+	p.room("BATHROOM", h2, UP + 2.5, 7.2, UP + 5, 11.2, check, {"light": Color(0.95, 1.0, 1.0), "energy": 0.4})
 	p.room("BACK BEDROOM", h3, UP, 3.4, UP + 3.6, 7.2, boards, {"light": warm, "energy": 0.4})
 
 	# ---- ground floor walls
 	var front: Node3D = p.cross(g1, 15.8, 0, 5, brick, [
 		{"a": 0.6, "b": 1.5, "head": 2.1, "colour": Color(0.5, 0.14, 0.12), "frame": trim},
 		{"a": 2.6, "b": 4.5, "kind": "window", "sill": 0.8, "head": 2.2, "bars": true, "blinds": true, "frame": trim},
-	], {"h": 6.3})
+	], {"h": 6.6})
 	p.side(g1, 0.0, 11.2, 15.8, paper)
 	p.side(g1, 5.0, 11.2, 15.8, paper)
 	p.cross(g2, 11.2, 0, 5, paper, [{"a": 1.5, "b": 3.5, "kind": "arch", "frame": trim}])
@@ -95,37 +97,79 @@ static func build(p: Node3D) -> void:
 	_street(p, st, front)
 	_ground(p, g1, g2, g3, g4)
 	_upstairs(p, h1, h2, h3)
+	_dress(p, g1, g2, g3, h1, h2, h3)
+
+
+## Paint on plaster in colour c.
+static func _paint(c: Color) -> StandardMaterial3D:
+	return Kit.tex("stucco", 2.0, c.darkened(0.14), true, c)
+
+
+## The dining room's paper, rose stripes (the boxed-in cupboard under the
+## landing is papered to match).
+static func _rose() -> StandardMaterial3D:
+	return Kit.tex("in_stripe", 1.0, Color(0.8, 0.52, 0.5), true, Color(0.97, 0.64, 0.62))
 
 
 static func _street(p: Node3D, st: int, front: Node3D) -> void:
 	var n: Node3D = p.node_of(st)
 	var marble := Color(0.9, 0.9, 0.88)
 	var cream := Color(0.82, 0.8, 0.72)
-	# His own front: the upstairs windows, a cornice, the house number, one low marble step.
-	for u in [1.3, 3.7]:
-		p.slab(front, true, 15.88, u - 0.75, u + 0.75, 3.65, 5.15, 0.03, cream)
-		p.slab(front, true, 15.895, u - 0.65, u + 0.65, 3.75, 5.05, 0.03, Kit.flat(Color(1.0, 0.85, 0.55), 0.5))
-		p.slab(front, true, 15.91, u - 0.64, u + 0.64, 4.37, 4.43, 0.03, cream)
-	p.slab(front, true, 15.8, -0.02, 5.02, 6.3, 6.6, 0.4, Color(0.3, 0.28, 0.27))
+	var trim := Color(0.7, 0.67, 0.58)                  # the door's frame (build's trim)
+	var dark_glass := Color(0.16, 0.19, 0.28)
+	var f := 15.8 + In.T * 0.5                          # the street face of the fronts
+	# His own front: the upstairs windows, a bracketed cornice in green and
+	# cream, the house number on the transom over the door, white marble lintels
+	# and sills, a barred cellar window at the pavement, one low marble step.
+	for u: float in [1.3, 3.7]:
+		In.front_window(p, front, u, 15.8, 3.75, 1.3, 1.3, true, cream, marble, "", u, false)
+	In.cornice(p, front, 15.8, 0.0, 5.0, 6.6, Color(0.17, 0.3, 0.24), Color(0.9, 0.87, 0.78))
+	p.slab(front, true, f + 0.0025, 0.6, 1.5, 2.155, 2.5, 0.005, dark_glass)      # the transom: dark, so the number on it reads
+	for x: float in [0.545, 1.485]:
+		p.slab(front, true, f + 0.0075, x, x + 0.07, 2.155, 2.5, 0.015, trim)
+	p.slab(front, true, f + 0.0075, 0.545, 1.555, 2.5, 2.57, 0.015, trim)
+	p.slab(front, true, f + 0.035, 0.46, 1.64, 2.57, 2.74, 0.07, marble)
 	Props.words(front, "2409", p.pt(1.05, 15.885, 2.35), 0.14, cream)
+	p.slab(front, true, f + 0.035, 2.45, 4.65, 2.255, 2.43, 0.07, marble)        # the window's lintel
+	p.slab(front, true, f + 0.06, 2.42, 4.68, 0.62, 0.745, 0.12, marble)         # and its sill
+	p.slab(front, true, f + 0.005, 2.75, 3.65, 0.1, 0.44, 0.01, Color(0.08, 0.08, 0.1))     # the cellar window
+	for x: float in [2.67, 3.65]:
+		p.slab(front, true, f + 0.02, x, x + 0.08, 0.02, 0.52, 0.04, marble)
+	for y: float in [0.02, 0.44]:
+		p.slab(front, true, f + 0.02, 2.75, 3.65, y, y + 0.08, 0.04, marble)
+	for k in 5:
+		Kit.cyl(front, 0.011, 0.34, p.pt(2.9 + k * 0.15, f + 0.03, 0.27), Props.IRON, Vector3.ZERO, 5)
 	Kit.block(n, Vector3(1.3, 0.07, 0.6), p.pt(1.05, 16.18), marble)
 	Kit.block(n, Vector3(1.1, 0.05, 0.3), p.pt(1.05, 16.02, 0.07), marble)
 	# The row: a boarded-up vacant on the left, a formstone front with a metal awning on the right.
 	var old_brick := Kit.tex("brick", 1.5, Color(0.4, 0.22, 0.2), true, Color(0.72, 0.68, 0.74))
-	var formstone := Kit.tex("painted_block", 0.7, Color(0.62, 0.6, 0.56), true, Color(0.75, 0.78, 0.86))
+	var formstone := Kit.tex("in_formstone", 1.6, Color(0.62, 0.6, 0.56), true, Color(0.92, 0.88, 0.8))
 	var looks := [old_brick, old_brick, formstone, old_brick]
 	var starts := [-10.0, -5.0, 5.0, 10.0]
 	for i in 4:
 		var u0: float = starts[i]
 		var boarded: bool = i == 1
-		p.slab(n, true, 15.8, u0, u0 + 5.0, 0.0, 6.2, 0.15, looks[i])
-		p.slab(n, true, 15.8, u0, u0 + 5.0, 6.2, 6.5, 0.4, Color(0.3, 0.28, 0.27))
+		p.slab(n, true, 15.8, u0, u0 + 5.0, 0.0, 6.48, 0.15, looks[i])
+		In.cornice(p, n, 15.8, u0, u0 + 5.0, 6.48, Color(0.3, 0.28, 0.27), Color(0.84, 0.81, 0.73))
 		var wood := Color(0.55, 0.42, 0.26)
-		var glass: Variant = wood if boarded else Kit.flat(Color(0.95, 0.8, 0.5) if i == 2 else Color(0.2, 0.24, 0.32), 0.45 if i == 2 else 0.0)
-		p.slab(n, true, 15.885, u0 + 0.55, u0 + 1.5, 0.3, 2.35, 0.03, wood.darkened(0.25) if boarded else Color(0.24, 0.3, 0.26))     # the door
-		p.slab(n, true, 15.885, u0 + 2.6, u0 + 4.5, 1.1, 2.5, 0.03, glass)
-		for uu in [u0 + 0.55, u0 + 3.0]:
-			p.slab(n, true, 15.885, uu, uu + 1.4, 3.75, 5.05, 0.03, glass)
+		if boarded:       # plywood over the doorway, set back a little so the sign on it stands clear
+			p.slab(n, true, 15.875, u0 + 0.55, u0 + 1.5, 0.3, 2.35, 0.03, wood.darkened(0.25))
+		else:
+			p.slab(n, true, 15.885, u0 + 0.55, u0 + 1.5, 0.3, 2.35, 0.03, Color(0.24, 0.3, 0.26))     # the door
+			# Its frame, a transom over it and a marble lintel (the formstone house's
+			# awning hangs where its transom would be).
+			var top := 2.43 if i == 2 else 2.74
+			for x: float in [u0 + 0.47, u0 + 1.5]:
+				p.slab(n, true, f + 0.025, x, x + 0.08, 0.3, top, 0.05, cream)
+			p.slab(n, true, f + 0.025, u0 + 0.55, u0 + 1.5, 2.35, 2.43, 0.05, cream)
+			if i != 2:
+				p.slab(n, true, f + 0.0025, u0 + 0.55, u0 + 1.5, 2.43, 2.68, 0.005, dark_glass)
+				p.slab(n, true, f + 0.025, u0 + 0.55, u0 + 1.5, 2.68, 2.74, 0.05, cream)
+				p.slab(n, true, f + 0.035, u0 + 0.4, u0 + 1.65, 2.74, 2.9, 0.07, marble)
+		var shut := "boarded" if boarded else ""
+		In.front_window(p, n, u0 + 3.55, 15.8, 1.1, 1.9, 1.4, i == 2, cream, marble, shut, u0, false)
+		for k in 2:
+			In.front_window(p, n, u0 + (1.25 if k == 0 else 3.7), 15.8, 3.75, 1.4, 1.3, i == 2 or (i == 3 and k == 0), cream, marble, shut, u0 + k, false)
 		# Three marble steps up to the door.
 		var stoop: Node3D = p.prop(st, u0 + 1.02, 16.2, 0.0, 1.3, 0.75)
 		for k in 3:
@@ -155,7 +199,7 @@ static func _ground(p: Node3D, g1: int, g2: int, g3: int, g4: int) -> void:
 	p.portal(g2, "GO UPSTAIRS", STAIR_U, 10.62, UP + STAIR_U + 0.25, 7.66)
 	# Behind the top of the flight, under the landing: a cupboard, boxed in.
 	var cupboard: Node3D = p.prop(g2, STAIR_U, 7.665, 0.0, 0.95, 0.77)
-	Kit.block(cupboard, Vector3(0.95, 2.89, 0.77), Vector3.ZERO, Kit.tex("stucco", 2.0, Color(0.85, 0.8, 0.66), true, Color(1.0, 1.0, 0.82)))
+	Kit.block(cupboard, Vector3(0.95, 2.89, 0.77), Vector3.ZERO, _rose())
 	Kit.box(cupboard, Vector3(0.03, 1.7, 0.56), Vector3(0.485, 0.86, 0.0), Color(0.82, 0.8, 0.72))
 	Kit.ball(cupboard, 0.03, Vector3(0.51, 0.9, 0.2), Color(0.85, 0.68, 0.25))
 	Props.table(p, g2, 3.45, 9.1, 0.0, 1.5, 0.9, Props.WOOD_DARK)
@@ -212,3 +256,81 @@ static func _upstairs(p: Node3D, h1: int, h2: int, h3: int) -> void:
 	Props.dresser(p, h3, UP + 2.9, 3.76, 0.0, 1.2, Props.WOOD_DARK)
 	Props.chair(p, h3, UP + 3.2, 6.3, 270.0, Props.WOOD)
 	Props.poster(p, h3, UP + 0.08, 6.0, 90.0, 0.5, 0.65, Color(0.75, 0.7, 0.55), "", 1.7)
+
+
+## The rooms' walls: paper, paint, panelling and tiles on the back and side
+## walls with their mouldings and door trim; the lamps, the pictures, and what
+## changes on the floors. (The front walls are the ones cut away to look in.)
+static func _dress(p: Node3D, g1: int, g2: int, g3: int, h1: int, h2: int, h3: int) -> void:
+	var white := Color(0.95, 0.93, 0.86)
+	var walnut := Color(0.36, 0.22, 0.13)
+	var gilt := Color(0.8, 0.64, 0.3)
+	# The living room: gold flowered paper up to a picture rail, a cream frieze
+	# over it, a walnut skirting; a lamp each side of the arch and a picture
+	# beyond each, a mat inside the door, a sill of walnut under the arch.
+	var living := {"upper": Kit.tex("in_flower", 0.8, Color(0.86, 0.7, 0.44), true, Color(1.0, 0.82, 0.5)),
+		"rail": walnut, "rail_y": 2.2, "frieze": _paint(Color(0.98, 0.93, 0.8)), "skirt": walnut, "skirt_h": 0.18,
+		"cornice": Color(0.97, 0.94, 0.84), "surround": white}
+	In.room_walls(p, g1, 0, 11.2, 5, 15.8, living, [{"a": 1.5, "b": 3.5, "kind": "arch"}])
+	for u: float in [1.18, 3.82]:
+		In.sconce(p, g1, u, 11.285, 0.0, "shade", 1.95)
+	In.picture(p, g1, 0.64, 11.285, 0.0, 0.62, 0.5, "sea", gilt, 1.6)
+	In.picture(p, g1, 4.36, 11.285, 0.0, 0.62, 0.5, "flowers", gilt, 1.6)
+	In.mat(p, g1, 1.05, 15.38, 0.95, 0.55, Color(0.66, 0.5, 0.28), Color(0.36, 0.24, 0.14))
+	Kit.box(p.node_of(g2), Vector3(2.0, 0.012, 0.19), p.pt(2.5, 11.2, 0.006), walnut)
+	# The dining room: white panelling to a dado rail, rose stripes over it; the
+	# stair wall in the paper alone. Both start at the boxed-in cupboard. A lamp
+	# over the table and a rug under it, a landscape on the back wall.
+	var rose := _rose()
+	var dining := {"lower": Kit.tex("in_panel", 0.8, Color(0.85, 0.82, 0.74), true, Color(0.98, 0.95, 0.87)),
+		"upper": rose, "dado": white, "dado_y": 0.95, "skirt": white, "cornice": white, "surround": white}
+	In.dress(p, g2, true, 7.2, 1.0, STAIR_U + 0.475, 4.925, [{"a": 1.5, "b": 2.4, "kind": "arch", "head": 2.05}], dining)
+	In.dress(p, g2, false, 5.0, -1.0, 7.275, 11.125, [], dining)
+	In.dress(p, g2, false, 0.0, 1.0, STAIR_V - STAIR_L * 0.5, 11.125, [], {"upper": rose, "skirt": white, "cornice": white})
+	In.pendant(p, g2, 3.45, 9.1, 1.85, Color(0.97, 0.9, 0.72), "drum", In.WARM, 0.5)
+	Props.rug(p, g2, 3.45, 9.1, 1.9, 2.3, Color(0.24, 0.32, 0.55))
+	In.picture(p, g2, 4.05, 7.285, 0.0, 0.6, 0.48, "hills", gilt, 1.6)
+	# The kitchen: white tiles to a red cap, sunny yellow paint over them, a black
+	# cove at the floor; a red enamel lamp over the table, curtains at the window,
+	# a steel strip where the boards meet the lino.
+	var kitchen := {"lower": Kit.tex("in_tile", 0.6, Color(0.9, 0.9, 0.88), true, Color(0.99, 0.98, 0.95)),
+		"upper": _paint(Color(1.0, 0.95, 0.5)), "dado": Color(0.82, 0.16, 0.14), "dado_y": 1.3,
+		"skirt": Color(0.16, 0.16, 0.18), "skirt_h": 0.1, "cornice": white}
+	In.room_walls(p, g3, 0, 3.4, 3.6, 7.2, kitchen, [{"a": 2.5, "b": 3.4}], [], [{"a": 4.3, "b": 5.2, "kind": "window", "sill": 1.0, "head": 2.0}])
+	In.curtains(p, g3, false, 3.6, -1.0, 4.3, 5.2, 1.0, 2.0, Color(0.9, 0.26, 0.22))
+	In.pendant(p, g3, 2.85, 5.6, 1.75, Color(0.86, 0.2, 0.16), "cone", In.WARM, 0.5)
+	Kit.box(p.node_of(g3), Vector3(0.9, 0.01, 0.19), p.pt(1.95, 7.2, 0.005), Props.STEEL)
+	# His room: royal blue to a white dado rail, sky blue over it; a ceiling lamp.
+	var his := {"lower": _paint(Color(0.22, 0.38, 0.74)), "upper": _paint(Color(0.6, 0.82, 1.0)), "dado": white,
+		"skirt": white, "cornice": white, "surround": white}
+	In.room_walls(p, h1, UP, 11.2, UP + 5, 15.8, his, [{"a": UP + 1.2, "b": UP + 2.1}])
+	In.pendant(p, h1, UP + 2.5, 12.3, 2.42, Color(0.98, 0.95, 0.85), "drum", In.WARM)
+	# The hall: white panelling to a dado rail, green trellis paper over it; a
+	# lamp by the bedroom door, a portrait over the stairs, a runner.
+	var hall := {"lower": Kit.tex("in_panel", 0.8, Color(0.85, 0.82, 0.74), true, Color(0.98, 0.95, 0.87)),
+		"upper": Kit.tex("in_trellis", 0.9, Color(0.6, 0.72, 0.56), true, Color(0.74, 0.88, 0.68)),
+		"dado": white, "dado_y": 0.95, "skirt": white, "cornice": white, "surround": white}
+	In.room_walls(p, h2, UP, 7.2, UP + 2.5, 11.2, hall, [{"a": UP + 1.2, "b": UP + 2.1}], [], [{"a": 9.6, "b": 10.5}])
+	In.sconce(p, h2, UP + 0.62, 7.285, 0.0, "shade", 1.95)
+	In.picture(p, h2, UP + 0.085, 9.4, 90.0, 0.5, 0.62, "face", gilt, 1.75)
+	In.mat(p, h2, UP + 1.78, 9.3, 0.62, 3.3, Kit.tex("in_carpet", 0.8, Color(0.5, 0.14, 0.12), true, Color(0.72, 0.2, 0.18)), gilt)
+	# The bathroom: pink tiles to a black cap, pale pink paint over them, a black
+	# cove at the floor, a light over the mirror.
+	var black := Color(0.13, 0.13, 0.15)
+	var bath := {"lower": Kit.tex("in_tile", 0.6, Color(0.9, 0.7, 0.74), true, Color(1.0, 0.74, 0.8)),
+		"upper": _paint(Color(1.0, 0.9, 0.92)), "dado": black, "dado_y": 1.4, "skirt": black, "skirt_h": 0.1,
+		"cornice": white, "surround": white}
+	In.room_walls(p, h2, UP + 2.5, 7.2, UP + 5, 11.2, bath, [], [{"a": 9.6, "b": 10.5}], [])
+	In.wall_strip(p, h2, UP + 3.3, 7.285, 0.0, 0.56, 2.02)
+	# The back bedroom: lilac flowered paper to a picture rail, white over it;
+	# curtains at the window (short of the headboard), the backs of the next row
+	# across the alley through it, a lamp each side, a mat by the bed.
+	var lilac := {"upper": Kit.tex("in_flower", 0.7, Color(0.72, 0.62, 0.8), true, Color(0.88, 0.78, 0.98)),
+		"rail": white, "rail_y": 2.2, "frieze": _paint(Color(0.98, 0.96, 0.94)), "skirt": white, "cornice": white}
+	In.room_walls(p, h3, UP, 3.4, UP + 3.6, 7.2, lilac, [{"a": UP + 1.0, "b": UP + 2.4, "kind": "window", "sill": 0.9, "head": 2.1}])
+	In.curtains(p, h3, true, 3.4, 1.0, UP + 1.0, UP + 2.4, 1.2, 2.1, Color(0.92, 0.52, 0.64))
+	In.night_view(p, h3, true, 3.4, -1.0, UP + 1.0, UP + 2.4, 0.9, 2.1, "brick")
+	for u: float in [UP + 0.34, UP + 3.12]:
+		In.sconce(p, h3, u, 3.485, 0.0, "shade", 1.75)
+	In.picture(p, h3, UP + 0.085, 4.6, 90.0, 0.55, 0.45, "flowers", Color(0.92, 0.9, 0.86), 1.62)
+	In.mat(p, h3, UP + 2.05, 4.9, 0.62, 1.1, Color(0.96, 0.86, 0.9), Color(0.78, 0.5, 0.62))

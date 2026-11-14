@@ -53,8 +53,10 @@ static func build(p: Node3D) -> void:
 	p.setup("PEN LUCY PARK", W, D)
 	var st: int = p.street(-6.0, 46.0)
 	p.arrive = p.pt(20.0, 26.1)
-	p.ambient = 0.4            # night: the floodlights and the windows do the lighting
-	p.sun_energy = 0.3
+	# Night: the floodlights lay pools on the court, the alley lights and the
+	# windows do the rest; a cool moon (_sky) stands in for main.gd's warm sun.
+	p.ambient = 0.11
+	p.sun_energy = 0.0
 	# Three from the neighbourhood, on the court (working names).
 	p.person(st, "tre", 15.5, 15.2, {"name": "TRE", "face": "happy"})
 	p.person(st, "dee", 18.2, 13.6, {"name": "BIG DEE", "face": "smug"})
@@ -62,46 +64,57 @@ static func build(p: Node3D) -> void:
 	p.room("COURT", st, 0.0, FENCE_V, W, D, null, {"street": true})
 	_ground(p, st)
 	_fences(p, st)
-	Park.court(p, st, CU0, CV0, CU1, CV1, Kit.flat(Color(0.2, 0.52, 0.4)), Kit.flat(Color(0.18, 0.36, 0.66)))
+	var green := Color(0.2, 0.52, 0.4)
+	var blue := Color(0.18, 0.36, 0.66)
+	Park.court(p, st, CU0, CV0, CU1, CV1, Outdoor.tex("out_court", 9.6, green, green), Outdoor.tex("out_court", 9.6, blue, blue))
 	_court(p, st)
 	_beds(p, st)
 	_outside(p, st)
 	_alley(p, st)
 	_houses(p, st)
+	_sky(p, st)
 
 
 # ------------------------------------------------------------------- the ground
 
 static func _ground(p: Node3D, st: int) -> void:
 	var n: Node3D = p.node_of(st)
-	var grass := Kit.tex("stucco", 2.5, Color(0.3, 0.5, 0.26), true, Color(0.42, 0.74, 0.42))
-	var lawn := Kit.tex("stucco", 2.5, Color(0.25, 0.42, 0.22), true, Color(0.34, 0.6, 0.36))
-	var tar := Kit.tex("asphalt", 3.0, Color(0.22, 0.24, 0.29), true, Color(0.82, 0.84, 0.9))
-	var concrete := Kit.tex("sidewalk", 2.4, Color(0.62, 0.61, 0.58), true, Color(0.86, 0.85, 0.82))
+	var grass := Outdoor.tex("out_grass", 3.0, Color(0.32, 0.62, 0.26))
+	var lawn := Outdoor.tex("out_grass", 3.6, Color(0.24, 0.46, 0.22), Color(0.68, 0.76, 0.72))
+	var tar := Outdoor.tex("out_asphalt", 6.4, Color(0.22, 0.24, 0.29), Color(0.9, 0.92, 1.0))
+	var concrete := Outdoor.pavement()
 	# Inside the fence: the beds' earth and grass under everything, the asphalt
-	# pad on it (in halves, so no one mesh is lit by more lamps than the renderer
-	# takes), and the path in from the gate.
+	# pad on it (in quarters, so no one mesh is lit by more lamps than the
+	# renderer takes: the alley lights reach the back ones, the gate's lamp and
+	# the street's the front ones), and the path in from the gate.
 	# (They are cut in different places: two ends of different looks in one plane would flicker.)
 	for half: Array in [[0.0, 19.5], [19.5, W]]:
-		Kit.box(n, Vector3(half[1] - half[0], 0.3, D - FENCE_V), p.pt((half[0] + half[1]) * 0.5, (FENCE_V + D) * 0.5, -0.15), grass)
+		for depth: Array in [[FENCE_V, 14.0], [14.0, D]]:
+			Kit.box(n, Vector3(half[1] - half[0], 0.3, depth[1] - depth[0]), p.pt((half[0] + half[1]) * 0.5, (depth[0] + depth[1]) * 0.5, -0.15), grass)
 	for half: Array in [[PAD[0], 20.5], [20.5, PAD[2]]]:
-		Kit.box(n, Vector3(half[1] - half[0], 0.2, PAD[1] - FENCE_V), p.pt((half[0] + half[1]) * 0.5, (FENCE_V + PAD[1]) * 0.5, -0.07), tar)
+		for depth: Array in [[FENCE_V, 13.5], [13.5, PAD[1]]]:
+			Kit.box(n, Vector3(half[1] - half[0], 0.2, depth[1] - depth[0]), p.pt((half[0] + half[1]) * 0.5, (depth[0] + depth[1]) * 0.5, -0.07), tar)
 	Kit.box(n, Vector3(GATE[1] - GATE[0], 0.2, D - PAD[1] - 0.01), p.pt(20.0, (PAD[1] + D - 0.01) * 0.5, -0.065), concrete)
 	# Outside the fence: lawn to both sides, and the dark ground running off beyond.
 	for side: Array in [[-34.0, 0.0], [W, 64.0]]:
 		Kit.box(n, Vector3(side[1] - side[0], 0.3, D - FENCE_V), p.pt((side[0] + side[1]) * 0.5, (FENCE_V + D) * 0.5, -0.15), lawn)
-	var dark := Color(0.16, 0.2, 0.17)
+	var dark := Outdoor.tex("out_grass", 3.6, Color(0.16, 0.2, 0.17), Color(0.6, 0.67, 0.64))
 	for side: Array in [[-110.0, -34.0], [64.0, 140.0]]:
 		Kit.box(n, Vector3(side[1] - side[0], 0.3, 60.0), p.pt((side[0] + side[1]) * 0.5, D - 30.0, -0.155), dark)
-	# The street runs on out of sight both ways (place.gd lays the middle of it).
-	var walk := Kit.tex("sidewalk", 2.4, Color(0.66, 0.64, 0.6))
-	var road := Kit.tex("asphalt", 3.0, Color(0.2, 0.22, 0.27))
+	# The street runs on out of sight both ways (place.gd lays the middle of it,
+	# u -14 .. 54): the same slabs, kerb, gutter, road and centre dashes.
 	for side: Array in [[-110.0, -14.0], [54.0, 150.0]]:
 		var mid: float = (side[0] + side[1]) * 0.5
 		var long: float = side[1] - side[0]
-		Kit.box(n, Vector3(long, 0.3, 2.5), p.pt(mid, D + 1.25, -0.15), walk)
-		Kit.box(n, Vector3(long, 0.3, 0.2), p.pt(mid, D + 2.6, -0.15), Color(0.78, 0.76, 0.72))
-		Kit.box(n, Vector3(long, 0.3, 7.0), p.pt(mid, D + 6.2, -0.29), road)
+		Kit.box(n, Vector3(long, 0.3, 2.5), p.pt(mid, D + 1.25, -0.15), Outdoor.pavement())
+		Kit.box(n, Vector3(long, 0.32, 0.2), p.pt(mid, D + 2.6, -0.14), Outdoor.KERB)
+		Kit.box(n, Vector3(long, 0.3, 7.0), p.pt(mid, D + 6.2, -0.29), Outdoor.road())
+		Kit.box(n, Vector3(long - 0.02, 0.012, 0.36), p.pt(mid, D + 2.88, -0.136), Outdoor.GUTTER)
+		var dash: float = -12.5 + 3.4 * ceilf((side[0] + 12.5) / 3.4)
+		while dash + 0.7 < side[1]:
+			if dash - 0.7 > side[0]:
+				Kit.box(n, Vector3(1.4, 0.01, 0.12), p.pt(dash, D + 5.9, -0.135), Color(0.85, 0.8, 0.55))
+			dash += 3.4
 
 
 # ------------------------------------------------------------------- the fences
@@ -120,11 +133,17 @@ static func _fences(p: Node3D, st: int) -> void:
 	p.fence(st, true, D, 0.0, W, [GATE], 1.05, "rail", green)
 	# A concrete kerb under the alley fence, all along.
 	Kit.box(n, Vector3(100.0, 0.16, 0.3), p.pt(15.0, FENCE_V, 0.0), Color(0.6, 0.6, 0.58))
-	# The gateposts and the gate, swung open into the park.
+	# The gateposts, each with a globe lamp on it (the warm light at the way in,
+	# one lamp between them), and the gate, swung open into the park.
+	var globe := Kit.flat(Color(1.0, 0.86, 0.6), 1.2)
 	for u: float in GATE:
 		var post: Node3D = p.prop(st, u + (-0.07 if u < 20.0 else 0.07), D, 0.0, 0.14, 0.14)
 		Kit.box(post, Vector3(0.12, 1.3, 0.12), Vector3(0, 0.65, 0), green)
-		Kit.ball(post, 0.08, Vector3(0, 1.36, 0), green, 8)
+		Kit.box(post, Vector3(0.16, 0.05, 0.16), Vector3(0, 1.32, 0), green)
+		Kit.cyl(post, 0.03, 0.08, Vector3(0, 1.38, 0), green, Vector3.ZERO, 6)
+		Kit.ball(post, 0.105, Vector3(0, 1.5, 0), globe, 10)
+		Kit.cyl(post, 0.05, 0.04, Vector3(0, 1.61, 0), green, Vector3.ZERO, 8, 0.02)
+	Kit.omni(n, p.pt(20.0, D + 0.1, 1.55), Color(1.0, 0.84, 0.58), 2.6, 6.0)
 	var leaf := Kit.group(n, p.pt(GATE[0] - 0.02, D - 0.04), Vector3(0, 97, 0))
 	Park.rod(leaf, Vector3(0.05, 0.12, 0), Vector3(1.5, 0.12, 0), 0.02, green, 4)
 	Park.rod(leaf, Vector3(0.05, 0.98, 0), Vector3(1.5, 0.98, 0), 0.02, green, 4)
@@ -139,10 +158,13 @@ static func _court(p: Node3D, st: int) -> void:
 	var mid_v := (CV0 + CV1) * 0.5
 	Park.hoop(p, st, CU0 - 0.9, mid_v, 90.0)
 	Park.hoop(p, st, CU1 + 0.9, mid_v, 270.0)
-	# The lights: four along the back, one in the near left corner.
-	for u: float in [2.6, 14.5, 25.5, 37.4]:
-		Park.floodlight(p, st, u, 4.15, 0.0, 7.6, 2, 9.0, 6.5)
-	Park.floodlight(p, st, 0.9, 23.9, 135.0, 7.6, 2, 7.0, 5.0)
+	# The lights: four along the back, one in the near left corner. Each lays a
+	# pool on the court (the outer two on the keys, the inner two either side of
+	# the middle); outside them, and outside the fence, it is night.
+	var lights := [[2.6, Vector2(7.8, 11.6)], [14.5, Vector2(15.0, 11.8)], [25.5, Vector2(25.0, 11.8)], [37.4, Vector2(32.2, 11.6)]]
+	for l: Array in lights:
+		Park.floodlight(p, st, l[0], 4.15, 0.0, 7.6, 2, 12.0, 6.5, true, l[1], 30.0)
+	Park.floodlight(p, st, 0.9, 23.9, 135.0, 7.6, 2, 9.0, 5.0, true, Vector2(8.5, 17.8), 30.0)
 	# Along the back: the bleachers, the team benches, the name board, the scoreboard.
 	var stands := Park.bleachers(p, st, 20.0, 4.95, 0.0, 6.0, 3)
 	Props.boombox(stands, Vector3(1.7, 1.315, -0.73), 8.0)
@@ -182,12 +204,14 @@ static func _court(p: Node3D, st: int) -> void:
 	Park.litter(n, p.pt(36.8, 18.6, 0.03), 17.0, 3)
 	Park.litter(n, p.pt(3.4, 12.6, 0.03), 23.0, 2)
 	# Along the near side: two long benches for watching from, backless so the
-	# camera sees over them, and a bin by the gate.
+	# camera sees over them. The bin for the gate stands out on the pavement to
+	# its left, where it never comes between the camera and him (inside, right of
+	# the gate, it hid his feet as he came in).
 	Props.bench(p, st, 12.0, 22.95, 0.0, 3.0, Color(0.2, 0.46, 0.32))
 	Props.bench(p, st, 28.0, 22.95, 0.0, 3.0, Color(0.2, 0.46, 0.32))
 	Kit.box(n, Vector3(0.36, 0.05, 0.26), p.pt(27.1, 22.95, 0.5), Color(0.85, 0.85, 0.82), Vector3(0, 14, 0))   # a folded newspaper
-	Park.barrel(p, st, 21.7, 22.95, Color(0.12, 0.42, 0.62), "PARKS")
-	Park.litter(n, p.pt(22.4, 23.0, 0.03), 31.0, 2)
+	Park.barrel(p, st, 18.2, 25.45, Color(0.12, 0.42, 0.62), "PARKS")
+	Park.litter(n, p.pt(17.5, 25.75, 0.03), 31.0, 2)
 
 
 ## The planted beds along the sides and the front: earth and grass behind a low
@@ -346,18 +370,39 @@ static func _houses(p: Node3D, st: int) -> void:
 		[44.2, 5.4, {"brick": form, "lit": ["u"], "door": red_door, "chimney": true}],
 		[49.6, 5.2, {"brick": brown, "fence": "wood", "door": green_door}],
 	]
-	# The ends of the row, plainer.
+	# The ends of the row: lived in like the middle, a little less to look at.
 	var looks := [brown, red, dark, form, red, white, brown, dark]
 	var fences := ["chain", "wood", "chain", "none", "chain", "wood"]
+	var dress_l := [
+		{"line": wash2, "extra": ["chair"], "chimney": true, "curtain": Color(0.4, 0.6, 0.85)},
+		{"bb": white, "awning": Color(0.2, 0.4, 0.7), "porch": true, "extra": ["planters"], "trim": Color(0.96, 0.95, 0.9)},
+		{"ac": true, "bars": true, "extra": ["grill"]},
+		{"bb": mint, "line": wash, "chimney": true, "curtain": Color(0.95, 0.85, 0.4)},
+		{"extra": ["bike"], "trim": Color(0.96, 0.95, 0.9), "bars": true, "storm": true},
+		{"porch": true, "extra": ["doghouse"], "awning": Color(0.75, 0.2, 0.18)},
+		{"bb": pink, "line": wash2, "ac": true, "chimney": true},
+		{"extra": ["trike", "planters"], "trim": Color(0.55, 0.3, 0.2)},
+	]
 	var u := -18.0
 	for i in 8:
 		var w := 5.0 + 0.2 * float((i * 3) % 3)
 		u -= w
-		row.push_front([u, w, {"brick": looks[i], "fence": fences[i % fences.size()], "lit": [["k"], [], ["cu"], [], ["u", "k"], [], ["c"], []][i], "cans": (i * 2) % 3, "cans_out": i % 2 == 0, "aerial": i % 3 == 1, "door": [green_door, red_door, blue_door, cream_door][i % 4]}])
+		var o := {"brick": looks[i], "fence": fences[i % fences.size()], "lit": [["k"], ["c"], ["cu"], ["k", "u"], ["u", "k"], ["c"], ["c"], ["cu"]][i], "cans": (i * 2) % 3, "cans_out": i % 2 == 0, "aerial": i % 3 == 1, "door": [green_door, red_door, blue_door, cream_door][i % 4]}
+		o.merge(dress_l[i])
+		row.push_front([u, w, o])
+	var dress_r := [
+		{"line": wash, "extra": ["grill"], "chimney": true, "curtain": Color(0.85, 0.3, 0.35)},
+		{"bb": yellow, "awning": Color(0.2, 0.55, 0.35), "porch": true, "trim": Color(0.96, 0.95, 0.9)},
+		{"ac": true, "extra": ["chair", "planters"], "bars": true},
+		{"bb": sky, "line": wash2, "chimney": true},
+		{"extra": ["trike"], "storm": true, "curtain": Color(0.4, 0.6, 0.85)},
+	]
 	u = 54.8
 	for i in 5:
 		var w := 5.2 - 0.2 * float(i % 2)
-		row.push_back([u, w, {"brick": looks[(i + 3) % looks.size()], "fence": fences[(i + 2) % fences.size()], "lit": [["u"], [], ["k", "c"], [], ["cu"]][i], "cans": (i + 1) % 3, "aerial": i % 2 == 0, "door": [red_door, cream_door, green_door, blue_door][i % 4]}])
+		var o := {"brick": looks[(i + 3) % looks.size()], "fence": fences[(i + 2) % fences.size()], "lit": [["u"], ["k"], ["k", "c"], ["cu"], ["cu"]][i], "cans": (i + 1) % 3, "aerial": i % 2 == 0, "door": [red_door, cream_door, green_door, blue_door][i % 4]}
+		o.merge(dress_r[i])
+		row.push_back([u, w, o])
 		u += w
 	# Which side each back building is on: they pair up, sharing a wall, and
 	# each pair shares a height. (Eight were put on the front: an even number,
@@ -371,3 +416,21 @@ static func _houses(p: Node3D, st: int) -> void:
 	# Two yard trees, over the fences.
 	Outdoor.tree(p, st, 11.6, -1.0, "d", 1.1, 15.0)
 	Outdoor.tree(p, st, 47.5, -1.2, "b", 0.78, 120.0)
+
+
+# ------------------------------------------------------------------- the night
+
+## The night over it all: the moon's cool light in place of main.gd's sun; the
+## trees of the houses' own street, beyond them, showing over the roofs; and
+## far off the city's glow on the sky, the moon, the towers on the skyline.
+static func _sky(p: Node3D, st: int) -> void:
+	var n: Node3D = p.node_of(st)
+	Outdoor.moonlight(n, 0.24)
+	var kinds := ["a", "b", "d", "a", "b", "d", "a"]
+	var i := 0
+	var u := -64.0
+	while u < 104.0:
+		Outdoor.tree(p, st, u + 3.0 * Props.rnd(u), -21.0 - 1.5 * Props.rnd(u * 1.7), kinds[i % kinds.size()], 0.95 + 0.25 * Props.rnd(u * 2.3), 37.0 * i)
+		u += 10.0 + 6.0 * Props.rnd(u * 3.1)
+		i += 1
+	Outdoor.backdrop(n, p.pt(20.0, BACKS), [Color(0.34, 0.2, 0.38), Color(0.16, 0.12, 0.26)], p.pt(-120.0, -500.0, 70.0), 3.0)

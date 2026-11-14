@@ -31,6 +31,7 @@ extends RefCounted
 
 const Props := preload("res://scripts/props.gd")
 const Wear := preload("res://scripts/props_clothes.gd")
+const In := preload("res://scripts/props_in.gd")
 
 const PURPLE := Color(0.36, 0.14, 0.5)
 const YELLOW := Color(1.0, 0.85, 0.2)
@@ -44,7 +45,7 @@ static func build(p: Node3D) -> void:
 	var teal := Kit.tex("painted_block", 1.2, Color(0.5, 0.78, 0.76), true, Color(0.62, 0.92, 0.88))
 	var lilac := Kit.tex("painted_block", 1.2, Color(0.6, 0.5, 0.8), true, Color(0.66, 0.56, 1.0))
 	var cream := Kit.tex("painted_block", 1.2, Color(0.72, 0.72, 0.64), true, Color(0.76, 0.8, 1.0))
-	var lino := Kit.tex("lino", 1.2, Color(0.7, 0.7, 0.72), true, Color(0.95, 0.95, 1.0))
+	var tiles := Kit.tex("in_check", 0.7, Color(0.5, 0.82, 0.8), true, Color(0.64, 0.96, 0.93))
 	var carpet := Kit.tex("carpet", 2.0, Color(0.42, 0.22, 0.34), true, Color(0.78, 0.5, 0.72))
 	var concrete := Kit.tex("sidewalk", 2.4, Color(0.55, 0.55, 0.55), true, Color(0.72, 0.72, 0.76))
 	var face := Kit.tex("stucco", 2.0, Color(0.3, 0.55, 0.55), true, Color(0.55, 0.85, 0.85))
@@ -57,7 +58,7 @@ static func build(p: Node3D) -> void:
 	var b2: int = p.band()
 	p.arrive = p.pt(7.85, 12.2)
 
-	p.room("SALES FLOOR", b1, 0, 3.8, 10, 11, lino, {"light": tube, "energy": 0.75})
+	p.room("SALES FLOOR", b1, 0, 3.8, 10, 11, tiles, {"light": tube, "energy": 0.75})
 	p.room("FITTING ROOMS", b2, 0, 0, 5.6, 3.8, carpet, {"light": Color(1.0, 0.9, 0.78), "energy": 0.5})
 	p.room("STOCK ROOM", b2, 5.6, 0, 10, 3.8, concrete, {"light": tube, "energy": 0.4})
 
@@ -78,6 +79,7 @@ static func build(p: Node3D) -> void:
 	_street(p, st, front)
 	_floor(p, b1)
 	_back(p, b2)
+	_dress(p, b1, b2)
 
 
 ## The shop door is mostly glass, with a push bar: added to the plain leaf
@@ -87,10 +89,58 @@ static func _glaze(door: Node3D, w: float, h: float) -> void:
 	Kit.box(door.leaf, Vector3(w - 0.22, 0.05, 0.14), Vector3(-w * 0.5, 1.02, 0), Color(0.78, 0.8, 0.84))
 
 
+## Painted block that comes out the colour asked for.
+static func _block(c: Color) -> Material:
+	return Kit.tex("block_plain", 1.2, c, true, c)
+
+
+## The rooms' walls, floors and lights (props_in.gd): the sales floor in the
+## shop's purple and yellow under confetti paper, on a teal floor, a runner from
+## the door to the counter; the fitting rooms in flowered paper over plum
+## panelling, gold and cream, lamps by the mirror; the stock room plain block
+## and a bare bulb. The display spotlights are the displays' own (props_clothes.gd).
+static func _dress(p: Node3D, b1: int, b2: int) -> void:
+	var n1: Node3D = p.node_of(b1)
+	var plum := Color(0.3, 0.12, 0.4)
+	var cream := Color(0.96, 0.93, 0.86)
+	# The sales floor. The wall mirror on the right wall hangs flat on it, so the
+	# paper stops round it (a bare "window" the mirror's size).
+	var sales := {"lower": _block(Color(0.5, 0.26, 0.66)), "dado": YELLOW, "dado_h": 0.08,
+			"upper": Kit.tex("in_memphis", 1.6, Color(0.96, 0.95, 0.9), true, Color(1, 1, 1)), "skirt": plum}
+	In.room_walls(p, b1, 0, 3.8, 10, 11, sales, [{"a": 1.0, "b": 2.2, "kind": "arch", "head": 2.25}], [],
+			[{"a": 6.403, "b": 6.897, "kind": "window", "sill": 0.353, "head": 1.947, "bare": true}])
+	In.border(p, b1, 0, 3.8, 10, 11, plum, 0.26)
+	In.mat(p, b1, 7.85, 7.9, 0.9, 4.4, Color(0.5, 0.26, 0.66), YELLOW)       # the runner, the door to the counter
+	In.mat(p, b1, 7.85, 10.46, 1.1, 0.64, Color(0.18, 0.17, 0.2), YELLOW)    # the doormat
+	In.neon_shape(n1, [[Vector2(0.07, 0.4), Vector2(-0.1, 0.02), Vector2(0.06, 0.04), Vector2(-0.08, -0.4)]], p.pt(0.5, 3.935, 1.62), Color(1.0, 0.3, 0.62))
+	Props.poster(p, b1, 7.55, 3.88, 0.0, 0.46, 0.7, GREEN, "", 1.55)
+	# The fitting rooms.
+	var fit := {"lower": Kit.tex("in_panel", 0.9, plum, true, Color(0.5, 0.3, 0.62)), "dado": Wear.GOLD,
+			"upper": Kit.tex("in_flower", 0.8, Color(0.94, 0.78, 0.9), true, Color(1.0, 0.84, 0.96)),
+			"skirt": plum, "cornice": cream, "surround": cream}
+	In.room_walls(p, b2, 0, 0, 5.6, 3.8, fit, [], [], [{"a": 2.5, "b": 3.4}])
+	In.border(p, b2, 0, 0, 5.6, 3.8, plum, 0.2)
+	In.picture(p, b2, 0.085, 1.45, 90.0, 0.44, 0.6, "face", Wear.GOLD, 1.6)
+	for v: float in [0.95, 1.95]:
+		In.sconce(p, b2, 0.085, v, 90.0, "shade", 2.05)
+	# The stock room.
+	var stock := {"lower": _block(Color(0.52, 0.54, 0.58)), "dado": YELLOW, "dado_h": 0.1,
+			"upper": _block(Color(0.94, 0.92, 0.84)), "skirt": Color(0.22, 0.22, 0.24), "surround": Color(0.6, 0.62, 0.66)}
+	In.room_walls(p, b2, 5.6, 0, 10, 3.8, stock, [], [{"a": 2.5, "b": 3.4}], [])
+	In.pegboard(p, b2, 5.685, 1.35, 90.0, 1.0, 0.7, 1.55, "tools")
+	In.pendant(p, b2, 7.8, 1.9, 2.25, Color(0.3, 0.3, 0.32), "bulb")
+	for k in 4:      # a keep-clear box where the door swings, hatched
+		var box: Array = [[6.15, 2.47, 0.84, 0.04], [6.15, 3.43, 0.84, 0.04], [6.55, 2.95, 0.04, 0.92], [5.75, 2.95, 0.04, 0.92]][k]
+		In.mat(p, b2, box[0], box[1], box[2], box[3], YELLOW)
+	for c: float in [2.6, 2.84, 3.08, 3.32, 3.56, 3.8]:      # each bar of the hatching cut to the box (u - v = c)
+		var u0 := maxf(5.77, c + 2.49)
+		var u1 := minf(6.53, c + 3.41)
+		In.hatch(p, b2, (u0 + u1) * 0.5, (u0 + u1) * 0.5 - c, 1, 0.05, (u1 - u0) * 1.414 - 0.07, 0.0, YELLOW, 45.0)
+
+
 static func _street(p: Node3D, st: int, front: Node3D) -> void:
 	var n: Node3D = p.node_of(st)
 	var steel := Color(0.56, 0.58, 0.62)
-	var cream := Color(0.9, 0.86, 0.76)
 	# The roll-down shutter: its housing over the window and the door, the
 	# bottom slat showing under it, a guide rail down each side of each opening.
 	p.slab(front, true, 11.26, 1.15, 8.55, 2.5, 2.86, 0.3, steel)
@@ -102,12 +152,30 @@ static func _street(p: Node3D, st: int, front: Node3D) -> void:
 		Kit.box(front, Vector3(0.06, 2.46, 0.07), p.pt(u, 11.145, 1.23), steel)
 	# The name: a lit box across the front, over the shutter.
 	Props.sign_box(front, "FRESH THREADS", p.pt(4.85, 11.14, 3.4), Vector2(7.6, 0.86), PURPLE, YELLOW, 0.0, 0.55, 0.56)
-	# Upstairs: two windows, one lit, and a cornice.
-	for u: float in [2.3, 7.7]:
-		p.slab(front, true, 11.08, u - 0.75, u + 0.75, 4.1, 5.5, 0.03, cream)
-		p.slab(front, true, 11.095, u - 0.65, u + 0.65, 4.2, 5.4, 0.03, Kit.flat(Color(1.0, 0.82, 0.55), 0.5) if u > 5.0 else Color(0.2, 0.24, 0.32))
-		p.slab(front, true, 11.11, u - 0.64, u + 0.64, 4.77, 4.83, 0.03, cream)
-	p.slab(front, true, 11.0, 0.0, 10.0, 6.2, 6.5, 0.4, Color(0.3, 0.28, 0.27))
+	# Under the window: a tiled stall riser on a dark plinth, a stone sill on it.
+	var stone := Color(0.93, 0.9, 0.82)
+	p.slab(front, true, 11.095, 1.36, 6.64, 0.06, 0.34, 0.04, Kit.tex("in_tile", 0.5, PURPLE, true, Color(0.72, 0.5, 0.95)))
+	p.slab(front, true, 11.1, 1.33, 6.67, 0.0, 0.06, 0.05, Color(0.16, 0.14, 0.2))
+	p.slab(front, true, 11.12, 1.3, 6.7, 0.34, 0.39, 0.09, stone)
+	# Upstairs: a stone belt course over the name, three windows on it (the
+	# middle and right ones lit, an air conditioner in the left), quoins up both
+	# corners, a cornice band, and a parapet stepped up in the middle with a
+	# tile diamond in it and one each side.
+	var mint := Kit.tex("stucco", 2.0, Color(0.3, 0.55, 0.55), true, Color(0.55, 0.85, 0.85))
+	p.slab(front, true, 11.105, 0.01, 9.99, 3.96, 4.08, 0.06, stone)
+	for k in 3:
+		In.front_window(p, front, [1.9, 5.0, 8.1][k], 11.0, 4.45, 1.2, 1.3, k > 0, Color(0.95, 0.95, 0.93), stone, "ac" if k == 0 else "", 2.0)
+	In.quoins(p, front, 11.0, 0.0, 0.0, 6.0, stone, -1.0, false)
+	In.quoins(p, front, 11.0, 9.99, 0.0, 6.0, stone, 1.0, false)      # their ends 1 cm short of the wall's
+	p.slab(front, true, 11.13, 0.0, 10.0, 6.03, 6.2, 0.11, stone)
+	p.slab(front, true, 11.0, 0.0, 10.0, 6.2, 6.7, 0.15, mint)
+	p.slab(front, true, 11.0, 0.0, 10.0, 6.7, 6.8, 0.27, stone)
+	p.slab(front, true, 11.0, 3.3, 6.7, 6.8, 7.3, 0.15, mint)
+	p.slab(front, true, 11.0, 3.24, 6.76, 7.3, 7.4, 0.27, stone)
+	for gem: Vector3 in [Vector3(5.0, 7.05, 0.28), Vector3(1.6, 6.45, 0.2), Vector3(8.4, 6.45, 0.2)]:
+		var tile := Kit.group(front, p.pt(gem.x, 11.075, gem.y), Vector3(0, 0, 45))
+		Kit.box(tile, Vector3(gem.z, gem.z, 0.03), Vector3(0, 0, 0.015), PURPLE)
+		Kit.box(tile, Vector3(gem.z * 0.5, gem.z * 0.5, 0.03), Vector3(0, 0, 0.03), YELLOW)
 	# In the window: the neon, a sale card. The dummies stand on the platform
 	# inside (built with the floor), but they belong to the front: from inside
 	# they go when the front does, and only the platform is left.
@@ -118,8 +186,17 @@ static func _street(p: Node3D, st: int, front: Node3D) -> void:
 	Wear.mannequin(front, p.pt(2.55, 10.5, 0.33), 14.0, RED, Wear.DARK, Wear.DARK, Wear.DENIM[0], [Wear.WHITE, RED], true)
 	Wear.mannequin(front, p.pt(4.0, 10.45, 0.33), 0.0, ROYAL, YELLOW, RED, Wear.DENIM[4], [Color(0.85, 0.66, 0.36), Color(0.42, 0.28, 0.16)], false, true)
 	Wear.mannequin(front, p.pt(5.45, 10.5, 0.33), -14.0, GREEN, YELLOW, YELLOW, Wear.DENIM[3], [Wear.DARK, YELLOW], true)
-	# Next door on the left: a check-cashing place. On the right: the row.
-	p.slab(n, true, 11.0, -12.0, 0.0, 0.0, 4.2, 0.15, Kit.tex("brick", 1.5, Color(0.5, 0.3, 0.24), true, Color(0.9, 0.8, 0.72)))
+	# Next door on the left: a check-cashing place, its window and door in stone,
+	# a brick parapet on top. On the right: the row.
+	var brick := Kit.tex("brick", 1.5, Color(0.5, 0.3, 0.24), true, Color(0.9, 0.8, 0.72))
+	p.slab(n, true, 11.0, -12.0, 0.0, 0.0, 4.2, 0.15, brick)
+	p.slab(n, true, 11.12, -9.12, -3.28, 2.4, 2.58, 0.09, stone)
+	p.slab(n, true, 11.13, -9.15, -3.25, 0.5, 0.6, 0.11, stone)
+	for u: float in [-2.96, -1.88]:
+		p.slab(n, true, 11.11, u, u + 0.14, 0.0, 2.12, 0.07, stone)
+	p.slab(n, true, 11.12, -3.0, -1.7, 2.12, 2.3, 0.09, stone)
+	p.slab(n, true, 11.0, -12.0, 0.0, 4.2, 4.72, 0.15, brick)
+	p.slab(n, true, 11.0, -12.0, -0.01, 4.72, 4.82, 0.27, stone)
 	p.slab(n, true, 11.085, -9.0, -3.4, 0.7, 2.3, 0.03, Kit.flat(Color(0.95, 0.95, 0.85), 0.8))
 	for i in 15:
 		var bu := -8.86 + i * 0.37
@@ -129,7 +206,6 @@ static func _street(p: Node3D, st: int, front: Node3D) -> void:
 	Props.words(n, "MONEY ORDERS  -  FOOD STAMPS", p.pt(-6.2, 11.155, 1.95), 0.15, Color(0.75, 0.1, 0.1))
 	p.slab(n, true, 11.1, -2.8, -1.9, 0.0, 2.1, 0.03, Color(0.45, 0.47, 0.5))
 	Props.sign_box(n, "CHECKS CASHED", p.pt(-6.0, 11.14, 3.05), Vector2(5.2, 0.62), YELLOW, Color(0.1, 0.2, 0.45), 0.0, 0.6)
-	p.slab(n, true, 11.0, -12.0, 0.0, 4.2, 4.45, 0.35, Color(0.3, 0.28, 0.27))
 	var old_brick := Kit.tex("brick", 1.5, Color(0.4, 0.22, 0.2), true, Color(0.72, 0.68, 0.74))
 	Props.rowhouse(p, n, 10.0, 11.0, old_brick, false, true)
 	Props.rowhouse(p, n, 15.0, 11.0, Kit.tex("painted_block", 0.7, Color(0.62, 0.6, 0.56), true, Color(0.75, 0.78, 0.86)), true)

@@ -12,6 +12,7 @@ extends RefCounted
 ## the back wall; the street is at v = 18.
 
 const Props := preload("res://scripts/props.gd")
+const In := preload("res://scripts/props_in.gd")
 const WHITE := Color(0.9, 0.92, 0.9)
 
 
@@ -24,6 +25,9 @@ static func build(p: Node3D) -> void:
 	var lino_blue := Kit.tex("lino", 1.6, Color(0.5, 0.6, 0.66), true, Color(0.7, 0.86, 0.95))
 	var concrete := Kit.tex("sidewalk", 2.4, Color(0.55, 0.55, 0.55), true, Color(0.72, 0.72, 0.76))
 	var panel := Kit.tex("sidewalk", 3.0, Color(0.74, 0.76, 0.78), true, Color(0.95, 0.97, 1.0))       # concrete panels
+	var terrazzo := Kit.tex("in_terrazzo", 1.4, Color(0.84, 0.8, 0.72), true, Color(0.95, 0.92, 0.85))
+	var lino_cool := Kit.tex("lino", 1.6, Color(0.62, 0.7, 0.8), true, Color(0.8, 0.9, 1.0))
+	var check := Kit.tex("in_check", 0.6, Color(0.8, 0.56, 0.36), true, Color(0.98, 0.74, 0.5))         # the staff room's orange tiles
 	var tube := Color(0.96, 0.99, 1.0)
 	var frame := Color(0.5, 0.54, 0.56)
 	var ward_door := Color(0.6, 0.7, 0.72)
@@ -34,12 +38,12 @@ static func build(p: Node3D) -> void:
 	var b3: int = p.band()
 	p.arrive = p.pt(12.5, 19.2)
 
-	p.room("TRIAGE", b1, 0, 12.5, 7.5, 18, lino, {"light": tube})
-	p.room("WAITING ROOM", b1, 7.5, 12.5, 18, 18, lino, {"light": tube, "energy": 0.6})
+	p.room("TRIAGE", b1, 0, 12.5, 7.5, 18, lino_cool, {"light": tube})
+	p.room("WAITING ROOM", b1, 7.5, 12.5, 18, 18, terrazzo, {"light": tube, "energy": 0.6})
 	p.room("TRAUMA ROOM", b2, 0, 6.5, 6, 12.5, lino_blue, {"light": tube, "energy": 0.6})
 	p.room("TREATMENT", b2, 6, 6.5, 18, 12.5, lino, {"light": tube, "energy": 0.7})
 	p.room("AMBULANCE BAY", b3, 0, 0, 7, 6.5, concrete, {"light": tube, "energy": 0.45})
-	p.room("STAFF ROOM", b3, 7, 0, 13.5, 6.5, lino, {"light": Color(1.0, 0.92, 0.78), "energy": 0.45})
+	p.room("STAFF ROOM", b3, 7, 0, 13.5, 6.5, check, {"light": Color(1.0, 0.92, 0.78), "energy": 0.45})
 	p.room("SUPPLY ROOM", b3, 13.5, 0, 18, 6.5, concrete, {"light": tube, "energy": 0.4})
 
 	var front: Node3D = p.cross(b1, 18.0, 0, 18, panel, [
@@ -79,6 +83,7 @@ static func build(p: Node3D) -> void:
 	_front_rooms(p, b1)
 	_ward(p, b2)
 	_back(p, b3)
+	_dress(p, b1, b2, b3)
 
 
 static func _street(p: Node3D, st: int, front: Node3D, panel: Variant) -> void:
@@ -86,29 +91,103 @@ static func _street(p: Node3D, st: int, front: Node3D, panel: Variant) -> void:
 	var red := Color(0.8, 0.12, 0.1)
 	var dark_glass := Color(0.2, 0.24, 0.32)
 	var lit_glass := Kit.flat(Color(0.95, 0.95, 0.8), 0.5)
-	# Four more floors of wards over the door, the name, the canopy and its sign.
+	var white := Color(0.93, 0.92, 0.88)           # the concrete frame
+	var enamel := Color(0.22, 0.6, 0.66)           # the panels between the bands of windows
+	var alu := Color(0.8, 0.82, 0.84)
+	# Four more floors of wards over the door: a white concrete frame standing
+	# out from the wall (a deep beam over the ground floor, a fin between each
+	# bay, a flat roof reaching out over them), turquoise enamel panels between
+	# the bands of windows, three panes to a bay, lit or dark as before.
 	p.slab(front, true, 18.0, -0.05, 18.05, 4.2, 13.2, 0.3, panel)
+	var bay := 18.0 / 7.0
+	p.slab(front, true, 18.3, -0.14, 18.14, 4.2, 4.95, 0.3, white)                   # the beam
+	p.slab(front, true, 18.3, -0.3, 18.3, 12.9, 13.4, 0.9, white)                     # the roof
+	for k in 8:                                                                       # the fins, wider at the corners
+		var u := k * bay
+		p.slab(front, true, 18.29, u - 0.16 if k > 0 else -0.12, u + 0.16 if k < 7 else 18.12, 4.5, 13.0, 0.28, white)
+	var blind := Kit.flat(Color(0.98, 0.94, 0.8), 0.45)
 	for row in 4:
+		var y0: float = 4.95 + row * 2.2
+		var y1 := y0 + 1.35
+		if row > 0:          # the enamel under the band, the sill along it
+			p.slab(front, true, 18.2, -0.04, 18.04, y0 - 0.85, y0, 0.1, enamel)
+			p.slab(front, true, 18.23, -0.03, 18.03, y0 - 0.06, y0 + 0.01, 0.16, white)
 		for col in 7:
-			var u: float = 1.3 + col * 2.4
-			var y: float = 5.0 + row * 2.2
-			p.slab(front, true, 18.16, u, u + 1.5, y, y + 1.2, 0.02, lit_glass if Props.rnd(col * 3.7 + row * 9.1) > 0.45 else dark_glass)
+			var a := col * bay + 0.15
+			var e := (col + 1) * bay - 0.15
+			var pane := (e - a) / 3.0
+			var lit := Props.rnd(col * 3.7 + row * 9.1) > 0.45
+			p.slab(front, true, 18.16, a, e, y0, y1, 0.02, lit_glass if lit else dark_glass)
+			for k in 2:
+				var x := a + pane * (k + 1)
+				p.slab(front, true, 18.19, x - 0.025, x + 0.025, y0, y1, 0.04, alu)
+			var pick := int(Props.rnd(col * 1.3 + row * 4.7) * 3.0) % 3
+			if lit:          # a blind half down in one pane; in the next, ward curtains drawn back
+				p.slab(front, true, 18.174, a + pane * pick + 0.03, a + pane * (pick + 1) - 0.03, y1 - 0.6, y1 - 0.03, 0.008, blind)
+				var c0 := a + pane * ((pick + 1) % 3)
+				var cloth := Kit.flat([Color(0.6, 0.78, 0.9), Color(0.96, 0.72, 0.68), Color(0.7, 0.88, 0.72)][(col + row) % 3], 0.3)
+				p.slab(front, true, 18.174, c0 + 0.03, c0 + 0.2, y0 + 0.03, y1 - 0.03, 0.008, cloth)
+				p.slab(front, true, 18.174, c0 + pane - 0.2, c0 + pane - 0.03, y0 + 0.03, y1 - 0.03, 0.008, cloth)
+			else:            # a gleam on the dark glass
+				p.slab(front, true, 18.174, a + pane * pick + 0.06, a + pane * pick + 0.26, y0 + 0.2, y1 - 0.25, 0.008, Color(0.3, 0.35, 0.46))
+	# On the roof: a radio mast for the ambulances, a windsock.
+	In.mast(p, front, 15.6, 18.3, 13.4, 3.0)
+	var sock := Kit.group(front, p.pt(2.2, 18.4, 13.4))
+	Kit.cyl(sock, 0.03, 2.2, Vector3(0, 1.1, 0), Props.STEEL, Vector3.ZERO, 6)
+	var cone := Kit.group(sock, Vector3(0, 2.1, 0), Vector3(0, 30, -78))
+	for k in 4:          # each ring narrower than the one nearer the pole
+		Kit.cyl(cone, 0.16 - (k + 1) * 0.025, 0.24, Vector3(0, -0.13 - k * 0.24, 0), Color(0.98, 0.5, 0.12) if k % 2 == 0 else Color(0.97, 0.96, 0.92), Vector3.ZERO, 10, 0.16 - k * 0.025)
+	# The ground floor faced in pale stone over a granite plinth, a white frame
+	# round each opening; the name, the canopy and its sign.
+	In.dress(p, front, true, 18.0, 1.0, 0.01, 17.99, [
+		{"a": 1.5, "b": 5.5, "kind": "window", "sill": 1.1, "head": 2.3},
+		{"a": 8.6, "b": 10.6, "kind": "window", "sill": 0.9, "head": 2.3},
+		{"a": 11.6, "b": 13.4, "kind": "double", "head": 2.3},
+		{"a": 14.6, "b": 16.8, "kind": "window", "sill": 0.9, "head": 2.3},
+	], {"lower": Color(0.3, 0.31, 0.35), "dado_y": 0.5, "upper": Kit.tex("in_ashlar", 1.6, Color(0.86, 0.84, 0.78), true, Color(0.97, 0.95, 0.9)), "h": 4.2, "surround": white})
 	Props.words(front, "CATOR-ELKADER HOSPITAL", p.pt(5.2, 18.09, 3.45), 0.3, Color(0.25, 0.3, 0.36))
 	Kit.box(front, Vector3(4.6, 0.25, 1.8), p.pt(12.5, 18.9, 2.95), Color(0.86, 0.86, 0.84))
+	for x: float in [11.1, 13.9]:          # lights in the canopy's underside
+		for z: float in [18.5, 19.3]:
+			Kit.cyl(front, 0.13, 0.02, p.pt(x, z, 2.82), Kit.flat(In.WARM, 1.6), Vector3.ZERO, 12)
 	Props.sign_box(front, "EMERGENCY", p.pt(12.5, 19.87, 2.95), Vector2(3.6, 0.5), red, Color(0.98, 0.96, 0.92))
 	for u: float in [10.4, 14.6]:
 		var post: Node3D = p.prop(st, u, 19.62, 0.0, 0.2, 0.2)
 		Kit.cyl(post, 0.07, 2.83, Vector3(0, 1.415, 0), Color(0.5, 0.54, 0.56), Vector3.ZERO, 8)
-	# The rest of the hospital on the left; the ambulance ramp on the right.
-	p.slab(n, true, 18.0, -12.0, 0.0, 0.0, 13.2, 0.15, panel)
+	# The rest of the hospital on the left: the old building, in brick, stone
+	# round its windows, up its corner and along its top.
+	var stone := Color(0.88, 0.85, 0.78)
+	p.slab(n, true, 18.0, -12.0, 0.0, 0.0, 13.0, 0.15, Kit.tex("brick", 1.5, Color(0.6, 0.3, 0.24), true, Color(0.82, 0.48, 0.4)))
+	p.slab(n, true, 18.095, -12.0, -0.01, 0.0, 0.6, 0.04, stone.darkened(0.18))       # the plinth
+	p.slab(n, true, 18.095, -12.0, -0.01, 3.2, 3.36, 0.04, stone)                     # a band over the ground floor
 	for row in 5:
 		for col in 4:
-			var u: float = -11.0 + col * 2.8
+			var u: float = -11.0 + col * 2.8 + 0.85
 			var y: float = 1.2 + row * 2.2 + (0.4 if row > 0 else 0.0)
-			p.slab(n, true, 18.085, u, u + 1.7, y, y + 1.2, 0.02, lit_glass if Props.rnd(col * 5.3 + row * 2.9) > 0.5 else dark_glass)
+			In.front_window(p, n, u, 18.0, y, 1.3, 1.25, Props.rnd(col * 5.3 + row * 2.9) > 0.5, Color(0.95, 0.93, 0.88), stone, "", col + row * 4.0)
+	In.quoins(p, n, 18.0, -12.0, 0.6, 12.5, stone, -1.0, false)
+	In.cornice(p, n, 18.0, -12.0, -0.45, 13.2, Color(0.8, 0.77, 0.7), stone, 0.42)
+	# The ambulance ramp on the right: a concrete frame round its mouth with
+	# striped guards on the jambs, the height bar hanging in it on chains, a
+	# lamp each side, a coping along the top.
 	p.slab(n, true, 18.0, 18.0, 30.0, 0.0, 4.2, 0.15, Kit.tex("sidewalk", 2.4, Color(0.55, 0.55, 0.55), true, Color(0.8, 0.8, 0.8)))
 	p.slab(n, true, 18.085, 19.6, 25.0, 0.0, 2.9, 0.03, Color(0.07, 0.07, 0.1))
 	Props.words(n, "AMBULANCES ONLY", p.pt(22.3, 18.09, 3.45), 0.3, red)
+	var hazard := Kit.tex("in_hazard", 0.8, Color(0.92, 0.75, 0.16), true, Color.WHITE)
+	for x: Array in [[19.25, 19.6], [25.0, 25.35]]:
+		p.slab(n, true, 18.135, x[0], x[1], 0.0, 2.9, 0.12, white)
+		p.slab(n, true, 18.2, x[0] + 0.03, x[1] - 0.03, 0.0, 2.6, 0.01, hazard)
+	p.slab(n, true, 18.135, 19.25, 25.35, 2.9, 3.12, 0.12, white)
+	p.slab(n, true, 18.0, 18.11, 30.04, 4.2, 4.3, 0.27, white)
+	var bar := Kit.group(n, p.pt(22.3, 18.42, 2.6))
+	Kit.box(bar, Vector3(5.0, 0.1, 0.1), Vector3.ZERO, Color(0.96, 0.96, 0.94))
+	for k in 6:
+		Kit.box(bar, Vector3(0.42, 0.11, 0.11), Vector3(-2.1 + k * 0.84, 0, 0), red)
+	for s: float in [-1.0, 1.0]:
+		Kit.cyl(bar, 0.012, 0.32, Vector3(s * 2.2, 0.21, 0), Props.IRON, Vector3.ZERO, 4)
+		Kit.box(bar, Vector3(0.06, 0.06, 0.26), Vector3(s * 2.2, 0.4, -0.11), Props.IRON)
+	for u: float in [18.95, 25.65]:
+		In.sconce(p, n, u, 18.075, 0.0, "cage", 3.5)
 	# On the pavement and at the kerb.
 	Props.bench(p, st, 9.6, 18.42, 0.0, 2.0, Props.IRON, true)
 	Props.bin(p, st, 15.6, 18.45)
@@ -237,3 +316,113 @@ static func _back(p: Node3D, b: int) -> void:
 	Props.oxygen(p, b, 17.5, 5.9, 2)
 	Props.boxes(p, b, 16.9, 3.3, 4)
 	Props.bucket(p, b, 17.4, 1.6)
+
+
+## Painted block in one colour.
+static func _block(c: Color) -> Material:
+	return Kit.tex("block_plain", 1.2, c, true, c)
+
+
+## Each room's own colours on its walls, a border or a patch on its floor, its
+## lights, and what hangs on its walls.
+static func _dress(p: Node3D, b1: int, b2: int, b3: int) -> void:
+	var n1: Node3D = p.node_of(b1)
+	var n2: Node3D = p.node_of(b2)
+	var n3: Node3D = p.node_of(b3)
+	var cream := Color(0.97, 0.95, 0.88)
+	var navy := Color(0.12, 0.2, 0.38)
+	var red := Color(0.84, 0.14, 0.12)
+	var teal := Color(0.18, 0.58, 0.6)
+	var yellow := Color(0.98, 0.8, 0.15)
+	var steel := Props.STEEL
+	# The waiting room: violet block under an orange bumper rail, a red and a
+	# teal stripe over it to follow round the walls, butter yellow above; a red
+	# line on the floor from the door to the registration window.
+	var waiting := {"lower": _block(Color(0.5, 0.4, 0.7)), "upper": _block(Color(1.0, 0.9, 0.6)),
+			"dado": Color(0.94, 0.52, 0.16), "dado_y": 0.8, "dado_h": 0.14, "dado_d": 0.05, "dado_line": Color(0.72, 0.32, 0.1),
+			"bands": [[red, 0.06], [cream, 0.03], [teal, 0.06]],
+			"skirt": Color(0.24, 0.18, 0.4), "skirt_h": 0.12, "cornice": cream, "surround": cream}
+	In.room_walls(p, b1, 7.5, 12.5, 18.0, 18.0, waiting, [{"a": 9.4, "b": 11.2, "kind": "double", "head": 2.2}],
+			[{"a": 14.4, "b": 16.4, "kind": "window", "sill": 1.0, "head": 2.0, "bare": true}, {"a": 16.8, "b": 17.7}], [])
+	In.border(p, b1, 7.5, 12.5, 18.0, 18.0, navy, 0.22)
+	In.mat(p, b1, 12.3, 16.595, 0.1, 2.19, red)
+	In.mat(p, b1, 10.15, 15.45, 4.4, 0.1, red)
+	for s: float in [-1.0, 1.0]:          # its arrowhead
+		Kit.box(n1, Vector3(0.32, 0.009, 0.1), p.pt(8.05, 15.45 + s * 0.1, 0.0045), red, Vector3(0, s * 35.0, 0))
+	In.strip_light(p, b1, 10.4, 15.0, 0.0, 1.4, 2.55)
+	In.strip_light(p, b1, 15.2, 15.0, 0.0, 1.4, 2.55)
+	In.picture(p, b1, 16.95, 12.585, 0.0, 0.8, 0.6, "map", steel, 1.55)
+	In.picture(p, b1, 17.915, 15.3, 270.0, 1.3, 0.8, "hills", Color(0.96, 0.96, 0.94), 1.75)
+	In.gel(p, b1, 9.09, 12.585, 0.0, 1.35)
+	# Triage: pale blue tiles to a navy rail, white block over them.
+	var triage := {"lower": Kit.tex("in_tile", 0.6, Color(0.62, 0.8, 0.92), true, Color(0.74, 0.9, 1.0)), "upper": _block(Color(0.96, 0.97, 0.99)),
+			"dado": navy, "dado_y": 1.2, "skirt": navy, "skirt_h": 0.12, "cornice": cream, "surround": steel}
+	In.room_walls(p, b1, 0.0, 12.5, 7.5, 18.0, triage, [{"a": 6.3, "b": 7.2}], [],
+			[{"a": 14.4, "b": 16.4, "kind": "window", "sill": 1.0, "head": 2.0}, {"a": 16.8, "b": 17.7}])
+	In.border(p, b1, 0.0, 12.5, 7.5, 18.0, navy, 0.12)
+	In.strip_light(p, b1, 3.4, 15.2, 0.0, 1.4, 2.55)
+	In.gloves(p, b1, 2.3, 12.585, 0.0, 1.55)
+	In.sharps(p, b1, 3.3, 12.585, 0.0, 1.5)
+	In.diagnostic(p, b1, 0.085, 15.3, 90.0, 1.5)
+	Kit.box(n1, Vector3(0.19, 0.012, 0.9), p.pt(7.5, 17.25, 0.006), steel)            # the threshold to the waiting room
+	# The trauma room: surgical green tiles to a dark green rail at 2 m.
+	var trauma := {"lower": Kit.tex("in_tile", 0.6, Color(0.44, 0.7, 0.6), true, Color(0.58, 0.86, 0.72)), "upper": _block(Color(0.86, 0.96, 0.9)),
+			"dado": Color(0.14, 0.4, 0.32), "dado_y": 2.0, "skirt": Color(0.12, 0.32, 0.26), "skirt_h": 0.12, "cornice": Color(0.92, 0.98, 0.95), "surround": steel}
+	In.room_walls(p, b2, 0.0, 6.5, 6.0, 12.5, trauma, [{"a": 2.4, "b": 4.2, "kind": "double", "head": 2.2}], [], [{"a": 10.4, "b": 11.5}])
+	In.border(p, b2, 0.0, 6.5, 6.0, 12.5, Color(0.14, 0.4, 0.32), 0.18)
+	In.strip_light(p, b2, 1.3, 9.6, 90.0, 1.4, 2.6)
+	In.gloves(p, b2, 0.085, 9.25, 90.0, 1.5)
+	In.sharps(p, b2, 0.085, 9.8, 90.0, 1.45)
+	In.gel(p, b2, 0.085, 11.8, 90.0, 1.35)
+	# Treatment: coral block under a teal bumper rail, peach over it; a pale
+	# patch on the floor under each bay, a bed-head unit over each bed, a light
+	# over each.
+	var ward := {"lower": _block(Color(0.92, 0.56, 0.46)), "upper": _block(Color(1.0, 0.92, 0.82)),
+			"dado": Color(0.24, 0.58, 0.56), "dado_y": 0.8, "dado_h": 0.14, "dado_d": 0.028, "dado_line": Color(0.14, 0.4, 0.38),
+			"skirt": Color(0.5, 0.24, 0.2), "skirt_h": 0.12, "cornice": cream}
+	In.room_walls(p, b2, 6.0, 6.5, 18.0, 12.5, ward, [{"a": 7.6, "b": 8.5}], [{"a": 10.4, "b": 11.5}], [])
+	In.border(p, b2, 6.0, 6.5, 18.0, 12.5, Color(0.24, 0.58, 0.56), 0.18)
+	for i in 3:
+		var u: float = 10.5 + i * 3.0
+		In.mat(p, b2, u, 7.75, 2.7, 2.2, [Color(0.8, 0.9, 0.96), Color(0.98, 0.92, 0.72), Color(0.82, 0.88, 1.0)][i], Color(0.24, 0.58, 0.56))
+		In.bedhead(p, b2, u, 6.585, 0.0, 1.1, 1.62)
+		In.strip_light(p, b2, u, 9.4, 0.0, 1.3, 2.55)
+	In.gel(p, b2, 17.915, 10.6, 270.0, 1.35)
+	Kit.box(n2, Vector3(1.8, 0.012, 0.19), p.pt(10.3, 12.5, 0.006), steel)            # the thresholds: the ward doors,
+	Kit.box(n2, Vector3(0.9, 0.012, 0.19), p.pt(6.75, 12.5, 0.006), steel)            # triage's back door,
+	Kit.box(n2, Vector3(0.19, 0.012, 1.1), p.pt(6.0, 10.95, 0.006), steel)            # trauma to treatment
+	# The ambulance bay: slate block, a yellow band, striped guards on the
+	# roll-up door's jambs, cage lamps; yellow lines on the floor.
+	var bay := {"lower": _block(Color(0.42, 0.44, 0.5)), "upper": _block(Color(0.88, 0.89, 0.9)),
+			"dado": yellow, "dado_y": 1.2, "dado_h": 0.12, "dado_d": 0.02, "skirt": Color(0.2, 0.2, 0.22), "skirt_h": 0.12}
+	In.room_walls(p, b3, 0.0, 0.0, 7.0, 6.5, bay, [{"a": 1.4, "b": 5.6, "kind": "window", "sill": 0.0, "head": 2.7, "bare": true}], [], [{"a": 3.0, "b": 3.9}])
+	var hazard := Kit.tex("in_hazard", 0.8, yellow, true, Color.WHITE)
+	for x: Array in [[1.03, 1.33], [5.67, 5.97]]:
+		p.slab(n3, true, 0.093, x[0], x[1], 0.0, 2.6, 0.04, hazard)
+	for u: float in [0.7, 6.3]:
+		In.sconce(p, b3, u, 0.075, 0.0, "cage", 2.45)
+	In.extinguisher(p, b3, 6.915, 1.7, 270.0, 0.6)
+	In.mat(p, b3, 1.2, 1.9, 0.08, 3.4, yellow)
+	In.mat(p, b3, 5.8, 1.9, 0.08, 3.4, yellow)
+	for e: Array in [[3.3, 5.3, 2.0, 0.06], [3.3, 6.34, 2.0, 0.06], [2.33, 5.82, 0.06, 0.98], [4.27, 5.82, 0.06, 0.98]]:
+		In.mat(p, b3, e[0], e[1], e[2], e[3], yellow)          # keep the doors clear
+	In.hatch(p, b3, 2.75, 5.82, 4, 0.06, 0.7, 0.34, yellow, 45.0)
+	Kit.box(n3, Vector3(1.8, 0.012, 0.19), p.pt(3.3, 6.5, 0.006), steel)            # the thresholds: the bay to trauma,
+	Kit.box(n3, Vector3(0.9, 0.012, 0.19), p.pt(8.05, 6.5, 0.006), steel)           # treatment to the staff room,
+	Kit.box(n3, Vector3(0.19, 0.012, 0.9), p.pt(7.0, 3.45, 0.006), steel)           # the bay to the staff room,
+	Kit.box(n3, Vector3(0.19, 0.012, 0.9), p.pt(13.5, 3.45, 0.006), steel)          # the staff room to supplies
+	# The staff room: wood panelling, avocado over it, an orange lamp over the
+	# table, the sea over the couch, the phone by the door.
+	var walnut := Color(0.36, 0.2, 0.12)
+	var staff := {"lower": Kit.tex("in_panel", 0.8, Color(0.5, 0.32, 0.2), true, Color(0.72, 0.48, 0.3)), "upper": _block(Color(0.74, 0.78, 0.42)),
+			"dado": walnut, "dado_y": 1.0, "skirt": walnut.darkened(0.2), "skirt_h": 0.12, "cornice": cream, "surround": walnut}
+	In.room_walls(p, b3, 7.0, 0.0, 13.5, 6.5, staff, [], [{"a": 3.0, "b": 3.9}], [{"a": 3.0, "b": 3.9}])
+	In.pendant(p, b3, 10.2, 3.6, 1.95, Color(0.95, 0.5, 0.15), "cone", In.WARM, 0.3)
+	In.picture(p, b3, 11.9, 0.085, 0.0, 1.0, 0.6, "sea", Color(0.62, 0.42, 0.24), 1.55)
+	In.wall_phone(p, b3, 7.085, 2.5, 90.0, 1.5)
+	# The supply room: slate blue block, a yellow line, a bare bulb.
+	var supply := {"lower": _block(Color(0.46, 0.52, 0.64)), "upper": _block(Color(0.9, 0.9, 0.88)),
+			"dado": yellow, "dado_y": 1.2, "dado_h": 0.1, "dado_d": 0.02, "skirt": Color(0.2, 0.2, 0.22), "skirt_h": 0.12, "surround": steel}
+	In.room_walls(p, b3, 13.5, 0.0, 18.0, 6.5, supply, [], [{"a": 3.0, "b": 3.9}], [])
+	In.pendant(p, b3, 15.75, 3.2, 2.25, steel, "bulb")
+	In.extinguisher(p, b3, 17.915, 4.6, 270.0, 0.6)
