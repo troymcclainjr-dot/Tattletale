@@ -25,6 +25,7 @@ const BEAT := 60.0 / 92.0     # seconds: the tempo he performs to at a microphon
 const ARM_ROOM := 0.45        # the card is this much wider than the drawing at each side, so a raised arm is not cut off
 const RUN := 1.8              # sprinting covers the ground this many times faster than walking
 const RUN_STEPS := 1.38       # and the steps come this much faster; the rest of the speed is a longer stride
+const SLOT_ID := {"hat": 1, "jacket": 2, "shirt": 3, "trousers": 4, "shoes": 5}      # a wardrobe slot's number on the card (REGIONS)
 const REGIONS := ["", "hat", "jacket", "shirt", "trousers", "shoes", "sleeve"]     # the clothes a drawing can have (outfit.py), by number
 const ARM_BEND := 0.1            # an arm swinging at his side has turned all the way this far from its shoulder (paper_card.gdshader's arm_reach)
 const ARM_BEND_HELD := 0.06     # holding something it turns at the shoulder, stiffly, or it would hook
@@ -56,6 +57,10 @@ const LEAD_ARM := 0.083       # metres: how thick the lead's arm is drawn. What 
 ##   under  seen from the back, both hands on it in front of him: it goes behind him, the fists are not drawn, and his
 ##          arms go to spots of their own behind his body: "grip" for the arm that holds it, "fore_at" for the other
 ##          (each from its own shoulder), while "at" says where the thing's grip is (from the holding arm's shoulder)
+##   art    which drawing of the thing this pose shows: "toward" is the muzzle-on one (weapons.json); left out, the side-on one
+##   hidden the thing and its fists are not drawn at all (pointed away from us, his body is in the way)
+## view_carry is how it is carried and view_aim how it is pointed across the screen; view_point is how it is pointed
+## along the line of sight: front_point at the camera, back_point away from it (aim_way).
 ## A thing with a "fore" point (weapons.json) is held with both hands: the other fist goes there.
 const HOLDS := {
 	"pistol": {
@@ -64,6 +69,8 @@ const HOLDS := {
 		"front_carry": {"angle": 82.0, "flip": true},
 		"front_aim": {"grip": [-1.18, -0.06], "angle": 0.0, "flip": true, "curl": -0.2},
 		"back_carry": {"angle": 82.0, "arm": "r"},
+		"front_point": {"art": "toward", "grip": [0.56, 0.46], "angle": 0.0, "flip": true},
+		"back_point": {"hidden": true, "under": true, "arm": "r", "grip": [-0.6, 0.3], "curl": -0.5},
 	},
 	"uzi": {
 		"side_carry": {"grip": [0.74, 1.08], "angle": 52.0, "curl": 0.3},
@@ -71,16 +78,22 @@ const HOLDS := {
 		"front_carry": {"angle": 80.0, "flip": true, "gun_under": true},
 		"front_aim": {"grip": [-1.12, 0.04], "angle": 0.0, "flip": true, "curl": -0.3},
 		"back_carry": {"angle": 80.0, "arm": "r", "gun_under": true},
+		"front_point": {"art": "toward", "grip": [0.56, 0.5], "angle": 0.0, "flip": true},
+		"back_point": {"hidden": true, "under": true, "arm": "r", "grip": [-0.6, 0.3], "curl": -0.5},
 	},
 	"ak": {
 		"side_carry": {"grip": [0.62, 1.02], "angle": 20.0, "curl": 0.5, "fore_curl": 0.3, "far": [0.45, 0.6], "over": true},
 		"side_aim": {"grip": [0.98, 0.84], "angle": 0.0, "curl": 0.72, "fore_curl": 0.35, "far": [0.45, 0.78], "over": true},
 		"front_carry": {"grip": [0.44, 1.0], "angle": -21.0, "curl": 0.0, "fore_curl": -0.7},
 		"back_carry": {"at": [-0.44, 1.0], "angle": -24.0, "flip": true, "arm": "r", "grip": [-0.5, 0.96], "curl": -0.3, "fore_at": [0.45, 0.86], "fore_curl": 0.3, "under": true},
+		"front_point": {"art": "toward", "grip": [0.42, 1.24], "angle": 0.0, "curl": 0.0, "fore_curl": 0.0},
+		"back_point": {"hidden": true, "under": true, "arm": "r", "grip": [-0.62, 0.3], "curl": -0.9, "fore_at": [0.62, 0.3], "fore_curl": 0.9},
 	},
 }
 
 static var _weapon_data := {}       # assets/weapons/weapons.json, read once
+static var _layers := {}            # wardrobe layers already read: path -> Image
+static var _stacks := {}            # stacks already made: who and what is worn -> _stack
 static var _holds_for := {}         # assets/weapons/holds_for.json, read with it: one character's own numbers for a hold
 
 ## Something the player can use, like a door: with a name set, E talks to it.
@@ -97,6 +110,8 @@ var performing := false                          # at a microphone: he bobs to t
 var sprinting := false                           # running: faster, longer steps, more lean, arms pumping
 var weapon := ""                                 # what is in his hands: "" nothing, "pistol", "uzi" or "ak" (assets/weapons)
 var aiming := false                              # he points it. Side-on if he has a side drawing; not while walking towards or away
+var aim_way := ""                                # along the line of sight instead: "toward" the camera or "away" from it ("": across the screen)
+var aim_pitch := 0.0                             # side-on, how far above level he points it, radians (below zero: down)
 var aim_to := 0.0                                # which side of the screen he points it at (-1 left, 1 right); 0: the way he is facing
 var reach := REACH                               # how far the drawing reaches either side of its middle, metres
 var face: Node3D            # the loose face parts, or null when the drawing has its face baked in
@@ -119,6 +134,10 @@ var _run := 0.0             # 0 walking .. 1 running; eases
 var _armed := 0.0           # 0 hands empty .. 1 the thing is in his hands; eases
 var _aim := 0.0             # 0 carrying it .. 1 pointing it; eases
 var _rig := {}              # rig.json
+var _dir := ""              # the folder it came from, whole
+var _wardrobe := {}         # wardrobe.json beside it, if its clothes are layers (has_wardrobe)
+var _worn := {}             # ...and what it has on: slot -> {"item", "colour"}
+var _stack := {}            # ...stacked into the card's pictures, one set for each way it faces (_restack)
 var _who := ""              # the folder it came from: "fry"
 var _px := Vector2.ONE      # the drawing on show, in pixels
 var _pivots := {}           # where each arm turns as drawn (the card's arm_l_pivot, arm_r_pivot), "l" and "r"
@@ -130,6 +149,7 @@ var _over_mat: ShaderMaterial
 var _held: Node3D           # what he holds: the thing and the fists, two drawings on the card
 var _gun: MeshInstance3D
 var _fist: MeshInstance3D
+var _held_art := ""          # which drawing of it is on the cards: "" the side-on one, or "toward"
 var _held_name := ""        # the thing those two drawings show now
 var _bend := ARM_BEND       # how far from the shoulder his arms have turned all the way, now
 
@@ -209,6 +229,13 @@ func set_rig(dir: String) -> bool:
 	_clear()
 	_rig = rig
 	_who = dir.get_file()
+	_dir = dir
+	_wardrobe = {}
+	_worn = {}
+	_stack = {}
+	var layers = JSON.parse_string(FileAccess.get_file_as_string(dir.path_join("wardrobe.json"))) if FileAccess.file_exists(dir.path_join("wardrobe.json")) else null
+	if typeof(layers) == TYPE_DICTIONARY and layers.has("base") and layers.has("items"):
+		_wardrobe = layers
 	height = float(rig["height_m"])
 	for name: String in rig["views"]:
 		var data: Dictionary = rig["views"][name]
@@ -225,6 +252,8 @@ func set_rig(dir: String) -> bool:
 	face.name = "Face"
 	_card.add_child(face)
 	face.setup(dir, rig, height, Vector2(body.get_size()))
+	if has_wardrobe():
+		wear({})                # what he was drawn in, from its layers
 	_show("front")
 	return true
 
@@ -288,9 +317,16 @@ func walk(dir: Vector2, screen: Vector2, delta: float) -> void:
 	# Pointing what he holds: side-on, if he has a side drawing, and not while he
 	# walks towards the camera or away from it (he faces the way he walks).
 	var pointing := aiming and weapon != "" and not performing
-	if pointing and _views.has("side") and (not moving or _want_view == "side"):
-		_want_view = "side"
-		if aim_to != 0.0 and not moving:
+	var point_view := "side"
+	if aim_way == "toward" and _views.has("front"):
+		point_view = "front"
+	elif aim_way == "away" and _views.has("back"):
+		point_view = "back"
+	if pointing and _views.has("side") and (not moving or _want_view == point_view):
+		_want_view = point_view
+		if point_view != "side":
+			_want_yaw = 0.0
+		elif aim_to != 0.0 and not moving:
 			_want_yaw = 0.0 if aim_to > 0.0 else PI
 	elif pointing and _views.has("side"):
 		pointing = false
@@ -516,22 +552,34 @@ func _show(wanted: String) -> void:
 	quad.center_offset = Vector3(0, height * 0.5, 0)
 	_card.mesh = quad
 	_over.mesh = quad
-	_put("art", art)
+	# A wardrobe character's pictures are its layers stacked; side-on its arms are the front stack's.
+	var stack: Dictionary = _stack.get(wanted, {})
+	var arms_stack: Dictionary = _stack.get("front", {}) if v.has("arm_art") else stack
+	_put("art", stack.get("art", art))
 	_put("aspect", px.x / px.y)
 	_put("pad", ARM_ROOM)
 	_put("has_limbs", v["limbs"] != null)
 	_put("far_arm_hidden", bool(data.get("far_arm_hidden", false)))
-	_put("arm_art", v.get("arm_art", art))
+	_put("arm_art", arms_stack.get("art", v.get("arm_art", art)))
 	_put("arms_drawn_here", not v.has("arm_art"))
+	_put("has_under", stack.has("under"))
+	if stack.has("under"):
+		_put("under", stack["under"])
+		_put("under_regions", stack["under_regions"])
 	var shift: Array = data.get("arm_l_shift", [0.0, 0.0])
 	_arm_from = Vector2(float(shift[0]), float(shift[1]))
 	_put("arm_l_shift", _arm_from / px)
-	_put("arm_l_top", float(data.get("arm_l_top", 0.0)) / px.y)
+	var top := float(data.get("arm_l_top", 0.0))
 	var sides: Array = data.get("arm_l_top_x", [-9.0 * px.x, 9.0 * px.x])
+	if not stack.is_empty():        # which of what he has on covers the top of that arm, if any does
+		var cap: Array = stack.get("arm_top", [0.0, -9.0 * px.x, 9.0 * px.x])
+		top = float(cap[0])
+		sides = [cap[1], cap[2]]
+	_put("arm_l_top", top / px.y)
 	_put("arm_l_top_x", Vector2(float(sides[0]), float(sides[1])) / px.x)
 	_arm_rest = float(data.get("arm_l_rest", 0.0))
 	if v["limbs"] != null:
-		_put("limbs", v["limbs"])
+		_put("limbs", arms_stack.get("limbs", v["limbs"]))
 		_pivots = {"l": Vector2(data["arm_l"][0], data["arm_l"][1]) / px, "r": Vector2(data["arm_r"][0], data["arm_r"][1]) / px}
 		_put("arm_l_pivot", _pivots["l"])
 		_put("arm_r_pivot", _pivots["r"])
@@ -540,6 +588,10 @@ func _show(wanted: String) -> void:
 	_arms = data.get("arms", {})
 	if _arms.is_empty() and v.has("arm_art") and _views.has("front"):
 		_arms = _views["front"]["data"].get("arms", {})
+	if float(arms_stack.get("arm_width", 0.0)) > 0.0:      # a sleeve makes the arm as wide as it is
+		_arms = _arms.duplicate(true)
+		for key: String in _arms:
+			_arms[key]["width"] = maxf(float(_arms[key]["width"]), float(arms_stack["arm_width"]))
 	for key: String in _arms:
 		var arm: Dictionary = _arms[key]
 		_put("arm_%s_axis" % key, (Vector2(arm["wrist"][0], arm["wrist"][1]) - Vector2(arm["pivot"][0], arm["pivot"][1])).normalized())
@@ -582,6 +634,24 @@ func skin() -> Color:
 ## Tell the card what he is wearing: which picture says where his clothes are,
 ## the colour each piece was drawn in and the colour it is now.
 func _dress() -> void:
+	if has_wardrobe() and _stack.has(view):
+		var mine: Dictionary = _stack[view]
+		var theirs: Dictionary = _stack.get("front", mine) if _views[view].has("arm_art") else mine
+		_put("has_regions", true)
+		_put("regions", mine["regions"])
+		_put("arm_regions", theirs["regions"])
+		var was := PackedColorArray()
+		var now := PackedColorArray()
+		for piece: String in REGIONS:
+			var on: Dictionary = _worn.get(piece, {})
+			var item: Dictionary = _wardrobe["items"].get(on.get("item", ""), {})
+			var drawn := _colour(item.get("colour", [0, 0, 0]))
+			was.append(drawn)
+			now.append(on.get("colour", drawn) if not item.is_empty() else drawn)
+		_put("dress_from", was)
+		_put("dress_to", now)
+		_put("cuffs", false)
+		return
 	var v: Dictionary = _views.get(view, {})
 	var drawn_in: Dictionary = _rig.get("clothes", {})
 	var known: bool = v.has("regions") and not drawn_in.is_empty()
@@ -605,6 +675,158 @@ func _dress() -> void:
 
 static func _colour(rgb: Array) -> Color:
 	return Color(float(rgb[0]) / 255.0, float(rgb[1]) / 255.0, float(rgb[2]) / 255.0)
+
+
+# ------------------------------------------------- clothes that are layers
+
+## Has this character a wardrobe (wardrobe.json beside its rig: wardrobe.py)? Then its clothes are layers:
+## a bare base and, over it, one item or none in each slot ("shoes", "trousers", "shirt", "jacket", "hat"),
+## each in any colour. wear() dresses it.
+func has_wardrobe() -> bool:
+	return not _wardrobe.is_empty()
+
+
+## wardrobe.json: "items" (each with its "slot", "name", "colour" and "colours"), "worn" (what it was drawn in).
+func wardrobe() -> Dictionary:
+	return _wardrobe
+
+
+## What he has on: slot -> {"item": its id ("" for nothing), "colour": Color}.
+func worn() -> Dictionary:
+	return _worn.duplicate(true)
+
+
+## Dress him. `outfit` is slot -> {"item": id, "colour": Color}; the colour may be left out (the item's own),
+## the item may be "" (a hat or a jacket left off), and a slot left out is what he was drawn in.
+func wear(outfit: Dictionary) -> void:
+	if _wardrobe.is_empty():
+		return
+	var items: Dictionary = _wardrobe.get("items", {})
+	var drawn: Dictionary = _wardrobe.get("worn", {})
+	_worn = {}
+	for slot: String in SLOT_ID:
+		var want: Dictionary = outfit.get(slot, {})
+		var id := String(want.get("item", drawn.get(slot, "")))
+		if id == "none":
+			id = ""
+		if id != "" and not items.has(id):
+			id = String(drawn.get(slot, ""))            # something this body has no drawing of
+		if id == "" and not slot in ["hat", "jacket"]:
+			id = String(drawn.get(slot, ""))            # he always has a shirt, trousers and shoes on
+		var colour := Color.BLACK
+		if id != "":
+			colour = want["colour"] if want.has("colour") else _colour(items[id].get("colour", [128, 128, 128]))
+		_worn[slot] = {"item": id, "colour": colour}
+	_restack()
+	if _views.has(view):
+		_show(view)
+
+
+## A layer's picture, as an image the others can be laid on.
+static func _layer(path: String) -> Image:
+	if _layers.has(path):
+		return _layers[path]
+	var image: Image = null
+	if ResourceLoader.exists(path):
+		var tex: Texture2D = load(path)
+		if tex:
+			image = tex.get_image()
+			if image and image.is_compressed():
+				image.decompress()
+			if image and image.get_format() != Image.FORMAT_RGBA8:
+				image.convert(Image.FORMAT_RGBA8)
+	_layers[path] = image
+	return image
+
+
+## Lay a layer on `onto` and mark where it is on `marks` as piece number `id` (the card's regions).
+func _lay(onto: Image, marks: Image, file: String, id: int) -> void:
+	if file == "":
+		return
+	var image := _layer(_dir.path_join(file))
+	if image == null or image.get_size() != onto.get_size():
+		push_warning("Wardrobe layer missing or the wrong size: %s" % _dir.path_join(file))
+		return
+	var all := Rect2i(Vector2i.ZERO, image.get_size())
+	onto.blend_rect(image, all, Vector2i.ZERO)
+	var flat := Image.create(all.size.x, all.size.y, false, Image.FORMAT_RGBA8)
+	flat.fill(Color(id * 40.0 / 255.0, 0.0, 0.0, 1.0))
+	marks.blit_rect_mask(flat, image, all, Vector2i.ZERO)
+
+
+static func _texture(image: Image, mipmaps: bool) -> ImageTexture:
+	if mipmaps:
+		image.generate_mipmaps()
+	return ImageTexture.create_from_image(image)
+
+
+## Stack what he has on into the pictures the card draws, one set for each way he faces:
+##   art      everything, arms and all            regions        which piece each pixel of it is
+##   under    the same without the arms           under_regions  ...and of that
+##   limbs    which pixels are which arm          arm_top, arm_width: from the items (see wardrobe.md)
+## Side-on there are no arms in the picture: they are the front view's.
+func _restack() -> void:
+	_stack = {}
+	if _wardrobe.is_empty():
+		return
+	var key := _who
+	for slot: String in SLOT_ID:
+		var on: Dictionary = _worn.get(slot, {})
+		key += "|%s" % on.get("item", "")
+	if _stacks.has(key):
+		_stack = _stacks[key]
+		return
+	var items: Dictionary = _wardrobe.get("items", {})
+	var base: Dictionary = _wardrobe.get("base", {})
+	for name: String in base:
+		if not _views.has(name):
+			continue
+		var data: Dictionary = _views[name]["data"]
+		var size := Vector2i((_views[name]["art"] as Texture2D).get_size())
+		var all := Rect2i(Vector2i.ZERO, size)
+		var under := Image.create(size.x, size.y, false, Image.FORMAT_RGBA8)
+		var arms := Image.create(size.x, size.y, false, Image.FORMAT_RGBA8)
+		var under_marks := Image.create(size.x, size.y, false, Image.FORMAT_RGBA8)
+		under_marks.fill(Color(0, 0, 0, 1))
+		var arm_marks := Image.create(size.x, size.y, false, Image.FORMAT_RGBA8)
+		arm_marks.fill(Color(0, 0, 0, 1))
+		var made := {"arm_width": 0.0}
+		_lay(under, under_marks, String(base[name].get("art", "")), 0)
+		_lay(arms, arm_marks, String(base[name].get("arms", "")), 0)
+		for slot: String in _wardrobe.get("order", ["shoes", "trousers", "shirt", "jacket", "hat"]):
+			var id := String(_worn.get(slot, {}).get("item", ""))
+			if id == "":
+				continue
+			var drawing: Dictionary = items[id].get("views", {}).get(name, {})
+			_lay(under, under_marks, String(drawing.get("art", "")), SLOT_ID[slot])
+			_lay(arms, arm_marks, String(drawing.get("arms", "")), SLOT_ID[slot])
+			if drawing.has("arm_top"):
+				made["arm_top"] = drawing["arm_top"]
+			made["arm_width"] = maxf(made["arm_width"], float(drawing.get("arm_width", 0.0)))
+		if base[name].has("arms"):
+			var full: Image = under.duplicate()
+			full.blend_rect(arms, all, Vector2i.ZERO)
+			var marks: Image = under_marks.duplicate()
+			marks.blit_rect_mask(arm_marks, arms, all, Vector2i.ZERO)
+			# Which arm a pixel belongs to: the side of the picture it is on.
+			var mid := int((float(data["arm_l"][0]) + float(data["arm_r"][0])) * 0.5)
+			var limbs := Image.create(size.x, size.y, false, Image.FORMAT_RGBA8)
+			limbs.fill(Color(0, 0, 0, 1))
+			var flat := Image.create(size.x, size.y, false, Image.FORMAT_RGBA8)
+			flat.fill(Color(1, 0, 0, 1))
+			limbs.blit_rect_mask(flat, arms, Rect2i(0, 0, mid, size.y), Vector2i.ZERO)
+			flat.fill(Color(0, 1, 0, 1))
+			limbs.blit_rect_mask(flat, arms, Rect2i(mid, 0, size.x - mid, size.y), Vector2i(mid, 0))
+			made["art"] = _texture(full, true)
+			made["regions"] = _texture(marks, false)
+			made["under"] = _texture(under, true)
+			made["under_regions"] = _texture(under_marks, false)
+			made["limbs"] = _texture(limbs, false)
+		else:
+			made["art"] = _texture(under, true)
+			made["regions"] = _texture(under_marks, false)
+		_stack[name] = made
+	_stacks[key] = _stack
 
 
 # ------------------------------------------------------------ what he holds
@@ -696,17 +918,29 @@ func _hold() -> void:
 	_put("joint_half", k > 0.5 and view != "side" and not stout)
 	var thin := minf(1.0, THIN_ARM * float(arm["width"]) / float(arm["len"]))      # 1 for an arm as stout as the lead's or stouter
 	thin *= thin
-	var unit := clampf(float(arm["width"]) * m / LEAD_ARM, 0.8, 1.3) * float(info.get("size", 1.0)) / float(weapons()["px_per_m"])    # metres to a unit of the thing's drawing
-	if _held_name != held:
-		_take(held, info, unit)
-	var point := _hold_row(held, view + "_aim")
+	# Pointed along the line of sight (at the camera, or away) it has a pose of its own; else the one across the screen.
+	var point := _hold_row(held, view + "_point") if aim_way != "" and view != "side" else {}
+	if point.is_empty():
+		point = _hold_row(held, view + "_aim")
 	if point.is_empty():
 		point = carry
 	var a := smoothstep(0.0, 1.0, _aim)
+	var pose: Dictionary = point if a > 0.5 else carry          # what is drawn over what, and which drawing, changes half way up
+	var art: String = pose.get("art", "")
+	if art != "" and info.has(art):
+		info = info[art]
+	else:
+		art = ""
+	var unit := clampf(float(arm["width"]) * m / LEAD_ARM, 0.8, 1.3) * float(info.get("size", 1.0)) / float(weapons()["px_per_m"])    # metres to a unit of the thing's drawing
+	if _held_name != held or _held_art != art:
+		_take(held, info, unit)
+		_held_art = art
 	var flip: bool = carry.get("flip", false)
 	var dip := lerpf(carry.get("angle", 0.0), point.get("angle", 0.0), a)
 	var curl := lerpf(carry.get("curl", 0.0), point.get("curl", 0.0), a) * thin
-	if wide and info.has("fore") and not carry.get("under", false):
+	var pitch := aim_pitch * a if view == "side" else 0.0        # side-on he points it up or down at what the cross is on
+	dip -= rad_to_deg(pitch)
+	if wide and info.has("fore") and not pose.get("under", false):
 		dip *= ELBOW_FLAT
 
 	# The arm that holds the grip.
@@ -718,6 +952,7 @@ func _hold() -> void:
 	var hangs := axis.rotated(-_arm_rest if view == "side" else 0.0) * hand   # where the hand is with the arm at rest
 	var want := _grip(carry, hangs, wrist).lerp(_grip(point, hangs, wrist), a)
 	want += Vector2(0.03 * sin(_phase), 0.02 * absf(sin(_phase))) * wrist * _gait * (1.0 - a)      # it moves a little as he walks
+	want = want.rotated(-pitch)
 	var elbow := Vector2.ZERO                                                 # which arms bend at the elbow, for the card
 	if lanky:
 		elbow = Vector2.ONE
@@ -738,7 +973,7 @@ func _hold() -> void:
 	var angle := lerp_angle(float(_mat.get_shader_parameter(pre + "angle")), reach.x, k)
 	var bow := lerpf(float(_mat.get_shader_parameter(pre + "curl")), curl, k)
 	var stretch := lerpf(1.0, reach.y, k)
-	var under: bool = carry.get("under", false)
+	var under: bool = pose.get("under", false)
 	var cut := (wrist + FIST_IN / maxf(stretch, 1.0)) / _px.y if k > 0.5 and not under else 9.0
 	_put(pre + "angle", angle)
 	_put(pre + "curl", bow)
@@ -747,16 +982,16 @@ func _hold() -> void:
 
 	# The thing itself, its grip in that hand.
 	var at := shoulder + _hand_at(axis, hand / _px.y, length / _px.y, angle, bow, stretch) * _px.y
-	if under and carry.has("at"):
-		at = shoulder - axis * down + Vector2(carry["at"][0], carry["at"][1]) * (wrist + down)
-	_held.visible = k > 0.5
+	if under and pose.has("at"):
+		at = shoulder - axis * down + Vector2(pose["at"][0], pose["at"][1]) * (wrist + down)
+	_held.visible = k > 0.5 and not pose.get("hidden", false)
 	_held.position = Vector3((at.x - _px.x * 0.5) * m, (_px.y - at.y) * m, 0.0)
 	_held.rotation.z = deg_to_rad(dip) * (1.0 if flip else -1.0)
 	_held.scale = Vector3(-1.0 if flip else 1.0, 1.0, 1.0)
-	(_gun.material_override as ShaderMaterial).set_shader_parameter("toward", -0.03 if under or carry.get("gun_under", false) else 0.03)
+	(_gun.material_override as ShaderMaterial).set_shader_parameter("toward", -0.03 if under or pose.get("gun_under", false) else 0.03)
 	_fist.visible = not under
 	_put("arms_under", under and k > 0.5)
-	var over: bool = carry.get("over", false) and key == "l" and k > 0.5
+	var over: bool = pose.get("over", false) and key == "l" and k > 0.5
 	_over.visible = over
 	_mat.set_shader_parameter("layer", 1 if over else 0)
 
@@ -774,8 +1009,8 @@ func _hold() -> void:
 	var fore := at + off.rotated(deg_to_rad(dip) * (-1.0 if flip else 1.0))      # where that fist is, in pixels of his drawing
 	fore -= Vector2(-FORE_BACK if flip else FORE_BACK, 0.0).rotated(deg_to_rad(dip) * (-1.0 if flip else 1.0))
 	var fore_cut := (wrist + FORE_IN) / _px.y if k > 0.5 and not under else 9.0
-	if under and carry.has("fore_at") and _arms.has(other):
-		fore = Vector2(_arms[other]["pivot"][0], _arms[other]["pivot"][1]) + Vector2(carry["fore_at"][0], carry["fore_at"][1]) * float(_arms[other]["wrist_r"])
+	if under and pose.has("fore_at") and _arms.has(other):
+		fore = Vector2(_arms[other]["pivot"][0], _arms[other]["pivot"][1]) + Vector2(pose["fore_at"][0], pose["fore_at"][1]) * float(_arms[other]["wrist_r"])
 	var fore_curl := lerpf(carry.get("fore_curl", 0.0), point.get("fore_curl", 0.0), a) * thin
 	if view == "side" or not _arms.has(other):
 		# One arm is drawn: the far one is a copy of it, hung from a point behind his chest.

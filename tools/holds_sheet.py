@@ -1,8 +1,9 @@
 """Pictures of every way a thing is held, for judging the holds (see --lineup in scripts/main.gd).
 
-    python tools/holds_sheet.py <folder> [rig] [weapon ...]
+    python tools/holds_sheet.py <folder> [rig] [weapon ...] [--point]
 
-Writes one PNG for each pair of poses of each weapon into the folder.
+Writes one PNG for each pair of poses of each weapon into the folder. With --point: the poses that point it
+at the camera, away from it, and up and down side-on, instead of the usual ones.
 """
 import os
 import subprocess
@@ -16,6 +17,10 @@ SETS = {
 }
 
 
+# Pointed along the line of sight (p: at the camera from the front, away from the back) and, side-on, up and down (u, d).
+POINT = {name: ["fp+bp", "fpw+bpw", "sau+sad", "saum+sadw"] for name in SETS}
+
+
 # Someone with only a front drawing: what there is to see.
 FRONT_ONLY = {"pistol": ["fc+fa", "fcw+fa"], "uzi": ["fc+fa"], "ak": ["fc+fcw"]}
 
@@ -23,8 +28,9 @@ FRONT_ONLY = {"pistol": ["fc+fa", "fcw+fa"], "uzi": ["fc+fa"], "ak": ["fc+fcw"]}
 def main():
     out = os.path.abspath(sys.argv[1])
     rig = sys.argv[2] if len(sys.argv) > 2 else "e"
-    names = sys.argv[3:] or list(SETS)
-    sets = SETS if os.path.exists(os.path.join(os.path.dirname(HERE), "assets", "characters", rig, "side.png")) else FRONT_ONLY
+    point = "--point" in sys.argv
+    names = [a for a in sys.argv[3:] if a != "--point"] or list(SETS)
+    sets = POINT if point else SETS if os.path.exists(os.path.join(os.path.dirname(HERE), "assets", "characters", rig, "side.png")) else FRONT_ONLY
     os.makedirs(out, exist_ok=True)
     for name in names:
         for poses in sets[name]:

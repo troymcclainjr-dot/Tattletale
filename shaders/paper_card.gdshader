@@ -87,6 +87,9 @@ uniform bool near_leg_right = true;    // which leg is in front when they cross
 uniform float far_leg_shade = 1.0;     // the far leg's colour is multiplied by this
 uniform float leg_ink = 0.0;           // width of the line inked where the legs were cut apart (0: none)
 
+uniform sampler2D under : source_color, filter_linear_mipmap, repeat_disable;   // the drawing without its arms: what is behind an arm (a wardrobe character)
+uniform sampler2D under_regions : filter_nearest, repeat_disable;               // ...and that picture's clothes
+uniform bool has_under = false;
 uniform sampler2D regions : filter_nearest, repeat_disable;       // this drawing's clothes (see the top)
 uniform sampler2D arm_regions : filter_nearest, repeat_disable;   // and those of the drawing the arms come from
 uniform bool has_regions = false;
@@ -154,6 +157,17 @@ vec4 leg(vec2 uv, float side, float lift, float swing, vec2 dx, vec2 dy) {
 			c.rgb = ink;
 		}
 	}
+	return c;
+}
+
+// What shows at uv where an arm was drawn and has moved away: nothing, or, for a drawing that has the
+// picture of itself without arms (`under`), the body that was behind the arm.
+vec4 behind_arm(vec2 uv, vec2 dx, vec2 dy) {
+	if (!has_under) {
+		return vec4(0.0);
+	}
+	vec4 c = textureGrad(under, uv, dx, dy);
+	c.rgb = dress(c.rgb, uv, under_regions);
 	return c;
 }
 
@@ -273,7 +287,7 @@ void fragment() {
 					// An arm that bends at the elbow: above it, and a short stub below, it is as drawn.
 					float along = dot(off, ax);
 					if (along > arm_stub) {
-						col.a = 0.0;
+						col = behind_arm(uv, dx, dy);
 					} else if (rim_ink > 0.0 && along > arm_stub - rim_ink) {
 						col.rgb = ink;     // the stub's end, where the forearm does not cover it
 					}
@@ -281,7 +295,7 @@ void fragment() {
 					// On the far side of the arm from the body, a held arm keeps less of the disc: more is a flap.
 					float keep = joint_half && inward < 0.0 ? arm_joint * 0.6 : arm_joint;
 					if (from_pivot > keep) {
-						col.a = 0.0;
+						col = behind_arm(uv, dx, dy);
 					} else if (rim_ink > 0.0 && from_pivot > keep - rim_ink) {
 						col.rgb = ink;     // the disc's own edge, where the moved arm does not cover it
 					}

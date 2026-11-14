@@ -42,7 +42,8 @@ extends Node3D
 ##   a direction on screen), go:x:z (walk straight to that spot on
 ##   the floor), frywalk:x:y:seconds (walk the other character on screen), travel (open the travel list),
 ##   travelhover:n, travelpick:n, key:name (a real key press: key:M, key:Escape, key:1),
-##   weapon:name (pistol, uzi, ak, or none), aim:1 / aim:0, sprint:1 / sprint:0,
+##   outfit:slot=item[#rrggbb],slot=item... (someone whose clothes are layers: outfit:jacket=hoodie,hat=none; outfit: alone undoes it),
+##   weapon:name (pistol, uzi, ak, or none), aim:1 / aim:0, aimat:x:y (the red cross at that screen spot), sprint:1 / sprint:0,
 ##   face:front|side|back|left (turn him without walking; left is side-on, mirrored),
 ##   wear:piece:colour (wear:hat:#cc2222; wear: alone puts his own clothes back),
 ##   arm:who:weapon[:aim] (give someone else here a weapon: arm:TRE:ak:aim), day:n (make it day n).
@@ -83,6 +84,9 @@ const BAR := 0.12                 # each black bar of a performance, as a fracti
 const PERFORM_ROOM := 2           # a performance is watched from the control room
 const MOODS := ["focused", "preachy", "smug", "shout", "happy"]     # his face changes every eight beats
 const WEAPONS := ["", "pistol", "uzi", "ak"]      # Q goes round these
+const Crosshair := preload("res://scripts/crosshair.gd")
+const AIM_SIDE := 0.96      # radians: the cross this far above or below level (55 degrees) is still "to the side"
+const AIM_TIP := 0.6        # ...and side-on he tips what he holds up or down no further than this
 
 ## What is on the racks of the clothing store: the colours each piece of
 ## clothing comes in. E at a rack (a use point "outfit:<piece>") takes the next
@@ -150,6 +154,7 @@ var _cam_at := Vector3.ZERO
 var _cam_look := Vector3.ZERO
 var _close := false
 var _talk: CanvasLayer
+var _cross: Control             # the red cross he aims with (crosshair.gd)
 var _travel: CanvasLayer       # the travel list
 var _place := "studio"         # which of PLACES he is at
 var _tag: Label3D              # the name over whatever is nearest
@@ -178,6 +183,7 @@ var _shot_screen := ""         # screenshot mode: "title", "settings", "choose" 
 var _env: Environment          # the light on everything: a place may turn it down (place.gd's `ambient`, `sun_energy`)
 var _sun: DirectionalLight3D
 var _wear := {}                # the clothes he has changed: piece ("hat", "jacket", ...) to Color
+var _look := {}                # what he has taken off the racks, if his clothes are layers: slot to {"item": id, "colour": "#rrggbb"}
 var _picks := {}               # which colour of WARDROBE each of those is: piece to its number in the list
 var _day := 0                  # days since the game began; he sleeps in his own bed to end one
 var _shot_lineup := ""         # screenshot mode: --lineup's weapon:rig:poses
@@ -249,6 +255,9 @@ func _ready() -> void:
 
 	var layer := CanvasLayer.new()
 	add_child(layer)
+	_cross = Crosshair.new()
+	_cross.visible = false
+	layer.add_child(_cross)
 	_hud = Label.new()
 	_hud.position = Vector2(18, 14)
 	_hud.add_theme_font_size_override("font_size", 18)
@@ -785,6 +794,16 @@ func _find_nearest() -> void:
 		_tag.text = _nearest.use_name()
 		_tag.position = _nearest.label_spot()
 		_hint.text = "E   TALK" if _nearest.has_method("face_side") else "E   " + _nearest.use_name()
+		if _rack_slot() != "":
+			_hint.text += "        C   COLOUR"
+
+
+## The slot of the rack of clothes he is standing at ("" if he is not at one, or his clothes are not layers).
+func _rack_slot() -> String:
+	if _nearest == null or not _actor.has_wardrobe() or not "id" in _nearest:
+		return ""
+	var id := String(_nearest.id)
+	return id.trim_prefix("outfit:") if id.begins_with("outfit:") and id != "outfit:reset" else ""
 
 
 func _use_nearest() -> void:
@@ -822,8 +841,11 @@ func _use_point(id: String, _by: Node3D) -> void:
 	print("[use] ", id)
 	if id == "outfit:reset":
 		_picks = {}
+		_look = {}
 		_dress_lead()
 		_save_game()
+	elif id.begins_with("outfit:") and _actor.has_wardrobe():
+		_next_style(id.trim_prefix("outfit:"))
 	elif id.begins_with("outfit:"):
 		var piece := id.trim_prefix("outfit:")
 		var rack: Array = WARDROBE.get(piece, [])
@@ -844,8 +866,70 @@ func _use_point(id: String, _by: Node3D) -> void:
 			print("[use] day %d" % _day))
 
 
-## Put the lead in what he has picked off the racks (_picks).
+## The styles someone with a wardrobe can have in a slot: the ids of its items, and "" (left off) for a hat or a jacket.
+func _styles(who: Node3D, slot: String) -> Array:
+	var out := []
+	var items: Dictionary = who.wardrobe().get("items", {})
+	for id: String in items:
+		if String(items[id].get("slot", "")) == slot:
+			out.append(id)
+	if not out.is_empty() and slot in ["hat", "jacket"]:
+		out.append("")
+	return out
+
+
+## The colours an item comes in, as "#rrggbb", the one it was drawn in first.
+func _colours_of(who: Node3D, id: String) -> Array:
+	var item: Dictionary = who.wardrobe().get("items", {}).get(id, {})
+	var out := []
+	for rgb: Array in item.get("colours", [item.get("colour", [128, 128, 128])]):
+		out.append("#" + Color(float(rgb[0]) / 255.0, float(rgb[1]) / 255.0, float(rgb[2]) / 255.0).to_html(false))
+	return out
+
+
+## A look as PaperActor.wear wants it (the colours as Colors).
+func _outfit_of(look: Dictionary) -> Dictionary:
+	var out := {}
+	for slot: String in look:
+		var entry := {"item": String(look[slot].get("item", ""))}
+		if look[slot].has("colour"):
+			entry["colour"] = Color(String(look[slot]["colour"]))
+		out[slot] = entry
+	return out
+
+
+## At a rack: the next style of that piece (a hoodie after the vest; nothing, after the last hat or jacket).
+func _next_style(slot: String) -> void:
+	var styles := _styles(_actor, slot)
+	if styles.is_empty():
+		return
+	var on := String(_actor.worn().get(slot, {}).get("item", ""))
+	_look[slot] = {"item": styles[(styles.find(on) + 1) % styles.size()]}
+	_dress_lead()
+	_save_game()
+	var now := String(_actor.worn()[slot]["item"])
+	print("[use] %s: %s" % [slot, _actor.wardrobe()["items"][now].get("name", now) if now != "" else "none"])
+
+
+## At a rack: the same thing in its next colour.
+func _next_colour(slot: String) -> void:
+	var on: Dictionary = _actor.worn().get(slot, {})
+	var id := String(on.get("item", ""))
+	var colours := _colours_of(_actor, id)
+	if id == "" or colours.size() < 2:
+		return
+	var now := "#" + (on["colour"] as Color).to_html(false)
+	_look[slot] = {"item": id, "colour": colours[(colours.find(now) + 1) % colours.size()]}
+	_dress_lead()
+	_save_game()
+	print("[use] %s: %s %s" % [slot, id, _look[slot]["colour"]])
+
+
+## Put the lead in what he has picked off the racks (_look if his clothes are layers, else _picks).
 func _dress_lead() -> void:
+	if _actor.has_wardrobe():
+		_actor.wear(_outfit_of(_look))
+		return
 	_wear = {}
 	for piece: String in _picks:
 		var rack: Array = WARDROBE.get(piece, [])
@@ -867,6 +951,21 @@ func _dress_for_day() -> void:
 	for id: String in _cast:
 		for member: Dictionary in _cast[id]:
 			var npc: Node3D = member["actor"]
+			if npc.has_wardrobe():       # layers: a different cut as well as colour
+				var look := {}
+				if _day > 0:
+					for slot: String in ["hat", "jacket", "shirt", "trousers", "shoes"]:
+						var roll := hash("%s/%s/%d" % [npc.name, slot, _day])
+						var styles := _styles(npc, slot)
+						if styles.is_empty() or roll % 3 == 0:
+							continue                   # this piece is as drawn today
+						var style := String(styles[(roll / 3) % styles.size()])
+						look[slot] = {"item": style}
+						if style != "":
+							var colours := _colours_of(npc, style)
+							look[slot]["colour"] = colours[(roll / 7) % colours.size()]
+				npc.wear(_outfit_of(look))
+				continue
 			var wear := {}
 			if _day > 0:
 				for piece: String in npc.clothes():
@@ -903,7 +1002,7 @@ func _write(path: String, data: Dictionary) -> void:
 ## Remember where the game has got to, for CONTINUE. A screenshot run never saves.
 func _save_game() -> void:
 	if _mode == "play" and not (_scripted and _save_path == SAVE):
-		_write(_save_path, {"side": _side, "place": _place, "day": _day, "wear": _picks})
+		_write(_save_path, {"side": _side, "place": _place, "day": _day, "wear": _look if _actor.has_wardrobe() else _picks})
 
 
 ## Which screen is up. The places are hidden behind the choice (it has its own
@@ -976,10 +1075,14 @@ func _continue_game() -> void:
 		_side = String(data.get("side", ""))
 		_day = int(data.get("day", 0))
 		_picks = {}
+		_look = {}
 		var kept = data.get("wear", {})
 		if typeof(kept) == TYPE_DICTIONARY:
 			for piece: String in kept:
-				_picks[piece] = int(kept[piece])
+				if typeof(kept[piece]) == TYPE_DICTIONARY:      # layers: an item and perhaps a colour
+					_look[piece] = kept[piece]
+				else:
+					_picks[piece] = int(kept[piece])
 		_dress_lead()
 		_set_mode("play")
 		var id := String(data.get("place", "studio"))
@@ -1087,10 +1190,14 @@ func _process(delta: float) -> void:
 	if not _scripted:
 		var free: bool = not _talk.is_open() and not _travel.is_open() and not _performing and _mode == "play"
 		_actor.sprinting = free and Input.is_physical_key_pressed(KEY_SHIFT)
-		var mouse := Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT)
-		_actor.aiming = free and (mouse or Input.is_physical_key_pressed(KEY_CTRL))
-		# With the mouse he points it at the side of the screen the pointer is on; with Ctrl, the way he is facing.
-		_actor.aim_to = signf(get_viewport().get_mouse_position().x - _camera.unproject_position(_actor.position + Vector3(0, 1, 0)).x) if mouse else 0.0
+		# The right mouse button brings up the cross and he points what he holds at it; Ctrl points it the way he is facing.
+		var mouse: bool = free and _actor.weapon != "" and Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT)
+		if mouse:
+			_aim_at(get_viewport().get_mouse_position())
+		else:
+			_aim_off()
+			_actor.aiming = free and Input.is_physical_key_pressed(KEY_CTRL)
+		Input.mouse_mode = Input.MOUSE_MODE_HIDDEN if mouse else Input.MOUSE_MODE_VISIBLE
 	_actor.walk(_floor_dir(dir), dir, delta)
 	for member: Dictionary in _cast.get(_place, []):
 		if member["brain"]:
@@ -1142,6 +1249,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_E:
 			_use_nearest()
 			get_viewport().set_input_as_handled()    # or the same press would also answer the talk box it just opened
+		KEY_C:                      # at a rack of clothes: the same thing in its next colour
+			var rack := _rack_slot()
+			if rack != "":
+				_next_colour(rack)
 		KEY_Q:
 			_actor.weapon = WEAPONS[(WEAPONS.find(_actor.weapon) + 1) % WEAPONS.size()]
 		KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9:
@@ -1176,6 +1287,31 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 ## A row of one character, one for each pose asked for, on a plain backdrop far
 ## above the places, seen square-on. See --lineup at the top.
+## He points what he holds at `cross`, a spot on the screen, and the red cross is drawn there. From his chest:
+## within AIM_SIDE of level it is to the left or right, tipped up or down that much (as far as AIM_TIP);
+## steeper than that, up the screen is away from the camera and down it is towards it.
+func _aim_at(cross: Vector2) -> void:
+	var from := _camera.unproject_position(_actor.global_position + Vector3(0.0, _actor.height * 0.55, 0.0))
+	var to := cross - from
+	var rise := atan2(-to.y, absf(to.x))                       # how far above level, seen on the screen
+	var edge := AIM_SIDE + (0.1 if _actor.aim_way == "" else -0.1)      # a little sticky, so it does not flicker at the edge
+	_actor.aiming = true
+	_actor.aim_way = "" if absf(rise) < edge else ("away" if rise > 0.0 else "toward")
+	_actor.aim_to = signf(to.x)
+	_actor.aim_pitch = clampf(rise, -AIM_TIP, AIM_TIP) if _actor.aim_way == "" else 0.0
+	_cross.at = cross
+	_cross.loose = move_toward(_cross.loose, 1.0 if _actor.sprinting else 0.0, 0.2)
+	_cross.visible = true
+
+
+## The cross goes; he points it nowhere in particular.
+func _aim_off() -> void:
+	_actor.aim_way = ""
+	_actor.aim_pitch = 0.0
+	_actor.aim_to = 0.0
+	_cross.visible = false
+
+
 func _lineup(spec: String) -> void:
 	var bits := spec.split(":")
 	var rigs := (bits[1] if bits.size() > 1 else "e").split(",")        # one for all, or one for each pose
@@ -1197,13 +1333,18 @@ func _lineup(spec: String) -> void:
 		add_child(who)
 		if not who.set_rig(_rig_dir(rigs[i % rigs.size()])):
 			continue
+		if who.has_wardrobe() and not _look.is_empty():      # dressed as the outfit: steps said
+			who.wear(_outfit_of(_look))
 		tall = maxf(tall, who.height + 0.25)
 		var spot := origin + Vector3((i - (poses.size() - 1) * 0.5) * gap, 0, 0)
 		who.position = spot
 		who.areas = [Rect2(-99, -99, 198, 198)]
 		who.weapon = "" if bits[0] == "none" else bits[0]
-		who.aiming = pose.substr(1, 1) == "a"
+		who.aiming = pose.substr(1, 1) in ["a", "p"]
 		var way: String = {"s": "side", "f": "front", "b": "back"}.get(pose.substr(0, 1), "front")
+		if pose.substr(1, 1) == "p":        # pointed along the line of sight: at the camera from the front, away from the back
+			who.aim_way = "toward" if way == "front" else "away"
+		who.aim_pitch = 0.5 if pose.contains("u") else (-0.5 if pose.contains("d") else 0.0)       # side-on: up, down
 		var mirrored := pose.contains("m")
 		who.face_way(way, mirrored)
 		for f in 90:
@@ -1242,8 +1383,21 @@ func _take_shot() -> void:
 			_actor.walk(Vector2.ZERO, Vector2.ZERO, 1.0 / 60.0)
 		print("[shot] walked to %.2f, %.2f" % [_actor.position.x, _actor.position.z])
 	for step in _shot_steps:
+		if not step.contains(":") and step.contains("="):      # outfit:jacket=hoodie,shirt=tee: the pieces after the first
+			step = "outfit:" + step
 		var bits := step.split(":")
 		match bits[0]:
+			"outfit":       # outfit:slot=item or outfit:slot=item#rrggbb or outfit:slot=none ; outfit: alone puts his own clothes back
+				if bits.size() < 2 or not bits[1].contains("="):
+					_look = {}
+				else:
+					var piece := bits[1].split("=")
+					var want := piece[1].split("#")
+					_look[piece[0]] = {"item": "" if want[0] == "none" else want[0]}
+					if want.size() > 1:
+						_look[piece[0]]["colour"] = "#" + want[1]
+				_dress_lead()
+				print("[shot] outfit: %s" % [_actor.worn() if _actor.has_wardrobe() else "this character's clothes are not layers"])
 			"use":
 				_find_nearest()
 				print("[shot] use: %s" % (_nearest.use_name() if _nearest else "nothing in reach"))
@@ -1316,6 +1470,10 @@ func _take_shot() -> void:
 				_actor.weapon = "" if bits[1] == "none" else bits[1]
 			"aim":          # aim:1 points it, aim:0 lowers it
 				_actor.aiming = bits[1] == "1"
+				if not _actor.aiming:
+					_aim_off()
+			"aimat":        # aimat:x:y puts the red cross at that spot on the screen (pixels) and he points at it
+				_aim_at(Vector2(float(bits[1]), float(bits[2])))
 			"sprint":
 				_actor.sprinting = bits[1] == "1"
 			"face":         # face:front, face:side, face:back, face:left (side-on, mirrored)
