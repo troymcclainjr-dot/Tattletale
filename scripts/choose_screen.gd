@@ -14,8 +14,10 @@ extends Node3D
 ## stretch and squash a little as they breathe. The angel hovers, beats his
 ## wings and raises and lowers his praying hands; the devil flicks his tail,
 ## lifts his pitchfork and sets it down, and bounces on his heels. Each is one
-## drawing: shaders/paper_glow.gdshader moves the parts, and build_choice.py
-## says where they are (assets/ui/<name>.json and <name>_parts.png).
+## drawing cut into a body and its moving parts (build_choice.py: assets/ui/
+## <name>.png, <name>_layer.png, <name>_parts.png, <name>.json). The parts
+## move as stiff pieces of card in shaders/paper_glow.gdshader, so a wing or
+## the pitchfork moving beside a face cannot pull the face about.
 ##
 ##   var choose: Node3D = ChooseScreen.new()
 ##   add_child(choose)
@@ -62,6 +64,7 @@ var _ui: CanvasLayer
 var _start: Button
 var _caption: Label
 var _time := 0.0
+var _held := false                   # the clock is stopped (for a still picture of one moment)
 var _pan := 1.0                       # how much the camera drifts: 1 while nobody is picked, easing to 0 once someone is
 var _eyes_on := "angel"               # who his eyes are on while he cannot decide
 var _eyes_in := 0.8                   # seconds until they dart across
@@ -97,10 +100,18 @@ func build(rig_dir: String) -> void:
 		var map = JSON.parse_string(FileAccess.get_file_as_string("res://assets/ui/%s.json" % side))
 		if typeof(map) == TYPE_DICTIONARY:
 			mat.set_shader_parameter("parts", load("res://assets/ui/%s_parts.png" % side))
-			mat.set_shader_parameter("has_parts", true)
+			mat.set_shader_parameter("layer", load("res://assets/ui/%s_layer.png" % side))
+			var used := Vector3.ZERO
+			var behind := Vector3.ONE
 			for key: String in map["parts"]:
 				var part: Dictionary = map["parts"][key]
-				mat.set_shader_parameter("pivot_" + key, Vector3(part["pivot"][0], part["pivot"][1], part["reach"]))
+				var i := "rgb".find(key)
+				used[i] = 1.0
+				behind[i] = 1.0 if part["behind"] else 0.0
+				mat.set_shader_parameter("pivot_" + key, Vector2(part["pivot"][0], part["pivot"][1]))
+				mat.set_shader_parameter("ramp_" + key, Vector3(part["ramp"][0], part["ramp"][1], part["ramp"][2]))
+			mat.set_shader_parameter("used", used)
+			mat.set_shader_parameter("behind", behind)
 			for i in 2:
 				var eye: Array = map["eyes"][i]
 				var brow: Array = map["brows"][i]
@@ -234,7 +245,8 @@ func start() -> void:
 
 
 func _process(delta: float) -> void:
-	_time += delta
+	if not _held:
+		_time += delta
 	_lead.walk(Vector2.ZERO, Vector2.ZERO, delta)
 	# Undecided: his eyes go from one to the other, a little unevenly.
 	if chosen == "" and _lead.face:
@@ -261,16 +273,16 @@ func _process(delta: float) -> void:
 		if side == "angel":
 			# He hovers, breathing slowly: the wings beat, the praying hands rise and sink.
 			var beat := sin(t * 5.2)
-			mat.set_shader_parameter("move_r", Vector3(0, 0, 0.16 * beat))
-			mat.set_shader_parameter("move_g", Vector3(0, 0, -0.16 * beat))
-			mat.set_shader_parameter("move_b", Vector3(0, -0.012 * (0.5 + 0.5 * sin(t * 1.3)), 0))
+			mat.set_shader_parameter("move_r", Vector3(0, 0, 0.15 * beat))
+			mat.set_shader_parameter("move_g", Vector3(0, 0, -0.15 * beat))
+			mat.set_shader_parameter("move_b", Vector3(0, -0.01 * (0.5 + 0.5 * sin(t * 1.3)), 0))      # up only: they stretch from the heels
 			lift = 0.02 * sin(t * 1.7)
 			stretch = 0.022 * sin(t * 1.7 + 1.1)
 			brows = Vector2.ONE * (0.0015 + 0.0045 * sin(t * 0.9))
 		else:
 			# He cannot keep still: the tail flicks, the pitchfork goes up and comes down, he bounces on his heels.
 			mat.set_shader_parameter("move_r", Vector3(0, 0, 0.07 * sin(t * 2.3) + 0.03 * sin(t * 5.1)))
-			mat.set_shader_parameter("move_g", Vector3(0, -0.026 * pow(0.5 - 0.5 * cos(t * 1.5), 2.0), 0))
+			mat.set_shader_parameter("move_g", Vector3(0, -0.021 * pow(0.5 - 0.5 * cos(t * 1.5), 2.0), 0))
 			lift = 0.012 * absf(sin(t * 1.3))
 			stretch = 0.03 * sin(t * 2.6)
 			brows = Vector2(0.002 * sin(t * 1.1), 0.0015 + 0.0045 * sin(t * 1.9))

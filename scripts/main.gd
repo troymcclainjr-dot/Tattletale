@@ -1067,6 +1067,9 @@ func _take_shot() -> void:
 				print("[shot] continued: mode %s, side %s, place %s" % [_mode, _side, _place])
 			"blink":        # blink:side:amount: hold that one's eyes part shut (0 open .. 1 shut), for a picture
 				_choose._blinks[bits[1]]["hold"] = float(bits[2])
+			"pose":         # pose:seconds: stop the choice screen's clock at that moment, for a picture
+				_choose._time = float(bits[1])
+				_choose._held = true
 			"start":        # press START there
 				_choose.start()
 				print("[shot] started: mode %s, side %s, place %s" % [_mode, _side, _place])

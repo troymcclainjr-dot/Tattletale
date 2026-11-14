@@ -9,18 +9,28 @@
   "r": {
    "what": "tail",
    "pivot": [
-    0.69216,
-    0.70399
+    0.68738,
+    0.69941
    ],
-   "reach": 0.07204
+   "behind": true,
+   "ramp": [
+    0,
+    0,
+    0
+   ]
   },
   "g": {
-   "what": "pitchfork and the hand on it",
+   "what": "pitchfork, with the fist and arm that hold it",
    "pivot": [
     0.27342,
     0.59136
    ],
-   "reach": 0.00065
+   "behind": true,
+   "ramp": [
+    1,
+    0.31931,
+    0.39293
+   ]
   }
  },
  "eyes": [
