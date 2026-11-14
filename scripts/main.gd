@@ -1,7 +1,9 @@
 extends Node3D
-## Pivot prototype: the studio from the street to the vocal booth (building.gd),
-## the lead, and a second character who wanders the control room and can be
-## talked to. You arrive on the street, in front of the door.
+## Pivot prototype: the lead, and the places he can travel to. The studio
+## (building.gd) has a second character who wanders the control room and can be
+## talked to; the police station, the courthouse and the crib are built from
+## floor plans (place.gd, plans/*.gd). You arrive on the street, in front of
+## the studio door. Only the place he is at is on show.
 ##
 ##   WASD / arrows  walk          E       use whatever is nearest: talk, open a door
 ##   1 - 9          swap the lead between the character options
@@ -10,31 +12,49 @@ extends Node3D
 ##   Z / X          previous / next expression (characters with loose face parts)
 ##   Space (hold)   move his mouth          F       close-up on / off
 ##   F8             save a PNG to user://shots
+##   M              the travel list: pick a place and he arrives on the street outside it
 ##
 ## In a conversation: click a line (it turns yellow under the mouse) or press
 ## its number; E, Space, Enter or a click moves on.
 ##
 ## Screenshot mode (used by tools/shot.py):
 ##   godot --path popup -- --shot=C:/out.png --cam=angle --char=e [--at=x,z] [--no-ceiling]
+##         [--place=police|court|crib] [--room=NAME] [--check-walk]
 ##         [--face=angry] [--mouth=mouth_ah] [--close] [--talk=seconds]
 ##         [--walk=x,y,seconds] [--rest=seconds] [--fry-at=x,z] [--wander]
 ##         [--do=step,step,...] [--check-faces]
 ##   Steps run in order after the walk: use (press E), wait:seconds, hover:n,
 ##   pick:n, next (E in a conversation), clickbox (click the talk box), go:x:z (walk straight to that spot on
-##   the floor), frywalk:x:y:seconds (walk the other character on screen).
+##   the floor), frywalk:x:y:seconds (walk the other character on screen), travel (open the travel list),
+##   travelhover:n, travelpick:n, key:name (a real key press: key:M, key:Escape, key:1).
 
 const Building := preload("res://scripts/building.gd")
+const Place := preload("res://scripts/place.gd")
+const PLANS := {
+	"police": preload("res://scripts/plans/police.gd"),
+	"court": preload("res://scripts/plans/court.gd"),
+	"crib": preload("res://scripts/plans/crib.gd"),
+}
 const FlickerCheck := preload("res://scripts/flicker_check.gd")
 const PaperActor := preload("res://scripts/paper_actor.gd")
 const Wanderer := preload("res://scripts/wanderer.gd")
 const TalkBox := preload("res://scripts/talk_box.gd")
+const TravelMenu := preload("res://scripts/travel_menu.gd")
 const FONT := preload("res://assets/fonts/Bungee-Regular.ttf")   # Pen Lucy's display font
 
 ## The follow camera keeps this far from him, off to the right. It may not go
 ## past the right wall of the room he is in (each room says how far) or rise to
 ## the ceiling, or they hide the room.
 const FOLLOW_OFFSET := Vector3(2.3, 0.0, 4.6)
-const START := Vector3(1.97, 0, 7.35)      # on the pavement, in front of the street door
+
+## The travel list (M). Each place says where he arrives (its `arrive`). A row
+## with "built": false is listed but cannot be picked.
+const PLACES := [
+	{"id": "studio", "name": "THE BACK ROOM", "note": "RECORDING STUDIO"},
+	{"id": "police", "name": "POLICE STATION", "note": "PEN LUCY PRECINCT"},
+	{"id": "court", "name": "COURTHOUSE", "note": "DISTRICT COURT"},
+	{"id": "crib", "name": "TATTLETALE'S CRIB", "note": "HOME"},
+]
 
 ## name: [camera position, look-at point, vertical field of view]
 ## "angle" is the whole room from the game's side: off to the right of the open
@@ -50,7 +70,8 @@ const CAMS := {
 	"top": [Vector3(-0.25, 9.5, 6.0), Vector3(-0.25, 0.0, -1.2), 42.0],
 }
 
-var _building: Node3D
+var _building: Node3D          # the place he is at: the studio (building.gd) or a Place
+var _sites := {}               # id: the place, once it has been built
 var _room := -1                # which room the lead is in (index into _building.rooms)
 var _fade: ColorRect           # blacks the picture out for a moment when he changes room
 var _actor: Node3D             # the lead
@@ -64,6 +85,8 @@ var _cam_at := Vector3.ZERO
 var _cam_look := Vector3.ZERO
 var _close := false
 var _talk: CanvasLayer
+var _travel: CanvasLayer       # the travel list
+var _place := "studio"         # which of PLACES he is at
 var _tag: Label3D              # the name over whatever is nearest
 var _hint: Label
 var _hud: Label
@@ -94,28 +117,26 @@ func _ready() -> void:
 	sun.light_color = Color(1.0, 0.96, 0.9)
 	add_child(sun)
 
-	_building = Building.new()
-	_building.name = "Building"
-	add_child(_building)
-	_building.build()
-
-	_actor = _new_actor("Player", START)
+	_actor = _new_actor("Player", Vector3.ZERO)
 	_actor.display_name = "TATTLETALE"       # a working name
 	_fry = _new_actor("Fry", Vector3(-1.4, 0, 0.5))
 	_fry.set_rig(_rig_dir("fry"))
 	_fry.display_name = "LARGE FRY"          # a working name
 	_fry.speed = 0.7
 	_fry.used.connect(_start_talk)
-	_actor.others = [_fry]
 	_fry.others = [_actor]
 	_fry_brain = Wanderer.new()
 	_fry_brain.actor = _fry
 	_fry_brain.to_screen = _screen_dir
-	_fry_brain.home = (_building.control.AREA as Rect2).grow(-_fry.RADIUS)
-	_fry.areas = [_fry_brain.home]            # he stays in the control room
 	add_child(_fry_brain)
-	_usables = [_fry]
-	_usables.append_array(_building.doors)
+	var first := "studio"
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--place="):
+			first = arg.trim_prefix("--place=")
+	_open_place(first)
+	_fry.obstacles = _site("studio").obstacles
+	_fry_brain.home = (_site("studio").control.AREA as Rect2).grow(-_fry.RADIUS)
+	_fry.areas = [_fry_brain.home]            # he stays in the control room
 
 	_camera = Camera3D.new()
 	add_child(_camera)
@@ -161,6 +182,10 @@ func _ready() -> void:
 	_talk = TalkBox.new()
 	add_child(_talk)
 	_talk.closed.connect(_end_talk)
+	_travel = TravelMenu.new()
+	_travel.set_places(PLACES)
+	add_child(_travel)
+	_travel.picked.connect(_travel_to)
 
 	var curtain := CanvasLayer.new()
 	curtain.layer = 20
@@ -191,7 +216,10 @@ func _ready() -> void:
 		elif arg.begins_with("--walk="):   # x,y,seconds: walk that way on screen before the shot
 			_shot_walk = arg.trim_prefix("--walk=").split_floats(",")
 		elif arg == "--no-ceiling":
-			_building.control.ceiling.visible = false
+			if _ceiling():
+				_ceiling().visible = false
+		elif arg.begins_with("--room="):   # stand him in the middle of the room of that name
+			_actor.position = _spot_in_room(arg.trim_prefix("--room="))
 		elif arg == "--no-actor":
 			_actor.visible = false
 		elif arg.begins_with("--face="):
@@ -208,8 +236,10 @@ func _ready() -> void:
 			_shot_talk = float(arg.trim_prefix("--talk="))
 		elif arg.begins_with("--do="):
 			_shot_steps = arg.trim_prefix("--do=").split(",")
+		elif arg == "--check-walk":        # can every room be walked to, with every door open?
+			_check_walk()
 		elif arg == "--check-faces":       # list surfaces lying exactly on one another (they flicker)
-			_building.show_from(0)
+			_building.show_room(0)
 			var found: Array = FlickerCheck.find(_building)
 			var seen := {}
 			for line: String in found:
@@ -219,8 +249,8 @@ func _ready() -> void:
 			print("[shot] faces: %d overlapping pairs" % seen.size())
 	_set_character(who)
 	_actor.areas = _building.walk_areas()
-	_room = _building.room_at(_actor.position.z)
-	_building.show_from(_room)
+	_room = _building.room_at_pos(_actor.position, 0)
+	_building.show_room(_room)
 	if _actor.face and face != "":
 		_actor.face.set_expression(face, true)
 	if _actor.face and mouth != "":
@@ -236,10 +266,129 @@ func _ready() -> void:
 func _new_actor(node_name: String, at: Vector3) -> Node3D:
 	var actor: Node3D = PaperActor.new()
 	actor.name = node_name
-	actor.obstacles = _building.obstacles
 	actor.position = at
 	add_child(actor)
 	return actor
+
+
+## The place with that id, built the first time it is asked for.
+func _site(id: String) -> Node3D:
+	if _sites.has(id):
+		return _sites[id]
+	var site: Node3D
+	if id == "studio" or not PLANS.has(id):
+		id = "studio"
+		site = Building.new()
+		add_child(site)
+		site.build()
+	else:
+		site = Place.new()
+		add_child(site)
+		PLANS[id].build(site)
+		for portal: Node3D in site.portals:
+			portal.used.connect(_teleport)
+	site.name = id.capitalize()
+	site.visible = false           # _open_place shows the one he is at
+	_sites[id] = site
+	return site
+
+
+## Put him at a place: show it, hide the others, and stand him where he arrives.
+func _open_place(id: String) -> void:
+	_building = _site(id)
+	for key: String in _sites:
+		_sites[key].visible = _sites[key] == _building
+		if _sites[key] == _building:
+			_place = key
+	var studio := _place == "studio"
+	_fry.visible = studio
+	_actor.others = [_fry] if studio else []
+	_actor.obstacles = _building.obstacles
+	_usables = _building.usables()
+	if studio:
+		_usables.append(_fry)
+	_actor.position = _building.arrive
+	_actor.areas = _building.walk_areas()
+	_room = _building.room_at_pos(_actor.position, 0)
+	_building.show_room(_room)
+
+
+## The studio's ceiling (C and the top camera hide it); null anywhere else.
+func _ceiling() -> Node3D:
+	return _building.control.ceiling if _place == "studio" else null
+
+
+## A clear spot near the middle of the room of that name.
+func _spot_in_room(room_name: String) -> Vector3:
+	for room: Dictionary in _building.rooms:
+		if String(room["name"]).to_lower() != room_name.to_lower().replace("_", " "):
+			continue
+		var area: Rect2 = room.get("areas", [room.get("area", Rect2())])[0]
+		var mid := area.get_center()
+		var best := mid
+		var best_gap := INF
+		_actor.areas = _building.walk_areas()
+		for ix in int(area.size.x / 0.2) + 1:
+			for iz in int(area.size.y / 0.2) + 1:
+				var p := area.position + Vector2(ix, iz) * 0.2
+				if _actor.can_stand(p) and p.distance_to(mid) < best_gap:
+					best_gap = p.distance_to(mid)
+					best = p
+		return Vector3(best.x, 0, best.y)
+	push_warning("No room called %s here" % room_name)
+	return _actor.position
+
+
+## With every door open, flood the floor from where he stands and say how much
+## of each room he can reach. A room he cannot reach at all, or mostly cannot,
+## has a blocked doorway or a prop in the way.
+func _check_walk() -> void:
+	for door: Node3D in _building.doors:
+		door.set_open(true, true)
+	_actor.areas = _building.walk_areas()
+	var step := 0.1
+	var seen := {}
+	var reached := {}
+	var queue: Array[Vector2i] = []
+	var from := Vector2i(roundi(_actor.position.x / step), roundi(_actor.position.z / step))
+	for dx in range(-3, 4):      # start from every clear spot right by him (he may stand between grid points)
+		for dz in range(-3, 4):
+			queue.append(from + Vector2i(dx, dz))
+	while not queue.is_empty():
+		var cell: Vector2i = queue.pop_back()
+		if seen.has(cell):
+			continue
+		seen[cell] = true
+		var p := Vector2(cell.x, cell.y) * step
+		if not _actor.can_stand(p):
+			continue
+		reached[cell] = true
+		for way: Vector2i in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
+			queue.append(cell + way)
+		for portal: Node3D in _building.portals:
+			var spot: Vector3 = portal.use_spot()
+			if p.distance_to(Vector2(spot.x, spot.z)) <= portal.use_reach:
+				queue.append(Vector2i(roundi(portal.to.x / step), roundi(portal.to.z / step)))
+	var bad := 0
+	for room: Dictionary in _building.rooms:
+		var r: Rect2 = room.get("rect", room.get("area", Rect2()))
+		var can := 0
+		var got := 0
+		for ix in range(roundi(r.position.x / step), roundi(r.end.x / step)):
+			for iz in range(roundi(r.position.y / step), roundi(r.end.y / step)):
+				if _actor.can_stand(Vector2(ix, iz) * step):
+					can += 1
+					if reached.has(Vector2i(ix, iz)):
+						got += 1
+		var verdict := "ok"
+		if got == 0:
+			verdict = "NOT REACHED"
+		elif got < can * 0.85:
+			verdict = "PARTLY CUT OFF"
+		if verdict != "ok":
+			bad += 1
+		print("[shot] walk: %-18s %5.1f of %5.1f sq m  %s" % [room["name"], got * step * step, can * step * step, verdict])
+	print("[shot] walk: %d rooms, %d doors, %d with a problem" % [_building.rooms.size(), _building.doors.size(), bad])
 
 
 func _rig_dir(folder: String) -> String:
@@ -264,7 +413,7 @@ func _set_character(letter: String) -> void:
 # ------------------------------------------------------------------- cameras
 
 func _set_camera(cam: String) -> void:
-	if not CAMS.has(cam):
+	if not CAMS.has(cam) or _place != "studio":     # the fixed cameras are the studio's
 		cam = "follow"
 	_cam_name = cam
 	if cam == "follow":
@@ -272,8 +421,8 @@ func _set_camera(cam: String) -> void:
 	else:
 		_camera.fov = CAMS[cam][2]
 		_camera.look_at_from_position(CAMS[cam][0], CAMS[cam][1])
-	if cam == "top":
-		_building.control.ceiling.visible = false
+	if cam == "top" and _ceiling():
+		_ceiling().visible = false
 	_face_cards()
 	if _close:
 		_frame_close()
@@ -283,7 +432,8 @@ func _set_camera(cam: String) -> void:
 func _face_cards() -> void:
 	var back := _camera.global_transform.basis.z
 	_actor.rotation.y = atan2(back.x, back.z)
-	_fry.rotation.y = _actor.rotation.y
+	if _fry:
+		_fry.rotation.y = _actor.rotation.y
 
 
 ## Ease the camera to a place and a point to look at (snap: go there at once).
@@ -320,17 +470,59 @@ func _follow(delta: float, snap := false) -> void:
 func _change_room(to: int, instant := false) -> void:
 	_room = to
 	if instant:
-		_building.show_from(to)
+		_building.show_room(to)
 		if _cam_name == "follow":
 			_follow(0.0, true)
 		return
 	var tween := create_tween()
 	tween.tween_property(_fade, "color:a", 1.0, 0.1)
 	tween.tween_callback(func() -> void:
-		_building.show_from(to)
+		_building.show_room(to)
 		if _cam_name == "follow":
 			_follow(0.0, true))
 	tween.tween_property(_fade, "color:a", 0.0, 0.22)
+
+
+## Stairs and the like (portal.gd): black out, put him at the other end, come back.
+func _teleport(to: Vector3, instant := false) -> void:
+	var land := func() -> void:
+		_actor.position = to
+		_actor.areas = _building.walk_areas()
+		_room = _building.room_at_pos(to, _room)
+		_building.show_room(_room)
+		if _cam_name == "follow":
+			_follow(0.0, true)
+	if instant:
+		land.call()
+		return
+	var tween := create_tween()
+	tween.tween_property(_fade, "color:a", 1.0, 0.15)
+	tween.tween_callback(land)
+	tween.tween_interval(0.1)
+	tween.tween_property(_fade, "color:a", 0.0, 0.25)
+
+
+## Go to one of PLACES: the picture blacks out, he is put on the pavement
+## outside it facing the camera, and the picture comes back.
+func _travel_to(id: String, instant := false) -> void:
+	var known := false
+	for row: Dictionary in PLACES:
+		if row["id"] == id and row.get("built", true):
+			known = true
+	if not known:
+		return
+	var arrive := func() -> void:
+		_open_place(id)
+		_actor.show_face()
+		_set_camera(_cam_name)
+	if instant:
+		arrive.call()
+		return
+	var tween := create_tween()
+	tween.tween_property(_fade, "color:a", 1.0, 0.18)
+	tween.tween_callback(arrive)
+	tween.tween_interval(0.15)
+	tween.tween_property(_fade, "color:a", 0.0, 0.3)
 
 
 ## The close-up: head to waist, from the same side as the room camera.
@@ -366,6 +558,8 @@ func _find_nearest() -> void:
 	var best := INF
 	if not _talk.is_open():
 		for thing: Node3D in _usables:
+			if not thing.is_visible_in_tree():
+				continue
 			var gap: Vector3 = thing.use_spot() - _actor.position
 			gap.y = 0.0
 			if gap.length() <= thing.use_reach and gap.length() < best:
@@ -381,7 +575,10 @@ func _find_nearest() -> void:
 
 func _use_nearest() -> void:
 	if _nearest and not _talk.is_open():
-		_nearest.use(_actor)
+		if _nearest.has_method("set_open") and _scripted:
+			_nearest.set_open(not _nearest.is_open, true)     # scripted runs do not wait for the swing
+		else:
+			_nearest.use(_actor)
 
 
 func _start_talk(_by: Node3D) -> void:
@@ -403,16 +600,20 @@ func _end_talk() -> void:
 
 func _process(delta: float) -> void:
 	var dir := Vector2.ZERO
-	if not _scripted and not _talk.is_open():
+	if not _scripted and not _talk.is_open() and not _travel.is_open():
 		dir = Vector2(
 			Input.get_axis("ui_left", "ui_right") + float(Input.is_physical_key_pressed(KEY_D)) - float(Input.is_physical_key_pressed(KEY_A)),
 			Input.get_axis("ui_up", "ui_down") + float(Input.is_physical_key_pressed(KEY_S)) - float(Input.is_physical_key_pressed(KEY_W)))
 	_actor.areas = _building.walk_areas()      # doorways open and shut
 	_actor.walk(_floor_dir(dir), dir, delta)
-	_fry_brain.tick(delta)
-	var now: int = _building.room_at(_actor.position.z)
+	if _place == "studio":
+		_fry_brain.tick(delta)
+	var now: int = _building.room_at_pos(_actor.position, _room)
 	if now != _room:
-		_change_room(now)
+		if _building.cut_of(now) != _building.cut_of(_room):
+			_change_room(now)      # a different cut of the building: fade
+		else:
+			_room = now            # the room next door: the camera just eases over
 	if _close:
 		_frame_close()
 	elif _cam_name == "follow":
@@ -423,15 +624,18 @@ func _process(delta: float) -> void:
 			_actor.face.talking = Input.is_physical_key_pressed(KEY_SPACE)
 			if _actor.face.talking:
 				_actor.show_face()
-		_hud.text = "face: %s    Z / X change   hold Space to move his mouth   F close-up" % _actor.face.expression
+		_hud.text = "M travel    face: %s    Z / X change   hold Space to move his mouth   F close-up" % _actor.face.expression
 	else:
-		_hud.text = "this drawing has its face baked in (5 has loose face parts)"
+		_hud.text = "M travel    this drawing has its face baked in (5 has loose face parts)"
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
-	if not event.pressed or event.echo or _talk.is_open():
+	if not event.pressed or event.echo or _talk.is_open() or _travel.is_open():
 		return
 	match event.physical_keycode:
+		KEY_M:
+			_travel.open(_place)
+			get_viewport().set_input_as_handled()    # or the same press would close the list it just opened
 		KEY_E:
 			_use_nearest()
 			get_viewport().set_input_as_handled()    # or the same press would also answer the talk box it just opened
@@ -441,10 +645,12 @@ func _unhandled_key_input(event: InputEvent) -> void:
 				_set_character(_characters[pick])
 		KEY_TAB:
 			var names: Array = ["follow"] + CAMS.keys()
-			_building.control.ceiling.visible = true
+			if _ceiling():
+				_ceiling().visible = true
 			_set_camera(names[(names.find(_cam_name) + 1) % names.size()])
 		KEY_C:
-			_building.control.ceiling.visible = not _building.control.ceiling.visible
+			if _ceiling():
+				_ceiling().visible = not _ceiling().visible
 		KEY_Z, KEY_X:
 			if _actor.face:
 				var faces: Array = _actor.face.names()
@@ -512,6 +718,23 @@ func _take_shot() -> void:
 						break
 					_actor.walk(gap.normalized(), _screen_dir(gap.normalized()), 1.0 / 60.0)
 				print("[shot] went to %.2f, %.2f" % [_actor.position.x, _actor.position.z])
+			"key":          # a real key press, through the game's own input handling: key:M, key:Escape, key:1
+				var press := InputEventKey.new()
+				press.physical_keycode = OS.find_keycode_from_string(bits[1])
+				press.keycode = press.physical_keycode
+				press.pressed = true
+				Input.parse_input_event(press)
+				await _wait(0.15)
+				print("[shot] key %s: travel list %s, at %.2f, %.2f" % [bits[1], "open" if _travel.is_open() else "shut", _actor.position.x, _actor.position.z])
+			"travel":
+				_travel.open(_place)
+			"travelhover":
+				_travel.hover(int(bits[1]))
+			"travelpick":
+				print("[shot] travel: %s" % PLACES[int(bits[1])]["name"])
+				_travel.pick(int(bits[1]))
+				await _wait(0.9)
+				print("[shot] arrived at %.2f, %.2f; list open: %s" % [_actor.position.x, _actor.position.z, _travel.is_open()])
 			"frywalk":
 				var way := Vector2(float(bits[1]), float(bits[2]))
 				for i in int(float(bits[3]) * 60.0):
@@ -526,14 +749,14 @@ func _take_shot() -> void:
 			shapes[_actor.face.shown_mouth()] = true
 		print("[shot] talked through %s" % ", ".join(shapes.keys()))
 	set_process(false)
-	_change_room(_building.room_at(_actor.position.z), true)
+	_change_room(_building.room_at_pos(_actor.position, _room), true)
 	_fade.color.a = 0.0
 	if _close:
 		_frame_close()
 	elif _cam_name == "follow":
 		_follow(0.0, true)
 	_find_nearest()
-	print("[shot] in the %s; fry at %.2f, %.2f; nearest: %s; window at %s" % [_building.rooms[_room]["name"], _fry.position.x, _fry.position.z, _nearest.use_name() if _nearest else "-", DisplayServer.window_get_position()])
+	print("[shot] %s: in the %s at %.2f, %.2f; nearest: %s; window at %s" % [_place, _building.rooms[_room]["name"], _actor.position.x, _actor.position.z, _nearest.use_name() if _nearest else "-", DisplayServer.window_get_position()])
 	for i in 12:
 		await get_tree().process_frame
 	await RenderingServer.frame_post_draw

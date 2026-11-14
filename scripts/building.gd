@@ -43,7 +43,10 @@ var rooms: Array = []
 var walls: Array = []
 var doors: Array = []
 var obstacles: Array = []
+var portals: Array = []              # none here; a Place may have some (stairs)
 var active := -1
+var title := "THE BACK ROOM"
+var arrive := Vector3(1.97, 0, 7.35)     # on the pavement, in front of the street door
 
 
 func build() -> void:
@@ -151,6 +154,24 @@ func _fade(node: Node) -> void:
 		elif part != "keep" and (child is VisualInstance3D):
 			child.visible = false
 		_fade(child)
+
+
+# What main.gd asks of any place (place.gd answers the same):
+
+func room_at_pos(pos: Vector3, _was := 0) -> int:
+	return room_at(pos.z)
+
+
+func cut_of(n: int) -> int:
+	return n
+
+
+func show_room(n: int) -> void:
+	show_from(n)
+
+
+func usables() -> Array:
+	return doors.duplicate()
 
 
 ## Which room a spot is in, by how far back it is.

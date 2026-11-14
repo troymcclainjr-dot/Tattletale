@@ -1,6 +1,6 @@
 # Tattletale: pop-up prototype
 
-A playable test of a new direction for Tattletale: flat paper characters in small low-poly sets. You walk a rapper from the street into a small recording studio (front room, control room, vocal booth) and can talk to the one other person there. It is a prototype: one building, two characters, one short conversation with placeholder lines.
+A playable test of a new direction for Tattletale: flat paper characters in small low-poly sets. You walk a rapper round four places in his neighbourhood: a small recording studio, the police station, the courthouse and his own house. It is a prototype: the studio has one other person in it and one short conversation with placeholder lines; the other three places are empty of people so far.
 
 ![The street outside the studio](docs/street.jpg)
 
@@ -23,19 +23,31 @@ The art must be imported once before the game can show it. Opening the project i
 | Key | Does |
 |---|---|
 | WASD / arrows | Walk. He starts on the pavement outside the studio, walks round the furniture and the other character, and the camera follows him |
-| E | Use whatever is nearest and in reach: talk to someone, open or close a door. Its name shows over it. A doorway can only be walked through while its door is open |
+| E | Use whatever is nearest and in reach: talk to someone, open or close a door, go up or down stairs. Its name shows over it. A doorway can only be walked through while its door is open |
 | 1 to 8 | Swap the lead between the character options (A to H). It starts on 5 (E), the only one with a walk cycle and loose face parts |
 | Z / X | Previous / next expression (neutral, happy, grin, laugh, wink, calm, preachy, focused, angry, shout, sad, nervous, cringe, shocked, suspicious, side_eye, smug, bored) |
 | Space (hold) | Move his mouth. If he has his back to you he turns round first |
 | F | Close-up on / off (head to waist) |
-| Tab | Next camera (follow, angle, angle_left, front, console, left, lounge, booth, top) |
-| C | Control-room ceiling on / off |
+| Tab | Next camera (follow, angle, angle_left, front, console, left, lounge, booth, top). In the studio only |
+| C | Control-room ceiling on / off. In the studio only |
+| M | The travel list: the places he can go. Click one or press its number and he arrives on the street outside it. M or Esc closes the list. The places are the studio, the police station, the courthouse and his house |
 | F8 | Save a screenshot to the Godot user folder |
 | Esc | Quit |
 
 In a conversation: the things he can say are listed; the one under the mouse turns yellow. Click it, or press its number. E, Space, Enter or a click (on the box, its text, or anywhere else) finishes a line that is still typing, then moves on.
 
-## The place
+## The places
+
+Press M to travel. He arrives on the pavement outside.
+
+- **The Back Room**, the recording studio: described below.
+- **Police station** (Pen Lucy Precinct): a worn old station house, 16 x 22 m. Lobby and the desk sergeant's office behind glass; the squad room and the captain's office; interview room, booking and the evidence cage; three cells, the drunk tank and the sally port at the back.
+- **Courthouse** (district court): 18 x 22.5 m. Security lobby and the clerk's windows; a public hall and a lawyer room; one courtroom with the lockup and holding cell on one side and the jury room on the other; the judge's chambers and a records room behind.
+- **Tattletale's crib**: a Baltimore rowhouse, 5 m wide. Living room, dining room, kitchen, back yard; press E at the foot of the stairs for his room, the bathroom and the back bedroom upstairs.
+
+Every door opens with E. Floor plans of the three new places are drawn by `make_layouts.py` (in the full working folder: `../artifacts/flat-pivot-20261112/layouts/`).
+
+## The studio
 
 Four spaces in a row, going away from the camera, with a door between each pair:
 
@@ -63,6 +75,10 @@ The names `TATTLETALE` and `LARGE FRY` are working names, and the lines in `asse
 - `scripts/flicker_check.gd` finds surfaces that lie exactly on one another (they flicker as the camera moves). Run it after moving walls, frames or anything flush with them: `python tools/shot.py out.png --check-faces`. A door or window frame must stand a little into its opening, never flush with the cut end of the wall.
 - `scripts/door.gd` is a door that swings open and shut, for any door: put the node at the hinge and call `build_leaf(width, height, colour)` (or build your own leaf under `leaf`). `open_angle`, `open_time` and `shut_time` set the swing; `passage` is the floor that opens up with it (`building.gd` sets it). The three doors in `street_set.gd`, `building.gd` and `studio_set.gd` are the examples.
 - **Anything E can be used on** has four things: `use_name()` (shown over it), `use_spot()` and `use_reach` (where and how near), `label_spot()` (where the name goes), and `use(by)`. Doors and characters have them; add the node to `_usables` in `main.gd`.
+- `scripts/travel_menu.gd` is the travel list. The places are the `PLACES` table at the top of `main.gd`: a name, where he arrives, and `"built": false` for one that is listed but not there yet. `_travel_to(id)` in `main.gd` does the move.
+- `scripts/place.gd` builds a place from a floor plan, and `scripts/plans/police.gd`, `court.gd` and `crib.gd` are the plans. A plan is written in metres as on a drawing (u from the left wall, v from the back wall): `room` lays a floor, `cross` and `side` put up walls with their doors and windows, `bars` and `rail` do cells and railings, and `prop` reserves floor for a piece of furniture. A building is a stack of bands from the street back, each band one or more rooms side by side; standing in a band, the bands nearer the street are hidden, as in the studio. A second floor is another stack, reached by a `portal` (`scripts/portal.gd`: the stairs). The top of `place.gd` has the full list. To add a place: write a plan, add it to `PLANS` and `PLACES` in `main.gd`.
+- `scripts/props.gd` is the furniture: desks, benches, shelves, cells, the courtroom pieces, kitchen and bedroom things, cars, street furniture. Each takes the place, the band, where on the plan, and which way it faces.
+- After changing a plan, run both checks (below): `--check-walk` proves every room can still be walked to, `--check-faces` that nothing flickers.
 - `scripts/paper_actor.gd` is the flat character card: which drawing to show, the walk cycle, and stopping at walls, props and other characters. Give it a `display_name` and it can be talked to.
 - `scripts/wanderer.gd` walks a character about the floor on its own.
 - `scripts/talk_box.gd` is the conversation box and runs a conversation from a table like `assets/data/talk_fry.json`: a node is either a list of things the player can say, or one line someone says. The format is at the top of the script. Text is in Bungee (`assets/fonts/`, with its licence, the SIL Open Font License; the font has capitals only).
@@ -83,4 +99,4 @@ For working on the game, not needed to play it. Needs Python 3. Run from this fo
     python tools/shot.py out.png --at=2.2,-1.9 --do=use,wait:1.2
     python tools/shot.py out.png --do=use,wait:1,go:1.97:5.26,go:0.78:3.24,use,wait:1,go:0.75:1.76
 
-`--walk=x,y,seconds` walks him that way on screen (x right, y towards you) before the picture is taken. `--at=x,z` puts him anywhere on the floor plan (without it he starts on the pavement). `--do=` runs steps after that: `use` (press E), `wait:seconds`, `hover:n`, `pick:n`, `next`, `clickbox` (a mouse click on the talk box), `go:x:z` (walk straight to that spot; walls, props and shut doors stop him). The last line printed says which room he ended in. `--check-faces` lists flickering surfaces (see `flicker_check.gd`); `0 overlapping pairs` is clean.
+`--walk=x,y,seconds` walks him that way on screen (x right, y towards you) before the picture is taken. `--at=x,z` puts him anywhere on the floor plan (without it he starts on the pavement). `--do=` runs steps after that: `use` (press E), `wait:seconds`, `hover:n`, `pick:n`, `next`, `clickbox` (a mouse click on the talk box), `go:x:z` (walk straight to that spot; walls, props and shut doors stop him), `travel`, `travelhover:n`, `travelpick:n` (the travel list), `key:M` (a real key press, by name). The last line printed says which room he ended in. `--check-faces` lists flickering surfaces (see `flicker_check.gd`); `0 overlapping pairs` is clean. `--place=police` (or `court`, `crib`) starts him at that place, `--room=BOOKING` stands him in the room of that name, and `--check-walk` opens every door and reports how much of each room he can reach: `python tools/shot.py out.png --place=court --check-walk --check-faces`.
