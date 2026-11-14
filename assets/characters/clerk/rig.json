@@ -112,6 +112,12 @@
    "h": 58.9,
    "mirror": false
   },
+  "eye_look": {
+   "file": "parts/eye_look.png",
+   "w": 79.5,
+   "h": 130.6,
+   "mirror": false
+  },
   "brow_straight": {
    "file": "parts/brow_straight.png",
    "w": 62.8,

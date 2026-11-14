@@ -18,6 +18,14 @@ Get this folder (on GitHub: Code, then Download ZIP, and unzip it; or `git clone
 
 The art must be imported once before the game can show it. Opening the project in the editor does that, and so do PLAY.cmd and the `--import` command.
 
+## Starting
+
+The game opens on a title screen: **NEW GAME**, **CONTINUE** and **SETTINGS**. Pick with the mouse, or Up / Down and Enter.
+
+- **New game** goes to a black screen with the lead in the middle, a little angel at one shoulder and a little devil at the other. While you have picked neither, his eyes go from one to the other, the camera drifts a little, and START is greyed out. Click one (or press Left / Right): its outline glows, gold and white for the angel, red for the devil, his eyes stay on it, and START can be pressed. Click it again to let go; Esc goes back to the title. START puts him on the street outside the studio. So far the choice is only remembered (it shows in the corner text); nothing in the places depends on it yet.
+- **Continue** is greyed out until there is a game to go back to. It returns him to the street outside the place he was last at. The game is kept in `save.json` in the Godot user folder, written when a new game starts and each time he travels.
+- **Settings** has one switch so far: fullscreen on or off (kept in `settings.json`).
+
 ## Keys
 
 | Key | Does |
@@ -32,7 +40,7 @@ The art must be imported once before the game can show it. Opening the project i
 | C | Control-room ceiling on / off. In the studio only |
 | M | The travel list: the places he can go. Click one or press its number and he arrives on the street outside it. M or Esc closes the list. There are eight: the studio, the police station, the courthouse, his house, the corner store, the liquor store, Large Fry's place and the hospital |
 | F8 | Save a screenshot to the Godot user folder |
-| Esc | Ends a conversation, or steps away from the microphone. Otherwise quits |
+| Esc | Ends a conversation, steps away from the microphone, or backs out of a menu. Otherwise quits |
 
 At the microphone (E beside it, in the booth): black bars slide in top and bottom, the camera watches him through the control-room window and drifts slowly from side to side, and he performs: his mouth goes, his knees dip on the beat, he rocks from foot to foot and his arms work. There is no sound yet. Esc steps away.
 

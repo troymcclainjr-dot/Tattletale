@@ -32,7 +32,7 @@ const EXPRESSIONS := {
 	"bored": {"eyes": "eye_half", "mouth": "mouth_neutral", "brows": "brow_straight", "l": [-0.06, 0.0], "r": [-0.06, 0.0]},
 }
 const TALK_SHAPES := ["mouth_small", "mouth_ah", "mouth_oh", "mouth_ee", "mouth_ff", "mouth_neutral"]
-const BLINKING_EYES := ["eye_open", "eye_half", "eye_wide", "eye_squint", "eye_glare", "eye_side"]
+const BLINKING_EYES := ["eye_open", "eye_half", "eye_wide", "eye_squint", "eye_glare", "eye_side", "eye_look"]
 const FACE_SHADER := preload("res://shaders/paper_face.gdshader")
 const LIFT := 0.012        # how much nearer the eye than the body card the face is drawn, metres
 
@@ -52,6 +52,7 @@ var _mouth := "mouth_neutral"
 var _held_mouth := ""
 var _brow_now := [Vector2.ZERO, Vector2.ZERO]   # x lift, y tilt
 var _brow_goal := [Vector2.ZERO, Vector2.ZERO]
+var _look := 0.0           # -1: he looks to the left of the screen, 1: to the right, 0: wherever the expression looks
 var _blink_in := 2.0
 var _blink_left := 0.0
 var _talk_in := 0.0
@@ -188,13 +189,30 @@ func _process(delta: float) -> void:
 		_show_mouth(_mouth)
 
 
+## Look to one side of the screen (-1 left, 1 right) whatever the expression's
+## eyes are doing, or 0 to go back to them. He still blinks.
+func look(side: float) -> void:
+	_look = signf(side)
+	_show_eyes(_blink_left > 0.0)
+
+
 ## Each eye shows its own drawing; in a blink, an eye that is open shuts.
+## Looking aside, both show the looking-aside drawing (a white eye, the pupil
+## hard against one side), turned to look that way.
 func _show_eyes(blink: bool) -> void:
 	for i in 2:
+		var slot: String = ["eye_l", "eye_r"][i]
 		var part: String = _eyes[i]
+		if _look != 0.0 and part in BLINKING_EYES:
+			part = "eye_look" if _rig["parts"].has("eye_look") else "eye_side"
 		if blink and part in BLINKING_EYES:
 			part = "eye_shut"
-		_put(["eye_l", "eye_r"][i], part)
+		_put(slot, part)
+		if part in ["eye_look", "eye_side"] and _look != 0.0:
+			_nodes[slot].scale.x = _look            # as drawn, it looks to the right
+		else:
+			var mirrored: bool = i == 1 and _rig["parts"][part].get("mirror", true)
+			_nodes[slot].scale.x = -1.0 if mirrored else 1.0
 
 
 func _show_mouth(part: String) -> void:

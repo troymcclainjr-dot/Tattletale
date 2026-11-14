@@ -14,6 +14,10 @@ extends Node3D
 ##   Space (hold)   move his mouth          F       close-up on / off
 ##   F8             save a PNG to user://shots
 ##   M              the travel list: pick a place and he arrives on the street outside it
+##
+## It opens on the title screen (title_screen.gd): NEW GAME goes to the choice
+## between the angel and the devil (choose_screen.gd) and then to the street
+## outside the studio; CONTINUE goes back to the place he was last at.
 ##   E at the booth microphone: he performs, seen through the control-room glass
 ##                  with black bars top and bottom; Esc steps away
 ##
@@ -26,6 +30,7 @@ extends Node3D
 ##         [--face=angry] [--mouth=mouth_ah] [--close] [--talk=seconds]
 ##         [--walk=x,y,seconds] [--rest=seconds] [--fry-at=x,z] [--wander]
 ##         [--do=step,step,...] [--check-faces] [--eye=x,y,z,x,y,z]
+##         [--title] [--settings] [--choose] [--choose=angel|devil]
 ##   Steps run in order after the walk: use (press E), wait:seconds, frames:n, hover:n,
 ##   pick:n, next (E in a conversation), clickbox (click the talk box), walk:x:y:seconds (hold an arrow key:
 ##   a direction on screen), go:x:z (walk straight to that spot on
@@ -48,6 +53,8 @@ const PaperActor := preload("res://scripts/paper_actor.gd")
 const Wanderer := preload("res://scripts/wanderer.gd")
 const TalkBox := preload("res://scripts/talk_box.gd")
 const TravelMenu := preload("res://scripts/travel_menu.gd")
+const TitleScreen := preload("res://scripts/title_screen.gd")
+const ChooseScreen := preload("res://scripts/choose_screen.gd")
 const FONT := preload("res://assets/fonts/Bungee-Regular.ttf")   # Pen Lucy's display font
 
 ## The follow camera keeps this far from him, off to the right. It may not go
@@ -59,6 +66,9 @@ const LEAD_SPEED := 1.25          # the lead walks this much faster than the pla
 const BAR := 0.12                 # each black bar of a performance, as a fraction of the screen's height
 const PERFORM_ROOM := 2           # a performance is watched from the control room
 const MOODS := ["focused", "preachy", "smug", "shout", "happy"]     # his face changes every eight beats
+
+const SAVE := "user://save.json"              # where the game has got to: {"side", "place"}
+const SETTINGS := "user://settings.json"      # {"fullscreen"}
 
 ## The travel list (M). Each place says where he arrives (its `arrive`). A row
 ## with "built": false is listed but cannot be picked.
@@ -124,6 +134,12 @@ var _mood_was := ""            # the face he had before it
 var _bars: Array = []          # the two black bars, top and bottom
 var _bar := 0.0                # 0 off the screen .. 1 all the way in
 var _bar_note: Label
+var _mode := "play"            # "title", "choose" (the angel or the devil) or "play"
+var _side := ""                # who he listens to: "angel" or "devil", picked at the start of a new game
+var _title: CanvasLayer
+var _choose: Node3D
+var _save_path := SAVE         # a screenshot run may name another file with --save= (it never touches the real one)
+var _shot_screen := ""         # screenshot mode: "title", "settings", "choose" or "choose=angel" to photograph that screen
 
 
 func _ready() -> void:
@@ -240,6 +256,17 @@ func _ready() -> void:
 	_travel.set_places(PLACES)
 	add_child(_travel)
 	_travel.picked.connect(_travel_to)
+	_title = TitleScreen.new()
+	add_child(_title)
+	_title.new_game.connect(_new_game)
+	_title.continue_game.connect(_continue_game)
+	_title.fullscreen_set.connect(_set_fullscreen)
+	_choose = ChooseScreen.new()
+	_choose.position = Vector3(0, 300, 0)        # far above the places, with its own camera and backdrop
+	add_child(_choose)
+	_choose.build(_rig_dir("e"))
+	_choose.started.connect(_begin_game)
+	_choose.cancelled.connect(_leave_choose)
 
 	var curtain := CanvasLayer.new()
 	curtain.layer = 20
@@ -291,6 +318,10 @@ func _ready() -> void:
 			_shot_steps = arg.trim_prefix("--do=").split(",")
 		elif arg.begins_with("--eye="):    # x,y,z,x,y,z: put the camera at the first point, looking at the second
 			_shot_eye = arg.trim_prefix("--eye=").split_floats(",")
+		elif arg.begins_with("--save="):   # keep the game in this file instead (for trying CONTINUE)
+			_save_path = arg.trim_prefix("--save=")
+		elif arg == "--title" or arg == "--settings" or arg.begins_with("--choose"):
+			_shot_screen = arg.trim_prefix("--")
 		elif arg == "--check-walk":        # can every room be walked to, with every door open?
 			_check_walk()
 		elif arg == "--check-faces":       # list surfaces lying exactly on one another (they flicker)
@@ -318,7 +349,21 @@ func _ready() -> void:
 				if member["brain"]:
 					member["brain"].frozen = not _wander
 		_hud.visible = false
+		match _shot_screen.get_slice("=", 0):
+			"title":
+				_show_title()
+			"settings":
+				_show_title()
+				_title._show_settings(true)
+			"choose":
+				_new_game()
+				if _shot_screen.contains("="):
+					_choose.choose(_shot_screen.get_slice("=", 1))
 		_take_shot.call_deferred()
+	else:
+		if _read(SETTINGS).get("fullscreen", false):
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+		_show_title()
 
 
 func _new_actor(node_name: String, at: Vector3) -> Node3D:
@@ -617,6 +662,7 @@ func _travel_to(id: String, instant := false) -> void:
 		_open_place(id)
 		_actor.show_face()
 		_set_camera(_cam_name)
+		_save_game()
 	if instant:
 		arrive.call()
 		return
@@ -665,7 +711,7 @@ func _show_doors() -> void:
 func _find_nearest() -> void:
 	_nearest = null
 	var best := INF
-	if not _talk.is_open() and not _performing:
+	if not _talk.is_open() and not _performing and _mode == "play":
 		for thing: Node3D in _usables:
 			if not thing.is_visible_in_tree():
 				continue
@@ -714,6 +760,105 @@ func _set_frozen(npc: Node3D, frozen: bool) -> void:
 	for member: Dictionary in _cast.get(_place, []):
 		if member["actor"] == npc and member["brain"]:
 			member["brain"].frozen = frozen
+
+
+# ------------------------------------------------------- title and new game
+
+func _read(path: String) -> Dictionary:
+	if not FileAccess.file_exists(path):
+		return {}
+	var data = JSON.parse_string(FileAccess.get_file_as_string(path))
+	return data if typeof(data) == TYPE_DICTIONARY else {}
+
+
+func _write(path: String, data: Dictionary) -> void:
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	if file:
+		file.store_string(JSON.stringify(data, "\t"))
+
+
+## Remember where the game has got to, for CONTINUE. A screenshot run never saves.
+func _save_game() -> void:
+	if _mode == "play" and not (_scripted and _save_path == SAVE):
+		_write(_save_path, {"side": _side, "place": _place})
+
+
+## Which screen is up. The places are hidden behind the choice (it has its own
+## camera and backdrop) and shown, dimmed by the title's own shade, behind the title.
+func _set_mode(mode: String) -> void:
+	_mode = mode
+	_hud.visible = mode == "play" and not _scripted
+	var world := mode != "choose"
+	_building.visible = world
+	_actor.visible = world
+	_fry.visible = world and _place == "studio"
+	if world:
+		_camera.current = true
+
+
+## Black the picture out, make the change behind it, bring the picture back.
+## (At once in a screenshot run.)
+func _cut_to(change: Callable) -> void:
+	if _scripted:
+		change.call()
+		return
+	var tween := create_tween()
+	tween.tween_property(_fade, "color:a", 1.0, 0.2)
+	tween.tween_callback(change)
+	tween.tween_interval(0.1)
+	tween.tween_property(_fade, "color:a", 0.0, 0.35)
+
+
+func _show_title() -> void:
+	_set_mode("title")
+	_title.open(not _read(_save_path).is_empty(), DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN)
+
+
+## NEW GAME: to the angel and the devil.
+func _new_game() -> void:
+	_cut_to(func() -> void:
+		_title.close()
+		_set_mode("choose")
+		_choose.open())
+
+
+## Esc on the choice: back to the title.
+func _leave_choose() -> void:
+	_cut_to(func() -> void:
+		_choose.close()
+		_show_title())
+
+
+## START on the choice: the game begins on the street outside the studio.
+func _begin_game(side: String) -> void:
+	_cut_to(func() -> void:
+		_choose.close()
+		_side = side
+		_set_mode("play")
+		_open_place("studio")
+		_actor.show_face()
+		_set_camera("follow")
+		_save_game())
+
+
+## CONTINUE: back to the place he was last at, listening to whoever he chose.
+func _continue_game() -> void:
+	var data := _read(_save_path)
+	_cut_to(func() -> void:
+		_title.close()
+		_side = String(data.get("side", ""))
+		_set_mode("play")
+		var id := String(data.get("place", "studio"))
+		_open_place(id if PLANS.has(id) else "studio")
+		_actor.show_face()
+		_set_camera("follow"))
+
+
+func _set_fullscreen(on: bool) -> void:
+	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN if on else DisplayServer.WINDOW_MODE_MAXIMIZED)
+	var settings := _read(SETTINGS)
+	settings["fullscreen"] = on
+	_write(SETTINGS, settings)
 
 
 # ------------------------------------------------------------ at the microphone
@@ -797,8 +942,10 @@ func _show_bars(delta: float) -> void:
 
 
 func _process(delta: float) -> void:
+	if _mode == "choose":            # the choice runs itself; the places are hidden
+		return
 	var dir := Vector2.ZERO
-	if not _scripted and not _talk.is_open() and not _travel.is_open() and not _performing:
+	if not _scripted and not _talk.is_open() and not _travel.is_open() and not _performing and _mode == "play":
 		dir = Vector2(
 			Input.get_axis("ui_left", "ui_right") + float(Input.is_physical_key_pressed(KEY_D)) - float(Input.is_physical_key_pressed(KEY_A)),
 			Input.get_axis("ui_up", "ui_down") + float(Input.is_physical_key_pressed(KEY_S)) - float(Input.is_physical_key_pressed(KEY_W)))
@@ -834,13 +981,13 @@ func _process(delta: float) -> void:
 			_actor.face.talking = Input.is_physical_key_pressed(KEY_SPACE)
 			if _actor.face.talking:
 				_actor.show_face()
-		_hud.text = "M travel    face: %s    Z / X change   hold Space to move his mouth   F close-up" % _actor.face.expression
+		_hud.text = "M travel    face: %s    Z / X change   hold Space to move his mouth   F close-up%s" % [_actor.face.expression, "" if _side == "" else "    listening to the %s" % _side]
 	else:
 		_hud.text = "M travel    this drawing has its face baked in (5 has loose face parts)"
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
-	if not event.pressed or event.echo or _talk.is_open() or _travel.is_open():
+	if not event.pressed or event.echo or _talk.is_open() or _travel.is_open() or _mode != "play":
 		return
 	if _performing:                 # nothing but Esc while he is at the microphone
 		if event.physical_keycode == KEY_ESCAPE:
@@ -912,6 +1059,15 @@ func _take_shot() -> void:
 				_use_nearest()
 			"wait":
 				await _wait(float(bits[1]))
+			"choose":       # choose:angel or choose:devil (or choose: to let go), on the new-game screen
+				_choose.choose(bits[1] if bits.size() > 1 else "")
+				print("[shot] chose: %s" % _choose.chosen)
+			"continue":     # pick CONTINUE on the title screen
+				_continue_game()
+				print("[shot] continued: mode %s, side %s, place %s" % [_mode, _side, _place])
+			"start":        # press START there
+				_choose.start()
+				print("[shot] started: mode %s, side %s, place %s" % [_mode, _side, _place])
 			"frames":       # frames:n: let n frames go by (to catch something part-way through)
 				for i in int(bits[1]):
 					await get_tree().process_frame
@@ -975,7 +1131,9 @@ func _take_shot() -> void:
 		print("[shot] talked through %s" % ", ".join(shapes.keys()))
 	set_process(false)
 	_fade.color.a = 0.0
-	if _performing:
+	if _mode == "choose":
+		pass                        # its own camera
+	elif _performing:
 		_perform_cam(0.0)
 	else:
 		_change_room(_building.room_at_pos(_actor.position, _room), true)
