@@ -198,14 +198,52 @@ static func coffee(p: Node3D, b: int, u: float, v: float, yaw := 0.0) -> Node3D:
 	return g
 
 
-static func flag(p: Node3D, b: int, u: float, v: float, cloth := Color(0.16, 0.2, 0.45), yaw := 0.0) -> Node3D:
+## A flag on an indoor stand. `stripes` makes it the national one: a blue
+## corner over red and white; otherwise it is one colour with a gold fringe.
+static func flag(p: Node3D, b: int, u: float, v: float, cloth := Color(0.16, 0.2, 0.45), yaw := 0.0, stripes := false) -> Node3D:
 	var g: Node3D = p.prop(b, u, v, yaw, 0.3, 0.3)
-	var brass := Color(0.75, 0.6, 0.25)
-	Kit.cyl(g, 0.14, 0.04, Vector3(0, 0.02, 0), brass, Vector3.ZERO, 10)
-	Kit.cyl(g, 0.018, 2.3, Vector3(0, 1.15, 0), brass, Vector3.ZERO, 6)
-	Kit.ball(g, 0.04, Vector3(0, 2.32, 0), brass, 6)
-	Kit.box(g, Vector3(0.5, 0.95, 0.04), Vector3(0.24, 1.7, 0), cloth, Vector3(0, 0, -6))
+	flag_on(g, Vector3.ZERO, cloth, stripes)
 	return g
+
+
+## The flag itself, built into any group (a judge's bench has two). The pole
+## leans a little on a weighted base and the cloth hangs off it in folds:
+## strips side by side, each a little shorter and set a little forward or back
+## of the last, light and dark by turns.
+static func flag_on(parent: Node3D, at: Vector3, cloth := Color(0.16, 0.2, 0.45), stripes := false, lean := -5.0) -> Node3D:
+	var f := Kit.group(parent, at)
+	var brass := Color(0.75, 0.6, 0.25)
+	Kit.cyl(f, 0.17, 0.05, Vector3(0, 0.025, 0), brass.darkened(0.25), Vector3.ZERO, 12)
+	Kit.cyl(f, 0.07, 0.1, Vector3(0, 0.1, 0), brass, Vector3.ZERO, 8, 0.03)
+	var pole := Kit.group(f, Vector3(0, 0.05, 0), Vector3(0, 0, lean))
+	Kit.cyl(pole, 0.016, 2.25, Vector3(0, 1.125, 0), brass.darkened(0.12), Vector3.ZERO, 6)
+	Kit.ball(pole, 0.036, Vector3(0, 2.27, 0), brass, 6)
+	Kit.cyl(pole, 0.024, 0.13, Vector3(0, 2.36, 0), brass, Vector3.ZERO, 6, 0.0)
+	var way := 1.0 if lean <= 0.0 else -1.0                   # the side the cloth hangs on
+	var top := 2.17                                            # where the cloth is tied to the pole
+	var x0 := way * (sin(deg_to_rad(absf(lean))) * top + 0.01)    # the pole is here at that height
+	var red := Color(0.7, 0.13, 0.15)
+	var white := Color(0.92, 0.9, 0.84)
+	# Hanging at rest the cloth is widest near the top and comes to a point low
+	# down by the pole: each strip starts a little lower and ends a lot higher
+	# than the one before it.
+	var drops := [0.0, 0.02, 0.05, 0.1, 0.17, 0.27]
+	var longs := [1.32, 1.26, 1.14, 0.96, 0.72, 0.42]
+	for k in drops.size():
+		var long: float = longs[k]
+		var y1: float = top - drops[k]
+		var x := x0 + way * (0.04 + 0.085 * k)
+		var z := 0.016 if k % 2 == 0 else -0.016
+		var look: Color = cloth.darkened(0.22) if k % 2 == 1 else cloth
+		if stripes:
+			look = white.darkened(0.06) if k % 2 == 1 else red
+		Kit.box(f, Vector3(0.095, long, 0.03), Vector3(x, y1 - long * 0.5, z), look)
+		if stripes and k < 3:                                 # the blue corner, at the top by the pole
+			Kit.box(f, Vector3(0.097, 0.5, 0.034), Vector3(x, y1 - 0.25 + 0.01, z), Color(0.13, 0.17, 0.42).darkened(0.18 * (k % 2)))
+		if not stripes:
+			Kit.box(f, Vector3(0.097, 0.025, 0.034), Vector3(x, y1 - long - 0.008, z), brass)      # the fringe
+	Kit.box(f, Vector3(0.03, 0.05, 0.03), Vector3(x0 + way * 0.012, top + 0.01, 0), brass)      # the tie
+	return f
 
 
 static func boxes(p: Node3D, b: int, u: float, v: float, n := 4) -> Node3D:
@@ -418,6 +456,9 @@ static func judge_bench(p: Node3D, b: int, u: float, v: float, yaw := 0.0, w := 
 	Kit.box(g, Vector3(0.6, 0.1, 0.55), Vector3(0, 0.8, -d * 0.5 + 0.55), Color(0.2, 0.1, 0.08))
 	Kit.block(g, Vector3(0.1, 0.05, 0.22), Vector3(0.5, 1.445, d * 0.5 - 0.3), WOOD_DARK)
 	Kit.box(g, Vector3(0.36, 0.08, 0.04), Vector3(0, 1.49, d * 0.5 - 0.02), Color(0.78, 0.63, 0.25))
+	# The two flags stand on the platform, one at each end, behind the front.
+	flag_on(g, Vector3(-w * 0.5 + 0.3, 0.3, -d * 0.5 + 0.3), Color(0.16, 0.2, 0.45), true, 5.0)
+	flag_on(g, Vector3(w * 0.5 - 0.3, 0.3, -d * 0.5 + 0.3), Color(0.75, 0.6, 0.2), false, -5.0)
 	return g
 
 
@@ -620,27 +661,67 @@ static func basin(p: Node3D, b: int, u: float, v: float, yaw := 0.0) -> Node3D:
 	return g
 
 
-## A flight of stairs climbing towards the back of its floor space.
-static func stairs(p: Node3D, b: int, u: float, v: float, yaw := 0.0, w := 0.95, l := 3.4, rise := 2.9, look := WOOD) -> Node3D:
+## A flight of stairs. Its foot is at the street end of its floor space and it
+## climbs towards the back, `rise` metres in all. A banister runs up its open
+## side (the right, facing the foot), from a newel post at the foot to where it
+## meets the ceiling (`ceiling` metres up).
+static func stairs(p: Node3D, b: int, u: float, v: float, yaw := 0.0, w := 0.95, l := 3.4, rise := 2.9, look := WOOD, ceiling := 2.9) -> Node3D:
 	var g: Node3D = p.prop(b, u, v, yaw, w, l)
 	var n := 12
 	for i in n:
 		var h := rise * float(i + 1) / float(n)
 		Kit.block(g, Vector3(w, h, l / n), Vector3(0, 0, l * 0.5 - (i + 0.5) * l / n), look.darkened(0.04 * (i % 2)))
+	# The banister: a newel post, a baluster on each tread, the handrail over them.
+	var dark := WOOD_DARK
+	var x := w * 0.5 - 0.04
+	var hand := 0.86                       # the handrail is this far above the treads
+	Kit.block(g, Vector3(0.09, hand + 0.3, 0.09), Vector3(x, 0, l * 0.5 + 0.045), dark)
+	Kit.ball(g, 0.065, Vector3(x, hand + 0.34, l * 0.5 + 0.045), dark, 6)
+	var last := 0
+	for i in n:
+		var h := rise * float(i + 1) / float(n)
+		if h + hand > ceiling - 0.04:
+			break
+		last = i
+		Kit.block(g, Vector3(0.035, hand, 0.035), Vector3(x, h, l * 0.5 - (i + 0.5) * l / n), dark)
+	# The handrail runs from the newel to the last baluster, along the slope.
+	var z0 := l * 0.5 + 0.045
+	var z1 := l * 0.5 - (last + 0.5) * l / n
+	var y0 := hand + 0.22
+	var y1 := rise * float(last + 1) / float(n) + hand
+	var run := Vector2(z0 - z1, y1 - y0)
+	Kit.box(g, Vector3(0.06, 0.05, run.length() + 0.04), Vector3(x, (y0 + y1) * 0.5, (z0 + z1) * 0.5), dark, Vector3(rad_to_deg(atan2(run.y, run.x)), 0, 0))
 	return g
 
 
-## The top of a flight of stairs: a dark hole in the floor with a rail on three sides.
-static func stairwell(p: Node3D, b: int, u: float, v: float, yaw := 0.0, w := 0.95, l := 3.4) -> Node3D:
+## The top of that flight, on the floor above: the same floor space, at the
+## same spot. The floor of the room must have a hole there (place.gd's room,
+## opts "hole"). The stairs come up at the BACK end, level with the floor, and
+## drop away towards the street; a rail guards the open side and the street
+## end, and the back end is where you step on.
+static func stairwell(p: Node3D, b: int, u: float, v: float, yaw := 0.0, w := 0.95, l := 3.4, rise := 2.9, look := WOOD, shaft := Color(0.3, 0.26, 0.2)) -> Node3D:
 	var g: Node3D = p.prop(b, u, v, yaw, w, l)
-	Kit.box(g, Vector3(w, 0.012, l), Vector3(0, 0.007, 0), Color(0.05, 0.04, 0.06))
-	for i in 6:
-		Kit.box(g, Vector3(w, 0.012, 0.05), Vector3(0, 0.016, l * 0.5 - 0.3 - i * 0.5), Color(0.25, 0.17, 0.11))
-	var wood := WOOD_DARK
-	Kit.box(g, Vector3(0.06, 0.06, l), Vector3(w * 0.5 - 0.03, 0.92, 0), wood)
-	Kit.box(g, Vector3(w, 0.06, 0.06), Vector3(0, 0.92, -l * 0.5 + 0.03), wood)
-	for i in 9:
-		Kit.box(g, Vector3(0.04, 0.9, 0.04), Vector3(w * 0.5 - 0.03, 0.45, -l * 0.5 + 0.03 + i * (l - 0.06) / 8.0), wood)
+	var n := 12
+	for i in n:        # the same treads as below, seen from above: the top one is flush with this floor
+		var h := rise * float(i + 1) / float(n)
+		Kit.block(g, Vector3(w - 0.01, h, l / n), Vector3(0, -rise - 0.002, l * 0.5 - (i + 0.5) * l / n), look.darkened(0.04 * (i % 2) + 0.5 * (1.0 - float(i + 1) / float(n))))
+	# The sides of the shaft under the floor.
+	Kit.box(g, Vector3(0.04, rise, l), Vector3(-w * 0.5 - 0.02, -rise * 0.5 - 0.31, 0), shaft)
+	Kit.box(g, Vector3(0.04, rise, l), Vector3(w * 0.5 + 0.02, -rise * 0.5 - 0.31, 0), shaft.darkened(0.2))
+	Kit.box(g, Vector3(w + 0.08, rise, 0.04), Vector3(0, -rise * 0.5 - 0.31, l * 0.5 + 0.02), shaft.darkened(0.35))
+	# The rail: along the open side and across the street end.
+	var dark := WOOD_DARK
+	var x := w * 0.5 - 0.035
+	var z := l * 0.5 - 0.035
+	Kit.box(g, Vector3(0.06, 0.05, l - 0.01), Vector3(x, 0.93, 0), dark)
+	Kit.box(g, Vector3(w - 0.07, 0.05, 0.06), Vector3(-0.035, 0.925, z), dark)
+	var posts := int(l / 0.14)
+	for i in posts + 1:
+		Kit.block(g, Vector3(0.035, 0.9, 0.035), Vector3(x, 0, -l * 0.5 + 0.045 + i * (l - 0.09) / float(posts)), dark)
+	for i in range(1, int(w / 0.14)):
+		Kit.block(g, Vector3(0.035, 0.9, 0.035), Vector3(x - i * 0.14, 0, z), dark)
+	Kit.block(g, Vector3(0.09, 1.1, 0.09), Vector3(x, 0, -l * 0.5 + 0.045), dark)        # the newel at the top of the stairs
+	Kit.ball(g, 0.065, Vector3(x, 1.14, -l * 0.5 + 0.045), dark, 6)
 	return g
 
 

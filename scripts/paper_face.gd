@@ -33,7 +33,8 @@ const EXPRESSIONS := {
 }
 const TALK_SHAPES := ["mouth_small", "mouth_ah", "mouth_oh", "mouth_ee", "mouth_ff", "mouth_neutral"]
 const BLINKING_EYES := ["eye_open", "eye_half", "eye_wide", "eye_squint", "eye_glare", "eye_side"]
-const LIFT := 0.012        # how far the face sits off the body card, metres
+const FACE_SHADER := preload("res://shaders/paper_face.gdshader")
+const LIFT := 0.012        # how much nearer the eye than the body card the face is drawn, metres
 
 var expression := "neutral"
 var talking := false
@@ -57,6 +58,7 @@ var _talk_in := 0.0
 var _rng := RandomNumberGenerator.new()
 var _layout := {}          # how the face sits on the drawing on show; empty for the front
 var _mouth_now := ""       # the mouth on show, by its front name
+var _under: Texture2D      # the body drawing on show (profile mouths are cut off by its outline)
 
 
 func setup(dir: String, rig: Dictionary, card_height: float, body_px: Vector2) -> void:
@@ -70,12 +72,11 @@ func setup(dir: String, rig: Dictionary, card_height: float, body_px: Vector2) -
 	for slot in ["goatee", "stache_l", "stache_r", "mouth", "eye_l", "eye_r", "brow_l", "brow_r"]:
 		var node := MeshInstance3D.new()
 		node.mesh = QuadMesh.new()
-		var mat := StandardMaterial3D.new()
-		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
-		mat.alpha_scissor_threshold = 0.5
-		mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-		mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		# The parts lie flat on the card. The shader draws each one over the card
+		# and over the parts under it (see paper_face.gdshader).
+		var mat := ShaderMaterial.new()
+		mat.shader = FACE_SHADER
+		mat.set_shader_parameter("toward", LIFT + 0.002 * layer)
 		node.material_override = mat
 		node.set_meta("layer", layer)
 		node.rotation.z = _tilt
@@ -128,8 +129,9 @@ func hold_mouth(part: String) -> void:
 ## rig's own anchors and head tilt, every slot shown. A layout can give its own
 ## "anchors" and "tilt_deg", "hide" slots (a profile shows one eye and one
 ## brow), and name a "mouth_prefix" for mouth drawings made for that view.
-func set_layout(layout: Dictionary) -> void:
+func set_layout(layout: Dictionary, drawing: Texture2D = null) -> void:
 	_layout = layout
+	_under = drawing
 	_tilt = deg_to_rad(float(layout.get("tilt_deg", _rig["tilt_deg"])))
 	var hidden: Array = layout.get("hide", [])
 	for slot: String in _nodes:
@@ -145,10 +147,10 @@ func set_layout(layout: Dictionary) -> void:
 	_place_brows()
 
 
-## Which face of the body card the camera sees: 1 as drawn, -1 mirrored.
-func set_side(side: float) -> void:
-	for node: MeshInstance3D in _nodes.values():
-		node.position.z = side * (LIFT + 0.002 * int(node.get_meta("layer")))
+## Which face of the body card the camera sees: 1 as drawn, -1 mirrored. The
+## parts lie on the card either way, so there is nothing to move.
+func set_side(_side: float) -> void:
+	pass
 
 
 func _process(delta: float) -> void:
@@ -204,10 +206,17 @@ func _show_mouth(part: String) -> void:
 	_put("mouth", drawing)
 	var info: Dictionary = _rig["parts"][drawing]
 	var node: MeshInstance3D = _nodes["mouth"]
+	var mat: ShaderMaterial = node.material_override
+	mat.set_shader_parameter("clip", info.has("at") and _under != null)
 	if info.has("at"):      # made for one view: it says exactly where its middle goes
 		node.rotation.z = 0.0
 		node.position.x = (float(info["at"][0]) - _body.x * 0.5) * _m
 		node.position.y = (_body.y - float(info["at"][1])) * _m
+		# It runs under the head outline: the shader shows it only over skin.
+		var size := Vector2(float(info["w"]), float(info["h"]))
+		var corner := Vector2(float(info["at"][0]), float(info["at"][1])) - size * 0.5
+		mat.set_shader_parameter("body", _under)
+		mat.set_shader_parameter("body_rect", Vector4(corner.x / _body.x, corner.y / _body.y, size.x / _body.x, size.y / _body.y))
 		return
 	# The anchor is the lip line. A part says how far below its top edge that
 	# line is ("lip"); without it the part is centred on the line.
@@ -244,7 +253,7 @@ func _put(slot: String, part: String) -> void:
 	if not _textures.has(part):
 		_textures[part] = load(_dir.path_join(info["file"]))
 	(node.mesh as QuadMesh).size = Vector2(float(info["w"]), float(info["h"])) * _m
-	(node.material_override as StandardMaterial3D).albedo_texture = _textures[part]
+	(node.material_override as ShaderMaterial).set_shader_parameter("art", _textures[part])
 	node.set_meta("part", part)
 	if slot == "eye_r":    # mirrored, unless the drawing looks one way (the side-eye)
 		node.scale.x = -1.0 if info.get("mirror", true) else 1.0

@@ -3,6 +3,8 @@
 # This machine's own Godot (see PLAY.cmd)
 godot_path.txt
 /Godot*.exe
+# Written and removed by tools/shot.py while it takes a picture
+/override.cfg
 __pycache__/
 *.pyc
 *.tmp

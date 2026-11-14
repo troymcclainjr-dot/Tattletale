@@ -8,13 +8,18 @@ extends RefCounted
 ##
 ## The game floor is flat, so the stairs are a spot you use (E): the picture
 ## fades and he is on the other floor. Upstairs is its own stack of bands, drawn
-## 40 m to the right on the plan (UP). A real house like this is about 4 m wide;
+## 40 m to the right on the plan (UP). The flight climbs from its foot in the
+## dining room towards the back of the house, so upstairs it comes up at the
+## back of the hall and the well drops away towards the street. A real house like this is about 4 m wide;
 ## this one is 5 m so there is room to walk round the furniture.
 ## Numbers are metres on the plan (see place.gd): u from the left party wall,
 ## v from the alley; the street is at v = 15.8.
 
 const Props := preload("res://scripts/props.gd")
 const UP := 40.0
+const STAIR_U := 0.6          # the middle of the flight, on both floors
+const STAIR_V := 9.15
+const STAIR_L := 2.2          # v 8.05 (the top) to 10.25 (the foot)
 
 
 static func build(p: Node3D) -> void:
@@ -28,6 +33,7 @@ static func build(p: Node3D) -> void:
 	var brick := Kit.tex("brick", 1.5, Color(0.5, 0.26, 0.2))
 	var warm := Color(1.0, 0.86, 0.62)
 	var white_door := Color(0.82, 0.8, 0.72)
+	var trim := Color(0.7, 0.67, 0.58)             # door and window frames: a shade darker than the doors, so each door reads in its frame
 
 	var st: int = p.street(-5.0, 10.0)
 	var g1: int = p.band()
@@ -46,24 +52,24 @@ static func build(p: Node3D) -> void:
 	p.room("BACK YARD", g4, 0, 0, 5, 3.4, concrete, {"areas": [[0, 0, 5, 3.4], [3.6, 2.4, 5, 7.2]], "cam_y": 2.9, "look_y": 1.0})
 	Kit.box(p.node_of(g4), Vector3(1.4, 0.3, 3.8), p.pt(4.3, 5.3, -0.15), concrete)
 	p.room("HIS ROOM", h1, UP, 11.2, UP + 5, 15.8, boards, {"light": warm, "energy": 0.6})
-	p.room("HALL", h2, UP, 7.2, UP + 2.2, 11.2, boards, {"light": warm, "energy": 0.4})
-	p.room("BATHROOM", h2, UP + 2.2, 7.2, UP + 5, 11.2, lino, {"light": Color(0.95, 1.0, 1.0), "energy": 0.4})
+	p.room("HALL", h2, UP, 7.2, UP + 2.5, 11.2, boards, {"light": warm, "energy": 0.4, "hole": [UP + STAIR_U - 0.475, STAIR_V - STAIR_L * 0.5, UP + STAIR_U + 0.475, STAIR_V + STAIR_L * 0.5]})
+	p.room("BATHROOM", h2, UP + 2.5, 7.2, UP + 5, 11.2, lino, {"light": Color(0.95, 1.0, 1.0), "energy": 0.4})
 	p.room("BACK BEDROOM", h3, UP, 3.4, UP + 3.6, 7.2, boards, {"light": warm, "energy": 0.4})
 
 	# ---- ground floor walls
 	var front: Node3D = p.cross(g1, 15.8, 0, 5, brick, [
-		{"a": 0.6, "b": 1.5, "head": 2.1, "colour": Color(0.5, 0.14, 0.12), "frame": white_door},
-		{"a": 2.6, "b": 4.5, "kind": "window", "sill": 0.8, "head": 2.2, "bars": true, "blinds": true, "frame": white_door},
+		{"a": 0.6, "b": 1.5, "head": 2.1, "colour": Color(0.5, 0.14, 0.12), "frame": trim},
+		{"a": 2.6, "b": 4.5, "kind": "window", "sill": 0.8, "head": 2.2, "bars": true, "blinds": true, "frame": trim},
 	], {"h": 6.3})
 	p.side(g1, 0.0, 11.2, 15.8, paper)
 	p.side(g1, 5.0, 11.2, 15.8, paper)
-	p.cross(g2, 11.2, 0, 5, paper, [{"a": 1.5, "b": 3.5, "kind": "arch", "frame": white_door}])
+	p.cross(g2, 11.2, 0, 5, paper, [{"a": 1.5, "b": 3.5, "kind": "arch", "frame": trim}])
 	p.side(g2, 0.0, 7.2, 11.2, paper)
 	p.side(g2, 5.0, 7.2, 11.2, paper)
-	p.cross(g3, 7.2, 0, 5, paper, [{"a": 1.5, "b": 2.4, "colour": white_door, "frame": white_door}])
+	p.cross(g3, 7.2, 0, 5, paper, [{"a": 1.5, "b": 2.4, "kind": "arch", "head": 2.05, "frame": trim}])     # an open doorway, no door
 	p.side(g3, 0.0, 3.4, 7.2, paper)
-	p.side(g3, 3.6, 3.4, 7.2, paper, [{"a": 4.3, "b": 5.2, "kind": "window", "sill": 1.0, "head": 2.0, "frame": white_door}])
-	p.cross(g4, 3.4, 0, 3.6, paper, [{"a": 2.5, "b": 3.4, "colour": white_door, "frame": white_door, "name": "BACK DOOR"}])
+	p.side(g3, 3.6, 3.4, 7.2, paper, [{"a": 4.3, "b": 5.2, "kind": "window", "sill": 1.0, "head": 2.0, "frame": trim}])
+	p.cross(g4, 3.4, 0, 3.6, paper, [{"a": 2.5, "b": 3.4, "colour": white_door, "frame": trim, "name": "BACK DOOR"}])
 	# The yard: chain-link on three sides, a gate to the alley that stays shut.
 	var wire := Color(0.5, 0.52, 0.52)
 	p.rail(g4, false, 0.05, 0.05, 3.3, wire, 1.5)
@@ -72,17 +78,17 @@ static func build(p: Node3D) -> void:
 
 	# ---- upstairs walls
 	p.cross(h1, 15.8, UP, UP + 5, blue, [
-		{"a": UP + 0.6, "b": UP + 2.0, "kind": "window", "sill": 0.8, "head": 2.1, "frame": white_door},
-		{"a": UP + 3.0, "b": UP + 4.4, "kind": "window", "sill": 0.8, "head": 2.1, "frame": white_door},
+		{"a": UP + 0.6, "b": UP + 2.0, "kind": "window", "sill": 0.8, "head": 2.1, "frame": trim},
+		{"a": UP + 3.0, "b": UP + 4.4, "kind": "window", "sill": 0.8, "head": 2.1, "frame": trim},
 	])
 	p.side(h1, UP, 11.2, 15.8, blue)
 	p.side(h1, UP + 5.0, 11.2, 15.8, blue)
-	p.cross(h2, 11.2, UP, UP + 5, blue, [{"a": UP + 1.2, "b": UP + 2.1, "swing": 1, "colour": white_door, "frame": white_door}])
+	p.cross(h2, 11.2, UP, UP + 5, blue, [{"a": UP + 1.2, "b": UP + 2.1, "swing": 1, "colour": white_door, "frame": trim}])
 	p.side(h2, UP, 7.2, 11.2, paper)
 	p.side(h2, UP + 5.0, 7.2, 11.2, tile)
-	p.side(h2, UP + 2.2, 7.2, 11.2, tile, [{"a": 9.5, "b": 10.4, "hinge": "a", "swing": 1, "colour": white_door, "frame": white_door}])
-	p.cross(h3, 7.2, UP, UP + 5, paper, [{"a": UP + 1.2, "b": UP + 2.1, "colour": white_door, "frame": white_door}])
-	p.cross(h3, 3.4, UP, UP + 3.6, paper, [{"a": UP + 1.0, "b": UP + 2.4, "kind": "window", "sill": 0.9, "head": 2.1, "frame": white_door}], {"back": true})
+	p.side(h2, UP + 2.5, 7.2, 11.2, tile, [{"a": 9.6, "b": 10.5, "hinge": "a", "swing": 1, "colour": white_door, "frame": trim}])
+	p.cross(h3, 7.2, UP, UP + 5, paper, [{"a": UP + 1.2, "b": UP + 2.1, "colour": white_door, "frame": trim}])
+	p.cross(h3, 3.4, UP, UP + 3.6, paper, [{"a": UP + 1.0, "b": UP + 2.4, "kind": "window", "sill": 0.9, "head": 2.1, "frame": trim}], {"back": true})
 	p.side(h3, UP, 3.4, 7.2, paper)
 	p.side(h3, UP + 3.6, 3.4, 7.2, paper)
 
@@ -145,21 +151,25 @@ static func _ground(p: Node3D, g1: int, g2: int, g3: int, g4: int) -> void:
 	Props.poster(p, g1, 0.08, 13.3, 90.0, 0.9, 0.6, Color(0.45, 0.35, 0.25), "", 1.75)
 	Props.clock(p, g1, 4.92, 14.6, 270.0, 2.0)
 	# Dining room: the stairs up the party wall, the table, the cabinet with the good plates.
-	Props.stairs(p, g2, 0.6, 8.75, 0.0, 0.95, 2.9)
-	p.portal(g2, "GO UPSTAIRS", 0.6, 10.5, UP + 0.6, 10.55)
-	Props.table(p, g2, 3.1, 9.1, 0.0, 1.5, 0.9, Props.WOOD_DARK)
-	Props.chair(p, g2, 3.1, 8.3, 0.0, Props.WOOD)
-	Props.chair(p, g2, 3.1, 9.9, 180.0, Props.WOOD)
-	Props.chair(p, g2, 2.05, 9.1, 90.0, Props.WOOD)
+	Props.stairs(p, g2, STAIR_U, STAIR_V, 0.0, 0.95, STAIR_L)
+	p.portal(g2, "GO UPSTAIRS", STAIR_U, 10.62, UP + STAIR_U + 0.25, 7.66)
+	# Behind the top of the flight, under the landing: a cupboard, boxed in.
+	var cupboard: Node3D = p.prop(g2, STAIR_U, 7.665, 0.0, 0.95, 0.77)
+	Kit.block(cupboard, Vector3(0.95, 2.89, 0.77), Vector3.ZERO, Kit.tex("stucco", 2.0, Color(0.85, 0.8, 0.66), true, Color(1.0, 1.0, 0.82)))
+	Kit.box(cupboard, Vector3(0.03, 1.7, 0.56), Vector3(0.485, 0.86, 0.0), Color(0.82, 0.8, 0.72))
+	Kit.ball(cupboard, 0.03, Vector3(0.51, 0.9, 0.2), Color(0.85, 0.68, 0.25))
+	Props.table(p, g2, 3.45, 9.1, 0.0, 1.5, 0.9, Props.WOOD_DARK)
+	Props.chair(p, g2, 3.45, 8.3, 0.0, Props.WOOD)
+	Props.chair(p, g2, 3.45, 9.9, 180.0, Props.WOOD)
 	Props.cabinet(p, g2, 4.69, 8.2, 270.0, 1.6)
 	Props.poster(p, g2, 2.9, 7.28, 0.0, 0.7, 0.5, Color(0.6, 0.5, 0.3), "", 1.8)
 	# Kitchen: stove, sink and fridge down one wall, a small table.
 	Props.stove(p, g3, 0.43, 3.95, 90.0)
 	Props.sink_unit(p, g3, 0.41, 5.25, 90.0, 1.6)
 	Props.fridge(p, g3, 0.46, 6.62, 90.0)
-	Props.table(p, g3, 2.8, 5.1, 0.0, 0.9, 1.0, Color(0.8, 0.78, 0.7))
-	Props.chair(p, g3, 2.8, 4.3, 0.0, Props.VINYL)
-	Props.chair(p, g3, 2.8, 5.9, 180.0, Props.VINYL)
+	Props.table(p, g3, 2.85, 5.6, 0.0, 0.8, 1.0, Color(0.8, 0.78, 0.7))
+	Props.chair(p, g3, 2.85, 4.8, 0.0, Props.VINYL)
+	Props.chair(p, g3, 2.85, 6.4, 180.0, Props.VINYL)
 	Props.poster(p, g3, 1.7, 3.48, 0.0, 0.45, 0.6, Color(0.85, 0.82, 0.7), "", 1.7)
 	# The yard: dustbins, and a gate to the alley that stays shut.
 	Props.cans(p, g4, 4.3, 0.55, 2)
@@ -190,12 +200,12 @@ static func _upstairs(p: Node3D, h1: int, h2: int, h3: int) -> void:
 	Props.poster(p, h1, UP + 4.92, 14.4, 270.0, 0.55, 0.4, Color(0.7, 0.58, 0.25), "CITIZEN OF THE MONTH", 1.7)
 	Props.poster(p, h1, UP + 4.92, 15.1, 270.0, 0.55, 0.4, Color(0.7, 0.58, 0.25), "BLOCK WATCH", 1.7)
 	# The hall and the bathroom.
-	Props.stairwell(p, h2, UP + 0.6, 8.75, 0.0, 0.95, 2.9)
-	p.portal(h2, "GO DOWNSTAIRS", UP + 0.6, 10.5, 0.6, 10.55)
+	Props.stairwell(p, h2, UP + STAIR_U, STAIR_V, 0.0, 0.95, STAIR_L)
+	p.portal(h2, "GO DOWNSTAIRS", UP + STAIR_U + 0.1, 7.75, STAIR_U + 0.1, 10.68)
 	Props.tub(p, h2, UP + 4.55, 8.32)
 	Props.toilet(p, h2, UP + 4.58, 10.2, 270.0)
-	Props.basin(p, h2, UP + 3.0, 7.52)
-	Props.rug(p, h2, UP + 3.3, 9.3, 1.0, 0.7, Color(0.6, 0.75, 0.8))
+	Props.basin(p, h2, UP + 3.3, 7.52)
+	Props.rug(p, h2, UP + 3.6, 9.3, 1.0, 0.7, Color(0.6, 0.75, 0.8))
 	# The back bedroom.
 	Props.bed(p, h3, UP + 0.96, 4.52, 0.0, 1.5, 2.0, Color(0.7, 0.55, 0.6))
 	Props.dresser(p, h3, UP + 2.9, 3.76, 0.0, 1.2, Props.WOOD_DARK)

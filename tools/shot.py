@@ -12,7 +12,10 @@ project folder, then a Godot*.exe there, then godot or godot4 on the PATH.
 
 Windows open on monitor 2 (Windows' \\\\.\\DISPLAY2) when there is one, so they do
 not pop up over whatever is on the main screen. Set POPUP_MONITOR to another
-display number, or to 0 to let Godot choose.
+display number, or to 0 to let Godot choose. A screenshot run also never
+takes the keyboard (the window is opened unfocused, through a throwaway
+override.cfg) and never opens a console window, so it does not interrupt
+whoever is working on the main screen.
 
 When this folder sits inside the full Tattletale working folder (next to its
 godot/ folder), runs wait for that project's one-Godot-at-a-time lock.
@@ -72,6 +75,10 @@ def window_place():
         return []
     import ctypes
     from ctypes import wintypes
+    try:
+        ctypes.windll.shcore.SetProcessDpiAwareness(2)      # real pixels, whatever the display scaling
+    except (AttributeError, OSError):
+        pass
 
     class Info(ctypes.Structure):
         _fields_ = [("cbSize", wintypes.DWORD), ("rcMonitor", wintypes.RECT), ("rcWork", wintypes.RECT),
@@ -93,11 +100,36 @@ def window_place():
         return []
     x = area.left + max((area.right - area.left - SIZE[0]) // 2, 0)
     y = area.top + max((area.bottom - area.top - SIZE[1]) // 2, 0)
+    # Godot counts window positions from the top-left corner of the whole
+    # desktop (the leftmost and topmost monitor edges), Windows from the main
+    # screen's corner. With a monitor to the left of the main one the two
+    # differ, and a Windows position handed to Godot lands a screen too far left.
+    x -= min(r.left for r in found.values())
+    y -= min(r.top for r in found.values())
     return ["--position", "%d,%d" % (x, y)]
 
 
+QUIET = getattr(subprocess, "CREATE_NO_WINDOW", 0)     # Windows: no console window for Godot's console build
+OVERRIDE = os.path.join(POPUP, "override.cfg")
+
+
+class Unfocused:
+    """While a screenshot runs: a plain 1600 x 900 window that does not take the keyboard.
+    Godot reads override.cfg beside project.godot on top of the project's own settings."""
+
+    def __enter__(self):
+        with open(OVERRIDE, "w", encoding="utf-8") as f:
+            f.write("[display]\n\nwindow/size/mode=0\nwindow/size/no_focus=true\n")
+        return self
+
+    def __exit__(self, *a):
+        if os.path.exists(OVERRIDE):
+            os.remove(OVERRIDE)
+        return False
+
+
 def run(cmd, timeout):
-    p = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout)
+    p = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout, creationflags=QUIET)
     lines = [l for l in (p.stdout + p.stderr).splitlines() if l.strip()]
     errors = [l for l in lines if l.lstrip().startswith(("ERROR:", "SCRIPT ERROR:", "SHADER ERROR:", "Parse Error"))]
     for i, l in enumerate(lines):
@@ -113,13 +145,14 @@ def main():
             code, bad = run([GODOT, "--headless", "--path", POPUP, "--import"], 600)
             raise SystemExit(1 if bad else 0)
         if args and args[0] == "--play":
-            raise SystemExit(subprocess.call([GODOT, "--path", POPUP] + window_place()))
+            raise SystemExit(subprocess.call([GODOT, "--path", POPUP] + window_place(), creationflags=QUIET))
         out = os.path.abspath(args[0]).replace("\\", "/")
         os.makedirs(os.path.dirname(out), exist_ok=True)
         if os.path.exists(out):
             os.remove(out)
-        code, bad = run([GODOT, "--path", POPUP, "--resolution", "%dx%d" % SIZE] + window_place()
-                        + ["--", "--shot=" + out] + args[1:], 180)
+        with Unfocused():
+            code, bad = run([GODOT, "--path", POPUP, "--windowed", "--resolution", "%dx%d" % SIZE] + window_place()
+                            + ["--", "--shot=" + out] + args[1:], 180)
         if bad or not os.path.exists(out):
             raise SystemExit(f"shot failed (exit {code}, errors {bad}, written {os.path.exists(out)})")
 

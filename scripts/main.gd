@@ -22,9 +22,10 @@ extends Node3D
 ##         [--place=police|court|crib] [--room=NAME] [--check-walk]
 ##         [--face=angry] [--mouth=mouth_ah] [--close] [--talk=seconds]
 ##         [--walk=x,y,seconds] [--rest=seconds] [--fry-at=x,z] [--wander]
-##         [--do=step,step,...] [--check-faces]
+##         [--do=step,step,...] [--check-faces] [--eye=x,y,z,x,y,z]
 ##   Steps run in order after the walk: use (press E), wait:seconds, hover:n,
-##   pick:n, next (E in a conversation), clickbox (click the talk box), go:x:z (walk straight to that spot on
+##   pick:n, next (E in a conversation), clickbox (click the talk box), walk:x:y:seconds (hold an arrow key:
+##   a direction on screen), go:x:z (walk straight to that spot on
 ##   the floor), frywalk:x:y:seconds (walk the other character on screen), travel (open the travel list),
 ##   travelhover:n, travelpick:n, key:name (a real key press: key:M, key:Escape, key:1).
 
@@ -97,6 +98,7 @@ var _shot_walk := PackedFloat64Array()
 var _shot_talk := 0.0
 var _shot_rest := 0.0
 var _shot_steps := PackedStringArray()
+var _shot_eye := PackedFloat64Array()   # x, y, z of the camera and x, y, z of what it looks at, for a picture from anywhere
 
 
 func _ready() -> void:
@@ -123,6 +125,7 @@ func _ready() -> void:
 	_fry.set_rig(_rig_dir("fry"))
 	_fry.display_name = "LARGE FRY"          # a working name
 	_fry.speed = 0.7
+	_fry.reach = 0.5                         # he is wider than the lead
 	_fry.used.connect(_start_talk)
 	_fry.others = [_actor]
 	_fry_brain = Wanderer.new()
@@ -135,7 +138,7 @@ func _ready() -> void:
 			first = arg.trim_prefix("--place=")
 	_open_place(first)
 	_fry.obstacles = _site("studio").obstacles
-	_fry_brain.home = (_site("studio").control.AREA as Rect2).grow(-_fry.RADIUS)
+	_fry_brain.home = (_site("studio").control.AREA as Rect2).grow_individual(-_fry.reach, -_fry.RADIUS, -_fry.reach, -_fry.RADIUS)
 	_fry.areas = [_fry_brain.home]            # he stays in the control room
 
 	_camera = Camera3D.new()
@@ -236,6 +239,8 @@ func _ready() -> void:
 			_shot_talk = float(arg.trim_prefix("--talk="))
 		elif arg.begins_with("--do="):
 			_shot_steps = arg.trim_prefix("--do=").split(",")
+		elif arg.begins_with("--eye="):    # x,y,z,x,y,z: put the camera at the first point, looking at the second
+			_shot_eye = arg.trim_prefix("--eye=").split_floats(",")
 		elif arg == "--check-walk":        # can every room be walked to, with every door open?
 			_check_walk()
 		elif arg == "--check-faces":       # list surfaces lying exactly on one another (they flicker)
@@ -533,6 +538,7 @@ func _frame_close() -> void:
 	var chest := _actor.position + Vector3(0, _actor.height * 0.6, 0)
 	_camera.fov = 30.0
 	_camera.look_at_from_position(chest + away * 2.5 + Vector3(0, 0.2, 0), chest)
+	_face_cards()
 
 
 ## Screen direction (x right, y towards the viewer) to a direction on the floor.
@@ -550,6 +556,12 @@ func _screen_dir(floor: Vector2) -> Vector2:
 
 
 # ---------------------------------------------------------- using and talking
+
+## Doors in a cut-away wall come into view as he nears them (door.gd).
+func _show_doors() -> void:
+	for door: Node3D in _building.doors:
+		door.show_near(_actor.position)
+
 
 ## Find what E would be used on: the nearest usable thing in its reach. Its name
 ## goes over it.
@@ -619,6 +631,7 @@ func _process(delta: float) -> void:
 	elif _cam_name == "follow":
 		_follow(delta)
 	_find_nearest()
+	_show_doors()
 	if _actor.face:
 		if not _talk.is_open() and not _scripted:
 			_actor.face.talking = Input.is_physical_key_pressed(KEY_SPACE)
@@ -718,6 +731,12 @@ func _take_shot() -> void:
 						break
 					_actor.walk(gap.normalized(), _screen_dir(gap.normalized()), 1.0 / 60.0)
 				print("[shot] went to %.2f, %.2f" % [_actor.position.x, _actor.position.z])
+			"walk":         # walk:x:y:seconds, a direction on screen as the arrow keys give it (x right, y towards the viewer)
+				var held := Vector2(float(bits[1]), float(bits[2]))
+				for i in int(float(bits[3]) * 60.0):
+					_actor.areas = _building.walk_areas()
+					_actor.walk(_floor_dir(held), held, 1.0 / 60.0)
+				print("[shot] walked to %.2f, %.2f" % [_actor.position.x, _actor.position.z])
 			"key":          # a real key press, through the game's own input handling: key:M, key:Escape, key:1
 				var press := InputEventKey.new()
 				press.physical_keycode = OS.find_keycode_from_string(bits[1])
@@ -755,6 +774,11 @@ func _take_shot() -> void:
 		_frame_close()
 	elif _cam_name == "follow":
 		_follow(0.0, true)
+	_show_doors()
+	if _shot_eye.size() == 6:
+		_camera.fov = 50.0
+		_camera.look_at_from_position(Vector3(_shot_eye[0], _shot_eye[1], _shot_eye[2]), Vector3(_shot_eye[3], _shot_eye[4], _shot_eye[5]))
+		_face_cards()
 	_find_nearest()
 	print("[shot] %s: in the %s at %.2f, %.2f; nearest: %s; window at %s" % [_place, _building.rooms[_room]["name"], _actor.position.x, _actor.position.z, _nearest.use_name() if _nearest else "-", DisplayServer.window_get_position()])
 	for i in 12:

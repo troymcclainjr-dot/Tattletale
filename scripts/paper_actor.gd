@@ -12,7 +12,9 @@ const CARD_SHADER := preload("res://shaders/paper_card.gdshader")
 
 const WALK_SPEED := 1.9
 const FLIP_TIME := 0.16
-const RADIUS := 0.26          # how close its middle may come to a wall or a prop
+const RADIUS := 0.26          # how close its middle may come to a wall or a prop in front of it or behind it
+const REACH := 0.4            # and to one beside it: the lead's hands and feet reach this far across the card
+const PULL := 0.5             # an open doorway this close to where he is pushing at a wall draws him into line with it
 const STEP_RATE := 9.0        # radians of walk cycle per second; two steps per turn
 
 ## Something the player can use, like a door: with a name set, E talks to it.
@@ -25,6 +27,7 @@ var areas: Array = [Rect2(-1.0, -1.0, 2.0, 2.0)]   # Rect2 in x, z: where its mi
 var obstacles: Array = []                        # Rect2 in x, z: props it must walk round
 var others: Array = []                           # other paper actors it must walk round
 var speed := 1.0                                 # 1 walks at WALK_SPEED
+var reach := REACH                               # how far the drawing reaches either side of its middle, metres
 var face: Node3D            # the loose face parts, or null when the drawing has its face baked in
 var view := "front"         # the drawing on show
 
@@ -210,19 +213,80 @@ func _pose() -> void:
 ## Move by a step, sliding along walls and props instead of stopping dead.
 func _step(by: Vector2) -> void:
 	var at := Vector2(position.x, position.z)
-	if not _blocked(Vector2(at.x + by.x, at.y)):
+	var start := at
+	var stuck_x := by.x != 0.0 and _blocked(Vector2(at.x + by.x, at.y))
+	if not stuck_x:
 		at.x += by.x
-	if not _blocked(Vector2(at.x, at.y + by.y)):
+	var stuck_z := by.y != 0.0 and _blocked(Vector2(at.x, at.y + by.y))
+	if not stuck_z:
 		at.y += by.y
+	elif not stuck_x and by.x != 0.0:
+		# Sliding along a wall he may pass a doorway narrower than this one
+		# step (a slow frame): look for it along the way rather than skip it.
+		var n := int(ceil(absf(by.x) / 0.03))
+		for i in range(1, n):
+			var x := at.x - by.x * float(i) / float(n)
+			if not _blocked(Vector2(x, at.y + by.y)):
+				at = Vector2(x, at.y + by.y)
+				break
+	# Doorways are only a little wider than he is, so the strip his middle may
+	# walk down is narrow. Walking along a wall he slides into it. Walking
+	# mostly AT a wall with a doorway just to one side, he is drawn over into
+	# line with it instead of sliding off the other way: push at a door and
+	# you go through it.
+	if stuck_z and absf(by.y) >= absf(by.x):
+		if not _blocked(Vector2(start.x, start.y + by.y)):
+			at = Vector2(start.x, start.y + by.y)      # in line with it already: go through, do not slide off
+		else:
+			var x := _line_up(start, Vector2(start.x, start.y + by.y), 0, by.length())
+			if x != start.x:
+				at.x = x
+	elif stuck_x and absf(by.x) >= absf(by.y):
+		if not _blocked(Vector2(start.x + by.x, start.y)):
+			at = Vector2(start.x + by.x, start.y)
+		else:
+			var z := _line_up(start, Vector2(start.x + by.x, start.y), 1, by.length())
+			if z != start.y:
+				at.y = z
 	position.x = at.x
 	position.z = at.y
+
+
+## He is at `at` and cannot step to `want`. If some floor he may stand on lies
+## at `want` but a little to one side (along `axis`: 0 is x, 1 is z), take a
+## step that way. Returns where he should be along that axis.
+func _line_up(at: Vector2, want: Vector2, axis: int, step: float) -> float:
+	var other := 1 - axis
+	var best := INF
+	var goal: float = at[axis]
+	for area: Rect2 in areas:
+		if want[other] < area.position[other] or want[other] > area.end[other]:
+			continue
+		var gap := 0.0
+		var to: float = at[axis]
+		if at[axis] < area.position[axis]:
+			gap = area.position[axis] - at[axis]
+			to = area.position[axis] + 0.002
+		elif at[axis] > area.end[axis]:
+			gap = at[axis] - area.end[axis]
+			to = area.end[axis] - 0.002
+		else:
+			continue      # already in line with it: something else is in the way
+		if gap <= PULL and gap < best:
+			best = gap
+			goal = to
+	if best == INF:
+		return at[axis]
+	var p := at
+	p[axis] = move_toward(at[axis], goal, step)
+	return at[axis] if _blocked(p) else p[axis]
 
 
 func _blocked(p: Vector2) -> bool:
 	if not _on_floor(p):
 		return true
 	for prop: Rect2 in obstacles:
-		if prop.grow(RADIUS).has_point(p):
+		if prop.grow_individual(reach, RADIUS, reach, RADIUS).has_point(p):
 			return true
 	for other: Node3D in others:
 		# Someone standing in the way blocks a step towards them, never a step away.
@@ -237,7 +301,7 @@ func can_stand(p: Vector2) -> bool:
 	if not _on_floor(p):
 		return false
 	for prop: Rect2 in obstacles:
-		if prop.grow(RADIUS).has_point(p):
+		if prop.grow_individual(reach, RADIUS, reach, RADIUS).has_point(p):
 			return false
 	return true
 
@@ -292,4 +356,4 @@ func _show(wanted: String) -> void:
 	if face:
 		face.visible = data.has("face")
 		if data.has("face"):
-			face.set_layout(data["face"])
+			face.set_layout(data["face"], art)

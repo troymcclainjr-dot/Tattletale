@@ -23,7 +23,8 @@ const FrontSet := preload("res://scripts/front_set.gd")
 const StudioSet := preload("res://scripts/studio_set.gd")
 const Door := preload("res://scripts/door.gd")
 
-const RADIUS := 0.26                 # paper_actor.gd's: how close a middle may come to a wall
+const RADIUS := 0.26                 # paper_actor.gd's: how close a middle may come to a wall in front of him or behind
+const REACH := 0.4                   # and to a wall beside him: his hands and feet reach that far
 const CONTROL_DOOR := [0.3, 1.2]     # the doorway from the front room to the control room, x from .. to
 const EDGE := Color(0.07, 0.06, 0.12)
 const GHOST_WALL := 0.1              # how solid a see-through wall is (0 clear .. 1 solid)
@@ -126,7 +127,9 @@ func _wall(node: Node3D, door: Node3D, z0: float, z1: float, x0: float, x1: floa
 		Kit.box(stub, Vector3(seg[1] - seg[0], 0.14, z1 - z0), Vector3((seg[0] + seg[1]) * 0.5, 0.07, zc), EDGE)
 	stub.visible = false
 	# Where a middle may be while going through: a strip down the doorway that reaches into both rooms.
-	door.passage = Rect2(gap[0] + 0.2, z0 - RADIUS - 0.04, gap[1] - gap[0] - 0.4, z1 - z0 + RADIUS * 2.0 + 0.08)
+	# It is narrow, so his hands stay clear of the frame; he slides along the wall into it (paper_actor.gd).
+	var keep := minf(REACH - 0.02, (gap[1] - gap[0]) * 0.5 - 0.05)
+	door.passage = Rect2(gap[0] + keep, z0 - RADIUS - 0.04, gap[1] - gap[0] - keep * 2.0, z1 - z0 + RADIUS * 2.0 + 0.08)
 	return {"node": node, "stub": stub, "door": door, "z": zc}
 
 
@@ -202,7 +205,7 @@ func show_from(n: int) -> void:
 func walk_areas() -> Array:
 	var out: Array = []
 	for room: Dictionary in rooms:
-		out.append((room["area"] as Rect2).grow(-RADIUS))
+		out.append((room["area"] as Rect2).grow_individual(-REACH, -RADIUS, -REACH, -RADIUS))
 	for door: Node3D in doors:
 		if door.is_open:
 			out.append(door.passage)

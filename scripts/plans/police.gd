@@ -103,7 +103,8 @@ static func _street(p: Node3D, st: int, front: Node3D) -> void:
 	# The station's own front: a stone band, the POLICE panel, two blue globes.
 	var stone := Color(0.74, 0.72, 0.66)
 	p.slab(front, true, 22.0, -0.05, 16.05, 4.0, 4.22, 0.3, stone)
-	p.slab(front, true, 22.06, -0.02, 16.02, 0.0, 0.5, 0.1, stone.darkened(0.12))
+	for run: Array in [[-0.02, 4.14], [6.06, 16.02]]:       # the stone skirt stops either side of the doors
+		p.slab(front, true, 22.06, run[0], run[1], 0.0, 0.5, 0.1, stone.darkened(0.12))
 	p.slab(front, true, 22.1, 3.6, 6.6, 2.55, 3.45, 0.06, Color(0.14, 0.2, 0.4))
 	Props.words(front, "POLICE", p.pt(5.1, 22.135, 3.07), 0.5, Color(0.93, 0.9, 0.78))
 	Props.words(front, "PEN LUCY PRECINCT", p.pt(5.1, 22.135, 2.68), 0.11, Color(0.93, 0.9, 0.78), 0.0, false)
@@ -137,7 +138,7 @@ static func _lobby(p: Node3D, b: int) -> void:
 	Props.payphone(p, b, 6.9, 17.08)
 	Props.clock(p, b, 7.6, 17.08)
 	Props.plant(p, b, 9.95, 21.45)
-	Props.flag(p, b, 0.45, 21.5)
+	Props.flag(p, b, 0.5, 21.45, Color(0.16, 0.2, 0.45), 0.0, true)
 	Props.words(p.node_of(b), "DESK SERGEANT", p.pt(10.42, 19.55, 2.3), 0.13, Color(0.15, 0.18, 0.3), 270.0)
 	Props.poster(p, b, 10.42, 17.6, 270.0, 0.5, 0.7, Color(0.85, 0.75, 0.3), "NO LOITERING", 1.6)
 	# Behind the glass.
@@ -165,14 +166,14 @@ static func _squad(p: Node3D, b: int) -> void:
 	Props.lockers(p, b, 2.3, 16.65, 180.0, 4)
 	Props.coffee(p, b, 10.3, 11.45)
 	Props.cooler(p, b, 11.6, 11.3)
-	Props.flag(p, b, 11.55, 16.5, Color(0.6, 0.12, 0.14))
+	Props.flag(p, b, 10.0, 16.55, Color(0.6, 0.12, 0.14))      # clear of the door to the front desk
 	Props.clock(p, b, 8.0, 11.08)
 	# The captain's office.
 	Props.desk(p, b, 14.1, 12.9, 180.0, Props.WOOD, 2, true, 2.0, 0.85)
 	Props.chair(p, b, 13.6, 14.1, 180.0, Props.VINYL)
 	Props.chair(p, b, 14.6, 14.1, 180.0, Props.VINYL)
 	Props.shelves(p, b, 15.68, 13.3, 270.0, 2.4, "books", Props.WOOD_DARK)
-	Props.flag(p, b, 12.5, 11.45)
+	Props.flag(p, b, 12.55, 11.45, Color(0.16, 0.2, 0.45), 0.0, true)
 	Props.couch(p, b, 14.1, 16.42, 180.0, 2.0, Color(0.3, 0.22, 0.16))
 	Props.poster(p, b, 14.1, 11.08, 0.0, 0.9, 0.6, Color(0.7, 0.58, 0.3), "", 1.9)
 	Props.rug(p, b, 14.0, 14.3, 2.6, 1.6, Color(0.35, 0.16, 0.16))

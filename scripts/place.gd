@@ -11,9 +11,13 @@ extends Node3D
 ## The building is a stack of BANDS, front to back, and a band holds one or
 ## more rooms side by side. The camera always looks in from the street, so
 ## standing in a band, every band nearer the street is hidden and the wall just
-## in front becomes a low strip (its doors a low slice), as in building.gd.
+## in front becomes a low strip, as in building.gd.
 ## A second floor is another LEVEL: its own stack of bands, drawn off to one
 ## side of the plan (u + 40, say) and reached by a portal (portal.gd).
+##
+## A wall that is cut away keeps its doors: each stands where it was, whole
+## but see-through (door.gd's cut_away), so he can still find it and see
+## whether it is open.
 ##
 ##   var p = Place.new()          p.setup("POLICE STATION", 16.0, 22.0)
 ##   var street := p.street(-3.0, 19.0)            # band 0: the pavement
@@ -31,8 +35,10 @@ extends Node3D
 const Door := preload("res://scripts/door.gd")
 const Portal := preload("res://scripts/portal.gd")
 
-const RADIUS := 0.26                 # paper_actor.gd's: how close a middle may come to a wall
+const RADIUS := 0.26                 # paper_actor.gd's: how close a middle may come to a wall in front of him or behind
+const REACH := 0.4                   # and to a wall beside him: his hands and feet reach that far (paper_actor.gd)
 const T := 0.15                      # wall thickness
+const LEAF := 0.1                    # how thick a door is: most of the way through its frame
 const EDGE := Color(0.07, 0.06, 0.12)
 const FRAME := Color(0.23, 0.16, 0.11)
 const GLASS := Color(0.62, 0.8, 0.88, 0.22)
@@ -104,16 +110,24 @@ func street(u0: float, u1: float, pave := 2.5) -> int:
 
 ## A room: its floor, and where it is on the plan. opts: "areas" (a list of
 ## [u0, v0, u1, v1], when not the whole room can be walked), "light" (a colour:
-## hangs a lamp in the middle), "cam_near", "cam_y", "look_y".
+## hangs a lamp in the middle), "cam_near", "cam_y", "look_y", "hole" ([u0, v0,
+## u1, v1]: no floor there, for a stairwell).
 func room(room_name: String, b: int, u0: float, v0: float, u1: float, v1: float, floor_look: Variant, opts := {}) -> int:
 	var r := rect(u0, v0, u1, v1)
 	var mid := r.get_center()
-	if floor_look != null:
+	if floor_look != null and opts.has("hole"):
+		# The floor in four pieces round the hole: left, right, behind, in front.
+		var h: Array = opts["hole"]
+		for piece: Array in [[u0, v0, h[0], v1], [h[2], v0, u1, v1], [h[0], v0, h[2], h[1]], [h[0], h[3], h[2], v1]]:
+			if piece[2] - piece[0] > 0.001 and piece[3] - piece[1] > 0.001:
+				var fr := rect(piece[0], piece[1], piece[2], piece[3])
+				Kit.box(node_of(b), Vector3(fr.size.x, 0.3, fr.size.y), Vector3(fr.get_center().x, -0.15, fr.get_center().y), floor_look)
+	elif floor_look != null:
 		Kit.box(node_of(b), Vector3(r.size.x, 0.3, r.size.y), Vector3(mid.x, -0.15, mid.y), floor_look)
 	var outdoors: bool = opts.get("street", false)
 	var areas: Array = []
 	for a: Array in opts.get("areas", [[u0, v0, u1, v1]]):
-		areas.append(rect(a[0], a[1], a[2], a[3]).grow(-(T * 0.5 + RADIUS)))
+		areas.append(rect(a[0], a[1], a[2], a[3]).grow_individual(-(T * 0.5 + REACH), -(T * 0.5 + RADIUS), -(T * 0.5 + REACH), -(T * 0.5 + RADIUS)))
 	rooms.append({
 		"name": room_name, "band": b, "rect": r, "areas": areas,
 		"cam_max_x": 99.0 if outdoors else r.end.x - 1.7,
@@ -263,10 +277,13 @@ func _run(node: Node3D, door_parent: Node3D, along_u: bool, at: float, from: flo
 			slab(node, along_u, at, a, b, head, top, t, look)
 		# The frame stands 15 mm into the opening: a frame face lying exactly on
 		# the cut end of the wall flickers.
+		# A door's frame is shallow, so the door sits close to its face and looks
+		# snug in it; a window's is deeper.
 		var frame: Color = op.get("frame", FRAME)
-		slab(node, along_u, at, a - 0.055, a + 0.015, sill, head + 0.05, t + 0.06, frame)
-		slab(node, along_u, at, b - 0.015, b + 0.055, sill, head + 0.05, t + 0.06, frame)
-		slab(node, along_u, at, a - 0.055, b + 0.055, head - 0.015, head + 0.055, t + 0.06, frame)
+		var deep := t + (0.06 if kind == "window" else 0.03)
+		slab(node, along_u, at, a - 0.055, a + 0.015, sill, head + 0.05, deep, frame)
+		slab(node, along_u, at, b - 0.015, b + 0.055, sill, head + 0.05, deep, frame)
+		slab(node, along_u, at, a - 0.055, b + 0.055, head - 0.015, head + 0.055, deep, frame)
 		match kind:
 			"window":
 				slab(node, along_u, at, a - 0.055, b + 0.055, sill - 0.055, sill + 0.015, t + 0.06, frame)
@@ -285,12 +302,14 @@ func _run(node: Node3D, door_parent: Node3D, along_u: bool, at: float, from: flo
 				_always.append(_passage(along_u, at, a, b))
 			"double":
 				var mid := (a + b) * 0.5
-				var left := _door(door_parent, along_u, at, a, mid, head, op.merged({"hinge": "a"}, true))
-				var right := _door(door_parent, along_u, at, mid, b, head, op.merged({"hinge": "b"}, true))
+				# The two leaves meet in the middle: each is made 8 mm wider than its half, to close the usual gap.
+				var left := _door(door_parent, along_u, at, a, mid + 0.008, head, op.merged({"hinge": "a"}, true))
+				var right := _door(door_parent, along_u, at, mid - 0.008, b, head, op.merged({"hinge": "b"}, true))
 				left.mate = right
 				left.passage = _passage(along_u, at, a, b)
 				left.set_middle(pt(mid, at) if along_u else pt(at, mid))
 				right.passage = Rect2()
+				right.set_middle(pt(mid, at) if along_u else pt(at, mid))
 				right.set_meta("mate", true)
 				made.append(left)
 				made.append(right)
@@ -322,7 +341,7 @@ func _door(parent: Node3D, along_u: bool, at: float, a: float, b: float, head: f
 	if op.get("bars", false):
 		door.build_bars(w, head - 0.03, to_left)
 	else:
-		door.build_leaf(w, head - 0.03, op.get("colour", Color(0.4, 0.33, 0.26)), to_left)
+		door.build_leaf(w, head - 0.012, op.get("colour", Color(0.4, 0.33, 0.26)), to_left, LEAF)
 	if op.has("name"):
 		door.open_name = "OPEN " + String(op["name"])
 		door.shut_name = "CLOSE " + String(op["name"])
@@ -332,12 +351,17 @@ func _door(parent: Node3D, along_u: bool, at: float, a: float, b: float, head: f
 
 
 ## Where a middle may be while going through a doorway: a strip down it that
-## reaches into the rooms either side.
+## reaches into the rooms either side. Through a wall that runs left to right
+## he walks facing the camera or away from it, arms out to both sides, so the
+## strip is narrow: his hands stay clear of the frame. (He slides along the
+## wall into it: paper_actor.gd's _step.) Through a wall that runs front to back he is side-on.
 func _passage(along_u: bool, at: float, a: float, b: float) -> Rect2:
-	var reach := T * 0.5 + RADIUS + 0.04
 	if along_u:
-		return rect(a + 0.2, at - reach, b - 0.2, at + reach)
-	return rect(at - reach, a + 0.2, at + reach, b - 0.2)
+		var reach := T * 0.5 + RADIUS + 0.04
+		var keep := minf(REACH - 0.02, (b - a) * 0.5 - 0.05)
+		return rect(a + keep, at - reach, b - keep, at + reach)
+	var reach_x := T * 0.5 + REACH + 0.04
+	return rect(at - reach_x, a + 0.2, at + reach_x, b - 0.2)
 
 
 # ------------------------------------------------------- what the scene asks

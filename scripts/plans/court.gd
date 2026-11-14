@@ -134,7 +134,7 @@ static func _lobby(p: Node3D, b: int) -> void:
 	Props.words(n, "DIRECTORY", p.pt(2.6, 17.59, 2.3), 0.14, Color(0.25, 0.2, 0.15))
 	Props.clock(p, b, 8.4, 17.58)
 	Props.plant(p, b, 10.4, 21.9)
-	Props.flag(p, b, 0.45, 22.0)
+	Props.flag(p, b, 0.5, 21.95, Color(0.16, 0.2, 0.45), 0.0, true)
 	Props.words(n, "PAY FINES HERE", p.pt(10.91, 18.85, 2.3), 0.14, Color(0.25, 0.2, 0.15), 270.0)
 	# The clerk's office, behind the glass.
 	var counter := Props.counter(p, b, 11.45, 18.85, 90.0, 2.1, 0.6, 1.04, Props.OFFICE)
@@ -174,14 +174,14 @@ static func _hall(p: Node3D, b: int) -> void:
 
 static func _court(p: Node3D, b: int) -> void:
 	var n: Node3D = p.node_of(b)
-	Props.judge_bench(p, b, 9.0, 5.35)
-	Props.flag(p, b, 6.2, 4.9)
-	Props.flag(p, b, 11.75, 4.82, Color(0.75, 0.6, 0.2))
+	# The bench and the witness stand are out from the wall: there is room to
+	# walk round behind them (and, later, to step in and sit).
+	Props.judge_bench(p, b, 9.0, 6.2)
 	Kit.disc(n, 0.5, p.pt(9.0, 4.59, 2.25), Color(0.78, 0.63, 0.25), 0.03, 16)
 	Kit.disc(n, 0.38, p.pt(9.0, 4.6, 2.25), Color(0.2, 0.25, 0.45), 0.03, 16)
 	Props.desk(p, b, 5.65, 5.75, 180.0, Props.WOOD, 1, true, 1.3)
-	Props.witness_stand(p, b, 12.15, 5.55)
-	Props.jury_box(p, b, 13.98, 8.35, 270.0, 2.4)      # clear of the witness stand: the way to the back rooms runs between them
+	Props.witness_stand(p, b, 12.3, 6.0)
+	Props.jury_box(p, b, 13.98, 8.45, 270.0, 2.4)      # clear of the witness stand: the way to the back rooms runs between them
 	Props.table(p, b, 5.9, 8.7, 0.0, 2.8, 0.8, Props.WOOD)
 	Props.table(p, b, 11.5, 8.7, 0.0, 2.6, 0.8, Props.WOOD)
 	for u in [5.2, 6.6, 10.9, 12.1]:

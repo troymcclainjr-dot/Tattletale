@@ -274,137 +274,137 @@
   },
   "side_mouth_grin": {
    "file": "parts/side_mouth_grin.png",
-   "w": 126.0,
-   "h": 102.5,
+   "w": 137.0,
+   "h": 107.0,
    "at": [
-    703.0,
-    546.8
+    708.5,
+    546.0
    ]
   },
   "side_mouth_neutral": {
    "file": "parts/side_mouth_neutral.png",
-   "w": 110.0,
-   "h": 16.5,
+   "w": 120.0,
+   "h": 17.0,
    "at": [
-    704.0,
-    540.2
+    709.0,
+    540.0
    ]
   },
   "side_mouth_smile": {
    "file": "parts/side_mouth_smile.png",
-   "w": 119.5,
+   "w": 134.5,
    "h": 34.5,
    "at": [
-    697.2,
+    704.8,
     539.8
    ]
   },
   "side_mouth_frown": {
    "file": "parts/side_mouth_frown.png",
-   "w": 123.0,
+   "w": 133.0,
    "h": 33.5,
    "at": [
-    698.5,
+    703.5,
     539.8
    ]
   },
   "side_mouth_smirk": {
    "file": "parts/side_mouth_smirk.png",
-   "w": 123.0,
+   "w": 134.0,
    "h": 49.0,
    "at": [
-    698.5,
+    704.0,
     523.0
    ]
   },
   "side_mouth_grit": {
    "file": "parts/side_mouth_grit.png",
-   "w": 137.5,
+   "w": 147.5,
    "h": 95.0,
-   "at": [
-    701.2,
-    539.5
-   ]
-  },
-  "side_mouth_ah": {
-   "file": "parts/side_mouth_ah.png",
-   "w": 65.0,
-   "h": 110.0,
-   "at": [
-    738.5,
-    543.0
-   ]
-  },
-  "side_mouth_oh": {
-   "file": "parts/side_mouth_oh.png",
-   "w": 43.0,
-   "h": 78.0,
-   "at": [
-    748.5,
-    534.5
-   ]
-  },
-  "side_mouth_ee": {
-   "file": "parts/side_mouth_ee.png",
-   "w": 121.5,
-   "h": 65.0,
    "at": [
     706.2,
     539.5
    ]
   },
+  "side_mouth_ah": {
+   "file": "parts/side_mouth_ah.png",
+   "w": 66.5,
+   "h": 104.5,
+   "at": [
+    745.8,
+    548.8
+   ]
+  },
+  "side_mouth_oh": {
+   "file": "parts/side_mouth_oh.png",
+   "w": 52.0,
+   "h": 84.5,
+   "at": [
+    753.0,
+    537.8
+   ]
+  },
+  "side_mouth_ee": {
+   "file": "parts/side_mouth_ee.png",
+   "w": 131.5,
+   "h": 65.0,
+   "at": [
+    711.2,
+    539.5
+   ]
+  },
   "side_mouth_small": {
    "file": "parts/side_mouth_small.png",
-   "w": 57.5,
-   "h": 67.0,
+   "w": 67.5,
+   "h": 72.5,
    "at": [
-    732.2,
-    561.0
+    737.2,
+    563.8
    ]
   },
   "side_mouth_ff": {
    "file": "parts/side_mouth_ff.png",
-   "w": 110.5,
+   "w": 120.5,
    "h": 29.5,
    "at": [
-    701.8,
+    708.8,
     547.2
    ]
   },
   "side_mouth_shout": {
    "file": "parts/side_mouth_shout.png",
-   "w": 76.5,
-   "h": 105.5,
+   "w": 73.5,
+   "h": 93.5,
    "at": [
-    731.8,
-    545.2
+    740.2,
+    554.2
    ]
   },
   "side_mouth_firm": {
    "file": "parts/side_mouth_firm.png",
-   "w": 74.0,
+   "w": 84.0,
    "h": 18.5,
    "at": [
-    723.0,
+    728.0,
     539.2
    ]
   },
   "side_mouth_wavy": {
    "file": "parts/side_mouth_wavy.png",
-   "w": 118.0,
+   "w": 127.0,
    "h": 28.5,
    "at": [
-    701.0,
+    705.5,
     539.2
    ]
   },
   "side_mouth_laugh": {
    "file": "parts/side_mouth_laugh.png",
-   "w": 98.5,
-   "h": 99.5,
+   "w": 108.5,
+   "h": 104.0,
    "at": [
-    718.8,
-    548.2
+    724.8,
+    547.5
    ]
   }
  }
