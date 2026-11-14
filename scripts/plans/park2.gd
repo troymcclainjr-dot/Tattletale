@@ -33,6 +33,7 @@ extends RefCounted
 
 const Props := preload("res://scripts/props.gd")
 const Park := preload("res://scripts/props_park2.gd")
+const Houses := preload("res://scripts/houses.gd")
 const Outdoor := preload("res://scripts/outdoor.gd")
 
 const CU := 16.0          # the middle of the square: the bandstand
@@ -276,38 +277,33 @@ static func _slab(p: Node3D, n: Node3D, u0: float, v0: float, u1: float, v1: flo
 ## houses along the side streets, their fronts facing the square.
 static func _backdrop(p: Node3D, st: int) -> void:
 	var n: Node3D = p.node_of(st)
-	var red_brick := Kit.tex("brick", 1.5, Color(0.5, 0.26, 0.2), true, Color(0.95, 0.8, 0.72))
-	var dark_brick := Kit.tex("brick", 1.5, Color(0.4, 0.22, 0.2), true, Color(0.74, 0.62, 0.64))
-	var brownstone := Kit.tex("stucco", 2.0, Color(0.5, 0.36, 0.28), true, Color(0.68, 0.46, 0.36))
-	var cream := Kit.tex("stucco", 2.0, Color(0.85, 0.8, 0.66), true, Color(1.0, 0.94, 0.76))
-	var blue := Kit.tex("stucco", 2.0, Color(0.6, 0.66, 0.78), true, Color(0.72, 0.82, 1.0))
-	var sage := Kit.tex("stucco", 2.0, Color(0.6, 0.7, 0.56), true, Color(0.78, 0.92, 0.72))
-	var formstone := Kit.tex("painted_block", 0.7, Color(0.62, 0.6, 0.56), true, Color(0.78, 0.8, 0.88))
+	# The houses are the old Pen Lucy's stoop-front rows (houses.gd): brick,
+	# formstone, painted brick, two floors and a cornice, the odd one three.
 	var line := -11.0
-	# across the back street, left to right
+	# across the back street, left to right; the three runs of the row each have their own cornice
 	var row := [
-		[-24.0, 6.0, 11.4, dark_brick, {"door_right": true}],
-		[-18.0, 6.0, 11.2, cream, {}],
-		[-12.0, 5.35, 11.6, red_brick, {"bay": true, "door_right": true}],
-		[6.6, 5.8, 11.3, brownstone, {"bay": true}],
-		[12.4, 6.0, 11.8, blue, {"door_right": true, "cornice": Color(0.92, 0.9, 0.84)}],
-		[31.6, 5.8, 11.4, sage, {}],
-		[37.4, 6.0, 11.2, red_brick, {"bay": true, "door_right": true}],
-		[43.4, 6.0, 11.6, formstone, {}],
+		[-24.0, 6.0, 8.2, "brick_dark", {"door_right": true, "cornice": 1, "end": -1}],
+		[-18.0, 6.0, 8.0, "painted", {"cornice": 1}],
+		[-12.0, 5.35, 8.4, "brick", {"bay": true, "door_right": true, "cornice": 1, "end": 1}],
+		[6.6, 5.8, 10.9, "brick_2", {"bay": true, "cornice": 4, "end": -1}],
+		[12.4, 6.0, 8.1, "formstone", {"door_right": true, "cornice": 4}],
+		[31.6, 5.8, 8.3, "brick_3", {"cornice": 3}],
+		[37.4, 6.0, 10.7, "brick", {"bay": true, "door_right": true, "cornice": 3}],
+		[43.4, 6.0, 8.0, "formstone_tan", {"cornice": 3}],
 	]
 	for i in row.size():
 		var h: Array = row[i]
-		Park.townhouse(n, p.pt(h[0] + h[1] * 0.5, line), 0.0, h[1], h[2], h[3], 3.0 + i * 2.7, h[4])
+		Park.townhouse(n, p.pt(h[0] + h[1] * 0.5, line), 0.0, h[1], h[2], Houses.wall(h[3]), 3.0 + i * 2.7, h[4])
 	Park.church(n, p.pt(1.5, -12.5), "SHILOH HILL BAPTIST CHURCH", ["SUNDAY WORSHIP 11 AM", "BIBLE STUDY WEDNESDAY 7 PM", "ALL ARE WELCOME"])
 	Park.mural_building(n, p.pt(25.0, line), 13.2, "PEN LUCY", "STAND UP  SPEAK UP", "PEN LUCY YOUTH MURAL PROJECT 1993")
 	Park.works(n, p.pt(25.4, -16.0), 12.0, 7.6, 12.0)
 	# along the side streets, facing in: on the left the fronts face +x, on the right -x
 	var sides := [[-10.4, 4.8], [-5.6, 5.8], [0.2, 5.4], [5.6, 5.8], [11.4, 5.2], [16.6, 5.4]]
-	var looks := [red_brick, formstone, brownstone, cream, dark_brick, blue]
+	var looks := ["brick", "formstone", "brick_2", "painted", "brick_dark", "brick_3"]
 	for i in sides.size():
 		var s: Array = sides[i]
 		var mid: float = s[0] + s[1] * 0.5
-		var tall_l := 8.3 if i == 2 else 11.1 + Props.rnd(i * 3.3) * 0.8      # one lower house in each row
-		var tall_r := 8.3 if i == 4 else 11.1 + Props.rnd(i * 5.7) * 0.8
-		Park.townhouse(n, p.pt(-12.0, mid), 90.0, s[1], tall_l, looks[i], 40.0 + i * 3.1, {"bay": i % 3 == 1, "door_right": i % 2 == 0})
-		Park.townhouse(n, p.pt(44.0, mid), 270.0, s[1], tall_r, looks[(i + 3) % looks.size()], 70.0 + i * 3.7, {"bay": i % 3 == 0, "door_right": i % 2 == 1})
+		var tall_l := 10.8 if i == 3 else 7.9 + Props.rnd(i * 3.3) * 0.6      # one taller house in each row
+		var tall_r := 10.8 if i == 1 else 7.9 + Props.rnd(i * 5.7) * 0.6
+		Park.townhouse(n, p.pt(-12.0, mid), 90.0, s[1], tall_l, Houses.wall(looks[i]), 40.0 + i * 3.1, {"bay": i % 3 == 1, "door_right": i % 2 == 0, "cornice": 1})
+		Park.townhouse(n, p.pt(44.0, mid), 270.0, s[1], tall_r, Houses.wall(looks[(i + 3) % looks.size()]), 70.0 + i * 3.7, {"bay": i % 3 == 0, "door_right": i % 2 == 1, "cornice": 0})

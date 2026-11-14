@@ -439,7 +439,8 @@ static func hopscotch(parent: Node3D, pos: Vector3) -> void:
 ## is on) with its rear wall at v = back, the light court beside it, and the
 ## yard down to the alley fence at v = alley. Built straight into node n.
 ## o (all optional): "brick", "bb" (looks), "trim", "door" (colours), "h",
-## "bb_h" (heights; a back building under 4.5 m is one storey), "lit" (which
+## "bb_h" (heights; a back building under 4.5 m is one storey), "roof" (the
+## flat roofs' colour: tar, or silver-coated), "lit" (which
 ## windows glow: "k" the kitchen, "u" over it, "c" the light court's, "cu"
 ## over that, "m" the main block's back window over a one-storey back
 ## building), "curtain" (a colour), "porch" (the light by the back door is
@@ -468,10 +469,11 @@ static func house_back(p: Node3D, n: Node3D, u0: float, w: float, back: float, a
 	var lc_mid := (lc_u0 + lc_u1) * 0.5
 	# The main block, its roof and coping; the back building and its coping; the yard.
 	Kit.box(n, Vector3(w, h, 8.0), p.pt(u0 + w * 0.5, main_back - 4.0, h * 0.5), brick)
-	Kit.box(n, Vector3(w - 0.02, 0.05, 7.6), p.pt(u0 + w * 0.5, main_back - 4.1, h + 0.025), TAR)
+	var roof: Variant = o.get("roof", TAR)
+	Kit.box(n, Vector3(w - 0.02, 0.05, 7.6), p.pt(u0 + w * 0.5, main_back - 4.1, h + 0.025), roof)
 	Kit.box(n, Vector3(w, 0.2, 0.34), p.pt(u0 + w * 0.5, main_back - 0.11, h + 0.1), COPING)
 	Kit.box(n, Vector3(bb_w, bb_h, bb_d), p.pt(bb_u0 + bb_w * 0.5, back - bb_d * 0.5, bb_h * 0.5), bb_look)
-	Kit.box(n, Vector3(bb_w - 0.02, 0.04, bb_d - 0.3), p.pt(bb_u0 + bb_w * 0.5, back - bb_d * 0.5 - 0.1, bb_h + 0.02), TAR)
+	Kit.box(n, Vector3(bb_w - 0.02, 0.04, bb_d - 0.3), p.pt(bb_u0 + bb_w * 0.5, back - bb_d * 0.5 - 0.1, bb_h + 0.02), roof)
 	Kit.box(n, Vector3(bb_w, 0.16, 0.3), p.pt(bb_u0 + bb_w * 0.5, back - 0.09, bb_h + 0.08), COPING)
 	# Gutters under both copings, and their downspouts, both on the light court's
 	# side of the back building (clear of the fences between the yards): the back

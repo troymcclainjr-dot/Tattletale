@@ -17,6 +17,7 @@ extends RefCounted
 
 const Props := preload("res://scripts/props.gd")
 const In := preload("res://scripts/props_in.gd")
+const Houses := preload("res://scripts/houses.gd")
 const UP := 40.0
 const STAIR_U := 0.6          # the middle of the flight, on both floors
 const STAIR_V := 9.15
@@ -118,12 +119,16 @@ static func _street(p: Node3D, st: int, front: Node3D) -> void:
 	var trim := Color(0.7, 0.67, 0.58)                  # the door's frame (build's trim)
 	var dark_glass := Color(0.16, 0.19, 0.28)
 	var f := 15.8 + In.T * 0.5                          # the street face of the fronts
-	# His own front: the upstairs windows, a bracketed cornice in green and
-	# cream, the house number on the transom over the door, white marble lintels
-	# and sills, a barred cellar window at the pavement, one low marble step.
+	# His own front, one of the row's: the upstairs sashes under white marble
+	# lintels, the brick carried up to the row's pressed-metal cornice (his in
+	# green), the house number on the transom over the door, marble lintels and
+	# sills downstairs, a barred cellar window at the pavement, one low marble step.
+	var face := Kit.group(front, p.pt(0.0, f))
+	Houses.fb(face, 0.0, 5.0, 6.6, 7.0, -0.15, 0.0, Houses.wall("brick"))
 	for u: float in [1.3, 3.7]:
-		In.front_window(p, front, u, 15.8, 3.75, 1.3, 1.3, true, cream, marble, "", u, false)
-	In.cornice(p, front, 15.8, 0.0, 5.0, 6.6, Color(0.17, 0.3, 0.24), Color(0.9, 0.87, 0.78))
+		var blind := Props.rnd(u + u * 1.7) > 0.5          # as before: a blind half down in one, red curtains in the other
+		Houses.sash(face, u, 3.75, 1.1, 1.5, cream, Houses.LIT, null if blind else Color(0.86, 0.3, 0.28), marble, blind)
+	Houses.cornice(face, 5.0, 7.0, Houses.GREEN, 1)
 	p.slab(front, true, f + 0.0025, 0.6, 1.5, 2.155, 2.5, 0.005, dark_glass)      # the transom: dark, so the number on it reads
 	for x: float in [0.545, 1.485]:
 		p.slab(front, true, f + 0.0075, x, x + 0.07, 2.155, 2.5, 0.015, trim)
@@ -141,44 +146,42 @@ static func _street(p: Node3D, st: int, front: Node3D) -> void:
 		Kit.cyl(front, 0.011, 0.34, p.pt(2.9 + k * 0.15, f + 0.03, 0.27), Props.IRON, Vector3.ZERO, 5)
 	Kit.block(n, Vector3(1.3, 0.07, 0.6), p.pt(1.05, 16.18), marble)
 	Kit.block(n, Vector3(1.1, 0.05, 0.3), p.pt(1.05, 16.02, 0.07), marble)
-	# The row: a boarded-up vacant on the left, a formstone front with a metal awning on the right.
-	var old_brick := Kit.tex("brick", 1.5, Color(0.4, 0.22, 0.2), true, Color(0.72, 0.68, 0.74))
-	var formstone := Kit.tex("in_formstone", 1.6, Color(0.62, 0.6, 0.56), true, Color(0.92, 0.88, 0.8))
-	var looks := [old_brick, old_brick, formstone, old_brick]
+	# His roof, seen over the front from up the street (it goes when he is indoors).
+	var roof := Kit.group(front, p.pt(0.0, f))
+	Houses.fb(roof, 0.0, 5.0, 6.96, 7.0, -8.675, -0.36, Houses.SILVER)          # the main block, back to v 7.2
+	Houses.fb(roof, 0.0, 3.6, 6.5, 6.54, -12.4, -8.675, Houses.SILVER)          # the back building over the kitchen
+	# The row, the old Pen Lucy's stoop fronts (houses.gd): two marble steps to
+	# each door, the doors mirrored in pairs (his and his left neighbour's side
+	# by side), one pressed-metal cornice down the row. A boarded-up vacant on
+	# his left, a formstone front with a tin awning over its door on his right.
+	var looks := [Houses.wall("brick_2"), Houses.wall("brick_dark"), Houses.wall("formstone"), Houses.wall("brick_2")]
 	var starts := [-10.0, -5.0, 5.0, 10.0]
+	var heights := [7.0, 6.95, 7.1, 7.05]
 	for i in 4:
 		var u0: float = starts[i]
-		var boarded: bool = i == 1
-		p.slab(n, true, 15.8, u0, u0 + 5.0, 0.0, 6.48, 0.15, looks[i])
-		In.cornice(p, n, 15.8, u0, u0 + 5.0, 6.48, Color(0.3, 0.28, 0.27), Color(0.84, 0.81, 0.73))
-		var wood := Color(0.55, 0.42, 0.26)
-		if boarded:       # plywood over the doorway, set back a little so the sign on it stands clear
-			p.slab(n, true, 15.875, u0 + 0.55, u0 + 1.5, 0.3, 2.35, 0.03, wood.darkened(0.25))
-		else:
-			p.slab(n, true, 15.885, u0 + 0.55, u0 + 1.5, 0.3, 2.35, 0.03, Color(0.24, 0.3, 0.26))     # the door
-			# Its frame, a transom over it and a marble lintel (the formstone house's
-			# awning hangs where its transom would be).
-			var top := 2.43 if i == 2 else 2.74
-			for x: float in [u0 + 0.47, u0 + 1.5]:
-				p.slab(n, true, f + 0.025, x, x + 0.08, 0.3, top, 0.05, cream)
-			p.slab(n, true, f + 0.025, u0 + 0.55, u0 + 1.5, 2.35, 2.43, 0.05, cream)
-			if i != 2:
-				p.slab(n, true, f + 0.0025, u0 + 0.55, u0 + 1.5, 2.43, 2.68, 0.005, dark_glass)
-				p.slab(n, true, f + 0.025, u0 + 0.55, u0 + 1.5, 2.68, 2.74, 0.05, cream)
-				p.slab(n, true, f + 0.035, u0 + 0.4, u0 + 1.65, 2.74, 2.9, 0.07, marble)
-		var shut := "boarded" if boarded else ""
-		In.front_window(p, n, u0 + 3.55, 15.8, 1.1, 1.9, 1.4, i == 2, cream, marble, shut, u0, false)
-		for k in 2:
-			In.front_window(p, n, u0 + (1.25 if k == 0 else 3.7), 15.8, 3.75, 1.4, 1.3, i == 2 or (i == 3 and k == 0), cream, marble, shut, u0 + k, false)
-		# Three marble steps up to the door.
-		var stoop: Node3D = p.prop(st, u0 + 1.02, 16.2, 0.0, 1.3, 0.75)
-		for k in 3:
-			Kit.block(stoop, Vector3(1.3, 0.1 * (3 - k), 0.25), Vector3(0, 0, -0.25 + k * 0.25), marble.darkened(0.04 * k))
+		var o: Dictionary = Houses.style(31.0 + i * 7.3, "brick_2")
+		o["wall"] = looks[i]
+		o["door_left"] = i == 0 or i == 3
+		o["f0"] = 0.36
+		o["height"] = heights[i]
+		o["deep"] = 12.4
+		o["profile"] = 1
+		o["boarded"] = i == 1
+		o["lit"] = ["", "", "1010", "0100"][i]
+		o["oriel"] = i == 3
+		o["transom"] = i == 2
+		if i == 1:
+			o["door"] = Color(0.41, 0.31, 0.2)
 		if i == 2:
-			Kit.box(n, Vector3(2.0, 0.06, 0.9), p.pt(u0 + 1.02, 16.25, 2.6), Color(0.6, 0.66, 0.62), Vector3(14, 0, 0))     # the awning
-			for k in 5:
-				Kit.box(n, Vector3(0.2, 0.065, 0.905), p.pt(u0 + 0.22 + k * 0.4, 16.25, 2.6), Color(0.86, 0.86, 0.8), Vector3(14, 0, 0))
-	Props.words(n, "NO LOITERING", p.pt(-3.4, 15.9, 1.7), 0.12, Color(0.75, 0.15, 0.12))
+			o["lintel"] = null
+			o["awning"] = null
+		var g := Kit.group(n, p.pt(u0, f))
+		var made: Dictionary = Houses.stoop_front(g, 5.0, o)
+		var ds: float = made["door"]
+		p.block(u0 + ds - 0.7, f, u0 + ds + 0.7, f + float(made["stoop"]))         # the steps take up floor
+		if i == 2:
+			Houses.tin_awning(g, ds, 0.36 + 2.78, 1.1, Houses.TIN[1])               # over the door
+	Props.words(n, "NO LOITERING", p.pt(-3.75, f + 0.13, 1.7), 0.12, Color(0.75, 0.15, 0.12))     # across the boards over the vacant's window
 	Props.street_lamp(p, st, 6.4, 18.05)
 	Props.cans(p, st, 4.3, 16.15, 2)
 	Props.hydrant(p, st, -2.2, 18.0)

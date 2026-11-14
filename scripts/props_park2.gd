@@ -1,7 +1,7 @@
 extends RefCounted
 ## The pieces of THE GREEN (plans/park2.gd): an old neighbourhood square of
 ## lawns, flower beds and iron railings round a bandstand, a playground in one
-## corner, and the grand old houses and the church across the streets round it.
+## corner, and the rowhouses and the church across the streets round it.
 ## Same style as props.gd:
 ##
 ##   const Park := preload("res://scripts/props_park2.gd")
@@ -16,6 +16,7 @@ extends RefCounted
 
 const Props := preload("res://scripts/props.gd")
 const Street := preload("res://scripts/props_street.gd")
+const Houses := preload("res://scripts/houses.gd")
 
 const IRON := Color(0.11, 0.14, 0.13)          # railings, lamp posts, bench ends: black-green paint
 const GILT := Color(0.92, 0.72, 0.26)
@@ -684,83 +685,38 @@ static func window(g: Node3D, x: float, y0: float, ww: float, wh: float, z: floa
 	Kit.box(g, Vector3(ww + 0.3, 0.07, 0.14), Vector3(x, y0 - 0.1, z + 0.07), stone)
 
 
-## A grand old rowhouse across the street: its front faces +z from `at` (the
-## middle of its foot), turned `yaw`, and the house runs `deep` back. A stoop of
-## white marble steps up to the door, tall parlour windows, two floors over
-## them, a heavy cornice. `key` picks the lit windows. opts: "door_right",
-## "bay" (the parlour and the floor over it stand out in a bay), "trim",
-## "cornice", "deep", "door".
+## A rowhouse across the street, one of the old Pen Lucy's stoop fronts
+## (houses.gd): its front faces +z from `at` (the middle of its foot), turned
+## `yaw`, w wide, its cornice's top at h (two floors, or three from 10 m up),
+## running `deep` back. Marble steps up to the door, sashes under lintels on
+## some, a box oriel upstairs on the "bay" ones, the row's cornice, a chimney
+## on some. `key` picks the house's own trim, door, lintels and roof (houses.gd's
+## style()) and its lit windows. opts: "door_right", "bay", "trim", "cornice"
+## (the cornice's profile, 0 to 5: see Houses.cornice), "deep", "door", "end"
+## (-1 or 1: that end of the house is the row's open end, with windows down it).
 static func townhouse(parent: Node3D, at: Vector3, yaw: float, w: float, h: float, look: Variant, key: float, opts := {}) -> Node3D:
 	var g := Kit.group(parent, at, Vector3(0, yaw, 0))
+	var o: Dictionary = Houses.style(key * 7.3 + 1.1)
+	var floors := 3 if h >= 10.0 else 2
 	var deep: float = opts.get("deep", 10.0)
-	var trim: Color = opts.get("trim", STONE)
-	var cornice: Color = opts.get("cornice", Color(0.24, 0.22, 0.22))
-	var side := 1.0 if opts.get("door_right", false) else -1.0
-	var door: Color = opts.get("door", DOORS[int(Props.rnd(key * 1.3) * DOORS.size()) % DOORS.size()])
-	var fl := 1.1                                    # the parlour floor: up the steps
-	var storey := 3.3
-	Kit.box(g, Vector3(w, h, deep), Vector3(0, h * 0.5, -deep * 0.5), look)
-	Kit.box(g, Vector3(w - 0.4, 0.05, deep - 0.6), Vector3(0, h + 0.025, -deep * 0.5 - 0.1), Color(0.2, 0.2, 0.22))
-	# Everything set on the front starts a little way inside the wall, each kind
-	# at its own depth, so no two backs lie flush (seen from the side rows).
-	Kit.box(g, Vector3(w - 0.012, fl - 0.02, 0.09), Vector3(0, (fl - 0.02) * 0.5, 0.035), trim.darkened(0.15))
-	# the door, up its marble steps, with iron rails
-	var xd := side * (w * 0.5 - 1.05)
-	Kit.box(g, Vector3(1.5, 2.98, 0.09), Vector3(xd, fl + 1.49, 0.025), trim)
-	Kit.box(g, Vector3(1.0, 2.12, 0.05), Vector3(xd, fl + 1.08, 0.085), door)
-	for y: float in [0.55, 1.5]:
-		Kit.box(g, Vector3(0.7, 0.6, 0.02), Vector3(xd, fl + y, 0.118), door.lightened(0.08))
-	Kit.box(g, Vector3(1.0, 0.46, 0.03), Vector3(xd, fl + 2.5, 0.08), Kit.flat(LIT, 0.5))
-	Kit.box(g, Vector3(0.04, 0.46, 0.02), Vector3(xd, fl + 2.5, 0.105), SASH)
-	Kit.box(g, Vector3(1.8, 0.22, 0.24), Vector3(xd, fl + 3.09, 0.09), trim)
-	Kit.ball(g, 0.04, Vector3(xd - side * 0.36, fl + 1.05, 0.13), GILT, 6)
-	for i in 5:
-		var top := fl * (i + 1) / 5.0
-		var reach := 0.3 * (5 - i)
-		Kit.box(g, Vector3(1.3, top, reach + 0.04), Vector3(xd, top * 0.5, reach * 0.5 - 0.02), MARBLE)
-	for s: float in [-0.68, 0.68]:
-		Kit.cyl(g, 0.02, 1.05, Vector3(xd + s, 0.525, 1.42), IRON, Vector3.ZERO, 5)
-		Kit.cyl(g, 0.02, 0.9, Vector3(xd + s, fl + 0.45, 0.2), IRON, Vector3.ZERO, 5)
-		strut(g, Vector3(xd + s, 1.05, 1.42), Vector3(xd + s, fl + 0.9, 0.2), 0.035, IRON)
-		Kit.ball(g, 0.04, Vector3(xd + s, 1.08, 1.42), GILT, 5)
-	# the windows: two tall ones on the parlour floor, three on each floor over it
-	var x0 := xd + side * -0.9
-	var x1 := -side * (w * 0.5 - 0.6)
-	var lo := minf(x0, x1)
-	var hi := maxf(x0, x1)
-	var cols: Array = [lo + (hi - lo) * 0.25, lo + (hi - lo) * 0.75]
-	var face := 0.0
-	if opts.get("bay", false):
-		# the parlour and the floor over it stand out in a bay, down to the ground
-		face = 0.65
-		var bw := hi - lo + 0.3
-		var bx := (lo + hi) * 0.5
-		var tall := storey * 2.0 - 0.13
-		Kit.box(g, Vector3(bw, fl - 0.02, face + 0.13), Vector3(bx, (fl - 0.02) * 0.5, (face + 0.08 - 0.05) * 0.5), trim.darkened(0.15))
-		Kit.box(g, Vector3(bw, tall, face + 0.06), Vector3(bx, fl - 0.02 + tall * 0.5, (face - 0.06) * 0.5), look)
-		Kit.box(g, Vector3(bw + 0.12, 0.18, face + 0.17), Vector3(bx, fl + storey * 2.0 - 0.06, (face + 0.1 - 0.07) * 0.5), trim)
-	var n := 0
-	for c: float in cols:
-		window(g, c, fl + 0.5, 1.0, 2.15, face, Props.rnd(key + n) > 0.45, key + n, trim)
-		n += 1
-		# the basement under it, behind bars
-		Kit.box(g, Vector3(0.8, 0.5, 0.03), Vector3(c, 0.5, 0.095 + face), DARK_GLASS)
-		for k in 4:
-			Kit.cyl(g, 0.012, 0.56, Vector3(c - 0.3 + k * 0.2, 0.5, 0.12 + face), IRON, Vector3.ZERO, 4)
-	var floors := 2 if h >= 11.0 else 1
-	for f in floors:
-		var y0 := fl + storey * (f + 1) + 0.5
-		Kit.box(g, Vector3(w - 0.012, 0.16, 0.075), Vector3(0, y0 - 0.62, 0.0225), trim)
-		for c: float in [xd] + cols:
-			var z := face if (f == 0 and c != xd) else 0.0
-			window(g, c, y0, 0.95, 1.75, z, Props.rnd(key + n * 1.7) > 0.5, key + n, trim)
-			n += 1
-	# the cornice: a deep painted ledge on brackets, over a frieze
-	Kit.box(g, Vector3(w - 0.012, 0.5, 0.555), Vector3(0, h - 0.1, 0.2425), cornice)
-	Kit.box(g, Vector3(w - 0.012, 0.36, 0.145), Vector3(0, h - 0.53, 0.0475), cornice.lightened(0.12))
-	var nb := maxi(int(w / 0.9), 3)
-	for i in nb + 1:
-		Kit.box(g, Vector3(0.14, 0.44, 0.38), Vector3(-w * 0.5 + 0.12 + (w - 0.24) * i / nb, h - 0.565, 0.2), cornice)
+	o["wall"] = look
+	o["height"] = h
+	o["floors"] = floors
+	o["deep"] = deep
+	o["door_left"] = not opts.get("door_right", false)
+	o["oriel"] = opts.get("bay", false)
+	o["profile"] = opts.get("cornice", Houses.profile_for(key, false))
+	o["lit"] = Houses.lit_pattern(key, 12, 0.45)
+	o["transom"] = Props.rnd(key * 1.9) > 0.4
+	o["porch_light"] = Props.rnd(key * 2.3) > 0.5
+	for k: String in ["trim", "door"]:
+		if opts.has(k):
+			o[k] = opts[k]
+	var f := Kit.group(g, Vector3(-w * 0.5, 0.0, 0.0))
+	Houses.stoop_front(f, w, o)
+	if opts.has("end"):
+		var e: int = opts["end"]
+		Houses.end_windows(f, w, deep, e, Houses.F0, h, o["trim"], key, floors)
 	return g
 
 

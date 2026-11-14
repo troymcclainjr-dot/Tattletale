@@ -1,14 +1,14 @@
 extends RefCounted
 ## Pieces for Rose Hill Terrace (plans/street.gd), the short copy of the old
-## Pen Lucy's side street: its porch-front rowhouses with the projecting sash
-## bays upstairs, a plain stoop-front rowhouse, the cobra-head street lamps and
-## the wooden utility poles, the neighbourhood's parked cars, the corner sign
-## post with its stop sign, a mailbox, a bus stop, litter.
+## Pen Lucy's side street: the cobra-head street lamps and the wooden utility
+## poles, the neighbourhood's parked cars, the corner sign post with its stop
+## sign, a mailbox, a bus stop, litter. Its houses (the porch-front rowhouses
+## with the projecting sash bays upstairs, the plain stoop-front ones) are
+## built by the shared house kit, houses.gd; the names below hand them on, so
+## Rose Hill keeps calling them here.
 ##
-## A house front is built on a FACE: a group standing at the front's left end
-## (as seen from in front of it), its x running along the front to the right,
-## its y up and its z pointing out of the wall. `fb` puts a box on a face from
-## its ranges (s along, y up, t out), so a house can be stood facing any way.
+## A house front is built on a FACE (see houses.gd): a group standing at the
+## front's left end, its x running along the front, y up, z out of the wall.
 ##
 ##   const Street := preload("res://scripts/props_street.gd")
 ##   Street.porch_house(p, band, 6.33, 10.0, 6.53, {"no": "518", "wall": brick, ...})
@@ -18,383 +18,73 @@ extends RefCounted
 ## the measured street), the colours a touch brighter for the pop-up's night.
 
 const Props := preload("res://scripts/props.gd")
+const Houses := preload("res://scripts/houses.gd")
 
-const WHITE := Color(0.96, 0.94, 0.9)           # trim_white (244, 240, 230)
-const CREAM := Color(0.9, 0.84, 0.71)           # trim_cream (226, 212, 180)
-const BROWN := Color(0.4, 0.26, 0.18)           # trim_brown (90, 58, 40)
-const RED := Color(0.6, 0.18, 0.15)             # trim_red (138, 42, 36)
-const GREEN := Color(0.27, 0.4, 0.3)            # trim_green (63, 90, 68)
-const DOORS := {
-	"red": Color(0.62, 0.16, 0.14), "green": Color(0.2, 0.34, 0.24), "blue": Color(0.2, 0.28, 0.46),
-	"black": Color(0.12, 0.11, 0.11), "wood": Color(0.46, 0.3, 0.17), "white": Color(0.91, 0.89, 0.85),
-}
-const PORCH := Color(0.56, 0.56, 0.59)          # deck and steps (138, 138, 144)
-const PORCH_ROOF := Color(0.45, 0.37, 0.3)      # (106, 88, 70)
-const TAR := Color(0.27, 0.27, 0.3)             # (62, 62, 68)
-const BASE := Color(0.6, 0.59, 0.55)            # the grey base course
-const MARBLE := Color(0.94, 0.93, 0.89)         # (238, 234, 224)
-const CONCRETE := Color(0.72, 0.71, 0.68)
-const PANE := Color(0.11, 0.14, 0.2)            # glass (26, 34, 48)
-const IRON := Color(0.12, 0.12, 0.14)
-const LIT := Color(1.0, 0.8, 0.48)
-const TV := Color(0.55, 0.72, 1.0)
-const GOLD := Color(0.95, 0.78, 0.3)
+const WHITE := Houses.WHITE
+const CREAM := Houses.CREAM
+const BROWN := Houses.BROWN
+const RED := Houses.RED
+const GREEN := Houses.GREEN
+const DOORS := Houses.DOORS
+const PORCH := Houses.PORCH
+const PORCH_ROOF := Houses.PORCH_ROOF
+const TAR := Houses.TAR
+const BASE := Houses.BASE
+const MARBLE := Houses.MARBLE
+const CONCRETE := Houses.CONCRETE
+const PANE := Houses.PANE
+const IRON := Houses.IRON
+const LIT := Houses.LIT
+const TV := Houses.TV
+const GOLD := Houses.GOLD
 const LAMP := Color(1.0, 0.88, 0.65)            # the street lamps (255, 224, 166)
 ## The parked cars' paints, in the old game's order.
 const PAINT := [Color(0.36, 0.44, 0.52), Color(0.82, 0.78, 0.7), Color(0.36, 0.45, 0.39), Color(0.58, 0.33, 0.31), Color(0.53, 0.58, 0.62), Color(0.3, 0.33, 0.36)]
 
-const F0 := 0.7              # the ground floor (and the porch deck) above the pavement
-const CEIL := 3.8            # the porch ceiling
-const PROOF := 4.0           # the top of the porch roof: 3.3 above the deck
-const PD := 2.0              # how deep the porch is
-const RISE := 0.175          # four risers from the deck to the paved strip
-
-## Rose Hill's three upper bays: width, how far it stands out, half the front's share of the width.
-const BAYS := {"white": [2.25, 0.64, 0.29], "cream": [2.05, 0.52, 0.32], "grey": [2.35, 0.72, 0.27]}
+const F0 := Houses.F0
+const CEIL := Houses.CEIL
+const PROOF := Houses.PROOF
+const PD := Houses.PD
+const RISE := Houses.RISE
+const BAYS := Houses.BAYS
 
 
-## A face at (u, v) on the plan: `yaw` as for props (0 the front faces the
-## street, +z; 90 it faces right; 270 left).
+# ------------------------------------------------------- the houses' names
+
 static func face(p: Node3D, b: int, u: float, v: float, yaw := 0.0) -> Node3D:
-	return Kit.group(p.node_of(b), p.pt(u, v), Vector3(0, yaw, 0))
+	return Houses.face(p, b, u, v, yaw)
 
 
-## A face along the line a to b on another face (s, t on that face). Its z
-## points out to the left of the way from a to b.
 static func sub_face(g: Node3D, a: Vector2, b: Vector2) -> Node3D:
-	var d := b - a
-	return Kit.group(g, Vector3(a.x, 0, a.y), Vector3(0, rad_to_deg(atan2(-d.y, d.x)), 0))
+	return Houses.sub_face(g, a, b)
 
 
-## A box on a face: s0..s1 along it, y0..y1 up, t0..t1 out of it (negative is into the wall).
 static func fb(g: Node3D, s0: float, s1: float, y0: float, y1: float, t0: float, t1: float, look: Variant) -> MeshInstance3D:
-	return Kit.box(g, Vector3(s1 - s0, y1 - y0, t1 - t0), Vector3((s0 + s1) * 0.5, (y0 + y1) * 0.5, (t0 + t1) * 0.5), look)
+	return Houses.fb(g, s0, s1, y0, y1, t0, t1, look)
 
 
-## A round bar from a to b (rails, wires, a lamp's arm).
 static func pipe(g: Node3D, a: Vector3, b: Vector3, r: float, look: Variant, sides := 6) -> MeshInstance3D:
-	var mi := Kit.cyl(g, r, a.distance_to(b), (a + b) * 0.5, look, Vector3.ZERO, sides)
-	var y := (b - a).normalized()
-	var x := y.cross(Vector3.FORWARD if absf(y.z) < 0.9 else Vector3.RIGHT).normalized()
-	mi.basis = Basis(x, y, x.cross(y))
-	return mi
+	return Houses.pipe(g, a, b, r, look, sides)
 
 
-## A double-hung sash window on a face, as the old game's kit draws it: frame,
-## pane, meeting rail, sill, and a lintel over it on some brick fronts. `lit` is
-## the colour the pane glows (null: a dark pane); `curtain` hangs either side
-## of the pane (darker when it is not lit); `blind` pulls a blind half down instead.
 static func sash(g: Node3D, s: float, y0: float, ww: float, wh: float, trim: Color, lit: Variant = null, curtain: Variant = null, lintel: Variant = null, blind := false) -> void:
-	var half := ww * 0.5
-	fb(g, s - half - 0.09, s + half + 0.09, y0 - 0.02, y0 + wh + 0.02, 0.0, 0.05, trim)
-	fb(g, s - half - 0.15, s + half + 0.15, y0 - 0.13, y0 - 0.01, 0.0, 0.17, trim)
-	if lintel != null:
-		fb(g, s - half - 0.13, s + half + 0.13, y0 + wh + 0.04, y0 + wh + 0.24, 0.0, 0.08, lintel)
-	fb(g, s - half, s + half, y0 + 0.07, y0 + wh - 0.07, 0.05, 0.075, Kit.flat(lit, 1.1) if lit != null else PANE)
-	var cloth: Variant = curtain
-	if cloth != null and lit == null:
-		cloth = (cloth as Color).darkened(0.6)
-	if blind and lit != null:
-		fb(g, s - half + 0.03, s + half - 0.03, y0 + wh * 0.52, y0 + wh - 0.085, 0.075, 0.082, Color(0.93, 0.9, 0.78))
-		for k in int((wh * 0.48 - 0.1) / 0.09):
-			fb(g, s - half + 0.035, s + half - 0.035, y0 + wh * 0.52 + 0.03 + k * 0.09, y0 + wh * 0.52 + 0.045 + k * 0.09, 0.082, 0.087, Color(0.82, 0.78, 0.66))
-	elif cloth != null:
-		if ww >= 0.8:
-			for side: float in [-1.0, 1.0]:
-				fb(g, s + side * (half - 0.17) - 0.13, s + side * (half - 0.17) + 0.13, y0 + 0.12, y0 + wh - 0.12, 0.075, 0.085, cloth)
-		fb(g, s - half + 0.03, s + half - 0.03, y0 + wh - 0.3, y0 + wh - 0.1, 0.078, 0.09, (cloth as Color).darkened(0.15))
-	fb(g, s - half + 0.015, s + half - 0.015, y0 + wh * 0.5 - 0.04, y0 + wh * 0.5 + 0.04, 0.055, 0.095, trim)
+	Houses.sash(g, s, y0, ww, wh, trim, lit, curtain, lintel, blind)
 
 
-## A Baltimore painted screen over the lower sash: a little red-roofed cottage
-## by a pond under a blue sky, painted on the window screen.
 static func painted_screen(g: Node3D, s: float, y0: float, ww: float, wh: float) -> void:
-	var a := s - ww * 0.5 + 0.03
-	var c := s + ww * 0.5 - 0.03
-	var top := y0 + wh * 0.5 - 0.05
-	var bottom := y0 + 0.08
-	var h := top - bottom
-	fb(g, a, c, bottom, top, 0.1, 0.11, Color(0.45, 0.7, 0.95))
-	fb(g, a + 0.01, c - 0.01, bottom + 0.01, bottom + h * 0.38, 0.11, 0.116, Color(0.35, 0.68, 0.32))
-	fb(g, a + 0.04, a + 0.3, bottom + h * 0.12, bottom + h * 0.24, 0.116, 0.12, Color(0.3, 0.5, 0.85))
-	var hs := s + 0.12
-	fb(g, hs - 0.17, hs + 0.17, bottom + h * 0.3, bottom + h * 0.62, 0.116, 0.122, Color(0.97, 0.95, 0.88))
-	fb(g, hs - 0.21, hs + 0.21, bottom + h * 0.62, bottom + h * 0.76, 0.122, 0.128, Color(0.8, 0.18, 0.14))
-	fb(g, hs - 0.05, hs + 0.05, bottom + h * 0.3, bottom + h * 0.5, 0.122, 0.126, Color(0.45, 0.28, 0.18))
-	Kit.ball(g, 0.07, Vector3(c - 0.12, bottom + h * 0.8, 0.12), Color(1.0, 0.85, 0.3), 6)
-	Kit.ball(g, 0.09, Vector3(a + 0.14, bottom + h * 0.55, 0.12), Color(0.2, 0.5, 0.25), 6)
+	Houses.painted_screen(g, s, y0, ww, wh)
 
 
-# ------------------------------------------------------------------- houses
-
-## One of Rose Hill's porch-front rowhouses, its front on v = d from u0 to
-## u0 + w: two storeys and a flat tar roof; an open porch the width of the
-## house on a solid grey deck 0.7 high, three posts, a railing with its opening
-## at the steps, four risers down to the paved strip; the door with its transom
-## (the number in gold) and two windows; upstairs the three-sided sash bay
-## standing on the porch roof on the side away from the door (the street's own
-## mark) and one sash over the door; a cornice band on brackets; a chimney on
-## some. The houses are mirrored in pairs, so doors and steps come two together.
-##
-## h: "no" (the house number), "wall" (a look), "trim", "door" (colours),
-## "door_left", "bay" ("white", "cream", "grey"), "lintel" (a colour or null),
-## "height" (to the top of the cornice), "chimney", "porch" (false: a marble
-## stoop and no porch); and the pop-up's own: "lit" (five letters, "1" lit,
-## "t" the blue of a television: the window nearer the door, the other one,
-## the bay, the sash over the door, the transom), "curtain" (a colour),
-## "blinds", "porch_light", "screens", "pots", "chairs", "fern".
 static func porch_house(p: Node3D, b: int, u0: float, d: float, w: float, h: Dictionary) -> Node3D:
-	var g := face(p, b, u0, d)
-	var wall: Variant = h["wall"]
-	var trim: Color = h.get("trim", WHITE)
-	var height: float = h.get("height", 8.0)
-	var deep: float = h.get("deep", 9.0)
-	var porch: bool = h.get("porch", true)
-	var lit: String = h.get("lit", "00000")
-	var curtain: Variant = h.get("curtain", null)
-	var lintel: Variant = h.get("lintel", null)
-	var door_left: bool = h.get("door_left", true)
-	var door_s := 0.9 if door_left else w - 0.9
-	var into := 1.0 if door_left else -1.0          # from the door towards the middle of the house
-	var k := w / 6.47
-	var wins: Array = []
-	for c: float in [3.23 * k, 1.08 * k]:            # the window nearer the door first
-		var s := w - c if door_left else c
-		if absf(s - door_s) > 1.3:
-			wins.append(s)
-
-	# The house itself, its roof, the base course, a chimney.
-	fb(g, 0.0, w, 0.0, height, -deep, 0.0, wall)
-	fb(g, 0.0, w, height, height + 0.04, -deep, -0.36, TAR)
-	if not porch:
-		fb(g, 0.0, w, 0.0, F0 - 0.04, 0.0, 0.04, BASE)
-	if h.get("chimney", false):
-		var cs := w - 0.6 if door_left else 0.6
-		fb(g, cs - 0.35, cs + 0.35, height, height + 1.3, -6.4, -5.9, wall)
-		fb(g, cs - 0.4, cs + 0.4, height + 1.3, height + 1.38, -6.45, -5.85, CONCRETE)
-
-	# The ground floor: the windows, the door.
-	for i in wins.size():
-		var s: float = wins[i]
-		sash(g, s, F0 + 0.7, 0.95, 1.7, trim, _lit(lit, i), curtain, lintel, h.get("blinds", false))
-		if h.get("screens", false):
-			painted_screen(g, s, F0 + 0.7, 0.95, 1.7)
-	_door(g, door_s, h)
-
-	# The porch, or a marble stoop.
-	if porch:
-		_porch(g, w, door_s, into, h)
-	else:
-		_stoop(g, door_s, into, h)
-
-	# Upstairs: the bay, the sash over the door, the cornice.
-	var kind: String = h.get("bay", "white")
-	var bay: Array = BAYS[kind]
-	var bay_s := w * (0.66 if door_left else 0.34)
-	var base := PROOF + 0.05 if porch else 4.3
-	var top := height - 0.65 - 0.205
-	var sh := minf(1.72, top - 0.22 - base - 0.5)
-	var sz := top - 0.22 - sh
-	_bay(g, bay_s, bay, kind, base, top, sz, sh, _lit(lit, 2), curtain, porch)
-	sash(g, door_s, top - 0.22 - 1.65, 0.95, 1.65, trim, _lit(lit, 3), curtain)
-	_cornice(g, w, height, trim, bay_s, bay[0])
-	return g
+	return Houses.porch_house(p, b, u0, d, w, h)
 
 
-static func _lit(lit: String, i: int) -> Variant:
-	if i >= lit.length():
-		return null
-	match lit[i]:
-		"1":
-			return LIT
-		"t":
-			return TV
-	return null
-
-
-static func _door(g: Node3D, s: float, h: Dictionary) -> void:
-	var trim: Color = h.get("trim", WHITE)
-	var leaf: Color = h.get("door", DOORS["red"])
-	fb(g, s - 0.62, s + 0.62, F0, F0 + 2.78, 0.0, 0.05, trim)
-	fb(g, s - 0.48, s + 0.48, F0, F0 + 2.16, 0.05, 0.085, leaf)
-	for y: float in [F0 + 0.25, F0 + 1.2]:
-		fb(g, s - 0.36, s + 0.36, y, y + 0.75, 0.085, 0.1, leaf.lightened(0.14))
-	fb(g, s - 0.48, s + 0.48, F0 + 2.26, F0 + 2.66, 0.05, 0.075, Kit.flat(LIT, 0.85) if _lit(h.get("lit", ""), 4) != null else PANE)
-	Props.words(g, h.get("no", ""), Vector3(s, F0 + 2.46, 0.082), 0.2, GOLD)
-	var knob := s + (0.32 if h.get("door_left", true) else -0.32)
-	fb(g, knob - 0.04, knob + 0.04, F0 + 1.0, F0 + 1.08, 0.1, 0.14, GOLD)
-
-
-static func _porch(g: Node3D, w: float, door_s: float, into: float, h: Dictionary) -> void:
-	var trim: Color = h.get("trim", WHITE)
-	var gap := [door_s - 0.66, door_s + 0.66]
-	var posts := [0.16, w * 0.5, w - 0.16]
-	# The deck: one solid grey box, the width of the house.
-	fb(g, 0.0, w, 0.0, F0, 0.0, PD, PORCH)
-	# Posts, the flat roof on them, a fascia in the trim colour.
-	for s: float in posts:
-		fb(g, s - 0.1, s + 0.1, F0, CEIL, PD - 0.33, PD - 0.13, trim)
-	fb(g, 0.0, w, CEIL, PROOF, 0.0, PD + 0.18, PORCH_ROOF)
-	fb(g, 0.006, w - 0.006, CEIL - 0.24, CEIL + 0.06, PD + 0.06, PD + 0.2, trim)
-	# The railing, its opening at the steps with a newel either side.
-	for i in 2:
-		for span: Array in _cut([posts[i] + 0.1, posts[i + 1] - 0.1], gap):
-			var a: float = span[0]
-			var c: float = span[1]
-			if absf(c - gap[0]) < 0.001:
-				fb(g, c - 0.13, c, F0, F0 + 1.0, PD - 0.31, PD - 0.15, trim)
-				c -= 0.13
-			if absf(a - gap[1]) < 0.001:
-				fb(g, a, a + 0.13, F0, F0 + 1.0, PD - 0.31, PD - 0.15, trim)
-				a += 0.13
-			fb(g, a, c, F0 + 0.82, F0 + 0.93, PD - 0.28, PD - 0.18, trim)
-			fb(g, a, c, F0 + 0.1, F0 + 0.18, PD - 0.27, PD - 0.19, trim)
-			var n := maxi(int((c - a) / 0.3), 1)
-			for j in n:
-				var x: float = a + (j + 0.5) * (c - a) / n
-				fb(g, x - 0.035, x + 0.035, F0 + 0.18, F0 + 0.82, PD - 0.26, PD - 0.2, trim)
-	for s: float in [0.08, w - 0.08]:
-		fb(g, s - 0.05, s + 0.05, F0 + 0.82, F0 + 0.93, 0.0, PD - 0.33, trim)
-	# The steps down, the same grey.
-	for k in 3:
-		fb(g, door_s - 0.625, door_s + 0.625, 0.0, F0 - RISE * (k + 1), PD + 0.3 * k, PD + 0.3 * (k + 1), PORCH)
-	# The porch light, under the roof's front edge over the steps.
-	var on: bool = h.get("porch_light", false)
-	fb(g, door_s - 0.09, door_s + 0.09, CEIL - 0.05, CEIL, PD - 0.45, PD - 0.27, IRON)
-	Kit.ball(g, 0.1, Vector3(door_s, CEIL - 0.13, PD - 0.36), Kit.flat(Color(1.0, 0.86, 0.55), 1.8) if on else Color(0.62, 0.6, 0.55), 8)
-	if on:
-		Kit.omni(g, Vector3(door_s, CEIL - 0.35, PD + 0.2), Color(1.0, 0.84, 0.58), 2.4, 5.5)
-	# The pop-up's own: things on the porch.
-	if h.get("chairs", false):
-		var cs := w * 0.5 + into * 1.2
-		porch_chair(g, cs - 0.4, 0.8, Color(0.4, 0.75, 0.7), 12.0)
-		porch_chair(g, cs + 0.4, 0.8, Color(0.95, 0.55, 0.5), -8.0)
-	if h.get("fern", false):
-		for s: float in [w * 0.5 - 0.6, w * 0.5 + 0.6]:
-			Kit.cyl(g, 0.006, 0.45, Vector3(s, CEIL - 0.22, PD - 0.45), IRON, Vector3.ZERO, 4)
-			Kit.cyl(g, 0.16, 0.14, Vector3(s, CEIL - 0.5, PD - 0.45), Color(0.6, 0.35, 0.22), Vector3.ZERO, 8, 0.12)
-			Kit.ball(g, 0.26, Vector3(s, CEIL - 0.5, PD - 0.45), Color(0.28, 0.58, 0.26), 7)
-	if h.get("pots", false):
-		for j in 3:
-			var ps := door_s + into * (0.95 + j * 0.42)
-			Kit.cyl(g, 0.13, 0.24, Vector3(ps, F0 + 0.12, PD - 0.55), Color(0.72, 0.38, 0.24), Vector3.ZERO, 8, 0.1)
-			Kit.ball(g, 0.15, Vector3(ps, F0 + 0.33, PD - 0.55), [Color(0.9, 0.25, 0.35), Color(0.95, 0.8, 0.2), Color(0.85, 0.4, 0.75)][j], 6)
-
-
-## Pieces of [a, b] left when `hole` (another [a, b]) is cut out of it.
-static func _cut(span: Array, hole: Array) -> Array:
-	var out: Array = []
-	if hole[1] <= span[0] or hole[0] >= span[1]:
-		return [span]
-	if hole[0] > span[0] + 0.05:
-		out.append([span[0], hole[0]])
-	if hole[1] < span[1] - 0.05:
-		out.append([hole[1], span[1]])
-	return out
-
-
-static func _stoop(g: Node3D, door_s: float, into: float, h: Dictionary) -> void:
-	# A marble stoop, white as scrubbed: a landing at the door and four risers down, no rail.
-	fb(g, door_s - 0.7, door_s + 0.7, 0.0, F0, -0.01, 0.45, MARBLE)
-	for k in 3:
-		fb(g, door_s - 0.7, door_s + 0.7, 0.0, F0 - RISE * (k + 1), 0.45 + 0.3 * k, 0.45 + 0.3 * (k + 1), MARBLE)
-	var lamp_s := door_s + into * 0.85
-	var on: bool = h.get("porch_light", false)
-	fb(g, lamp_s - 0.08, lamp_s + 0.08, F0 + 2.0, F0 + 2.32, 0.0, 0.04, IRON)
-	Kit.box(g, Vector3(0.14, 0.24, 0.14), Vector3(lamp_s, F0 + 2.1, 0.12), Kit.flat(Color(1.0, 0.86, 0.55), 1.6) if on else Color(0.5, 0.48, 0.42))
-	if on:
-		Kit.omni(g, Vector3(lamp_s, F0 + 2.0, 0.8), Color(1.0, 0.84, 0.58), 2.0, 4.8)
-
-
-## The three-sided sash bay upstairs: a sash in each face, a clapboard apron
-## below them, a sill band and two cornice bands wrapping round, a tar cap.
-static func _bay(g: Node3D, at: float, bay: Array, kind: String, base: float, top: float, sz: float, sh: float, lit: Variant, curtain: Variant, porch: bool) -> void:
-	var bw: float = bay[0]
-	var bd: float = bay[1]
-	var hf: float = bw * float(bay[2])
-	var body: Variant = WHITE if kind == "white" else (CREAM if kind == "cream" else Kit.tex("painted_block", 0.7, Color(0.6, 0.59, 0.55), true, Color(0.8, 0.8, 0.84)))
-	var trim := CREAM.lightened(0.15) if kind == "cream" else WHITE
-	var clap := Color(0.66, 0.64, 0.6)
-	var outline := [Vector2(at - bw * 0.5, 0.0), Vector2(at - hf, bd), Vector2(at + hf, bd), Vector2(at + bw * 0.5, 0.0)]
-	for i in 3:
-		var f := sub_face(g, outline[i], outline[i + 1])
-		var l: float = (outline[i + 1] - outline[i]).length()
-		var front := i == 1
-		fb(f, 0.0, l, base, top, -bd if front else -0.45, 0.0, body)
-		sash(f, l * 0.5, sz, l - 0.24, sh, trim, lit, curtain)
-		fb(f, -0.03, l + 0.03, base, base + 0.11, -0.025, 0.09, trim)
-		fb(f, -0.045, l + 0.045, top - 0.02, top + 0.1, -0.03, 0.12, trim)
-		fb(f, -0.065, l + 0.065, top + 0.1, top + 0.17, -0.04, 0.17, trim)
-		fb(f, -0.065 if front else 0.0, l + 0.065 if front else l, top + 0.17, top + 0.205, -bd if front else -0.45, 0.17, TAR)
-		var y := base + 0.2
-		while y < sz - 0.17:
-			fb(f, 0.02, l - 0.02, y, y + 0.02, 0.0, 0.012, clap)
-			y += 0.18
-	if not porch:
-		# Brackets under a bay that does not stand on a porch roof.
-		for s: float in [at - hf + 0.12, at + hf - 0.12]:
-			fb(g, s - 0.07, s + 0.07, base - 0.5, base, 0.0, bd - 0.08, trim)
-			fb(g, s - 0.07, s + 0.07, base - 0.62, base - 0.5, 0.0, 0.18, trim)
-
-
-## The cornice: a band 0.52 tall standing out 0.34 in the trim colour, a tar
-## cap on it, brackets under it about every 1.6 m except over the bay.
-static func _cornice(g: Node3D, w: float, height: float, trim: Color, bay_s: float, bay_w: float) -> void:
-	fb(g, 0.0, w, height - 0.52, height - 0.2, 0.0, 0.2, trim)
-	fb(g, 0.0, w, height - 0.2, height - 0.04, 0.0, 0.34, trim)
-	fb(g, 0.0, w, height - 0.04, height + 0.02, 0.0, 0.28, TAR)
-	var n := maxi(2, int(w / 1.6) + 1)
-	for i in n:
-		var s := 0.22 + i * (w - 0.44) / (n - 1)
-		if absf(s - bay_s) < bay_w * 0.5 + 0.2:
-			continue
-		fb(g, s - 0.08, s + 0.08, height - 0.88, height - 0.52, 0.0, 0.27, trim)
-
-
-## A metal shell-back porch chair, the kind every Baltimore porch had.
 static func porch_chair(g: Node3D, s: float, t: float, paint: Color, turn := 8.0) -> void:
-	var c := Kit.group(g, Vector3(s, F0, t), Vector3(0, turn, 0))
-	Kit.box(c, Vector3(0.48, 0.05, 0.42), Vector3(0, 0.4, 0.02), paint)
-	Kit.box(c, Vector3(0.5, 0.45, 0.05), Vector3(0, 0.68, -0.2), paint, Vector3(-12, 0, 0))
-	var shell := Kit.ball(c, 0.25, Vector3(0, 0.88, -0.22), paint, 8)
-	shell.scale = Vector3(1.0, 0.45, 0.2)
-	for x: float in [-0.21, 0.21]:
-		Kit.box(c, Vector3(0.035, 0.4, 0.035), Vector3(x, 0.2, 0.18), IRON)
-		Kit.box(c, Vector3(0.035, 0.035, 0.42), Vector3(x, 0.02, 0.0), IRON)
-		Kit.box(c, Vector3(0.04, 0.04, 0.34), Vector3(x + signf(x) * 0.02, 0.56, 0.02), paint)
+	Houses.porch_chair(g, s, t, paint, turn)
 
 
-## A plain stoop-front rowhouse (Old York Road's), on a face: a door and its
-## marble steps, the windows, a cornice. lit: one letter per window ("1" lit),
-## ground floor first, left to right.
 static func plain_house(g: Node3D, w: float, height: float, wall: Variant, trim: Color, door: Color, lit := "", floors := 2, door_left := true) -> void:
-	fb(g, 0.0, w, 0.0, height, -9.0, 0.0, wall)
-	fb(g, 0.0, w, height, height + 0.04, -9.0, -0.36, TAR)
-	fb(g, 0.0, w, 0.0, F0 - 0.04, 0.0, 0.04, BASE)
-	var ds := 0.9 if door_left else w - 0.9
-	fb(g, ds - 0.62, ds + 0.62, F0, F0 + 2.78, 0.0, 0.05, trim)
-	fb(g, ds - 0.48, ds + 0.48, F0, F0 + 2.16, 0.05, 0.085, door)
-	fb(g, ds - 0.48, ds + 0.48, F0 + 2.26, F0 + 2.66, 0.05, 0.075, Kit.flat(LIT, 0.8) if lit.length() > 0 and lit[0] == "1" else PANE)
-	fb(g, ds - 0.7, ds + 0.7, 0.0, F0, -0.01, 0.45, MARBLE)
-	for k in 3:
-		fb(g, ds - 0.7, ds + 0.7, 0.0, F0 - RISE * (k + 1), 0.45 + 0.3 * k, 0.45 + 0.3 * (k + 1), MARBLE)
-	var cols: Array = []
-	var n := maxi(1, int((w - 0.4) / 1.5))
-	for i in n:
-		cols.append(0.3 + (i + 0.5) * (w - 0.6) / n)
-	var idx := 1
-	var storey := (height - 0.9 - F0) / floors
-	for c: float in cols:
-		if absf(c - ds) > 1.25:
-			sash(g, c, F0 + 0.7, 0.95, 1.7, trim, LIT if lit.length() > idx and lit[idx] == "1" else null, Color(0.85, 0.3, 0.25))
-			idx += 1
-	for f in range(1, floors):
-		for c: float in cols:
-			sash(g, c, F0 + f * storey + 0.6, 0.95, minf(1.65, storey - 0.9), trim, LIT if lit.length() > idx and lit[idx] == "1" else null, Color(0.9, 0.85, 0.7))
-			idx += 1
-	fb(g, 0.0, w, height - 0.52, height - 0.2, 0.0, 0.2, trim)
-	fb(g, 0.0, w, height - 0.2, height - 0.04, 0.0, 0.34, trim)
-	fb(g, 0.0, w, height - 0.04, height + 0.02, 0.0, 0.28, TAR)
+	Houses.plain_house(g, w, height, wall, trim, door, lit, floors, door_left)
 
 
 # ------------------------------------------------------------ street pieces

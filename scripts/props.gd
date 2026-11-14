@@ -2095,58 +2095,40 @@ static func weights(p: Node3D, b: int, u: float, v: float, yaw := 0.0) -> Node3D
 
 
 
-## The front of a neighbouring rowhouse, flat on the building line at v: the
-## wall on a stone foot, a panelled door in a frame under a transom light,
-## framed windows with sills and lintels (blinds part down in some), and a
-## cornice on brackets. `n` is the node to build it in (the street's). u0 is its
-## left edge. Nothing stands out past v + 0.38 (the cornice, overhead).
-static func rowhouse(p: Node3D, n: Node3D, u0: float, v: float, look: Variant, boarded := false, lit := false, w := 5.0, h := 6.2) -> void:
+## A neighbouring rowhouse, its front on the building line at v, built by the
+## shared house kit (houses.gd) as one of the old Pen Lucy's stoop-front row
+## houses: `look` the wall, two storeys and a flat roof, the door up two marble
+## steps under a transom, sashes with lintels on some, a box oriel or tin
+## awnings upstairs on some, a cornice in one of the old game's profiles, a
+## chimney on some; `boarded` a vacant (plywood over its door and windows),
+## `lit` some windows glowing. The trim, door and the rest are picked from u0
+## and v, the same each time. Doors pair up as the old game's do: counting out
+## from the place, the first house's door is on its far side, the next one's
+## beside it, and so on. `n` is the node to build it in (the street's); u0 is
+## its left edge; h the height of its front (the cornice's cap stands 0.3 over
+## it). The box runs 3 m back behind the line; the steps reach about 0.75 m out
+## in front and take that floor.
+static func rowhouse(p: Node3D, n: Node3D, u0: float, v: float, look: Variant, boarded := false, lit := false, w := 5.0, h := 6.6) -> void:
+	var houses: Variant = load("res://scripts/" + "houses.gd")      # (looked up when called: houses.gd preloads this script)
 	var key := rnd(u0 * 1.37 + v * 0.71)
-	var trim := Color(0.94, 0.92, 0.85)
-	var stone := Color(0.8, 0.78, 0.72)
-	var wood := Color(0.55, 0.42, 0.26)
-	var cornice: Color = [Color(0.92, 0.88, 0.78), Color(0.22, 0.36, 0.3), Color(0.3, 0.28, 0.27), Color(0.52, 0.2, 0.17)][int(key * 4.0) % 4]
-	var door: Color = wood.darkened(0.25) if boarded else [Color(0.18, 0.36, 0.28), Color(0.62, 0.16, 0.13), Color(0.16, 0.24, 0.48), Color(0.4, 0.26, 0.15)][int(key * 13.0) % 4]
-	var glass: Variant = wood if boarded else Kit.flat(Color(0.95, 0.8, 0.5) if lit else Color(0.2, 0.24, 0.32), 0.45 if lit else 0.0)
-	p.slab(n, true, v, u0, u0 + w, 0.0, h, 0.15, look)
-	p.slab(n, true, v + 0.105, u0, u0 + 0.43, 0.0, 0.45, 0.06, stone.darkened(0.2))
-	p.slab(n, true, v + 0.105, u0 + 1.62, u0 + w, 0.0, 0.45, 0.06, stone.darkened(0.2))
-	# The cornice: a frieze, brackets under a deep overhang, a cap.
-	p.slab(n, true, v + 0.11, u0, u0 + w, h - 0.5, h, 0.07, cornice.darkened(0.15))
-	var nb := int(w / 0.9) + 1
-	for i in nb:
-		Kit.prism(n, Vector3(0.2, 0.42, 0.14), p.pt(u0 + 0.15 + i * (w - 0.3) / float(nb - 1), v + 0.245, h - 0.21), cornice, Vector3(0, 90, 180), 0.0)
-	p.slab(n, true, v + 0.04, u0, u0 + w, h, h + 0.28, 0.62, cornice)
-	p.slab(n, true, v + 0.04, u0, u0 + w, h + 0.28, h + 0.34, 0.68, cornice.darkened(0.15))
-	# The door: panelled (or boarded over), in a frame, a transom light over it.
-	p.slab(n, true, v + 0.085, u0 + 0.55, u0 + 1.5, 0.0, 2.1, 0.03, door)
+	var o: Dictionary = houses.style(key * 11.0 + 0.3)
+	var wide: float = p.width
+	var right_side := u0 >= wide - 0.01
+	var nth := roundi(((u0 - wide) if right_side else (-u0 - w)) / w)
+	var away := nth % 2 == 0
+	o["wall"] = look
+	o["door_left"] = (not right_side) if away else right_side
+	o["f0"] = 0.36
+	o["height"] = h + 0.3
+	o["deep"] = 3.0
+	o["boarded"] = boarded
+	o["profile"] = houses.profile_for((7.0 if right_side else 0.0) + v * 1.3, false)      # one cornice for each side's row
+	o["lit"] = houses.lit_pattern(key * 5.0, 6, 0.5) if lit else ""
+	o["transom"] = lit
 	if boarded:
-		for k in 5:
-			p.slab(n, true, v + 0.128 + 0.006 * (k % 2), u0 + 0.5, u0 + 1.55, 0.2 + k * 0.4, 0.5 + k * 0.4, 0.014, wood.darkened(0.1 * (k % 2)))    # nailed over the frame, clear of its face
-	else:
-		for c in 2:
-			for r in 2:
-				var pu := u0 + 0.63 + c * 0.42
-				p.slab(n, true, v + 0.107, pu, pu + 0.37, 0.15 + r * 0.95, 0.95 + r * 1.0, 0.014, door.lightened(0.14))
-		Kit.ball(n, 0.04, p.pt(u0 + 1.38, v + 0.13, 1.0), Color(0.92, 0.74, 0.25), 6)
-	p.slab(n, true, v + 0.085, u0 + 0.55, u0 + 1.5, 2.18, 2.5, 0.03, glass)
-	for uu: float in [u0 + 0.43, u0 + 1.5]:
-		p.slab(n, true, v + 0.095, uu, uu + 0.12, 0.0, 2.62, 0.05, trim)
-	p.slab(n, true, v + 0.095, u0 + 0.55, u0 + 1.5, 2.1, 2.18, 0.05, trim)
-	p.slab(n, true, v + 0.095, u0 + 0.55, u0 + 1.5, 2.5, 2.62, 0.05, trim)
-	p.slab(n, true, v + 0.11, u0 + 0.33, u0 + 1.72, 2.62, 2.8, 0.07, stone)
-	# The windows: the big one downstairs, two sashes up.
-	var shade: Color = [Color(0.92, 0.42, 0.28), Color(0.5, 0.72, 0.42), Color(0.96, 0.9, 0.72)][int(key * 29.0) % 3]
-	var blind: Variant = Kit.flat(shade, 0.55) if lit else shade.darkened(0.25)
-	var wins := [[u0 + w - 1.45, 1.6, 1.9, 1.4, 1], [u0 + 1.25, 4.4, 1.4, 1.3, 2], [u0 + w - 1.25, 4.4, 1.4, 1.3, 2]]
-	for i in wins.size():
-		var wd: Array = wins[i]
-		var ww: float = wd[2]
-		var wh: float = wd[3]
-		var win := Kit.window(n, ww, wh, p.pt(wd[0], v + 0.075, wd[1]), trim, glass, 0 if boarded else wd[4], stone)
-		if boarded:
-			for k in 4:
-				Kit.box(win, Vector3(ww + 0.12, wh * 0.2, 0.025), Vector3(0, -wh * 0.36 + k * wh * 0.24, 0.062 + 0.006 * (k % 2)), wood.darkened(0.12 * (k % 2)), Vector3(0, 0, (k - 1.5) * 3.0))
-		elif rnd(key * 7.0 + i * 3.3) > 0.3:
-			var sh := wh * (0.22 + 0.25 * rnd(key + i * 1.7))
-			Kit.box(win, Vector3(ww - 0.02, sh, 0.01), Vector3(0, wh * 0.5 - sh * 0.5 + 0.01, 0.025), blind)    # its top tucked up into the head of the frame
+		o["door"] = WOOD.darkened(0.25)
+	var g := Kit.group(n, p.pt(u0, v + 0.075))
+	var made: Dictionary = houses.stoop_front(g, w, o)
+	var ds: float = made["door"]
+	if float(made["stoop"]) > 0.0:
+		p.block(u0 + ds - 0.7, v + 0.075, u0 + ds + 0.7, v + 0.075 + float(made["stoop"]))

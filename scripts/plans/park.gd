@@ -342,12 +342,13 @@ static func _houses(p: Node3D, st: int) -> void:
 	var red := Kit.tex("brick", 1.5, Color(0.5, 0.26, 0.2), true, Color(0.8, 0.66, 0.62))
 	var dark := Kit.tex("brick", 1.5, Color(0.4, 0.22, 0.2), true, Color(0.6, 0.52, 0.56))
 	var brown := Kit.tex("brick", 1.5, Color(0.45, 0.3, 0.22), true, Color(0.68, 0.56, 0.47))
-	var form := Kit.tex("painted_block", 0.7, Color(0.62, 0.6, 0.56), true, Color(0.62, 0.65, 0.74))
-	var white := Kit.tex("block_plain", 0.75, Color(0.9, 0.88, 0.84), true, Color(0.8, 0.79, 0.76))
-	var mint := Kit.tex("block_plain", 0.75, Color(0.7, 0.86, 0.74), true, Color(0.6, 0.76, 0.68))
-	var pink := Kit.tex("block_plain", 0.75, Color(0.95, 0.72, 0.7), true, Color(0.84, 0.62, 0.62))
-	var sky := Kit.tex("block_plain", 0.75, Color(0.66, 0.8, 0.95), true, Color(0.58, 0.7, 0.86))
-	var yellow := Kit.tex("block_plain", 0.75, Color(0.98, 0.86, 0.5), true, Color(0.86, 0.75, 0.48))
+	# The old Pen Lucy's walls (houses.gd): brick, formstone grey and tan, painted
+	# brick; no clapboard or pastels, which it kept for its few detached houses.
+	var form := Outdoor.tex("out_formstone", 2.0, Color(0.6, 0.59, 0.55), Color(0.8, 0.8, 0.84))
+	var tan := Outdoor.tex("out_formstone", 2.0, Color(0.7, 0.65, 0.54), Color(0.84, 0.76, 0.62))
+	var painted := Kit.tex("painted_block", 0.7, Color(0.71, 0.65, 0.54), true, Color(0.68, 0.66, 0.84))
+	var light := Kit.tex("brick", 1.5, Color(0.54, 0.29, 0.23), true, Color(0.86, 0.8, 0.76))
+	var silver := Color(0.5, 0.5, 0.53)          # the silver-coated roofs, by night
 	var green_door := Color(0.2, 0.42, 0.3)
 	var red_door := Color(0.6, 0.16, 0.13)
 	var blue_door := Color(0.18, 0.3, 0.55)
@@ -356,31 +357,31 @@ static func _houses(p: Node3D, st: int) -> void:
 	var wash2 := [Color(0.3, 0.35, 0.6), Color(0.96, 0.96, 0.94), Color(0.96, 0.96, 0.94), Color(0.6, 0.3, 0.6), Color(0.9, 0.5, 0.2)]
 	var row := [
 		[-18.0, 5.2, {"brick": red, "lit": ["k"], "cans": 2, "cans_out": true, "door": red_door}],
-		[-12.8, 5.0, {"brick": white, "fence": "wood", "porch": true, "aerial": true, "lit": ["cu"], "door": blue_door, "trim": Color(0.3, 0.4, 0.55)}],
+		[-12.8, 5.0, {"brick": painted, "fence": "wood", "porch": true, "aerial": true, "lit": ["cu"], "door": blue_door, "trim": Color(0.27, 0.4, 0.3)}],
 		[-7.8, 5.4, {"brick": red, "bb_h": 3.3, "line": wash2, "lit": ["m"], "door": green_door, "chimney": true}],
 		[-2.4, 5.0, {"brick": form, "cans": 3, "cans_out": true, "extra": ["grill"], "lit": ["k", "cu"], "aerial": true, "door": cream_door, "bars": true}],
-		[2.6, 5.2, {"brick": red, "bb": mint, "fence": "wood", "gate_open": true, "porch": true, "lit": ["k"], "ac": true, "extra": ["bike"], "awning": Color(0.2, 0.55, 0.35), "door": green_door, "curtain": Color(0.95, 0.85, 0.4)}],
+		[2.6, 5.2, {"brick": red, "bb": painted, "fence": "wood", "gate_open": true, "porch": true, "lit": ["k"], "ac": true, "extra": ["bike"], "awning": Color(0.2, 0.55, 0.35), "door": green_door, "curtain": Color(0.95, 0.85, 0.4)}],
 		[7.8, 5.6, {"brick": dark, "boarded": true, "fence": "broken", "extra": ["weeds", "mattress", "tyre"], "chimney": true}],
-		[13.4, 5.0, {"brick": pink, "line": wash, "lit": ["u", "c"], "cans": 2, "extra": ["trike"], "aerial": true, "door": blue_door, "trim": Color(0.96, 0.95, 0.9), "curtain": Color(0.4, 0.6, 0.85)}],
+		[13.4, 5.0, {"brick": tan, "line": wash, "lit": ["u", "c"], "cans": 2, "extra": ["trike"], "aerial": true, "door": blue_door, "trim": Color(0.96, 0.95, 0.9), "curtain": Color(0.4, 0.6, 0.85)}],
 		[18.4, 5.2, {"brick": red, "fence": "brick", "porch": true, "lit": ["k"], "extra": ["planters", "chair"], "storm": true, "door": cream_door, "bars": true}],
-		[23.6, 5.0, {"brick": yellow, "bb_h": 3.3, "extra": ["doghouse"], "cans": 2, "cans_out": true, "lit": ["m"], "aerial": true, "door": red_door, "trim": Color(0.55, 0.3, 0.2)}],
+		[23.6, 5.0, {"brick": light, "bb_h": 3.3, "extra": ["doghouse"], "cans": 2, "cans_out": true, "lit": ["m"], "aerial": true, "door": red_door, "trim": Color(0.55, 0.3, 0.2)}],
 		[28.6, 5.4, {"brick": dark, "fence": "wood", "ac": true, "lit": ["cu"], "porch": true, "bars": true, "door": green_door, "awning": Color(0.75, 0.2, 0.18), "chimney": true}],
-		[34.0, 5.2, {"brick": sky, "gate_open": true, "line": wash, "lit": ["k", "u"], "cans": 3, "door": cream_door, "trim": Color(0.96, 0.95, 0.9), "curtain": Color(0.85, 0.3, 0.35)}],
+		[34.0, 5.2, {"brick": form, "gate_open": true, "line": wash, "lit": ["k", "u"], "cans": 3, "door": cream_door, "trim": Color(0.96, 0.95, 0.9), "curtain": Color(0.85, 0.3, 0.35)}],
 		[39.2, 5.0, {"brick": red, "fence": "none", "lit": ["c"], "cans": 2, "cans_out": true, "extra": ["grill"], "aerial": true, "bars": true, "door": blue_door}],
 		[44.2, 5.4, {"brick": form, "lit": ["u"], "door": red_door, "chimney": true}],
 		[49.6, 5.2, {"brick": brown, "fence": "wood", "door": green_door}],
 	]
 	# The ends of the row: lived in like the middle, a little less to look at.
-	var looks := [brown, red, dark, form, red, white, brown, dark]
+	var looks := [brown, red, dark, form, red, painted, brown, dark]
 	var fences := ["chain", "wood", "chain", "none", "chain", "wood"]
 	var dress_l := [
 		{"line": wash2, "extra": ["chair"], "chimney": true, "curtain": Color(0.4, 0.6, 0.85)},
-		{"bb": white, "awning": Color(0.2, 0.4, 0.7), "porch": true, "extra": ["planters"], "trim": Color(0.96, 0.95, 0.9)},
+		{"bb": painted, "awning": Color(0.43, 0.3, 0.2), "porch": true, "extra": ["planters"], "trim": Color(0.96, 0.95, 0.9)},
 		{"ac": true, "bars": true, "extra": ["grill"]},
-		{"bb": mint, "line": wash, "chimney": true, "curtain": Color(0.95, 0.85, 0.4)},
+		{"bb": light, "line": wash, "chimney": true, "curtain": Color(0.95, 0.85, 0.4)},
 		{"extra": ["bike"], "trim": Color(0.96, 0.95, 0.9), "bars": true, "storm": true},
 		{"porch": true, "extra": ["doghouse"], "awning": Color(0.75, 0.2, 0.18)},
-		{"bb": pink, "line": wash2, "ac": true, "chimney": true},
+		{"bb": tan, "line": wash2, "ac": true, "chimney": true},
 		{"extra": ["trike", "planters"], "trim": Color(0.55, 0.3, 0.2)},
 	]
 	var u := -18.0
@@ -392,9 +393,9 @@ static func _houses(p: Node3D, st: int) -> void:
 		row.push_front([u, w, o])
 	var dress_r := [
 		{"line": wash, "extra": ["grill"], "chimney": true, "curtain": Color(0.85, 0.3, 0.35)},
-		{"bb": yellow, "awning": Color(0.2, 0.55, 0.35), "porch": true, "trim": Color(0.96, 0.95, 0.9)},
+		{"bb": painted, "awning": Color(0.2, 0.55, 0.35), "porch": true, "trim": Color(0.96, 0.95, 0.9)},
 		{"ac": true, "extra": ["chair", "planters"], "bars": true},
-		{"bb": sky, "line": wash2, "chimney": true},
+		{"bb": form, "line": wash2, "chimney": true},
 		{"extra": ["trike"], "storm": true, "curtain": Color(0.4, 0.6, 0.85)},
 	]
 	u = 54.8
@@ -412,6 +413,8 @@ static func _houses(p: Node3D, st: int) -> void:
 		var o: Dictionary = h[2]
 		o["side"] = "r" if i % 2 == 0 else "l"
 		o["h"] = 7.0 + 0.3 * float(posmod(floori(i / 2.0), 3) - 1)
+		if posmod(i * 7, 5) < 3:          # three roofs in five silver-coated, as the old game's
+			o["roof"] = silver
 		Park.house_back(p, n, h[0], h[1], BACKS, ALLEY, o)
 	# Two yard trees, over the fences.
 	Outdoor.tree(p, st, 11.6, -1.0, "d", 1.1, 15.0)

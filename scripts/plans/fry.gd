@@ -16,6 +16,7 @@ extends RefCounted
 
 const Props := preload("res://scripts/props.gd")
 const In := preload("res://scripts/props_in.gd")
+const Houses := preload("res://scripts/houses.gd")
 const F := 9.675          # the street face of the front wall
 
 
@@ -31,7 +32,6 @@ static func build(p: Node3D) -> void:
 	var lino := Kit.tex("lino", 1.2, Color(0.7, 0.66, 0.56), true, Color(0.96, 0.93, 0.86))
 	var bath_floor := Kit.tex("in_tile", 0.32, Color(0.88, 0.88, 0.9), true, Color(0.99, 0.99, 1.0))     # little white floor tiles
 	var hall_floor := Kit.tex("in_terrazzo", 1.4, Color(0.74, 0.72, 0.66), true, Color(0.9, 0.87, 0.8))  # the block's terrazzo
-	var tan_brick := Kit.tex("stucco", 2.0, Color(0.8, 0.72, 0.56), true, Color(1.0, 0.9, 0.7))        # the block is buff stucco, not the row's red brick
 	var warm := Color(1.0, 0.82, 0.6)
 	var trim := Color(0.3, 0.22, 0.2)
 	var door_red := Color(0.5, 0.14, 0.12)
@@ -48,7 +48,7 @@ static func build(p: Node3D) -> void:
 	p.room("BATHROOM", b2, 3.8, 0, 6.2, 5, bath_floor, {"light": Color(0.95, 1.0, 1.0), "energy": 0.4})
 	p.room("BEDROOM", b2, 6.2, 0, 11, 5, bed_carpet, {"light": warm, "energy": 0.5})
 
-	var front: Node3D = p.cross(b1, 9.6, 0, 11, tan_brick, [
+	var front: Node3D = p.cross(b1, 9.6, 0, 11, Houses.wall("brick"), [
 		{"a": 1.0, "b": 3.4, "kind": "window", "sill": 0.8, "head": 2.1, "blinds": true, "frame": trim},
 		{"a": 4.6, "b": 7.4, "kind": "window", "sill": 0.8, "head": 2.1, "blinds": true, "frame": trim},
 		{"a": 9.2, "b": 10.1, "head": 2.1, "colour": Color(0.2, 0.26, 0.24), "frame": trim},
@@ -77,58 +77,77 @@ static func _street(p: Node3D, st: int, front: Node3D) -> void:
 	var n: Node3D = p.node_of(st)
 	var stone := Color(0.78, 0.74, 0.64)
 	var trim := Color(0.3, 0.22, 0.2)
-	var clay := Kit.tex("in_rooftile", 1.6, Color(0.72, 0.32, 0.2), true, Color(0.88, 0.44, 0.3))
-	# The block's own front, Spanish revival as the courts of the twenties were: a
-	# stone base, stone dressings round the door and windows and up the corners,
-	# two more floors of paired sash windows over the stone band (iron balconettes
-	# on the middle pair), and along the top a pent roof of clay barrel tiles under
-	# a stone coping, a gable over the middle. The door has a tiled hood of its own
-	# on stone corbels, a lantern hanging under it.
-	In.surrounds(p, front, true, 9.6, 1.0, 0.0, 11.0, [
-		{"a": 1.0, "b": 3.4, "kind": "window", "sill": 0.8, "head": 2.1},
-		{"a": 4.6, "b": 7.4, "kind": "window", "sill": 0.8, "head": 2.1},
-		{"a": 9.2, "b": 10.1, "head": 2.1},
-	], stone)
-	_proud(p, front, 0.0, 9.05, 0.0, 0.5, 0.04, stone.darkened(0.14))
-	_proud(p, front, 10.25, 10.99, 0.0, 0.5, 0.04, stone.darkened(0.14))        # stopping short of the wall's end, which shares no face with them
-	In.quoins(p, front, 9.6, 0.0, 0.5, 8.3, stone, -1.0, false)
-	In.quoins(p, front, 9.6, 10.99, 0.5, 8.3, stone, 1.0, false)
+	var brick := Houses.wall("brick")
+	# The block's own front, a brick walk-up as the old Pen Lucy's apartment
+	# blocks are: a grey base course, stone sills and lintels on the ground
+	# floor, a stone band over it with the name; two more floors of sash windows
+	# in pairs under formstone lintels (an air conditioner in one, a window box
+	# under another); along the top a corbelled brick cornice under a metal
+	# flashing, the flat roof behind it, and dark rain leaders down the corners.
+	# Over the door a broad rain hood on slim braces, a lit transom, the lantern
+	# hanging under the hood, the buzzers beside the door; a patch of concrete
+	# where the brick was mended. Its sides stand bare over the low houses either
+	# side.
+	var g := Kit.group(front, p.pt(0.0, F))
+	_proud(p, front, 0.0, 9.05, 0.0, 0.5, 0.04, Houses.BASE)
+	_proud(p, front, 10.25, 10.99, 0.0, 0.5, 0.04, Houses.BASE)        # stopping short of the wall's end, which shares no face with them
+	for w: Array in [[1.0, 3.4], [4.6, 7.4]]:
+		Houses.fb(g, w[0] - 0.12, w[1] + 0.12, 2.17, 2.38, 0.0, 0.08, Houses.STONE)
+		Houses.fb(g, w[0] - 0.1, w[1] + 0.1, 0.62, 0.735, 0.0, 0.14, Houses.STONE)
+	Houses.fb(g, 7.75, 8.55, 0.5, 1.3, 0.0, 0.012, Houses.CONCRETE)
+	var curtains := [Color(0.85, 0.3, 0.3), Color(0.95, 0.93, 0.86), Color(0.4, 0.65, 0.4)]
 	for row in 2:
-		var y: float = 3.9 + row * 2.9
-		for c: float in [2.2, 6.0, 9.65]:
-			var lit := Props.rnd(c + row * 3.1) > 0.5          # the same windows lit as before
-			var pair: Array = [[c, 1.2]] if c > 9.0 else [[c - 0.6, 1.0], [c + 0.6, 1.0]]
-			for i in pair.size():
-				var extra := ""
-				if row == 0 and c > 9.0:
-					extra = "box"
-				elif row == 1 and c < 3.0 and i == 1:
-					extra = "ac"
-				In.front_window(p, front, pair[i][0], 9.6, y, pair[i][1], 1.3, lit, trim, stone, extra, c + row * 5.0)
-		In.balconette(p, front, 6.0, 9.6, y - 0.17, 2.5, 0.32)
-	In.pent(p, front, 9.6, -0.1, 11.1, 8.72, 0.5, 26.0, clay)
-	p.slab(front, true, 9.6, -0.06, 11.06, 9.0, 9.09, 0.29, stone)                       # the coping
-	In.pediment(front, p.pt(5.5, 9.6, 9.09), 4.0, 0.75, 0.2, stone, Kit.tex("stucco", 2.0, Color(0.8, 0.72, 0.56), true, Color(1.0, 0.9, 0.7)))
-	Kit.disc(front, 0.16, p.pt(5.5, 9.73, 9.43), stone.darkened(0.08), 0.03, 16)      # a roundel in the gable
+		var y: float = 3.6 + row * 2.85
+		for k in 3:
+			var c: float = [2.2, 6.0, 9.65][k]
+			var lit: Variant = Houses.LIT if Props.rnd(c + row * 3.1) > 0.5 else null          # the same windows lit as before
+			if c > 9.0:
+				Houses.sash(g, c, y, 1.2, 1.45, trim, lit, curtains[k], Houses.STONE)
+				if row == 0:          # a window box
+					Houses.fb(g, c - 0.6, c + 0.6, y - 0.42, y - 0.16, 0.03, 0.3, Houses.BROWN)
+					for i in 6:
+						Kit.ball(g, 0.075, Vector3(c - 0.5 + i * 0.2, y - 0.12, 0.19), [Color(0.85, 0.2, 0.25), Color(0.95, 0.8, 0.3), Color(0.3, 0.55, 0.3)][i % 3], 6)
+				continue
+			for side: float in [-1.0, 1.0]:
+				Houses.sash(g, c + side * 0.6, y, 0.9, 1.45, trim, lit, curtains[k], null, row == 1 and k == 1)
+			Houses.fb(g, c - 1.15, c + 1.15, y + 1.49, y + 1.69, 0.0, 0.08, Houses.STONE)     # one lintel over the pair
+			if row == 1 and k == 0:          # an air conditioner in the lower sash
+				var s := c + 0.6
+				Houses.fb(g, s - 0.31, s + 0.31, y + 0.08, y + 0.5, -0.05, 0.42, Color(0.86, 0.85, 0.8))
+				for i in 4:
+					Houses.fb(g, s - 0.25, s + 0.25, y + 0.14 + i * 0.09, y + 0.17 + i * 0.09, 0.42, 0.44, Houses.SHUTTER)
+	Houses.cornice(g, 11.0, 9.0, stone, 4, brick)
+	Houses.fb(g, -0.08, 11.0, 8.84, 8.88, -9.75, -0.25, Houses.TAR)          # the flat roof
+	# The sides, bare over the neighbours (whose houses run 3 m back).
+	Houses.fb(g, -0.1, -0.08, 0.0, 8.9, -9.75, -3.08, brick)
+	Houses.fb(g, -0.1, 0.0, 7.0, 8.9, -3.08, 0.0, brick)
+	Houses.fb(g, 11.0, 11.1, 0.0, 8.9, -9.75, -3.08, brick)
+	Houses.fb(g, 11.0, 11.1, 7.0, 8.9, -3.08, 0.0, brick)
+	for s: float in [0.14, 10.86]:          # the rain leaders, a head and straps on each
+		Houses.pipe(g, Vector3(s, 0.02, 0.1), Vector3(s, 8.0, 0.1), 0.05, Houses.BARS)
+		Houses.fb(g, s - 0.1, s + 0.1, 8.0, 8.22, 0.0, 0.2, Houses.BARS)
+		for y: float in [1.6, 3.7, 5.8]:
+			Houses.fb(g, s - 0.07, s + 0.07, y, y + 0.05, 0.0, 0.16, Houses.BARS)
 	p.slab(front, true, 9.66, -0.02, 11.02, 2.95, 3.15, 0.1, stone)
 	Props.words(front, "ARGONNE COURT", p.pt(9.65, 9.715, 3.05), 0.15, Color(0.3, 0.22, 0.2))
-	In.pent(p, front, 9.6, 8.75, 10.55, 2.8, 0.7, 26.0, clay)                             # the door's hood
-	for u: float in [8.86, 10.44]:                                                          # on a stone corbel each end
-		Kit.box(front, Vector3(0.12, 0.18, 0.24), p.pt(u, F + 0.12, 2.57), stone)
-		Kit.box(front, Vector3(0.1, 0.2, 0.14), p.pt(u, F + 0.07, 2.38), stone.darkened(0.06))
+	# The door: a lit transom over it, a broad rain hood on two slim braces.
+	Houses.fb(g, 9.145, 10.155, 2.17, 2.5, 0.0, 0.04, trim)
+	Houses.fb(g, 9.23, 10.07, 2.22, 2.44, 0.04, 0.05, Kit.flat(Houses.LIT, 1.1))
+	Houses.fb(g, 8.7, 10.6, 2.6, 2.68, -0.01, 0.9, Houses.SHUTTER)
+	Houses.fb(g, 8.7, 10.6, 2.52, 2.6, 0.86, 0.9, Houses.SHUTTER)
+	for s: float in [8.8, 10.5]:
+		Houses.pipe(g, Vector3(s, 1.95, 0.02), Vector3(s, 2.6, 0.8), 0.02, Houses.BARS, 4)
 	In.lantern(front, p.pt(9.65, 10.05, 2.52), 0.4)
 	p.slab(front, true, 9.69, 8.72, 8.98, 1.2, 1.6, 0.02, Props.STEEL)
 	for k in 4:
 		p.slab(front, true, 9.702, 8.76, 8.94, 1.24 + k * 0.09, 1.29 + k * 0.09, 0.008, Props.DARK)
 	Kit.block(n, Vector3(1.3, 0.07, 0.5), p.pt(9.65, 9.9), Color(0.8, 0.8, 0.78))
 	# Either side: the end of a brick row on the left, more of the same on the right.
-	var old_brick := Kit.tex("brick", 1.5, Color(0.4, 0.22, 0.2), true, Color(0.72, 0.68, 0.74))
-	var formstone := Kit.tex("painted_block", 0.7, Color(0.62, 0.6, 0.56), true, Color(0.75, 0.78, 0.86))
-	Props.rowhouse(p, n, -5.0, 9.6, old_brick, false, true)
-	Props.rowhouse(p, n, -10.0, 9.6, formstone)
-	Props.rowhouse(p, n, 11.0, 9.6, old_brick, false, true)
-	Props.rowhouse(p, n, 16.0, 9.6, formstone, true)
-	Props.rowhouse(p, n, 21.0, 9.6, old_brick)
+	Props.rowhouse(p, n, -5.0, 9.6, Houses.wall("brick_2"), false, true)
+	Props.rowhouse(p, n, -10.0, 9.6, Houses.wall("painted"))
+	Props.rowhouse(p, n, 11.0, 9.6, Houses.wall("brick_dark"), false, true)
+	Props.rowhouse(p, n, 16.0, 9.6, Houses.wall("formstone"), true)
+	Props.rowhouse(p, n, 21.0, 9.6, Houses.wall("brick_2"))
 	Props.street_lamp(p, st, 5.4, 11.65)
 	Props.cans(p, st, 11.6, 9.95, 3)
 	Props.hydrant(p, st, 12.6, 11.6)
