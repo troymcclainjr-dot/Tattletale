@@ -43,6 +43,7 @@ extends Node3D
 ##   the floor), frywalk:x:y:seconds (walk the other character on screen), travel (open the travel list),
 ##   travelhover:n, travelpick:n, key:name (a real key press: key:M, key:Escape, key:1),
 ##   outfit:slot=item[#rrggbb],slot=item... (someone whose clothes are layers: outfit:jacket=hoodie,hat=none; outfit: alone undoes it),
+##   stand:id (stand him at the use point with that id: stand:outfit:hat, stand:sleep),
 ##   weapon:name (pistol, uzi, ak, or none), aim:1 / aim:0, aimat:x:y (the red cross at that screen spot), sprint:1 / sprint:0,
 ##   face:front|side|back|left (turn him without walking; left is side-on, mirrored),
 ##   wear:piece:colour (wear:hat:#cc2222; wear: alone puts his own clothes back),
@@ -1400,6 +1401,12 @@ func _take_shot() -> void:
 						_look[piece[0]]["colour"] = "#" + want[1]
 				_dress_lead()
 				print("[shot] outfit: %s" % [_actor.worn() if _actor.has_wardrobe() else "this character's clothes are not layers"])
+			"stand":        # stand:outfit:hat puts him at the use point with that id (a rack, the bed)
+				var want := step.trim_prefix("stand:")
+				for thing in _usables:
+					if is_instance_valid(thing) and "id" in thing and String(thing.id) == want:
+						_actor.global_position = Vector3(thing.use_spot().x, _actor.global_position.y, thing.use_spot().z)
+						print("[shot] stand: at %s" % want)
 			"use":
 				_find_nearest()
 				print("[shot] use: %s" % (_nearest.use_name() if _nearest else "nothing in reach"))

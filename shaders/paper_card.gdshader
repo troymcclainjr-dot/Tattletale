@@ -122,8 +122,12 @@ vec3 dress(vec3 c, vec2 src, sampler2D map) {
 	if (dress_from[id] == dress_to[id]) {
 		return c;
 	}
-	float light = clamp(dot(c, LUMA) / max(dot(dress_from[id], LUMA), 0.02), 0.0, 1.0);
-	return dress_to[id] * light;
+	float was = dot(c, LUMA);
+	float against = was / max(dot(dress_from[id], LUMA), 0.02);
+	float light = clamp(against, 0.0, 1.0);
+	// A detail much lighter than the cloth it is on, and near white (a stripe, a number, a sole), stays as drawn.
+	float keep = smoothstep(1.3, 1.7, against) * smoothstep(0.55, 0.75, was);
+	return mix(dress_to[id] * light, c, keep);
 }
 
 // Where in the drawing the pixel at uv comes from if it shows this leg; x < -1 if it does not.

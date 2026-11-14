@@ -1,0 +1,1074 @@
+{
+ "about": "Layers for this character's clothes. Made by wardrobe.py.",
+ "order": [
+  "shoes",
+  "trousers",
+  "shirt",
+  "jacket",
+  "hat"
+ ],
+ "base": {
+  "front": {
+   "art": "wardrobe/base_front.png",
+   "arms": "wardrobe/base_front_arms.png"
+  }
+ },
+ "worn": {
+  "jacket": "chuy_flannel",
+  "shirt": "chuy_tee",
+  "trousers": "chuy_khakis",
+  "shoes": "chuy_sneakers"
+ },
+ "items": {
+  "chuy_flannel": {
+   "slot": "jacket",
+   "name": "CHECKED OVERSHIRT",
+   "colour": [
+    245,
+    244,
+    244
+   ],
+   "colours": [
+    [
+     245,
+     244,
+     244
+    ],
+    [
+     196,
+     40,
+     40
+    ],
+    [
+     60,
+     110,
+     60
+    ],
+    [
+     70,
+     110,
+     170
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/chuy_flannel_front.png",
+     "arms": "wardrobe/chuy_flannel_front_arms.png",
+     "arm_width": 133.0
+    }
+   }
+  },
+  "chuy_tee": {
+   "slot": "shirt",
+   "name": "PLAIN TEE",
+   "colour": [
+    245,
+    244,
+    244
+   ],
+   "colours": [
+    [
+     245,
+     244,
+     244
+    ],
+    [
+     40,
+     40,
+     44
+    ],
+    [
+     150,
+     150,
+     156
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/chuy_tee_front.png",
+     "arms": "wardrobe/chuy_tee_front_arms.png",
+     "arm_width": 76.4
+    }
+   }
+  },
+  "chuy_khakis": {
+   "slot": "trousers",
+   "name": "WORK PANTS",
+   "colour": [
+    200,
+    162,
+    101
+   ],
+   "colours": [
+    [
+     200,
+     162,
+     101
+    ],
+    [
+     40,
+     40,
+     44
+    ],
+    [
+     70,
+     80,
+     60
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/chuy_khakis_front.png"
+    }
+   }
+  },
+  "chuy_sneakers": {
+   "slot": "shoes",
+   "name": "SKATE SHOES",
+   "colour": [
+    63,
+    62,
+    62
+   ],
+   "colours": [
+    [
+     63,
+     62,
+     62
+    ],
+    [
+     196,
+     40,
+     40
+    ],
+    [
+     40,
+     70,
+     150
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/chuy_sneakers_front.png"
+    }
+   }
+  },
+  "cap": {
+   "slot": "hat",
+   "name": "CAP",
+   "colour": [
+    196,
+    40,
+    40
+   ],
+   "colours": [
+    [
+     196,
+     40,
+     40
+    ],
+    [
+     40,
+     40,
+     44
+    ],
+    [
+     40,
+     70,
+     150
+    ],
+    [
+     230,
+     230,
+     226
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/cap_front.png"
+    }
+   }
+  },
+  "beanie": {
+   "slot": "hat",
+   "name": "BEANIE",
+   "colour": [
+    214,
+    120,
+    40
+   ],
+   "colours": [
+    [
+     214,
+     120,
+     40
+    ],
+    [
+     40,
+     40,
+     44
+    ],
+    [
+     120,
+     40,
+     50
+    ],
+    [
+     70,
+     110,
+     160
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/beanie_front.png"
+    }
+   }
+  },
+  "hoodie": {
+   "slot": "jacket",
+   "name": "HOODIE",
+   "colour": [
+    196,
+    40,
+    40
+   ],
+   "colours": [
+    [
+     196,
+     40,
+     40
+    ],
+    [
+     40,
+     40,
+     44
+    ],
+    [
+     150,
+     150,
+     156
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/hoodie_front.png",
+     "arms": "wardrobe/hoodie_front_arms.png",
+     "arm_width": 119.0
+    }
+   }
+  },
+  "puffer": {
+   "slot": "jacket",
+   "name": "PUFFER",
+   "colour": [
+    214,
+    160,
+    40
+   ],
+   "colours": [
+    [
+     214,
+     160,
+     40
+    ],
+    [
+     40,
+     40,
+     44
+    ],
+    [
+     60,
+     90,
+     150
+    ],
+    [
+     160,
+     40,
+     40
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/puffer_front.png",
+     "arms": "wardrobe/puffer_front_arms.png",
+     "arm_width": 146.0
+    }
+   }
+  },
+  "flannel": {
+   "slot": "jacket",
+   "name": "FLANNEL",
+   "colour": [
+    180,
+    44,
+    44
+   ],
+   "colours": [
+    [
+     180,
+     44,
+     44
+    ],
+    [
+     40,
+     90,
+     160
+    ],
+    [
+     60,
+     110,
+     60
+    ],
+    [
+     90,
+     90,
+     96
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/flannel_front.png",
+     "arms": "wardrobe/flannel_front_arms.png",
+     "arm_width": 114.3
+    }
+   }
+  },
+  "tee": {
+   "slot": "shirt",
+   "name": "TEE",
+   "colour": [
+    236,
+    236,
+    230
+   ],
+   "colours": [
+    [
+     236,
+     236,
+     230
+    ],
+    [
+     40,
+     40,
+     44
+    ],
+    [
+     40,
+     90,
+     170
+    ],
+    [
+     200,
+     60,
+     60
+    ],
+    [
+     90,
+     140,
+     80
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/tee_front.png",
+     "arms": "wardrobe/tee_front_arms.png",
+     "arm_width": 76.4
+    }
+   }
+  },
+  "jersey": {
+   "slot": "shirt",
+   "name": "JERSEY",
+   "colour": [
+    30,
+    110,
+    70
+   ],
+   "colours": [
+    [
+     30,
+     110,
+     70
+    ],
+    [
+     200,
+     170,
+     40
+    ],
+    [
+     40,
+     60,
+     150
+    ],
+    [
+     180,
+     40,
+     40
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/jersey_front.png"
+    }
+   }
+  },
+  "jeans": {
+   "slot": "trousers",
+   "name": "JEANS",
+   "colour": [
+    50,
+    80,
+    140
+   ],
+   "colours": [
+    [
+     50,
+     80,
+     140
+    ],
+    [
+     40,
+     40,
+     44
+    ],
+    [
+     120,
+     150,
+     190
+    ],
+    [
+     150,
+     130,
+     100
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/jeans_front.png"
+    }
+   }
+  },
+  "shorts": {
+   "slot": "trousers",
+   "name": "SHORTS",
+   "colour": [
+    150,
+    130,
+    100
+   ],
+   "colours": [
+    [
+     150,
+     130,
+     100
+    ],
+    [
+     40,
+     40,
+     44
+    ],
+    [
+     60,
+     90,
+     150
+    ],
+    [
+     90,
+     110,
+     70
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/shorts_front.png"
+    }
+   }
+  },
+  "track": {
+   "slot": "trousers",
+   "name": "TRACK PANTS",
+   "colour": [
+    40,
+    60,
+    150
+   ],
+   "colours": [
+    [
+     40,
+     60,
+     150
+    ],
+    [
+     40,
+     40,
+     44
+    ],
+    [
+     150,
+     40,
+     40
+    ],
+    [
+     60,
+     120,
+     70
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/track_front.png"
+    }
+   }
+  },
+  "sneakers": {
+   "slot": "shoes",
+   "name": "SNEAKERS",
+   "colour": [
+    236,
+    236,
+    232
+   ],
+   "colours": [
+    [
+     236,
+     236,
+     232
+    ],
+    [
+     40,
+     40,
+     44
+    ],
+    [
+     196,
+     40,
+     40
+    ],
+    [
+     60,
+     90,
+     170
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/sneakers_front.png"
+    }
+   }
+  },
+  "hightops": {
+   "slot": "shoes",
+   "name": "HIGH-TOPS",
+   "colour": [
+    196,
+    40,
+    40
+   ],
+   "colours": [
+    [
+     196,
+     40,
+     40
+    ],
+    [
+     40,
+     40,
+     44
+    ],
+    [
+     236,
+     236,
+     232
+    ],
+    [
+     40,
+     90,
+     170
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/hightops_front.png"
+    }
+   }
+  },
+  "bandana": {
+   "slot": "hat",
+   "name": "BANDANA",
+   "colour": [
+    0,
+    59,
+    254
+   ],
+   "colours": [
+    [
+     0,
+     59,
+     254
+    ],
+    [
+     196,
+     40,
+     40
+    ],
+    [
+     40,
+     40,
+     44
+    ],
+    [
+     230,
+     230,
+     226
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/bandana_front.png"
+    }
+   }
+  },
+  "boots": {
+   "slot": "shoes",
+   "name": "BOOTS",
+   "colour": [
+    243,
+    167,
+    60
+   ],
+   "colours": [
+    [
+     243,
+     167,
+     60
+    ],
+    [
+     40,
+     40,
+     44
+    ],
+    [
+     110,
+     70,
+     40
+    ],
+    [
+     200,
+     200,
+     196
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/boots_front.png"
+    }
+   }
+  },
+  "tre_beanie": {
+   "slot": "hat",
+   "name": "KNIT BEANIE",
+   "colour": [
+    28,
+    27,
+    27
+   ],
+   "colours": [
+    [
+     28,
+     27,
+     27
+    ],
+    [
+     196,
+     40,
+     40
+    ],
+    [
+     40,
+     70,
+     150
+    ],
+    [
+     120,
+     120,
+     124
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/tre_beanie_front.png"
+    }
+   }
+  },
+  "tre_puffer": {
+   "slot": "jacket",
+   "name": "SHORT PUFFER",
+   "colour": [
+    253,
+    205,
+    3
+   ],
+   "colours": [
+    [
+     253,
+     205,
+     3
+    ],
+    [
+     196,
+     40,
+     40
+    ],
+    [
+     40,
+     40,
+     44
+    ],
+    [
+     60,
+     120,
+     70
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/tre_puffer_front.png",
+     "arms": "wardrobe/tre_puffer_front_arms.png",
+     "arm_width": 150.0
+    }
+   }
+  },
+  "tre_hoodie": {
+   "slot": "shirt",
+   "name": "PULLOVER HOODIE",
+   "colour": [
+    160,
+    158,
+    158
+   ],
+   "colours": [
+    [
+     160,
+     158,
+     158
+    ],
+    [
+     40,
+     40,
+     44
+    ],
+    [
+     196,
+     40,
+     40
+    ],
+    [
+     40,
+     70,
+     150
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/tre_hoodie_front.png",
+     "arms": "wardrobe/tre_hoodie_front_arms.png",
+     "arm_width": 112.8
+    }
+   }
+  },
+  "tre_boots": {
+   "slot": "shoes",
+   "name": "WORK BOOTS",
+   "colour": [
+    241,
+    168,
+    46
+   ],
+   "colours": [
+    [
+     241,
+     168,
+     46
+    ],
+    [
+     40,
+     40,
+     44
+    ],
+    [
+     110,
+     70,
+     40
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/tre_boots_front.png"
+    }
+   }
+  },
+  "dee_hightops": {
+   "slot": "shoes",
+   "name": "STRAP HIGH-TOPS",
+   "colour": [
+    253,
+    253,
+    253
+   ],
+   "colours": [
+    [
+     253,
+     253,
+     253
+    ],
+    [
+     40,
+     40,
+     44
+    ],
+    [
+     196,
+     40,
+     40
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/dee_hightops_front.png"
+    }
+   }
+  },
+  "snoozy_sneakers": {
+   "slot": "shoes",
+   "name": "CANVAS SNEAKERS",
+   "colour": [
+    6,
+    31,
+    102
+   ],
+   "colours": [
+    [
+     6,
+     31,
+     102
+    ],
+    [
+     196,
+     40,
+     40
+    ],
+    [
+     40,
+     40,
+     44
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/snoozy_sneakers_front.png"
+    }
+   }
+  },
+  "doc_cap": {
+   "slot": "hat",
+   "name": "ROUND CAP",
+   "colour": [
+    31,
+    30,
+    30
+   ],
+   "colours": [
+    [
+     31,
+     30,
+     30
+    ],
+    [
+     196,
+     40,
+     40
+    ],
+    [
+     40,
+     70,
+     150
+    ],
+    [
+     230,
+     230,
+     226
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/doc_cap_front.png"
+    }
+   }
+  },
+  "doc_jacket": {
+   "slot": "jacket",
+   "name": "ZIP JACKET",
+   "colour": [
+    48,
+    46,
+    48
+   ],
+   "colours": [
+    [
+     48,
+     46,
+     48
+    ],
+    [
+     196,
+     40,
+     40
+    ],
+    [
+     40,
+     70,
+     150
+    ],
+    [
+     110,
+     30,
+     30
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/doc_jacket_front.png",
+     "arms": "wardrobe/doc_jacket_front_arms.png",
+     "arm_width": 168.6
+    }
+   }
+  },
+  "doc_tee": {
+   "slot": "shirt",
+   "name": "CREW TEE",
+   "colour": [
+    253,
+    253,
+    253
+   ],
+   "colours": [
+    [
+     253,
+     253,
+     253
+    ],
+    [
+     40,
+     40,
+     44
+    ],
+    [
+     150,
+     150,
+     156
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/doc_tee_front.png",
+     "arms": "wardrobe/doc_tee_front_arms.png",
+     "arm_width": 76.0
+    }
+   }
+  },
+  "doc_sneakers": {
+   "slot": "shoes",
+   "name": "LOW SNEAKERS",
+   "colour": [
+    253,
+    253,
+    253
+   ],
+   "colours": [
+    [
+     253,
+     253,
+     253
+    ],
+    [
+     40,
+     40,
+     44
+    ],
+    [
+     196,
+     40,
+     40
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/doc_sneakers_front.png"
+    }
+   }
+  },
+  "huff_trousers": {
+   "slot": "trousers",
+   "name": "SUIT TROUSERS",
+   "colour": [
+    200,
+    199,
+    199
+   ],
+   "colours": [
+    [
+     200,
+     199,
+     199
+    ],
+    [
+     40,
+     40,
+     44
+    ],
+    [
+     110,
+     30,
+     30
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/huff_trousers_front.png"
+    }
+   }
+  },
+  "huff_sneakers": {
+   "slot": "shoes",
+   "name": "COURT SNEAKERS",
+   "colour": [
+    253,
+    253,
+    253
+   ],
+   "colours": [
+    [
+     253,
+     253,
+     253
+    ],
+    [
+     40,
+     40,
+     44
+    ],
+    [
+     196,
+     40,
+     40
+    ]
+   ],
+   "views": {
+    "front": {
+     "art": "wardrobe/huff_sneakers_front.png"
+    }
+   }
+  }
+ }
+}
