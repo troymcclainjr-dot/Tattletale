@@ -32,6 +32,7 @@ const ARM_BEND_HELD := 0.06     # holding something it turns at the shoulder, st
 const ARM_JOINT := 0.034        # what was drawn this close to a shoulder stays put under the moving arm (paper_card.gdshader's arm_joint)...
 const ARM_JOINT_HELD := 0.04    # ...and a little more of it when the arm is turned a long way, to something he holds
 const AWAY_LEAN := 0.3           # pointing away, it leans no further than this from straight up the screen, radians
+const UNDER_IN := 3               # a shirt under a sleeved jacket stops this many pixels inside the jacket's edge
 const ARM_STUB := 0.04            # an arm raised from behind his sleeve: this much of it, from the shoulder, is not drawn
 const ARM_ROOT := 0.075           # an arm that goes behind him to a rifle's handguard: this much of it, from the shoulder, is not drawn
 const FIST_NEAR := 0.05         # the fists are drawn this much nearer the eye than his card: over what he holds and over his arm's end
@@ -753,18 +754,43 @@ static func _layer(path: String) -> Image:
 
 
 ## Lay a layer on `onto` and mark where it is on `marks` as piece number `id` (the card's regions).
-func _lay(onto: Image, marks: Image, file: String, id: int) -> void:
+func _lay(onto: Image, marks: Image, file: String, id: int, cover: Image = null) -> void:
 	if file == "":
 		return
 	var image := _layer(_dir.path_join(file))
 	if image == null or image.get_size() != onto.get_size():
 		push_warning("Wardrobe layer missing or the wrong size: %s" % _dir.path_join(file))
 		return
+	if cover != null and cover.get_size() == image.get_size():
+		image = _cut_to(image, cover)
 	var all := Rect2i(Vector2i.ZERO, image.get_size())
 	onto.blend_rect(image, all, Vector2i.ZERO)
 	var flat := Image.create(all.size.x, all.size.y, false, Image.FORMAT_RGBA8)
 	flat.fill(Color(id * 40.0 / 255.0, 0.0, 0.0, 1.0))
 	marks.blit_rect_mask(flat, image, all, Vector2i.ZERO)
+
+
+## A shirt as it is under a jacket with sleeves: cut to the jacket's width row by row (and a little inside its
+## ink line), so that none of it shows past the jacket's edge. Rows the jacket is not on are left alone.
+static func _cut_to(shirt: Image, jacket: Image) -> Image:
+	var out: Image = shirt.duplicate()
+	var box := jacket.get_used_rect()
+	var wide := jacket.get_width()
+	var data := jacket.get_data()
+	var clear := Color(0, 0, 0, 0)
+	for y in range(box.position.y, box.end.y):
+		var row := y * wide * 4 + 3              # this row's alpha bytes
+		var left := box.position.x
+		while left < box.end.x and data[row + left * 4] < 128:
+			left += 1
+		if left >= box.end.x:
+			continue
+		var right := box.end.x - 1
+		while right > left and data[row + right * 4] < 128:
+			right -= 1
+		out.fill_rect(Rect2i(0, y, left + UNDER_IN, 1), clear)
+		out.fill_rect(Rect2i(right + 1 - UNDER_IN, y, wide - right - 1 + UNDER_IN, 1), clear)
+	return out
 
 
 static func _texture(image: Image, mipmaps: bool) -> ImageTexture:
@@ -806,13 +832,22 @@ func _restack() -> void:
 		var made := {"arm_width": 0.0}
 		_lay(under, under_marks, String(base[name].get("art", "")), 0)
 		_lay(arms, arm_marks, String(base[name].get("arms", "")), 0)
+		# A jacket with sleeves covers the shirt's sleeves, and the shirt's body is cut to the jacket's (_cut_to).
+		var cover: Image = null
+		var jacket := String(_worn.get("jacket", {}).get("item", ""))
+		if jacket != "" and items[jacket].get("views", {}).get("front", {}).has("arms"):
+			var over: Dictionary = items[jacket].get("views", {}).get(name, {})
+			if over.has("art"):
+				cover = _layer(_dir.path_join(String(over["art"])))
 		for slot: String in _wardrobe.get("order", ["shoes", "trousers", "shirt", "jacket", "hat"]):
 			var id := String(_worn.get(slot, {}).get("item", ""))
 			if id == "":
 				continue
 			var drawing: Dictionary = items[id].get("views", {}).get(name, {})
-			_lay(under, under_marks, String(drawing.get("art", "")), SLOT_ID[slot])
-			_lay(arms, arm_marks, String(drawing.get("arms", "")), SLOT_ID[slot])
+			var covered := slot == "shirt" and cover != null
+			_lay(under, under_marks, String(drawing.get("art", "")), SLOT_ID[slot], cover if covered else null)
+			if not covered:
+				_lay(arms, arm_marks, String(drawing.get("arms", "")), SLOT_ID[slot])
 			if drawing.has("arm_top"):
 				made["arm_top"] = drawing["arm_top"]
 			made["arm_width"] = maxf(made["arm_width"], float(drawing.get("arm_width", 0.0)))

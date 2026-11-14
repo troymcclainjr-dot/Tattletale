@@ -123,11 +123,15 @@ vec3 dress(vec3 c, vec2 src, sampler2D map) {
 		return c;
 	}
 	float was = dot(c, LUMA);
-	float against = was / max(dot(dress_from[id], LUMA), 0.02);
-	float light = clamp(against, 0.0, 1.0);
-	// A detail much lighter than the cloth it is on, and near white (a stripe, a number, a sole), stays as drawn.
-	float keep = smoothstep(1.3, 1.7, against) * smoothstep(0.55, 0.75, was);
-	return mix(dress_to[id] * light, c, keep);
+	float cloth = dot(dress_from[id], LUMA);
+	if (was <= cloth) {         // the cloth, its shading and its ink: the new colour, as dark as it was drawn
+		return dress_to[id] * (was / max(cloth, 0.02));
+	}
+	// Lighter than the cloth: a detail on it (a stripe, a number, a sparkle, a sole) or the soft edge of one,
+	// which is part cloth, part detail. Only the cloth part changes colour, so the detail keeps its own
+	// colour and no fringe of the old cloth is left round it.
+	float detail = clamp((was - cloth) / max(1.0 - cloth, 0.05), 0.0, 1.0);
+	return clamp(c + (dress_to[id] - dress_from[id]) * (1.0 - detail), 0.0, 1.0);
 }
 
 // Where in the drawing the pixel at uv comes from if it shows this leg; x < -1 if it does not.
