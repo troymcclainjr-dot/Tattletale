@@ -1,0 +1,13 @@
+{
+	"about": "Made-up lines in the bar cards' format, for trying the gibberish voice (rap_voice.gd) and the music: steps before there are real cards. Placeholders: nobody wrote these as lyrics. Each line is one bar; syl is [step 0..15, syllable, stress 0..2].",
+	"lines": {
+		"steady": {"text": "Up on the block where the lights stay on",
+			"syl": [[0, "Up", 2], [2, "on", 0], [3, "the", 0], [4, "block", 2], [6, "where", 0], [7, "the", 0], [8, "lights", 1], [10, "stay", 1], [12, "on", 2]]},
+		"run": {"text": "Tape deck rolling, every level in the red",
+			"syl": [[0, "Tape", 2], [1, "deck", 1], [2, "roll", 1], [3, "ing", 0], [4, "ev", 2], [5, "ry", 0], [6, "lev", 1], [7, "el", 0], [8, "in", 1], [9, "the", 0], [10, "red", 2]]},
+		"offbeat": {"text": "Never on the one, I come in late",
+			"syl": [[1, "Nev", 1], [2, "er", 0], [3, "on", 0], [5, "the", 0], [6, "one", 2], [9, "I", 0], [10, "come", 1], [11, "in", 0], [12, "late", 2]]},
+		"slow": {"text": "Yeah, uh, the block is hot",
+			"syl": [[0, "Yeah", 2], [4, "uh", 1], [10, "the", 0], [11, "block", 1], [13, "is", 0], [14, "hot", 2]]}
+	}
+}

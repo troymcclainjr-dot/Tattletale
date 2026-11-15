@@ -1,0 +1,19 @@
+{
+	"id": "iron",
+	"name": "IRON BLOCK",
+	"bpm": 92,
+	"bars": 4,
+	"file": "iron.wav",
+	"swing": 0.2,
+	"sections": [
+		{
+			"name": "verse",
+			"bar": 0
+		},
+		{
+			"name": "hook",
+			"bar": 0
+		}
+	],
+	"mood": "hard"
+}

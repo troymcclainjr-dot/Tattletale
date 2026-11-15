@@ -1,0 +1,19 @@
+{
+	"id": "ghost",
+	"name": "STAIRWELL",
+	"bpm": 86,
+	"bars": 4,
+	"file": "ghost.wav",
+	"swing": 0.15,
+	"sections": [
+		{
+			"name": "verse",
+			"bar": 0
+		},
+		{
+			"name": "hook",
+			"bar": 0
+		}
+	],
+	"mood": "eerie"
+}

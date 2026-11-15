@@ -23,6 +23,7 @@ extends Node3D
 ## outside the studio; CONTINUE goes back to the place he was last at.
 ##   E at the booth microphone: he performs, seen through the control-room glass
 ##                  with black bars top and bottom; Esc steps away
+##                  (to a beat, conductor.gd: Left / Right plays the one before or after)
 ##   E at the camcorder in the control room: plan, shoot and premiere a music video (video_shoot.gd)
 ##
 ## In a conversation: click a line (it turns yellow under the mouse) or press
@@ -57,6 +58,8 @@ extends Node3D
 ##   expr:name or expr:who:name (an expression set as the game sets one, unlike --face: a moment such as a laugh
 ##   settles into an open-eyed face after paper_face.gd's SETTLE; expr:CHUY:calm for someone else here),
 ##   video:... (the music video, a stage at a time: video:song, video:plan, video:shoot ... see video_shoot.gd).
+##   music:... (the beat clock, the beats and the gibberish voice: music:state, music:play:iron, music:rap:e:steady,
+##   music:timing:iron:4:steady, music:render:iron:4 ... see beats_steps.gd).
 ##   combat.gd's: fire or fire:n (he brings it up and pulls the trigger n times, as fast as the gun goes), reload
 ##   (reload:start does not wait for it),
 ##   hurt:n (he takes n of his health), shoot:who or shoot:who:n (the cross on someone, by name, or someone: the
@@ -113,6 +116,8 @@ const FlickerCheck := preload("res://scripts/flicker_check.gd")
 const ShotSteps := preload("res://scripts/shot_steps.gd")      # more --do steps: snap, eye, place, at, room, beat, stats, check
 const ShopSteps := preload("res://scripts/shop_steps.gd")      # --do steps for the gun store (shop:...) and the travel list (list:...)
 const PeopleSteps := preload("res://scripts/people_steps.gd")  # --do steps for the people: hidecheck, runcover, hidden, gunpoint, deadrow, deadcheck
+const BeatsSteps := preload("res://scripts/beats_steps.gd")    # --do steps for the music: music:state, music:play, music:timing, music:render ...
+const Conductor := preload("res://scripts/conductor.gd")       # the beat clock (and the gibberish voice)
 const PaperActor := preload("res://scripts/paper_actor.gd")
 const Wanderer := preload("res://scripts/wanderer.gd")
 const TalkBox := preload("res://scripts/talk_box.gd")
@@ -158,7 +163,7 @@ const WARDROBE := {
 }
 
 const SAVE := "user://save.json"              # where the game has got to: {"side", "place"}
-const SETTINGS := "user://settings.json"      # {"fullscreen"}
+const SETTINGS := "user://settings.json"      # {"fullscreen", "music"}
 
 ## The travel list (M). Each place says where he arrives (its `arrive`). A row
 ## with "built": false is listed but cannot be picked.
@@ -254,6 +259,7 @@ var _video: Node               # the music video: the camcorder in the studio, t
 var _shot_lineup := ""         # screenshot mode: --lineup's weapon:rig:poses
 var _shot_strip := ""          # screenshot mode: --strip's weapons:rigs:views:frames
 var _combat: Node             # shooting, and the health, cash and rounds in the bottom-left corner (combat.gd)
+var _conductor: Node          # the beat clock: the beat playing and where in it the music is (conductor.gd)
 
 
 func _ready() -> void:
@@ -345,6 +351,9 @@ func _ready() -> void:
 	layer.add_child(_hint)
 	_combat = Combat.new()
 	add_child(_combat)
+	_conductor = Conductor.new()
+	add_child(_conductor)
+	_conductor.set_volume(float(_read(SETTINGS).get("music", _conductor.volume)))
 
 	# The black bars of a performance, under everything else on the screen.
 	var cinema := CanvasLayer.new()
@@ -382,6 +391,7 @@ func _ready() -> void:
 	_title.new_game.connect(_new_game)
 	_title.continue_game.connect(_continue_game)
 	_title.fullscreen_set.connect(_set_fullscreen)
+	_title.music_set.connect(_set_music)
 	_choose = ChooseScreen.new()
 	_choose.position = Vector3(0, 300, 0)        # far above the places, with its own camera and backdrop
 	add_child(_choose)
@@ -474,6 +484,7 @@ func _ready() -> void:
 	_set_camera(_cam_name)
 	if _shot_path != "":
 		_scripted = true
+		_conductor.scripted()
 		for id: String in _cast:
 			for member: Dictionary in _cast[id]:
 				if member["brain"]:
@@ -1140,6 +1151,7 @@ func _cut_to(change: Callable) -> void:
 func _show_title() -> void:
 	_set_mode("title")
 	_title.open(not _read(_save_path).is_empty(), DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN)
+	_title.set_music(_conductor.volume)
 
 
 ## NEW GAME: to the angel and the devil.
@@ -1207,6 +1219,15 @@ func _set_fullscreen(on: bool) -> void:
 	_write(SETTINGS, settings)
 
 
+## The MUSIC setting (title screen), 0 .. 1: the beats and the voice. A screenshot run does not keep it.
+func _set_music(level: float) -> void:
+	_conductor.set_volume(level)
+	if not _scripted:
+		var settings := _read(SETTINGS)
+		settings["music"] = level
+		_write(SETTINGS, settings)
+
+
 # ------------------------------------------------------------ at the microphone
 
 ## He steps up to the booth microphone (E on it). The picture blacks out for
@@ -1226,6 +1247,7 @@ func _start_perform(spot: Vector3) -> void:
 			_actor.face.set_expression(MOODS[0])
 			_actor.face.talking = true
 		_building.show_room(PERFORM_ROOM)
+		_conductor.booth(true)
 		_perform_cam(0.0)
 	if _scripted:
 		begin.call()
@@ -1241,6 +1263,7 @@ func _start_perform(spot: Vector3) -> void:
 func _stop_perform() -> void:
 	if not _performing or not _actor.performing:
 		return
+	_conductor.booth(false)
 	var finish := func() -> void:
 		_performing = false
 		_actor.performing = false
@@ -1264,7 +1287,7 @@ func _stop_perform() -> void:
 ## to the window, a little above his head, drifting slowly from side to side
 ## and always on him.
 func _perform_cam(delta: float) -> void:
-	_perform_time += delta
+	_perform_time = _conductor.clock(_perform_time + delta)      # the beat's seconds while one plays
 	var spot: Vector3 = _building.mic.to
 	_cam_at = Vector3(spot.x + 0.1 + 0.5 * sin(_perform_time * 0.5), 1.62 + 0.03 * sin(_perform_time * 0.37), _building.control.Z0 + 0.95)
 	_cam_look = spot + Vector3(0.1, 0.95, 0.0)
@@ -1272,7 +1295,7 @@ func _perform_cam(delta: float) -> void:
 	_camera.look_at_from_position(_cam_at, _cam_look)
 	_face_cards()
 	if _actor.face:
-		var mood: String = MOODS[int(_perform_time / (8.0 * _actor.BEAT)) % MOODS.size()]
+		var mood: String = MOODS[int(_perform_time / (8.0 * _conductor.spb)) % MOODS.size()]
 		if _actor.face.expression != mood:
 			_actor.face.set_expression(mood)
 
@@ -1307,6 +1330,7 @@ func _process(delta: float) -> void:
 			_aim_off()
 			_actor.aiming = free and Input.is_physical_key_pressed(KEY_CTRL)
 		Input.mouse_mode = Input.MOUSE_MODE_HIDDEN if mouse else Input.MOUSE_MODE_VISIBLE
+	_conductor.lead(_actor, delta, _performing and _actor.performing)      # at the microphone he bobs on the beat playing
 	_actor.walk(_floor_dir(dir), dir, delta)
 	for member: Dictionary in _cast.get(_place, []):
 		if member["brain"]:
@@ -1346,9 +1370,11 @@ func _process(delta: float) -> void:
 func _unhandled_key_input(event: InputEvent) -> void:
 	if not event.pressed or event.echo or _talk.is_open() or _travel.is_open() or _mode != "play":
 		return
-	if _performing:                 # nothing but Esc while he is at the microphone
+	if _performing:                 # nothing but Esc while he is at the microphone (and Left / Right: another beat)
 		if event.physical_keycode == KEY_ESCAPE:
 			_stop_perform()
+		elif _actor.performing:
+			_conductor.key(event.physical_keycode)
 		get_viewport().set_input_as_handled()
 		return
 	match event.physical_keycode:
@@ -1633,6 +1659,8 @@ func _take_shot() -> void:
 				_arrest(bits[1] if bits.size() > 1 else "TEST")
 			"release":      # let him out of the jail at once, in his own clothes, at the front gate
 				Prison.release(self)
+			"music":        # beats_steps.gd: the beat clock, the beats, the gibberish voice (music:state, music:timing ...)
+				await BeatsSteps.step(self, bits)
 			"snap", "eye", "place", "at", "room", "beat", "stats", "check":     # shot_steps.gd: many pictures in one run, from anywhere
 				await ShotSteps.step(self, bits)
 			"shop", "list":     # shop_steps.gd: the gun store's counter and range; the travel list filled with made-up rows

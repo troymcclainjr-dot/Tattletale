@@ -4,16 +4,17 @@ extends Node
 ## assets/data/video.json.
 ##
 ##   Record   Performing at the booth microphone for "song"'s "beats" beats is
-##            a song recorded (player_state.gd's songs). A REC mark shows
-##            while he is at it.
+##            a song recorded (player_state.gd's songs), on the beat playing
+##            there (the beat clock's, conductor.gd; Left / Right picks another,
+##            kept in song_beats). A REC mark shows while he is at it.
 ##   Start    The camcorder on its tripod in the control room's front corner.
 ##            E there: the plan board if there is a song with no video yet,
 ##            otherwise it says to record one first.
 ##   Plan     video_plan.gd. Esc: nothing spent.
 ##   Shoot    He is taken to the location, the set is put out (video_stage.gd)
-##            and the take is played (video_take.gd, video_take_ui.gd). Esc
-##            walks him off the set: back to the studio, nothing spent. At CUT
-##            the whole plan is paid for at once.
+##            and the take is played (video_take.gd, video_take_ui.gd) on the
+##            song's beat (song_beat). Esc walks him off the set: back to the
+##            studio, nothing spent. At CUT the whole plan is paid for at once.
 ##   Premiere Back in the studio (video_premiere.gd): the moments caught during
 ##            the take, the views, the comments, the pay (video_score.gd). The
 ##            video is kept in player_state.gd's videos and he is paid when it
@@ -208,6 +209,18 @@ func song_title() -> String:
 	return String(data["song"].get("title", "TRACK {n}")).replace("{n}", str((main._state.videos as Array).size() + 1))
 
 
+## The beat that song was recorded on (player_state.gd's song_beats), or the
+## first beat there is (a song from an older save, or one a --do step made).
+func song_beat() -> String:
+	var kept: Array = main._state.song_beats
+	var n := (main._state.videos as Array).size()
+	var id := String(kept[n]) if n < kept.size() else ""
+	if id == "" or main._conductor.sheet_of(id).is_empty():
+		var all: Array = main._conductor.beats()
+		id = String(all[0]) if not all.is_empty() else ""
+	return id
+
+
 # -------------------------------------------------------------- in the studio
 
 func _process(delta: float) -> void:
@@ -239,7 +252,8 @@ func _watch_the_mic() -> void:
 		_counted = false
 		return
 	var beats := float(data["song"].get("beats", 16))
-	var done := float(main._perform_time) / PaperActor.BEAT
+	var done := float(main._perform_time) / float(main._conductor.spb)
+	main._bar_note.text = "ESC   STEP AWAY        LEFT / RIGHT   BEAT  < %s >" % main._conductor.name_of(main._conductor.id) if main._conductor.id != "" else "ESC   STEP AWAY"
 	if not _counted and done >= beats:
 		_counted = true
 		record_song()
@@ -251,7 +265,7 @@ func _watch_the_mic() -> void:
 
 
 func record_song() -> void:
-	main._state.record_song()
+	main._state.record_song(String(main._conductor.id))
 	toast(_word("recorded").replace("{title}", String(data["song"].get("title", "TRACK {n}")).replace("{n}", str(main._state.songs))))
 	main._save_game()
 
@@ -326,18 +340,21 @@ func _begin_shoot() -> void:
 	_moments = []
 	_pending = []
 	_toast_t = 99.0
-	_ui.open(data["words"], "%s   %s" % [song_title(), got["location"]["name"]])
+	var beat := song_beat()
+	_ui.open(data["words"], "%s   %s   %s" % [song_title(), main._conductor.name_of(beat), got["location"]["name"]])
 	_take = Take.new()
 	_take.name = "Take"
 	add_child(_take)
 	_take.setup(main, _stage, _ui, data, got, _seed, forced)
+	_take.use_clock(main._conductor, beat)
 	_take.auto = auto_skill
 	_take.wrapped.connect(_on_wrapped)
 	forced = []
 	var when := PackedStringArray()
 	for m: Dictionary in _take.mishaps:
 		when.append("%s at beat %.1f" % [m["m"]["id"], m["open"]])
-	print("[shot] video: shooting %s at %s for %s (seed %d): %d moves, mishaps %s" % [song_title(), got["location"]["name"], _money(_total), _seed, _take.prompts.size(), ", ".join(when)])
+	print("[shot] video: shooting %s at %s for %s (seed %d): %d moves, mishaps %s; on %s at %d BPM" % [song_title(), got["location"]["name"], _money(_total), _seed, _take.prompts.size(), ", ".join(when),
+		beat, roundi(60.0 / _take.BEAT)])
 
 
 ## Keys during the take: a move's key or E goes to the take; Esc walks off the set.
@@ -409,7 +426,10 @@ func _catch_one() -> void:
 func run_to(target: float) -> void:
 	var steps := 0
 	while _take and not _take.done and _take.beat() < target:
+		_take.fast = true                # its own time, not the music's
 		_take.tick(1.0 / 60.0)
+		if _take:
+			_take.fast = false
 		if _take:
 			_pending.append_array(_take.due_stills())
 		while not _pending.is_empty():
@@ -424,6 +444,7 @@ func walk_off() -> void:
 	if stage_name != "shoot":
 		return
 	stage_name = "leaving"
+	main._conductor.stop(1.0)
 	main._cut_to(func() -> void:
 		_strike()
 		_back_to_studio()
@@ -510,6 +531,8 @@ func _on_premiere_done() -> void:
 ## Take the set down and give him back as he was.
 func _strike() -> void:
 	_ui.close()
+	if _take and _take.clock and main._conductor.id == _take.beat_id:
+		main._conductor.stop(0.0)        # the song's beat, if it is still going
 	if _take:
 		_take.queue_free()
 		_take = null
@@ -668,7 +691,7 @@ func shot_step(bits: PackedStringArray) -> void:
 		print("[shot] video: %s at beat %.2f; in shot %s (he is at x %.2f, the camera on %.2f); cash %d" % [what, _take.beat(), _take.in_shot,
 			main._actor.position.x, _take.aim_x(), main._state.cash])
 	elif what == "state" or what in ["next", "results", "done", "esc"]:
-		print("[shot] video: stage '%s'; cash %d; songs %d; videos %d%s" % [stage_name, main._state.cash, main._state.songs, (main._state.videos as Array).size(),
+		print("[shot] video: stage '%s'; cash %d; songs %d (on %s); videos %d%s" % [stage_name, main._state.cash, main._state.songs, main._state.song_beats, (main._state.videos as Array).size(),
 			"; last: %s" % (main._state.videos as Array)[-1] if not (main._state.videos as Array).is_empty() else ""])
 
 

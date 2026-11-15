@@ -1,0 +1,832 @@
+{
+	"about": "The gibberish voice's syllables, made by beats_make.py. Each file is PAD seconds of silence, then the syllable: its consonant (if any) starts `lead` seconds before its beat point `at` (seconds from the file's start), and it rings `after` seconds past it. rap_voice.gd picks one by the register, the vowel, how it starts and how long there is before the next syllable.",
+	"rate": 22050,
+	"pad": 0.08,
+	"vowels": [
+		"a",
+		"e",
+		"i",
+		"o",
+		"u"
+	],
+	"onsets": [
+		"v",
+		"k",
+		"s",
+		"m"
+	],
+	"lengths": {
+		"s": 0.1,
+		"l": 0.27
+	},
+	"registers": {
+		"low": {
+			"f0": 96.0
+		},
+		"mid": {
+			"f0": 128.0
+		},
+		"high": {
+			"f0": 188.0
+		}
+	},
+	"characters": {
+		"default": {
+			"register": "mid",
+			"pitch": 0.0,
+			"gain": 0.0
+		},
+		"e": {
+			"register": "mid",
+			"pitch": 0.0,
+			"gain": 0.0
+		},
+		"fry": {
+			"register": "low",
+			"pitch": -1.0,
+			"gain": 0.5
+		},
+		"tre": {
+			"register": "mid",
+			"pitch": 2.0,
+			"gain": 0.0
+		},
+		"dee": {
+			"register": "low",
+			"pitch": 1.5,
+			"gain": 0.5
+		},
+		"chuy": {
+			"register": "mid",
+			"pitch": 3.0,
+			"gain": 0.0
+		},
+		"snoozy": {
+			"register": "mid",
+			"pitch": -2.0,
+			"gain": -0.5
+		},
+		"doc": {
+			"register": "low",
+			"pitch": 0.0,
+			"gain": 0.0
+		},
+		"huff": {
+			"register": "mid",
+			"pitch": 1.0,
+			"gain": 0.0
+		},
+		"lil": {
+			"register": "high",
+			"pitch": -1.0,
+			"gain": 0.0
+		},
+		"rell": {
+			"register": "mid",
+			"pitch": -1.0,
+			"gain": 0.0
+		},
+		"ronnie": {
+			"register": "low",
+			"pitch": 2.0,
+			"gain": 0.0
+		},
+		"vic": {
+			"register": "low",
+			"pitch": 1.0,
+			"gain": 0.0
+		},
+		"kesha": {
+			"register": "high",
+			"pitch": 2.5,
+			"gain": 0.0
+		},
+		"nia": {
+			"register": "high",
+			"pitch": 3.5,
+			"gain": 0.0
+		}
+	},
+	"samples": {
+		"low_a_v_s": {
+			"file": "low_a_v_s.wav",
+			"at": 0.08,
+			"after": 0.1,
+			"lead": 0.0
+		},
+		"low_a_v_l": {
+			"file": "low_a_v_l.wav",
+			"at": 0.08,
+			"after": 0.27,
+			"lead": 0.0
+		},
+		"low_a_k_s": {
+			"file": "low_a_k_s.wav",
+			"at": 0.092,
+			"after": 0.1,
+			"lead": 0.012
+		},
+		"low_a_k_l": {
+			"file": "low_a_k_l.wav",
+			"at": 0.092,
+			"after": 0.27,
+			"lead": 0.012
+		},
+		"low_a_s_s": {
+			"file": "low_a_s_s.wav",
+			"at": 0.12,
+			"after": 0.1,
+			"lead": 0.04
+		},
+		"low_a_s_l": {
+			"file": "low_a_s_l.wav",
+			"at": 0.12,
+			"after": 0.27,
+			"lead": 0.04
+		},
+		"low_a_m_s": {
+			"file": "low_a_m_s.wav",
+			"at": 0.115,
+			"after": 0.1,
+			"lead": 0.035
+		},
+		"low_a_m_l": {
+			"file": "low_a_m_l.wav",
+			"at": 0.115,
+			"after": 0.27,
+			"lead": 0.035
+		},
+		"low_e_v_s": {
+			"file": "low_e_v_s.wav",
+			"at": 0.08,
+			"after": 0.1,
+			"lead": 0.0
+		},
+		"low_e_v_l": {
+			"file": "low_e_v_l.wav",
+			"at": 0.08,
+			"after": 0.27,
+			"lead": 0.0
+		},
+		"low_e_k_s": {
+			"file": "low_e_k_s.wav",
+			"at": 0.092,
+			"after": 0.1,
+			"lead": 0.012
+		},
+		"low_e_k_l": {
+			"file": "low_e_k_l.wav",
+			"at": 0.092,
+			"after": 0.27,
+			"lead": 0.012
+		},
+		"low_e_s_s": {
+			"file": "low_e_s_s.wav",
+			"at": 0.12,
+			"after": 0.1,
+			"lead": 0.04
+		},
+		"low_e_s_l": {
+			"file": "low_e_s_l.wav",
+			"at": 0.12,
+			"after": 0.27,
+			"lead": 0.04
+		},
+		"low_e_m_s": {
+			"file": "low_e_m_s.wav",
+			"at": 0.115,
+			"after": 0.1,
+			"lead": 0.035
+		},
+		"low_e_m_l": {
+			"file": "low_e_m_l.wav",
+			"at": 0.115,
+			"after": 0.27,
+			"lead": 0.035
+		},
+		"low_i_v_s": {
+			"file": "low_i_v_s.wav",
+			"at": 0.08,
+			"after": 0.1,
+			"lead": 0.0
+		},
+		"low_i_v_l": {
+			"file": "low_i_v_l.wav",
+			"at": 0.08,
+			"after": 0.27,
+			"lead": 0.0
+		},
+		"low_i_k_s": {
+			"file": "low_i_k_s.wav",
+			"at": 0.092,
+			"after": 0.1,
+			"lead": 0.012
+		},
+		"low_i_k_l": {
+			"file": "low_i_k_l.wav",
+			"at": 0.092,
+			"after": 0.27,
+			"lead": 0.012
+		},
+		"low_i_s_s": {
+			"file": "low_i_s_s.wav",
+			"at": 0.12,
+			"after": 0.1,
+			"lead": 0.04
+		},
+		"low_i_s_l": {
+			"file": "low_i_s_l.wav",
+			"at": 0.12,
+			"after": 0.27,
+			"lead": 0.04
+		},
+		"low_i_m_s": {
+			"file": "low_i_m_s.wav",
+			"at": 0.115,
+			"after": 0.1,
+			"lead": 0.035
+		},
+		"low_i_m_l": {
+			"file": "low_i_m_l.wav",
+			"at": 0.115,
+			"after": 0.27,
+			"lead": 0.035
+		},
+		"low_o_v_s": {
+			"file": "low_o_v_s.wav",
+			"at": 0.08,
+			"after": 0.1,
+			"lead": 0.0
+		},
+		"low_o_v_l": {
+			"file": "low_o_v_l.wav",
+			"at": 0.08,
+			"after": 0.27,
+			"lead": 0.0
+		},
+		"low_o_k_s": {
+			"file": "low_o_k_s.wav",
+			"at": 0.092,
+			"after": 0.1,
+			"lead": 0.012
+		},
+		"low_o_k_l": {
+			"file": "low_o_k_l.wav",
+			"at": 0.092,
+			"after": 0.27,
+			"lead": 0.012
+		},
+		"low_o_s_s": {
+			"file": "low_o_s_s.wav",
+			"at": 0.12,
+			"after": 0.1,
+			"lead": 0.04
+		},
+		"low_o_s_l": {
+			"file": "low_o_s_l.wav",
+			"at": 0.12,
+			"after": 0.27,
+			"lead": 0.04
+		},
+		"low_o_m_s": {
+			"file": "low_o_m_s.wav",
+			"at": 0.115,
+			"after": 0.1,
+			"lead": 0.035
+		},
+		"low_o_m_l": {
+			"file": "low_o_m_l.wav",
+			"at": 0.115,
+			"after": 0.27,
+			"lead": 0.035
+		},
+		"low_u_v_s": {
+			"file": "low_u_v_s.wav",
+			"at": 0.08,
+			"after": 0.1,
+			"lead": 0.0
+		},
+		"low_u_v_l": {
+			"file": "low_u_v_l.wav",
+			"at": 0.08,
+			"after": 0.27,
+			"lead": 0.0
+		},
+		"low_u_k_s": {
+			"file": "low_u_k_s.wav",
+			"at": 0.092,
+			"after": 0.1,
+			"lead": 0.012
+		},
+		"low_u_k_l": {
+			"file": "low_u_k_l.wav",
+			"at": 0.092,
+			"after": 0.27,
+			"lead": 0.012
+		},
+		"low_u_s_s": {
+			"file": "low_u_s_s.wav",
+			"at": 0.12,
+			"after": 0.1,
+			"lead": 0.04
+		},
+		"low_u_s_l": {
+			"file": "low_u_s_l.wav",
+			"at": 0.12,
+			"after": 0.27,
+			"lead": 0.04
+		},
+		"low_u_m_s": {
+			"file": "low_u_m_s.wav",
+			"at": 0.115,
+			"after": 0.1,
+			"lead": 0.035
+		},
+		"low_u_m_l": {
+			"file": "low_u_m_l.wav",
+			"at": 0.115,
+			"after": 0.27,
+			"lead": 0.035
+		},
+		"mid_a_v_s": {
+			"file": "mid_a_v_s.wav",
+			"at": 0.08,
+			"after": 0.1,
+			"lead": 0.0
+		},
+		"mid_a_v_l": {
+			"file": "mid_a_v_l.wav",
+			"at": 0.08,
+			"after": 0.27,
+			"lead": 0.0
+		},
+		"mid_a_k_s": {
+			"file": "mid_a_k_s.wav",
+			"at": 0.092,
+			"after": 0.1,
+			"lead": 0.012
+		},
+		"mid_a_k_l": {
+			"file": "mid_a_k_l.wav",
+			"at": 0.092,
+			"after": 0.27,
+			"lead": 0.012
+		},
+		"mid_a_s_s": {
+			"file": "mid_a_s_s.wav",
+			"at": 0.12,
+			"after": 0.1,
+			"lead": 0.04
+		},
+		"mid_a_s_l": {
+			"file": "mid_a_s_l.wav",
+			"at": 0.12,
+			"after": 0.27,
+			"lead": 0.04
+		},
+		"mid_a_m_s": {
+			"file": "mid_a_m_s.wav",
+			"at": 0.115,
+			"after": 0.1,
+			"lead": 0.035
+		},
+		"mid_a_m_l": {
+			"file": "mid_a_m_l.wav",
+			"at": 0.115,
+			"after": 0.27,
+			"lead": 0.035
+		},
+		"mid_e_v_s": {
+			"file": "mid_e_v_s.wav",
+			"at": 0.08,
+			"after": 0.1,
+			"lead": 0.0
+		},
+		"mid_e_v_l": {
+			"file": "mid_e_v_l.wav",
+			"at": 0.08,
+			"after": 0.27,
+			"lead": 0.0
+		},
+		"mid_e_k_s": {
+			"file": "mid_e_k_s.wav",
+			"at": 0.092,
+			"after": 0.1,
+			"lead": 0.012
+		},
+		"mid_e_k_l": {
+			"file": "mid_e_k_l.wav",
+			"at": 0.092,
+			"after": 0.27,
+			"lead": 0.012
+		},
+		"mid_e_s_s": {
+			"file": "mid_e_s_s.wav",
+			"at": 0.12,
+			"after": 0.1,
+			"lead": 0.04
+		},
+		"mid_e_s_l": {
+			"file": "mid_e_s_l.wav",
+			"at": 0.12,
+			"after": 0.27,
+			"lead": 0.04
+		},
+		"mid_e_m_s": {
+			"file": "mid_e_m_s.wav",
+			"at": 0.115,
+			"after": 0.1,
+			"lead": 0.035
+		},
+		"mid_e_m_l": {
+			"file": "mid_e_m_l.wav",
+			"at": 0.115,
+			"after": 0.27,
+			"lead": 0.035
+		},
+		"mid_i_v_s": {
+			"file": "mid_i_v_s.wav",
+			"at": 0.08,
+			"after": 0.1,
+			"lead": 0.0
+		},
+		"mid_i_v_l": {
+			"file": "mid_i_v_l.wav",
+			"at": 0.08,
+			"after": 0.27,
+			"lead": 0.0
+		},
+		"mid_i_k_s": {
+			"file": "mid_i_k_s.wav",
+			"at": 0.092,
+			"after": 0.1,
+			"lead": 0.012
+		},
+		"mid_i_k_l": {
+			"file": "mid_i_k_l.wav",
+			"at": 0.092,
+			"after": 0.27,
+			"lead": 0.012
+		},
+		"mid_i_s_s": {
+			"file": "mid_i_s_s.wav",
+			"at": 0.12,
+			"after": 0.1,
+			"lead": 0.04
+		},
+		"mid_i_s_l": {
+			"file": "mid_i_s_l.wav",
+			"at": 0.12,
+			"after": 0.27,
+			"lead": 0.04
+		},
+		"mid_i_m_s": {
+			"file": "mid_i_m_s.wav",
+			"at": 0.115,
+			"after": 0.1,
+			"lead": 0.035
+		},
+		"mid_i_m_l": {
+			"file": "mid_i_m_l.wav",
+			"at": 0.115,
+			"after": 0.27,
+			"lead": 0.035
+		},
+		"mid_o_v_s": {
+			"file": "mid_o_v_s.wav",
+			"at": 0.08,
+			"after": 0.1,
+			"lead": 0.0
+		},
+		"mid_o_v_l": {
+			"file": "mid_o_v_l.wav",
+			"at": 0.08,
+			"after": 0.27,
+			"lead": 0.0
+		},
+		"mid_o_k_s": {
+			"file": "mid_o_k_s.wav",
+			"at": 0.092,
+			"after": 0.1,
+			"lead": 0.012
+		},
+		"mid_o_k_l": {
+			"file": "mid_o_k_l.wav",
+			"at": 0.092,
+			"after": 0.27,
+			"lead": 0.012
+		},
+		"mid_o_s_s": {
+			"file": "mid_o_s_s.wav",
+			"at": 0.12,
+			"after": 0.1,
+			"lead": 0.04
+		},
+		"mid_o_s_l": {
+			"file": "mid_o_s_l.wav",
+			"at": 0.12,
+			"after": 0.27,
+			"lead": 0.04
+		},
+		"mid_o_m_s": {
+			"file": "mid_o_m_s.wav",
+			"at": 0.115,
+			"after": 0.1,
+			"lead": 0.035
+		},
+		"mid_o_m_l": {
+			"file": "mid_o_m_l.wav",
+			"at": 0.115,
+			"after": 0.27,
+			"lead": 0.035
+		},
+		"mid_u_v_s": {
+			"file": "mid_u_v_s.wav",
+			"at": 0.08,
+			"after": 0.1,
+			"lead": 0.0
+		},
+		"mid_u_v_l": {
+			"file": "mid_u_v_l.wav",
+			"at": 0.08,
+			"after": 0.27,
+			"lead": 0.0
+		},
+		"mid_u_k_s": {
+			"file": "mid_u_k_s.wav",
+			"at": 0.092,
+			"after": 0.1,
+			"lead": 0.012
+		},
+		"mid_u_k_l": {
+			"file": "mid_u_k_l.wav",
+			"at": 0.092,
+			"after": 0.27,
+			"lead": 0.012
+		},
+		"mid_u_s_s": {
+			"file": "mid_u_s_s.wav",
+			"at": 0.12,
+			"after": 0.1,
+			"lead": 0.04
+		},
+		"mid_u_s_l": {
+			"file": "mid_u_s_l.wav",
+			"at": 0.12,
+			"after": 0.27,
+			"lead": 0.04
+		},
+		"mid_u_m_s": {
+			"file": "mid_u_m_s.wav",
+			"at": 0.115,
+			"after": 0.1,
+			"lead": 0.035
+		},
+		"mid_u_m_l": {
+			"file": "mid_u_m_l.wav",
+			"at": 0.115,
+			"after": 0.27,
+			"lead": 0.035
+		},
+		"high_a_v_s": {
+			"file": "high_a_v_s.wav",
+			"at": 0.08,
+			"after": 0.1,
+			"lead": 0.0
+		},
+		"high_a_v_l": {
+			"file": "high_a_v_l.wav",
+			"at": 0.08,
+			"after": 0.27,
+			"lead": 0.0
+		},
+		"high_a_k_s": {
+			"file": "high_a_k_s.wav",
+			"at": 0.092,
+			"after": 0.1,
+			"lead": 0.012
+		},
+		"high_a_k_l": {
+			"file": "high_a_k_l.wav",
+			"at": 0.092,
+			"after": 0.27,
+			"lead": 0.012
+		},
+		"high_a_s_s": {
+			"file": "high_a_s_s.wav",
+			"at": 0.12,
+			"after": 0.1,
+			"lead": 0.04
+		},
+		"high_a_s_l": {
+			"file": "high_a_s_l.wav",
+			"at": 0.12,
+			"after": 0.27,
+			"lead": 0.04
+		},
+		"high_a_m_s": {
+			"file": "high_a_m_s.wav",
+			"at": 0.115,
+			"after": 0.1,
+			"lead": 0.035
+		},
+		"high_a_m_l": {
+			"file": "high_a_m_l.wav",
+			"at": 0.115,
+			"after": 0.27,
+			"lead": 0.035
+		},
+		"high_e_v_s": {
+			"file": "high_e_v_s.wav",
+			"at": 0.08,
+			"after": 0.1,
+			"lead": 0.0
+		},
+		"high_e_v_l": {
+			"file": "high_e_v_l.wav",
+			"at": 0.08,
+			"after": 0.27,
+			"lead": 0.0
+		},
+		"high_e_k_s": {
+			"file": "high_e_k_s.wav",
+			"at": 0.092,
+			"after": 0.1,
+			"lead": 0.012
+		},
+		"high_e_k_l": {
+			"file": "high_e_k_l.wav",
+			"at": 0.092,
+			"after": 0.27,
+			"lead": 0.012
+		},
+		"high_e_s_s": {
+			"file": "high_e_s_s.wav",
+			"at": 0.12,
+			"after": 0.1,
+			"lead": 0.04
+		},
+		"high_e_s_l": {
+			"file": "high_e_s_l.wav",
+			"at": 0.12,
+			"after": 0.27,
+			"lead": 0.04
+		},
+		"high_e_m_s": {
+			"file": "high_e_m_s.wav",
+			"at": 0.115,
+			"after": 0.1,
+			"lead": 0.035
+		},
+		"high_e_m_l": {
+			"file": "high_e_m_l.wav",
+			"at": 0.115,
+			"after": 0.27,
+			"lead": 0.035
+		},
+		"high_i_v_s": {
+			"file": "high_i_v_s.wav",
+			"at": 0.08,
+			"after": 0.1,
+			"lead": 0.0
+		},
+		"high_i_v_l": {
+			"file": "high_i_v_l.wav",
+			"at": 0.08,
+			"after": 0.27,
+			"lead": 0.0
+		},
+		"high_i_k_s": {
+			"file": "high_i_k_s.wav",
+			"at": 0.092,
+			"after": 0.1,
+			"lead": 0.012
+		},
+		"high_i_k_l": {
+			"file": "high_i_k_l.wav",
+			"at": 0.092,
+			"after": 0.27,
+			"lead": 0.012
+		},
+		"high_i_s_s": {
+			"file": "high_i_s_s.wav",
+			"at": 0.12,
+			"after": 0.1,
+			"lead": 0.04
+		},
+		"high_i_s_l": {
+			"file": "high_i_s_l.wav",
+			"at": 0.12,
+			"after": 0.27,
+			"lead": 0.04
+		},
+		"high_i_m_s": {
+			"file": "high_i_m_s.wav",
+			"at": 0.115,
+			"after": 0.1,
+			"lead": 0.035
+		},
+		"high_i_m_l": {
+			"file": "high_i_m_l.wav",
+			"at": 0.115,
+			"after": 0.27,
+			"lead": 0.035
+		},
+		"high_o_v_s": {
+			"file": "high_o_v_s.wav",
+			"at": 0.08,
+			"after": 0.1,
+			"lead": 0.0
+		},
+		"high_o_v_l": {
+			"file": "high_o_v_l.wav",
+			"at": 0.08,
+			"after": 0.27,
+			"lead": 0.0
+		},
+		"high_o_k_s": {
+			"file": "high_o_k_s.wav",
+			"at": 0.092,
+			"after": 0.1,
+			"lead": 0.012
+		},
+		"high_o_k_l": {
+			"file": "high_o_k_l.wav",
+			"at": 0.092,
+			"after": 0.27,
+			"lead": 0.012
+		},
+		"high_o_s_s": {
+			"file": "high_o_s_s.wav",
+			"at": 0.12,
+			"after": 0.1,
+			"lead": 0.04
+		},
+		"high_o_s_l": {
+			"file": "high_o_s_l.wav",
+			"at": 0.12,
+			"after": 0.27,
+			"lead": 0.04
+		},
+		"high_o_m_s": {
+			"file": "high_o_m_s.wav",
+			"at": 0.115,
+			"after": 0.1,
+			"lead": 0.035
+		},
+		"high_o_m_l": {
+			"file": "high_o_m_l.wav",
+			"at": 0.115,
+			"after": 0.27,
+			"lead": 0.035
+		},
+		"high_u_v_s": {
+			"file": "high_u_v_s.wav",
+			"at": 0.08,
+			"after": 0.1,
+			"lead": 0.0
+		},
+		"high_u_v_l": {
+			"file": "high_u_v_l.wav",
+			"at": 0.08,
+			"after": 0.27,
+			"lead": 0.0
+		},
+		"high_u_k_s": {
+			"file": "high_u_k_s.wav",
+			"at": 0.092,
+			"after": 0.1,
+			"lead": 0.012
+		},
+		"high_u_k_l": {
+			"file": "high_u_k_l.wav",
+			"at": 0.092,
+			"after": 0.27,
+			"lead": 0.012
+		},
+		"high_u_s_s": {
+			"file": "high_u_s_s.wav",
+			"at": 0.12,
+			"after": 0.1,
+			"lead": 0.04
+		},
+		"high_u_s_l": {
+			"file": "high_u_s_l.wav",
+			"at": 0.12,
+			"after": 0.27,
+			"lead": 0.04
+		},
+		"high_u_m_s": {
+			"file": "high_u_m_s.wav",
+			"at": 0.115,
+			"after": 0.1,
+			"lead": 0.035
+		},
+		"high_u_m_l": {
+			"file": "high_u_m_l.wav",
+			"at": 0.115,
+			"after": 0.27,
+			"lead": 0.035
+		}
+	}
+}

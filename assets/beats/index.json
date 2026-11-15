@@ -1,0 +1,11 @@
+{
+	"about": "The beats the game offers, in order (written by beats_make.py; each id has <id>.json and <id>.wav beside this file).",
+	"beats": [
+		"iron",
+		"sunday",
+		"ghost",
+		"parade",
+		"rain",
+		"bounce"
+	]
+}
