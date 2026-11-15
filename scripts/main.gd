@@ -48,6 +48,10 @@ extends Node3D
 ##   face:front|side|back|left (turn him without walking; left is side-on, mirrored),
 ##   wear:piece:colour (wear:hat:#cc2222; wear: alone puts his own clothes back),
 ##   arm:who:weapon[:aim] (give someone else here a weapon: arm:TRE:ak:aim), day:n (make it day n).
+##   More in shot_steps.gd, for many pictures in one run: snap:name (a picture now, beside the --shot file),
+##   eye:x:y:z:x:y:z[:fov] (later pictures from there; eye: alone, back to following him), place:id, at:x:z,
+##   room:NAME (stand him there), beat:n (hold the dancers at that beat), stats (draw calls and frame time),
+##   check (--check-walk and --check-faces for the place he is in now).
 
 const Building := preload("res://scripts/building.gd")
 const Place := preload("res://scripts/place.gd")
@@ -67,6 +71,7 @@ const PLANS := {
 	"clothes": "res://scripts/plans/clothes.gd",
 }
 const FlickerCheck := preload("res://scripts/flicker_check.gd")
+const ShotSteps := preload("res://scripts/shot_steps.gd")      # more --do steps: snap, eye, place, at, room, beat, stats, check
 const PaperActor := preload("res://scripts/paper_actor.gd")
 const Wanderer := preload("res://scripts/wanderer.gd")
 const TalkBox := preload("res://scripts/talk_box.gd")
@@ -1510,6 +1515,8 @@ func _take_shot() -> void:
 				for i in int(float(bits[3]) * 60.0):
 					_fry.walk(_floor_dir(way), way, 1.0 / 60.0)
 				print("[shot] fry walked to %.2f, %.2f" % [_fry.position.x, _fry.position.z])
+			"snap", "eye", "place", "at", "room", "beat", "stats", "check":     # shot_steps.gd: many pictures in one run, from anywhere
+				await ShotSteps.step(self, bits)
 	if _shot_talk > 0.0 and _actor.face:
 		_actor.face.talking = true
 		var shapes := {}
