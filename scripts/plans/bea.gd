@@ -12,33 +12,40 @@ extends RefCounted
 ## wall, the parlour through an arch beside it.
 ## 9 x 11 m, two floors; everything in it forty years' worth of hers.
 ##
-##   street band:  the pavement | FRONT YARD (11.4 x 2.2) | PORCH (9 x 2.4)
+## It is number 510 Rose Hill Terrace, the left end of the row he lives at the
+## other end of. Her front door opens onto Rose Hill (plans/street.gd): E by
+## the door inside takes him out onto her porch steps there, and the travel
+## list (OUTSIDE) puts him at them. The front, the porch (the row's, on its
+## 0.7 m deck) and the front yard are drawn there, by `front` below, with the
+## door and the windows where these rooms have them. (Placeholder: the number.)
+##
 ##   band 1:       PARLOUR (5.6 x 4.6)  | FRONT HALL (3.4 x 4.6, the stairs)
 ##   band 2:       DINING ROOM (5 x 3.4) | KITCHEN (4 x 3.4)
 ##   band 3:       SUN ROOM (5 x 3)      | PANTRY (4 x 3)
 ##   upstairs 1:   BEDROOM (5.6 x 5.4)  | UPSTAIRS HALL (3.4 x 5.4)
 ##   upstairs 2:   SEWING ROOM (5 x 3)   | BATHROOM (4 x 3)
 ##
-## Ways through: front door; parlour arch to the hall and to the dining room;
+## Ways through: front door (to Rose Hill); parlour arch to the hall and to the dining room;
 ## a doorway hall to kitchen; a door dining room to kitchen; wide openings to
 ## the sun room and the pantry (a door in a cut-away wall stands between the
 ## camera and the room); upstairs, doors to the bedroom, the sewing room
 ## (through the bedroom) and the bathroom.
 ##
-## The game floor is flat, so the porch is at the yard's level and the stairs
-## are a spot you use (E), as in the crib. Upstairs is its own stack of bands,
-## drawn 40 m to the right on the plan (UP). The neighbours either side are
-## the old game's porch-front rowhouses (houses.gd), seen from the street only.
+## The game floor is flat, so the stairs are a spot you use (E), as in the
+## crib. Upstairs is its own stack of bands, drawn 40 m to the right on the
+## plan (UP).
 ##
 ## Numbers are metres on the plan (see place.gd): u from the house's left
-## wall, v from its back wall. The house front is at v = 11, the porch runs to
-## v = 13.4, and the front fence stands on the edge of the pavement at v = 15.6
-## (the plan's depth). The new furniture is in props_bea.gd.
+## wall, v from its back wall. The house front is at v = 11 (the plan's depth
+## is 15.6, where the front fence stood before her front moved to Rose Hill).
+## The new furniture is in props_bea.gd.
 ##
-## Invented here (placeholders): the house number 3912, the WELCOME mat, "GOD
+## Invented here (placeholders): the house number 510, the WELCOME mat, "GOD
 ## BLESS OUR HOME" on the sampler over her bed, "MARCH 1994" on the calendar
 ## from her shop (the shop's name on it is the owners' own: MISS BEA'S CORNER
-## GROCERY), and the door names FRONT DOOR, SEWING ROOM DOOR, BATHROOM DOOR.
+## GROCERY), and the door names FRONT DOOR, SEWING ROOM DOOR, BATHROOM DOOR,
+## BACK DOOR (E by the pantry's back door: out into her yard and the alley,
+## plans/backs.gd).
 
 const Props := preload("res://scripts/props.gd")
 const Bea := preload("res://scripts/props_bea.gd")
@@ -48,8 +55,7 @@ const Houses := preload("res://scripts/houses.gd")
 
 const UP := 40.0
 const FRONT := 11.0           # the house front
-const PORCH := 13.4           # the front edge of the porch
-const LOT := 15.6             # the front fence, on the edge of the pavement
+const LOT := 15.6             # the plan's depth (where her front fence stood)
 const STAIR_U := 6.15         # the middle of the flight, on both floors
 const STAIR_V := 7.9
 const STAIR_L := 2.8          # v 6.5 (the top) to 9.3 (the foot)
@@ -62,6 +68,10 @@ const PANTRY_WINDOW := {"a": 5.45, "b": 7.15, "kind": "window", "sill": 2.02, "h
 const HEIGHT := 6.9           # the top of the cornice
 const GLOW := Color(1.0, 0.84, 0.55)
 const NIGHT := Color(0.16, 0.2, 0.3)
+const OUTSIDE := "street"     # the place her front door opens onto (main.gd's _travel_to puts him there, at her steps)
+const NUMBER := "510"
+const W := 9.0
+const PARLOUR_WINDOW := [1.0, 4.4]
 
 
 static func build(p: Node3D) -> void:
@@ -72,23 +82,18 @@ static func build(p: Node3D) -> void:
 	var door_red := Color(0.62, 0.14, 0.14)
 	var white_door := Color(0.9, 0.88, 0.8)
 	var boards := Kit.tex("wood_panel", 1.6, Color(0.5, 0.36, 0.24), true, Color(0.74, 0.6, 0.54))
-	var deck := Kit.tex("wood_panel", 1.2, Color(0.55, 0.57, 0.6), true, Color(0.55, 0.62, 0.72))
-	var grass := Kit.tex("stucco", 2.5, Color(0.35, 0.5, 0.25), true, Color(0.44, 0.74, 0.36))
 	var lino := Kit.tex("lino", 0.8, Color(0.7, 0.7, 0.66), true, Color(1.0, 0.98, 0.9))
 	var pantry_floor := Kit.tex("lino", 0.8, Color(0.6, 0.3, 0.3), true, Color(1.0, 0.55, 0.5))
 	var terracotta := Kit.tex("block_plain", 0.9, Color(0.8, 0.5, 0.36), true, Color(0.95, 0.6, 0.45))
 	var bath_floor := Kit.tex("lino", 0.3, Color(0.7, 0.7, 0.7), true, Color(0.9, 0.9, 0.92))
 
-	var st: int = p.street(-7.0, 16.0)
 	var g1: int = p.band()
 	var g2: int = p.band()
 	var g3: int = p.band()
 	var h1: int = p.band(1)
 	var h2: int = p.band(1)
-	p.arrive = p.pt((GATE[0] + GATE[1]) * 0.5, 16.7)
+	p.arrive = p.pt(6.4, 10.35)          # just inside the front door, at the foot of the stairs
 
-	p.room("PORCH", st, 0, FRONT, 9, PORCH, deck, {"street": true, "cam_y": 2.4, "look_y": 1.1})
-	p.room("FRONT YARD", st, -1.2, PORCH, 10.2, LOT, grass, {"street": true})
 	p.room("PARLOUR", g1, 0, 6.4, 5.6, FRONT, boards, {"light": warm, "energy": 0.5})
 	p.room("FRONT HALL", g1, 5.6, 6.4, 9, FRONT, boards, {"light": warm, "energy": 0.4})
 	p.room("DINING ROOM", g2, 0, 3.0, 5.0, 6.4, boards, {"light": warm, "energy": 0.55})
@@ -118,7 +123,17 @@ static func build(p: Node3D) -> void:
 		{"a": DOOR[0], "b": DOOR[1], "head": 2.15, "colour": door_red, "frame": trim, "name": "FRONT DOOR"},
 		{"a": HALL_WINDOW[0], "b": HALL_WINDOW[1], "kind": "window", "sill": 0.9, "head": 2.2, "frame": trim},
 	]
-	var front: Node3D = p.cross(g1, FRONT, 0, 9, Houses.wall("brick_3"), front_ops, {"h": 6.0})
+	p.cross(g1, FRONT, 0, 9, Houses.wall("brick_3"), front_ops, {"h": 6.0})
+	# The front door's leaf is not drawn in here: its wall is always cut away (the
+	# camera looks in through it), so the leaf was only ever a ghost, and that
+	# stood over him as he came in. Rose Hill has the door (`front`); E in the
+	# doorway takes him out of it onto her porch steps there. (usables() leaves
+	# out a door marked "mate".)
+	var front_door: Node3D = p.doors.back()
+	front_door.set_meta("mate", true)
+	for part: Node in front_door.leaf.get_children():
+		part.free()
+	p.use_point(g1, "FRONT DOOR", (DOOR[0] + DOOR[1]) * 0.5, 10.55, "goto:" + OUTSIDE, 0.8, 2.0)
 	var arch_ops := [{"a": 9.5, "b": 10.7, "kind": "arch", "head": 2.25, "frame": Bea.MAHOGANY}]
 	var parlour_back_ops := [{"a": 0.5, "b": 2.2, "kind": "arch", "head": 2.3, "frame": Bea.MAHOGANY}]
 	var hall_back_ops := [{"a": 7.9, "b": 8.8, "kind": "arch", "head": 2.15, "frame": Props.WOOD}]     # (a doorway: a door here would stand between the camera and the kitchen)
@@ -189,9 +204,6 @@ static func build(p: Node3D) -> void:
 	_dress(p, h2, true, 2.6, UP + 0.075, UP + 4.925, 1.0, sewing, sew_back_ops)
 	_dress(p, h2, false, UP + 5.0, 2.675, 5.525, -1.0, sewing, [], true)
 
-	_street(p, st, front, front_ops)
-	_porch(p, st)
-	_yard(p, st)
 	_front_rooms(p, g1)
 	_middle_rooms(p, g2, kitchen_paint)
 	_back_rooms(p, g3, sun_paint)
@@ -232,171 +244,111 @@ static func _dress(p: Node3D, b: int, along_u: bool, at: float, from: float, to:
 
 # ------------------------------------------------------------------ outside
 
-static func _street(p: Node3D, st: int, front: Node3D, front_ops: Array) -> void:
+## Her front as Rose Hill Terrace shows it (street.gd builds it there, on Rose
+## Hill's place p, her left end wall at u0 on the row's front line d, the
+## pavement starting at `pave`). The row's porch-front house (houses.gd) with
+## her own openings: the parlour's wide window, the door at the foot of the
+## stairs (the number on its transom) and the hall window, where her rooms
+## have them; upstairs the white sash bay over the parlour, sashes over the door
+## and the hall window, the cornice; her end wall on the passage with the side
+## windows her bedroom and sun room have; the low roof over the sun room and the
+## pantry at the back. The porch is the row's (its 0.7 m deck, its heights), its
+## steps at her door; on it her glider, table, rockers and ferns, the lantern
+## and the mailbox by the door, the WELCOME mat. In front a little yard: pickets
+## along the pavement with the gate standing open, beds of flowers along the
+## porch, stones to the steps. The porch and its steps take up floor. Returns
+## {"door": u of the door's middle, "steps": v the steps' foot reaches}.
+static func front(p: Node3D, st: int, u0: float, d: float, pave: float) -> Dictionary:
+	var g: Node3D = Houses.face(p, st, u0, d)
 	var n: Node3D = p.node_of(st)
-	var white := Bea.WHITE
-	var grass := Kit.tex("stucco", 2.5, Color(0.35, 0.5, 0.25), true, Color(0.44, 0.74, 0.36))
-	# The ground round the house: side yards, the back, the neighbours' yards.
-	for piece: Array in [[-13.0, -4.0, 0.0, 11.0], [9.0, -4.0, 22.0, 11.0], [0.0, -4.0, 9.0, 0.0], [-13.0, 11.0, -1.2, LOT], [10.2, 11.0, 22.0, LOT], [-1.2, 11.0, 0.0, PORCH], [9.0, 11.0, 10.2, PORCH]]:
-		var r: Rect2 = p.rect(piece[0], piece[1], piece[2], piece[3])
-		Kit.box(n, Vector3(r.size.x, 0.3, r.size.y), Vector3(r.get_center().x, -0.15, r.get_center().y), grass)
-
-	# The house front upstairs, as the old Pen Lucy's porch rows have it: the
-	# brick carried up to a pressed-metal cornice, a three-sided sash bay
-	# standing on the porch roof over the parlour window, sashes with white
-	# lintels over the door and the hall window.
+	var f0 := Houses.F0
+	var pd := Houses.PD
+	var height := 8.22
 	var brick := Houses.wall("brick_3")
+	var white := Bea.WHITE
+	var trim := Color(0.92, 0.9, 0.82)                  # the frames (build's trim)
 	var lace := Color(0.98, 0.97, 0.92)
-	var g := Kit.group(front, p.pt(0.0, FRONT + 0.075))
-	var top := HEIGHT - 0.855
-	Houses.fb(g, 0.0, 9.0, 6.0, HEIGHT, -0.15, 0.0, brick)
-	Houses.canted_bay(g, 2.7, "white", 2.91, top, GLOW, lace)
+	var main := FRONT - 3.0                             # back to the dining room's back wall
+	Houses.fb(g, 0.0, W, 0.0, height, -main, 0.0, brick)
+	Houses.fb(g, 0.0, W, height, height + 0.04, -main, -0.36, Houses.SILVER)
+	Houses.fb(g, 0.0, W, 0.0, f0 + 3.0, -FRONT, -main, brick)
+	Houses.fb(g, -0.1, W, f0 + 3.0, f0 + 3.06, -FRONT, -main, Houses.TAR)
+	# The door (the row's, the number on its transom), the porch and its steps.
+	var ds: float = (DOOR[0] + DOOR[1]) * 0.5
+	Houses._door(g, ds, {"f0": f0, "trim": trim, "door": Color(0.62, 0.14, 0.14), "door_left": false, "no": NUMBER, "lit": "00001"})
+	Houses._porch(g, W, ds, -1.0, {"trim": white, "porch_light": true})
+	p.block(u0, d, u0 + W, d + pd)
+	p.block(u0 + ds - 0.625, d + pd, u0 + ds + 0.625, d + pd + 0.9)
+	# The parlour window: three lights, lace at either side, a red valance.
+	var pw: Array = PARLOUR_WINDOW
+	Houses.fb(g, pw[0] - 0.07, pw[1] + 0.07, f0 + 0.48, f0 + 2.37, 0.0, 0.04, trim)
+	Houses.fb(g, pw[0] - 0.12, pw[1] + 0.12, f0 + 0.4, f0 + 0.5, 0.0, 0.15, trim)
+	Kit.pane(Houses.fb(g, pw[0], pw[1], f0 + 0.55, f0 + 2.3, 0.04, 0.055, Kit.flat(GLOW, 1.0)))
+	for seg: Array in [[1.04, 1.75], [3.65, 4.36]]:
+		Houses.fb(g, seg[0], seg[1], f0 + 0.6, f0 + 2.18, 0.055, 0.062, lace)
+	Houses.fb(g, pw[0], pw[1], f0 + 2.0, f0 + 2.27, 0.062, 0.068, Color(0.75, 0.25, 0.3))
+	for x: float in [2.14, 3.26]:
+		Houses.fb(g, x - 0.025, x + 0.025, f0 + 0.55, f0 + 2.3, 0.055, 0.075, trim)
+	Houses.fb(g, pw[0], pw[1], f0 + 1.45, f0 + 1.49, 0.055, 0.075, trim)
+	# The hall window, lit.
+	Houses.sash(g, (HALL_WINDOW[0] + HALL_WINDOW[1]) * 0.5, f0 + 0.9, HALL_WINDOW[1] - HALL_WINDOW[0], 1.3, trim, GLOW, lace)
+	# Upstairs: the bay on the porch roof, sashes over the door and the hall window, the cornice.
+	var top := height - 0.855
+	Houses.canted_bay(g, 2.7, "white", Houses.PROOF + 0.05, top, GLOW, lace)
 	for s: float in [6.2, 7.85]:
 		Houses.sash(g, s, top - 1.87, 0.95, 1.65, white, GLOW if s > 7.0 else null, lace, white)
-	Houses.cornice(g, 9.0, HEIGHT, white, 1, brick, 2.7, 2.25)
-	# Lace curtains in the parlour window (on the front, so they go when he is indoors).
-	var curtain := Color(0.98, 0.97, 0.92, 0.82)
-	for seg: Array in [[1.04, 1.75], [3.65, 4.36]]:
-		p.slab(front, true, FRONT - 0.13, seg[0], seg[1], 0.6, 2.18, 0.02, curtain)
-	p.slab(front, true, FRONT - 0.13, HALL_WINDOW[0] + 0.02, HALL_WINDOW[1] - 0.02, 0.95, 1.55, 0.02, curtain)
-	p.slab(front, true, FRONT - 0.15, 1.0, 4.4, 2.0, 2.27, 0.02, Color(0.75, 0.25, 0.3))
-	p.slab(front, true, FRONT, 1.02, 4.38, 1.45, 1.49, 0.04, trim_of(front_ops))
-	p.slab(front, true, FRONT + 0.003, 2.12, 2.16, 0.57, 2.28, 0.04, trim_of(front_ops))
-	p.slab(front, true, FRONT + 0.003, 3.24, 3.28, 0.57, 2.28, 0.04, trim_of(front_ops))
-	# Her end wall (the row's end), and the flat roofs: the main block's, silver,
-	# and the lower one over the sun room and the pantry at the back.
-	_end_wall(p, front, brick)
-	Houses.fb(g, 0.0, 9.0, 3.0, HEIGHT, -8.475, -8.325, brick)
-	Houses.fb(g, 0.0, 9.0, HEIGHT, HEIGHT + 0.04, -8.475, -0.36, Houses.SILVER)
-	Houses.fb(g, -0.1, 9.0, 3.0, 3.06, -11.275, -8.475, Houses.TAR)
-
-	# The row goes on to the right: porch-front houses on the same line, their
-	# porches level with hers, one cornice along the row. Across a passage on
-	# the left, the next row's end house and the one beyond it.
-	var row := [
-		[9.0, 6.4, {"wall": Houses.wall("brick"), "trim": Houses.WHITE, "door": Houses.DOORS["green"], "door_left": true, "bay": "grey", "lintel": Houses.WHITE, "chimney": true, "lit": "10101", "curtain": Color(0.9, 0.6, 0.3), "porch_light": true, "chairs": true}],
-		[15.4, 6.4, {"wall": Houses.wall("formstone"), "trim": Houses.CREAM, "door": Houses.DOORS["red"], "door_left": false, "bay": "cream", "lit": "01100", "curtain": Color(0.4, 0.65, 0.4), "fern": true}],
-		[21.8, 6.2, {"wall": Houses.wall("brick_2"), "trim": Houses.BROWN, "door": Houses.DOORS["blue"], "door_left": true, "bay": "white", "lintel": Houses.CREAM, "chimney": true, "lit": "00110", "curtain": Color(0.85, 0.3, 0.3)}],
-		[-8.8, 6.4, {"wall": Houses.wall("brick_2"), "trim": Houses.WHITE, "door": Houses.DOORS["black"], "door_left": false, "bay": "white", "lintel": Houses.STONE, "chimney": true, "lit": "1001t", "curtain": Color(0.95, 0.75, 0.25), "porch_light": true, "pots": true}],
-		[-15.2, 6.4, {"wall": Houses.wall("painted"), "trim": Houses.GREEN, "door": Houses.DOORS["wood"], "door_left": true, "bay": "cream", "lit": "01010", "curtain": Color(0.62, 0.5, 0.78)}],
-	]
-	for r: Array in row:
-		var h: Dictionary = r[2]
-		h.merge({"f0": 0.2, "pd": 2.325, "ceil": 2.64, "proof": 2.88, "height": HEIGHT, "profile": 1, "roof": Houses.SILVER})
-		var house := Houses.porch_front(Kit.group(n, p.pt(r[0], FRONT + 0.075)), r[1], h)
-		if r[0] == -8.8:
-			Houses.end_windows(house, r[1], 9.0, 1, 0.2, HEIGHT, Houses.WHITE, 5.0)
-	Bea.hoop_fence(p, n, true, LOT - 0.05, -11.3, -1.3)
-	Bea.hoop_fence(p, n, false, -1.3, 11.1, LOT - 0.05)
-	p.fence(st, true, LOT - 0.05, 10.3, 20.4, [], 1.0, "chain")
-	Outdoor.tree(p, st, -1.4, 6.2, "a", 1.0, 30.0)
-	Outdoor.tree(p, st, 12.5, 0.6, "b", 1.1, 200.0)          # in the next yard back, over the roofs
-	Outdoor.shrub(p, st, -6.0, 14.0, "c", 1.2)
-	Outdoor.shrub(p, st, 14.8, 14.2, "a", 1.1)
-	# On the pavement.
-	Props.street_lamp(p, st, 2.2, 17.85)
-	Props.hydrant(p, st, 10.9, 17.8)
-	Props.cans(p, st, 11.9, 16.2, 2)
-
-
-static func trim_of(ops: Array) -> Color:
-	return ops[0].get("frame", Bea.WHITE)
-
-
-## Her end wall, the end of the row: brick just outside the rooms' own wall at
-## u = 0, up to the cornice over the house and to the low roof over the sun
-## room, with the old game's plain side windows where her rooms have theirs
-## (the sun room's pair, the bedroom's) and a few more. Built in the house
-## front's node, so it shows from the street only.
-static func _end_wall(p: Node3D, n: Node3D, brick: Variant) -> void:
-	var g := Kit.group(n, p.pt(-0.078, 0.0), Vector3(0, 270, 0))       # facing left; s runs from the back (v = 0) to the front
-	Houses.fb(g, 2.6, FRONT + 0.1, 0.0, HEIGHT, 0.0, 0.02, brick)
-	Houses.fb(g, -0.1, 2.6, 0.0, 3.0, 0.0, 0.02, brick)
-	var f := Kit.group(g, Vector3(0, 0, 0.02))
-	for w: Array in [[8.1, 1.0, 1.0, 1.2, true], [4.8, 1.0, 1.0, 1.2, false], [0.875, 0.6, 1.05, 1.7, true], [2.125, 0.6, 1.05, 1.7, true], [9.95, 3.5, 1.1, 1.4, true], [4.0, 3.5, 1.0, 1.4, false]]:
-		Houses.simple_window(f, w[0], w[1], w[2], w[3], Bea.WHITE, GLOW if w[4] else null, Color(0.98, 0.97, 0.92))
-
-
-static func _porch(p: Node3D, st: int) -> void:
-	var n: Node3D = p.node_of(st)
-	var white := Bea.WHITE
-	var post_v := PORCH - 0.12
-	# Posts along the front edge, the railing between them (a gap at the steps), the ends.
-	for u: float in [0.12, 3.2, STEPS[0] - 0.1, STEPS[1] + 0.1, 8.88]:
-		Bea.porch_post(p, st, u, post_v)
-	for run: Array in [[0.22, 3.1], [3.3, STEPS[0] - 0.2], [STEPS[1] + 0.2, 8.78]]:
-		Bea.porch_rail(p, st, true, post_v, run[0], run[1])
-	Bea.porch_rail(p, st, false, 0.12, FRONT + 0.1, post_v - 0.1)
-	Bea.porch_rail(p, st, false, 8.88, FRONT + 0.1, post_v - 0.1)
-	p.fence(st, true, PORCH, STEPS[0], STEPS[1], [[STEPS[0], STEPS[1]]])        # the way down the steps
-	# The roof: the ceiling painted blue, a flat roof over it as the row's
-	# porches have, a white fascia (its right end meets the next porch's roof).
-	var mid_v := (FRONT + 0.075 + PORCH + 0.2) * 0.5
-	var long := PORCH + 0.2 - FRONT - 0.075
-	Kit.box(n, Vector3(9.25, 0.03, long), p.pt(4.375, mid_v, 2.635), Color(0.62, 0.82, 0.86))
-	Kit.box(n, Vector3(9.25, 0.1, long), p.pt(4.375, mid_v, 2.7), Color(0.85, 0.84, 0.78))
-	Kit.box(n, Vector3(9.3, 0.11, long + 0.1), p.pt(4.35, mid_v + 0.05, 2.805), Houses.PORCH_ROOF)
-	p.slab(n, true, PORCH + 0.22, -0.27, 8.99, 2.45, 2.8, 0.05, white)          # (stopping a centimetre short of the roof's end, which shares no face with it)
-	p.slab(n, false, -0.27, FRONT + 0.08, PORCH + 0.195, 2.45, 2.8, 0.05, white)
-	Props.words(n, "3912", p.pt((STEPS[0] + STEPS[1]) * 0.5, PORCH + 0.255, 2.62), 0.18, Color(0.15, 0.15, 0.18))
-	# By the door: the lantern, the mailbox, the mat.
-	Bea.lantern(n, p.pt(DOOR[0] - 0.36, FRONT + 0.075, 1.95))
-	Bea.mailbox(n, p.pt(DOOR[0] - 0.36, FRONT + 0.075, 1.3))
-	var mat := Kit.box(n, Vector3(0.9, 0.012, 0.5), p.pt((DOOR[0] + DOOR[1]) * 0.5, FRONT + 0.4, 0.006), Color(0.55, 0.42, 0.25))
-	Props.words(n, "WELCOME", mat.position + Vector3(0, 0.008, 0), 0.1, Color(0.3, 0.2, 0.12)).rotation_degrees = Vector3(-90, 0, 0)
-	# Her porch: the glider under the window, a little table, two rockers, ferns.
-	Bea.glider(p, st, 1.75, FRONT + 0.47)
-	var table := Props.table(p, st, 3.08, FRONT + 0.4, 0.0, 0.48, 0.48, white, 0.62)
+	Houses.cornice(g, W, height, white, 1, brick, 2.7, 2.25)
+	# Her end wall, on the passage: the bedroom's side window upstairs, the sun room's pair at the back.
+	var end := Houses.sub_face(g, Vector2(0.0, -FRONT), Vector2(0.0, 0.0))     # s from her back wall (v = 0) to the front
+	for w: Array in [[9.95, Houses.PROOF + 0.9, 1.1, 1.4], [0.875, f0 + 0.6, 1.05, 1.7], [2.125, f0 + 0.6, 1.05, 1.7]]:
+		Houses.simple_window(end, w[0], w[1], w[2], w[3], white, GLOW, lace)
+	# On the porch: the lantern and the mailbox by the door, the mat; her glider,
+	# table, rockers and ferns (lifted onto the deck).
+	Bea.lantern(g, Vector3(DOOR[0] - 0.36, f0 + 1.95, 0.0))
+	Bea.mailbox(g, Vector3(DOOR[0] - 0.36, f0 + 1.3, 0.0))
+	var mat := Kit.box(g, Vector3(0.9, 0.012, 0.5), Vector3(ds, f0 + 0.006, 0.35), Color(0.55, 0.42, 0.25))
+	Props.words(g, "WELCOME", mat.position + Vector3(0, 0.008, 0), 0.1, Color(0.3, 0.2, 0.12)).rotation_degrees = Vector3(-90, 0, 0)
+	var things: Array[Node3D] = []
+	things.append(Bea.glider(p, st, u0 + 1.75, d + 0.47))
+	var table := Props.table(p, st, u0 + 3.08, d + 0.4, 0.0, 0.48, 0.48, white, 0.62)
 	Kit.cyl(table, 0.06, 0.2, Vector3(-0.08, 0.72, 0), Color(0.85, 0.92, 0.95, 0.6), Vector3.ZERO, 10)
 	Kit.cyl(table, 0.05, 0.16, Vector3(-0.08, 0.7, 0), Color(0.6, 0.35, 0.15, 0.85), Vector3.ZERO, 10)
 	for x: float in [0.1, 0.18]:
 		Kit.cyl(table, 0.035, 0.12, Vector3(x, 0.68, 0.08 - x * 0.5), Color(0.85, 0.92, 0.95, 0.6), Vector3.ZERO, 8)
-	Bea.rocker(p, st, 3.85, FRONT + 0.72, 12.0)
-	Bea.rocker(p, st, 4.8, FRONT + 0.72, -12.0, white, Color(0.3, 0.5, 0.8))
-	var stand := Props.table(p, st, 8.42, FRONT + 0.35, 0.0, 0.42, 0.42, white, 0.5)
+	things.append(table)
+	things.append(Bea.rocker(p, st, u0 + 3.85, d + 0.72, 12.0))
+	things.append(Bea.rocker(p, st, u0 + 4.8, d + 0.72, -12.0, white, Color(0.3, 0.5, 0.8)))
+	var stand := Props.table(p, st, u0 + 8.42, d + 0.35, 0.0, 0.42, 0.42, white, 0.5)
 	Bea.fern(stand, Vector3(0, 0.5, 0), 0.9)
-	for u: float in [1.65, 4.7]:
-		Bea.hanging_fern(n, p.pt(u, PORCH - 0.3, 2.62), 0.58)
-
-
-static func _yard(p: Node3D, st: int) -> void:
-	var n: Node3D = p.node_of(st)
-	var white := Bea.WHITE
-	# The fence: pickets along the pavement with the gate, and down both sides.
-	# (Low, so he shows over it from the street.)
-	Bea.pickets(p, st, true, LOT, -1.2, 10.2, [[GATE[0], GATE[1]]], 0.78)
-	Bea.pickets(p, st, false, -1.2, PORCH, LOT - 0.06, [], 0.78, white, 1.0)
-	Bea.pickets(p, st, false, 10.2, PORCH, LOT - 0.06, [], 0.78, white, -1.0)
-	# The gate stands open, folded back against the inside of the fence.
-	var leaf := Kit.group(n, p.pt(GATE[0] - 0.02, LOT - 0.12))
-	for k in 8:
-		Kit.box(leaf, Vector3(0.075, 0.68, 0.022), Vector3(-0.07 - k * 0.13, 0.37, 0), white.darkened(0.04))
-	for y: float in [0.2, 0.55]:
-		Kit.box(leaf, Vector3(1.08, 0.06, 0.03), Vector3(-0.52, y, -0.03), white.darkened(0.12))
-	p.block(GATE[0] - 1.16, LOT - 0.17, GATE[0], LOT - 0.09)
-	# Flower beds along the porch, shrubs at its ends, brick cheeks at the steps.
-	Bea.flower_bed(p, st, (-1.15 + STEPS[0] - 0.25) * 0.5, PORCH + 0.3, STEPS[0] - 0.25 + 1.15, 0.56, 1.0)
-	Bea.flower_bed(p, st, (STEPS[1] + 0.25 + 10.15) * 0.5, PORCH + 0.3, 10.15 - STEPS[1] - 0.25, 0.56, 7.0)
-	Outdoor.shrub(p, st, -0.6, 12.2, "a", 1.15)
-	var brick := Kit.tex("brick", 1.0, Color(0.6, 0.3, 0.24), false)
-	for u: float in [STEPS[0] - 0.1, STEPS[1] + 0.1]:
-		var cheek: Node3D = p.prop(st, u, PORCH + 0.3, 0.0, 0.22, 0.56)
-		Kit.block(cheek, Vector3(0.22, 0.42, 0.56), Vector3.ZERO, brick)
-		Kit.box(cheek, Vector3(0.26, 0.04, 0.6), Vector3(0, 0.44, 0), Color(0.75, 0.74, 0.7))
-		Bea.geraniums(cheek, Vector3(0, 0.46, 0.05))
-	# The steps (two low concrete treads, the riser's shadow on each), the path to the gate.
+	things.append(stand)
+	for thing: Node3D in things:
+		thing.position.y += f0
+	for s: float in [2.3, 7.7]:
+		Bea.hanging_fern(g, Vector3(s, Houses.CEIL - 0.02, pd - 0.3), 0.95)
+	# The yard: grass, beds along the porch, stones to the steps, the pickets
+	# along the pavement and down both sides, the gate folded back open.
+	var grass := Kit.tex("stucco", 2.5, Color(0.35, 0.5, 0.25), true, Color(0.44, 0.74, 0.36))
+	var yard: Rect2 = p.rect(u0, d + pd, u0 + W, pave)
+	Kit.box(n, Vector3(yard.size.x, 0.29, yard.size.y), Vector3(yard.get_center().x, -0.145, yard.get_center().y), grass)
+	Bea.flower_bed(p, st, u0 + (0.1 + ds - 0.8) * 0.5, d + pd + 0.3, ds - 0.9, 0.56, 1.0)
+	Bea.flower_bed(p, st, u0 + (ds + 0.8 + W - 0.1) * 0.5, d + pd + 0.3, W - 0.9 - ds, 0.56, 7.0)
 	var stone := Color(0.74, 0.73, 0.7)
-	for k in 2:
-		var v0 := PORCH + 0.02 + k * 0.27
-		Kit.box(n, Vector3(STEPS[1] - STEPS[0] - 0.04, 0.012, 0.26), p.pt((STEPS[0] + STEPS[1]) * 0.5, v0 + 0.13, 0.014 - 0.005 * k), stone.lightened(0.06 * (1 - k)))
-		Kit.box(n, Vector3(STEPS[1] - STEPS[0] - 0.04, 0.004, 0.05), p.pt((STEPS[0] + STEPS[1]) * 0.5, v0 + 0.235, 0.022 - 0.005 * k), stone.darkened(0.45))
-	var v := PORCH + 0.62
+	var v := d + pd + 0.95
 	var k := 0
-	while v < LOT - 0.2:
-		var w := 0.85 + 0.12 * Props.rnd(k * 2.1)
-		Kit.box(n, Vector3(w, 0.01, 0.42), p.pt((DOOR[0] + DOOR[1]) * 0.5 + 0.06 * (Props.rnd(k * 3.7) - 0.5), v + 0.21, 0.005), stone.darkened(0.06 * (k % 2)))
+	while v < pave - 0.3:
+		Kit.box(n, Vector3(0.85 + 0.12 * Props.rnd(k * 2.1), 0.01, 0.42), p.pt(u0 + ds + 0.06 * (Props.rnd(k * 3.7) - 0.5), v + 0.21, 0.005), stone.darkened(0.06 * (k % 2)))
 		v += 0.5
 		k += 1
+	Bea.pickets(p, st, true, pave, u0, u0 + W, [[u0 + GATE[0], u0 + GATE[1]]], 0.78)
+	Bea.pickets(p, st, false, u0 + 0.06, d + pd, pave - 0.06, [], 0.78, white, 1.0)
+	Bea.pickets(p, st, false, u0 + W - 0.06, d + pd, pave - 0.06, [], 0.78, white, -1.0)
+	var leaf := Kit.group(n, p.pt(u0 + GATE[0] - 0.02, pave - 0.12))
+	for i in 8:
+		Kit.box(leaf, Vector3(0.075, 0.68, 0.022), Vector3(-0.07 - i * 0.13, 0.37, 0), white.darkened(0.04))
+	for y: float in [0.2, 0.55]:
+		Kit.box(leaf, Vector3(1.08, 0.06, 0.03), Vector3(-0.52, y, -0.03), white.darkened(0.12))
+	p.block(u0 + GATE[0] - 1.16, pave - 0.17, u0 + GATE[0], pave - 0.09)
+	return {"door": u0 + ds, "steps": d + pd + 0.9}
 
 
 # ------------------------------------------------------------- ground floor
@@ -537,6 +489,7 @@ static func _back_rooms(p: Node3D, b: int, sun_paint: Variant) -> void:
 	p.slab(n, true, 0.14, 7.9, 8.45, 1.2, 1.9, 0.02, Color(0.2, 0.25, 0.35))
 	p.slab(n, true, 0.155, 7.92, 8.43, 1.6, 1.88, 0.02, Color(0.95, 0.85, 0.55))
 	Kit.ball(n, 0.035, p.pt(7.88, 0.19, 1.0), Bea.BRASS, 6)
+	p.use_point(b, "BACK DOOR", 7.9, 0.55, "goto:backs", 1.0, 2.0)      # out into her yard in the backs (plans/backs.gd)
 
 
 static func pantry_groove() -> Color:

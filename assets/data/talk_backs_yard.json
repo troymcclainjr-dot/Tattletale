@@ -1,0 +1,14 @@
+{
+	"about": "Kesha by the fire in the dead yard behind 520 (plans/backs.gd). Placeholder lines written on 2026-11-15 by the homes worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "What's going on back here?", "face": "focused", "next": "what"},
+			{"say": "Mind if I sit?", "face": "happy", "next": "sit"},
+			{"say": "Who's your friend?", "face": "suspicious", "next": "friend"}
+		]},
+		"what": {"speaker": "npc", "face": "neutral", "line": "Nothing. That's the point of back here.", "next": ""},
+		"sit": {"speaker": "npc", "face": "neutral", "line": "Crate's broke. So's the other one.", "next": ""},
+		"friend": {"speaker": "npc", "face": "suspicious", "line": "He don't talk. He listens.", "next": ""}
+	}
+}

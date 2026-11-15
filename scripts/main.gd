@@ -106,6 +106,7 @@ const PLANS := {
 	"alley": "res://scripts/plans/alley.gd",
 	"gunstore": "res://scripts/plans/gunstore.gd",
 	"prison": "res://scripts/plans/prison.gd",
+	"backs": "res://scripts/plans/backs.gd",
 }
 const FlickerCheck := preload("res://scripts/flicker_check.gd")
 const ShotSteps := preload("res://scripts/shot_steps.gd")      # more --do steps: snap, eye, place, at, room, beat, stats, check
@@ -178,6 +179,7 @@ const PLACES := [
 	{"id": "alley", "name": "THE BACK LOT", "note": "BEHIND THE LOWDOWN"},
 	{"id": "gunstore", "name": "GUN STORE", "note": "PEN LUCY ARMS"},
 	{"id": "prison", "name": "COUNTY JAIL", "note": "VISITING DAILY"},
+	{"id": "backs", "name": "ROSE HILL BACKS", "note": "THE ALLEY"},
 ]
 
 ## name: [camera position, look-at point, vertical field of view]
@@ -812,6 +814,11 @@ func _travel_to(id: String, instant := false) -> void:
 			known = true
 	if not known:
 		return
+	if _came_from == "" and not instant and PLANS.has(id):      # a home whose front door is on a street (its plan's OUTSIDE): to that door, out there
+		var outside: String = (load(PLANS[id]) as GDScript).get_script_constant_map().get("OUTSIDE", "")
+		if PLANS.has(outside):
+			_came_from = id
+			id = outside
 	var arrive := func() -> void:
 		_open_place(id)
 		_actor.show_face()

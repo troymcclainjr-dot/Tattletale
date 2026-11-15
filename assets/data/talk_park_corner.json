@@ -1,0 +1,14 @@
+{
+	"about": "Lil at the shut restrooms in the park's corner lot (plans/park.gd). Placeholder lines written on 2026-11-15 by the homes worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "Is it open?", "face": "focused", "next": "open"},
+			{"say": "Where's that go?", "face": "focused", "next": "where"},
+			{"say": "Waiting on somebody?", "face": "suspicious", "next": "waiting"}
+		]},
+		"open": {"speaker": "npc", "face": "neutral", "line": "Padlocked since August.", "next": ""},
+		"where": {"speaker": "npc", "face": "neutral", "line": "The alley. Rose Hill's back there.", "next": ""},
+		"waiting": {"speaker": "npc", "face": "suspicious", "line": "Maybe they're waiting on me.", "next": ""}
+	}
+}

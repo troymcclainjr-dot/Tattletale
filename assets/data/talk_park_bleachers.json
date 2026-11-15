@@ -1,0 +1,14 @@
+{
+	"about": "Rell behind the bleachers in Pen Lucy Park (plans/park.gd). Placeholder lines written on 2026-11-15 by the homes worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "What are you doing back here?", "face": "focused", "next": "here"},
+			{"say": "You selling?", "face": "suspicious", "next": "selling"},
+			{"say": "Who's winning?", "face": "happy", "next": "winning"}
+		]},
+		"here": {"speaker": "npc", "face": "neutral", "line": "Watching the game. From back here.", "next": ""},
+		"selling": {"speaker": "npc", "face": "suspicious", "line": "Selling what? I'm sitting.", "next": ""},
+		"winning": {"speaker": "npc", "face": "happy", "line": "Whoever's got the ball. Ask them.", "next": ""}
+	}
+}
