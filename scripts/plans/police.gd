@@ -252,6 +252,9 @@ static func _street(p: Node3D, st: int, front: Node3D) -> void:
 	# bondsman, to the courthouse (main.gd's "goto:"; plans/court.gd's TO THE
 	# POLICE STATION comes back). (Placeholder: the label.)
 	p.use_point(st, "TO THE COURTHOUSE", 19.25, 23.2, "goto:court", 1.2, 1.9)
+	# Its left end, past the empty shop, goes on to the county jail (plans/prison.gd's
+	# TO THE POLICE STATION comes back). (Placeholder: the label.)
+	p.use_point(st, "TO THE COUNTY JAIL", -3.25, 23.2, "goto:prison", 1.2, 1.9)
 
 
 static func _lobby(p: Node3D, b: int) -> void:

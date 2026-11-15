@@ -358,6 +358,11 @@ static func _street(p: Node3D, st: int) -> void:
 	Props.street_lamp(p, st, 24.0, 46.25)
 	Props.hydrant(p, st, 11.6, 46.2)
 	p.person(st, "vic", 1.4, 45.4, {"face": "bored"})
+	# The pavement's right end goes on to the civic row, at the police station's
+	# left end (its TO THE COUNTY JAIL comes back). Held, he cannot get out here,
+	# and the trip is refused anyway (prison_rules.gd's may_go). (Placeholder: the
+	# label; the civic worker's.)
+	p.use_point(st, "TO THE POLICE STATION", 37.25, 45.25, "goto:police", 1.2, 1.9)
 
 
 ## The building's front: concrete block on a plinth under a coping, the double
