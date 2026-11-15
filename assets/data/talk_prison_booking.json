@@ -1,0 +1,14 @@
+{
+	"about": "The booking officer at the county jail's booking counter (plans/prison.gd). Placeholder lines written on 2026-11-15 by the prison worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "What am I charged with?", "face": "focused", "next": "charge"},
+			{"say": "Where do I sleep?", "face": "suspicious", "next": "sleep"},
+			{"say": "I want my phone call.", "face": "smug", "next": "call"}
+		]},
+		"charge": {"speaker": "npc", "face": "neutral", "line": "It's on the sheet. Stand on the yellow box.", "next": ""},
+		"sleep": {"speaker": "npc", "face": "neutral", "line": "Cell one-oh-four. Lights out, you sleep it off, you're out in the morning.", "next": ""},
+		"call": {"speaker": "npc", "face": "neutral", "line": "Phones are in the dayroom. Collect calls only.", "next": ""}
+	}
+}

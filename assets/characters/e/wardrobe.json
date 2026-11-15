@@ -782,6 +782,71 @@
      "art": "wardrobe/hightops_back.png"
     }
    }
+  },
+  "jumpsuit": {
+   "slot": "shirt",
+   "name": "JUMPSUIT",
+   "colour": [
+    232,
+    112,
+    36
+   ],
+   "colours": [
+    [
+     232,
+     112,
+     36
+    ]
+   ],
+   "stocked": false,
+   "views": {
+    "front": {
+     "art": "wardrobe/jumpsuit_front.png",
+     "arms": "wardrobe/jumpsuit_front_arms.png",
+     "arm_width": 78.2
+    },
+    "side": {
+     "art": "wardrobe/jumpsuit_side.png",
+     "arm_top": [
+      782.8,
+      372.0,
+      545.0
+     ]
+    },
+    "back": {
+     "art": "wardrobe/jumpsuit_back.png",
+     "arms": "wardrobe/jumpsuit_back_arms.png",
+     "arm_width": 80.1
+    }
+   }
+  },
+  "jumpsuit_legs": {
+   "slot": "trousers",
+   "name": "JUMPSUIT",
+   "colour": [
+    232,
+    112,
+    36
+   ],
+   "colours": [
+    [
+     232,
+     112,
+     36
+    ]
+   ],
+   "stocked": false,
+   "views": {
+    "front": {
+     "art": "wardrobe/jumpsuit_legs_front.png"
+    },
+    "side": {
+     "art": "wardrobe/jumpsuit_legs_side.png"
+    },
+    "back": {
+     "art": "wardrobe/jumpsuit_legs_back.png"
+    }
+   }
   }
  }
 }

@@ -79,6 +79,8 @@ extends Node3D
 ##   weapons, rounds), shop:shoot:lane[:n[:cm]] (in that booth of the range, n shots at its target), shop:fresh:lane
 ##   [:seconds] (a fresh paper), list:fill:n (the travel list with n rows, made-up ones after the real ones),
 ##   list:size:w:h (the window that size), list:click:i (a real click on row i).
+##   The jail (prison_rules.gd): arrest:why (_arrest: to booking in the jumpsuit, held), release (let out at once,
+##   in his own clothes, at the front gate); stand:prison:bunk then use is the night in his cell that lets him out.
 
 const Building := preload("res://scripts/building.gd")
 const Place := preload("res://scripts/place.gd")
@@ -99,6 +101,7 @@ const PLANS := {
 	"club": "res://scripts/plans/club.gd",
 	"alley": "res://scripts/plans/alley.gd",
 	"gunstore": "res://scripts/plans/gunstore.gd",
+	"prison": "res://scripts/plans/prison.gd",
 }
 const FlickerCheck := preload("res://scripts/flicker_check.gd")
 const ShotSteps := preload("res://scripts/shot_steps.gd")      # more --do steps: snap, eye, place, at, room, beat, stats, check
@@ -114,6 +117,7 @@ const RunStrip := preload("res://scripts/run_strip.gd")       # --strip: frames 
 const FaceCheck := preload("res://scripts/face_check.gd")     # --check-faces: nobody rests with eyes that cannot blink
 const AimSweep := preload("res://scripts/aim_sweep.gd")       # --do=aimsweep: no flicker between side-on and his back
 const Combat := preload("res://scripts/combat.gd")
+const Prison := preload("res://scripts/prison_rules.gd")      # arrested, held at the jail, let out
 
 ## The follow camera keeps this far from him, off to the right. It may not go
 ## past the right wall of the room he is in (each room says how far) or rise to
@@ -168,6 +172,7 @@ const PLACES := [
 	{"id": "club", "name": "THE LOWDOWN", "note": "NIGHT CLUB"},
 	{"id": "alley", "name": "THE BACK LOT", "note": "BEHIND THE LOWDOWN"},
 	{"id": "gunstore", "name": "GUN STORE", "note": "PEN LUCY ARMS"},
+	{"id": "prison", "name": "COUNTY JAIL", "note": "VISITING DAILY"},
 ]
 
 ## name: [camera position, look-at point, vertical field of view]
@@ -785,21 +790,17 @@ func _teleport(to: Vector3, instant := false) -> void:
 	tween.tween_property(_fade, "color:a", 0.0, 0.25)
 
 
+## He is arrested (`why` is shown): what he carries is taken off him and he is taken to booking at the
+## county jail, in the orange jumpsuit, and held there till he is let out (prison_rules.gd).
+func _arrest(why: String) -> void:
+	Prison.lock_up(self, why)
+
+
 ## Go to one of PLACES: the picture blacks out, he is put on the pavement
 ## outside it facing the camera, and the picture comes back.
-## He is arrested (`why` is shown): what he carries is taken off him and he is taken away. For now to the
-## police station; the prison, when it is built, takes this over (he arrives at its booking in a jumpsuit).
-func _arrest(why: String) -> void:
-	print("[arrest] ", why)
-	_aim_off()
-	_actor.weapon = ""
-	_state.disarm()
-	_state.flags["arrests"] = int(_state.flags.get("arrests", 0)) + 1
-	_state.touch()
-	_travel_to("police", true)
-
-
 func _travel_to(id: String, instant := false) -> void:
+	if not Prison.may_go(self, id):       # held at the jail: nowhere else (prison_rules.gd)
+		return
 	var known := false
 	for row: Dictionary in PLACES:
 		if row["id"] == id and row.get("built", true):
@@ -917,6 +918,7 @@ func _end_talk() -> void:
 ##   outfit:<piece>   a rack in the clothing store: the next colour of that piece (hat, jacket, shirt, trousers, shoes)
 ##   outfit:reset     the mirror: back into what he was drawn in
 ##   sleep            his bed: the picture blacks out and it is the next day
+##   prison:bunk      his bunk at the jail, while he is held: the night, and he is let out (prison_rules.gd)
 func _use_point(id: String, _by: Node3D) -> void:
 	print("[use] ", id)
 	if id == "outfit:reset":
@@ -947,6 +949,8 @@ func _use_point(id: String, _by: Node3D) -> void:
 			_dress_for_day()
 			_save_game()
 			print("[use] day %d" % _day))
+	elif id.begins_with("prison:"):
+		Prison.use(self, id)
 
 
 ## The styles someone with a wardrobe can have in a slot: the ids of its items, and "" (left off) for a hat or a jacket.
@@ -954,7 +958,7 @@ func _styles(who: Node3D, slot: String) -> Array:
 	var out := []
 	var items: Dictionary = who.wardrobe().get("items", {})
 	for id: String in items:
-		if String(items[id].get("slot", "")) == slot:
+		if String(items[id].get("slot", "")) == slot and items[id].get("stocked", true):      # (not the jail's jumpsuit)
 			out.append(id)
 	if not out.is_empty() and slot in ["hat", "jacket"]:
 		out.append("")
@@ -1175,6 +1179,7 @@ func _continue_game() -> void:
 		_set_mode("play")
 		var id := String(data.get("place", "studio"))
 		_open_place(id if PLANS.has(id) else "studio")
+		Prison.resume(self)       # saved while held at the jail: back in his cell, in the jumpsuit
 		_actor.show_face()
 		_set_camera("follow"))
 
@@ -1332,7 +1337,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		return
 	match event.physical_keycode:
 		KEY_M:
-			_travel.open(_place)
+			if Prison.can_travel(self):       # not while he is held at the jail
+				_travel.open(_place)
 			get_viewport().set_input_as_handled()    # or the same press would close the list it just opened
 		KEY_E:
 			_use_nearest()
@@ -1607,6 +1613,10 @@ func _take_shot() -> void:
 				for i in int(float(bits[3]) * 60.0):
 					_fry.walk(_floor_dir(way), way, 1.0 / 60.0)
 				print("[shot] fry walked to %.2f, %.2f" % [_fry.position.x, _fry.position.z])
+			"arrest":       # arrest:why: _arrest (to booking at the jail, in the jumpsuit, held: prison_rules.gd)
+				_arrest(bits[1] if bits.size() > 1 else "TEST")
+			"release":      # let him out of the jail at once, in his own clothes, at the front gate
+				Prison.release(self)
 			"snap", "eye", "place", "at", "room", "beat", "stats", "check":     # shot_steps.gd: many pictures in one run, from anywhere
 				await ShotSteps.step(self, bits)
 			"shop", "list":     # shop_steps.gd: the gun store's counter and range; the travel list filled with made-up rows

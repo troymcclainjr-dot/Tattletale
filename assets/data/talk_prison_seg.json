@@ -1,0 +1,14 @@
+{
+	"about": "The officer on the segregation unit's desk in the county jail (plans/prison.gd). Placeholder lines written on 2026-11-15 by the prison worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "What's back here?", "face": "suspicious", "next": "what"},
+			{"say": "Can I look in the hole?", "face": "smug", "next": "hole"},
+			{"say": "Who's in there?", "face": "focused", "next": "who"}
+		]},
+		"what": {"speaker": "npc", "face": "neutral", "line": "Segregation. Where you go when the dayroom gets tired of you.", "next": ""},
+		"hole": {"speaker": "npc", "face": "neutral", "line": "Keep asking and you'll get the full tour.", "next": ""},
+		"who": {"speaker": "npc", "face": "neutral", "line": "Nobody you want to meet. Turn around.", "next": ""}
+	}
+}

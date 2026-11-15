@@ -1,0 +1,14 @@
+{
+	"about": "Tre, an inmate on the far side of the visiting booth glass in the county jail (plans/prison.gd). Placeholder lines written on 2026-11-15 by the prison worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "How's the food?", "face": "happy", "next": "food"},
+			{"say": "Who put you in here?", "face": "suspicious", "next": "who"},
+			{"say": "Need anything?", "face": "focused", "next": "need"}
+		]},
+		"food": {"speaker": "npc", "face": "neutral", "line": "Same as yesterday. Same as tomorrow.", "next": ""},
+		"who": {"speaker": "npc", "face": "neutral", "line": "Somebody with a big mouth. You know anybody like that?", "next": ""},
+		"need": {"speaker": "npc", "face": "neutral", "line": "Put money on my books. And stop asking questions.", "next": ""}
+	}
+}
