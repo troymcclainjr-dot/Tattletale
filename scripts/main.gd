@@ -86,6 +86,7 @@ const PERFORM_ROOM := 2           # a performance is watched from the control ro
 const MOODS := ["focused", "preachy", "smug", "shout", "happy"]     # his face changes every eight beats
 const WEAPONS := ["", "pistol", "uzi", "ak"]      # Q goes round these
 const Crosshair := preload("res://scripts/crosshair.gd")
+const PlayerState := preload("res://scripts/player_state.gd")
 const AIM_SIDE := 0.96      # radians: the cross this far above or below level (55 degrees) is still "to the side"
 const AIM_AWAY := false     # turn his back to aim at a cross well above him. Off: that pose (a gun held up beside his head) reads as
                             # pointing at the sky, not away from us, so he stays side-on and tips it up as far as AIM_TIP
@@ -189,6 +190,7 @@ var _wear := {}                # the clothes he has changed: piece ("hat", "jack
 var _look := {}                # what he has taken off the racks, if his clothes are layers: slot to {"item": id, "colour": "#rrggbb"}
 var _picks := {}               # which colour of WARDROBE each of those is: piece to its number in the list
 var _day := 0                  # days since the game began; he sleeps in his own bed to end one
+var _state := PlayerState.new()     # his cash, health, rounds, songs and videos (player_state.gd): kept in the save
 var _shot_lineup := ""         # screenshot mode: --lineup's weapon:rig:poses
 
 
@@ -1005,7 +1007,7 @@ func _write(path: String, data: Dictionary) -> void:
 ## Remember where the game has got to, for CONTINUE. A screenshot run never saves.
 func _save_game() -> void:
 	if _mode == "play" and not (_scripted and _save_path == SAVE):
-		_write(_save_path, {"side": _side, "place": _place, "day": _day, "wear": _look if _actor.has_wardrobe() else _picks})
+		_write(_save_path, {"side": _side, "place": _place, "day": _day, "wear": _look if _actor.has_wardrobe() else _picks, "state": _state.to_save()})
 
 
 ## Which screen is up. The places are hidden behind the choice (it has its own
@@ -1060,6 +1062,7 @@ func _begin_game(side: String) -> void:
 		_choose.close()
 		_side = side
 		_day = 0
+		_state.reset()
 		_picks = {}
 		_dress_lead()
 		_dress_for_day()
@@ -1077,6 +1080,7 @@ func _continue_game() -> void:
 		_title.close()
 		_side = String(data.get("side", ""))
 		_day = int(data.get("day", 0))
+		_state.from_save(PlayerState._dict(data.get("state")))
 		_picks = {}
 		_look = {}
 		var kept = data.get("wear", {})
