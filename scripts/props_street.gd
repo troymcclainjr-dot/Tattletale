@@ -204,9 +204,9 @@ static func car_model(parent: Node3D, at: Vector3, yaw: float, kind: String, pai
 	var mid := cl - rf - rb
 	var mz := (zf - rf + zb + rb) * 0.5
 	var gy := top + ch * 0.5
-	Kit.box(g, Vector3(cw, ch, mid), Vector3(0, gy, mz), glass)
-	Kit.prism(g, Vector3(rf, ch, cw), Vector3(0, gy, zf - rf * 0.5), glass, Vector3(0, 90, 0), 1.0)
-	Kit.prism(g, Vector3(rb, ch, cw), Vector3(0, gy, zb + rb * 0.5), glass, Vector3(0, 90, 0), 0.0)
+	Kit.pane(Kit.box(g, Vector3(cw, ch, mid), Vector3(0, gy, mz), glass))      # combat: shots break the glass
+	Kit.pane(Kit.prism(g, Vector3(rf, ch, cw), Vector3(0, gy, zf - rf * 0.5), glass, Vector3(0, 90, 0), 1.0))
+	Kit.pane(Kit.prism(g, Vector3(rb, ch, cw), Vector3(0, gy, zb + rb * 0.5), glass, Vector3(0, 90, 0), 0.0))
 	Kit.bevel(g, Vector3(cw + 0.06, 0.08, mid + 0.12), Vector3(0, top + ch + 0.03, mz), Color(0.9, 0.87, 0.78) if kind == "long_sedan" else paint, 0.03)
 	for s: float in [-1.0, 1.0]:
 		var x := s * (cw * 0.5 + 0.006)

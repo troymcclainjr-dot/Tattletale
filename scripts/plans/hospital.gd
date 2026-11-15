@@ -117,7 +117,7 @@ static func _street(p: Node3D, st: int, front: Node3D, panel: Variant) -> void:
 			var e := (col + 1) * bay - 0.15
 			var pane := (e - a) / 3.0
 			var lit := Props.rnd(col * 3.7 + row * 9.1) > 0.45
-			p.slab(front, true, 18.16, a, e, y0, y1, 0.02, lit_glass if lit else dark_glass)
+			Kit.pane(p.slab(front, true, 18.16, a, e, y0, y1, 0.02, lit_glass if lit else dark_glass))      # combat: a shot breaks it
 			for k in 2:
 				var x := a + pane * (k + 1)
 				p.slab(front, true, 18.19, x - 0.025, x + 0.025, y0, y1, 0.04, alu)

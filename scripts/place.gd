@@ -412,7 +412,7 @@ func _run(node: Node3D, door_parent: Node3D, along_u: bool, at: float, from: flo
 		match kind:
 			"window":
 				slab(node, along_u, at, a - 0.055, b + 0.055, sill - 0.055, sill + 0.015, t + 0.06, frame)
-				slab(node, along_u, at, a, b, sill, head, 0.02, op.get("pane", GLASS))
+				Kit.pane(slab(node, along_u, at, a, b, sill, head, 0.02, op.get("pane", GLASS)))      # combat: a shot breaks it
 				var out := t * 0.5 + 0.045         # just proud of the frame, on the street (or right-hand) side
 				if op.get("bars", false):
 					var n := maxi(int((b - a) / 0.16), 2)

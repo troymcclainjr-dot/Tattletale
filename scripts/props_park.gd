@@ -684,7 +684,7 @@ static func _window(n: Node3D, at: Vector3, yaw: float, w: float, y0: float, y1:
 	Kit.box(g, Vector3(w, f, 0.08), Vector3(0, y1 - f * 0.5, 0.0), trim)
 	var glass_h := h - f
 	var glass_y := y0 + glass_h * 0.5
-	Kit.box(g, Vector3(w - 2.0 * f, glass_h, 0.04), Vector3(0, glass_y, 0.0), Kit.flat(WARM, 1.15) if lit else Kit.flat(NIGHT_GLASS))
+	Kit.pane(Kit.box(g, Vector3(w - 2.0 * f, glass_h, 0.04), Vector3(0, glass_y, 0.0), Kit.flat(WARM, 1.15) if lit else Kit.flat(NIGHT_GLASS)))
 	Kit.box(g, Vector3(w - 2.0 * f + 0.02, 0.05, 0.05), Vector3(0, glass_y, 0.01), trim)   # the sash rail, its ends in the frame
 	if lit:
 		var cloth: Color = o.get("curtain", Color(0.75, 0.3, 0.25))

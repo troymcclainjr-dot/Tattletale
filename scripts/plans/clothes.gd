@@ -85,7 +85,7 @@ static func build(p: Node3D) -> void:
 ## The shop door is mostly glass, with a push bar: added to the plain leaf
 ## place.gd made (its hinge on the right, so the leaf runs to -x).
 static func _glaze(door: Node3D, w: float, h: float) -> void:
-	Kit.box(door.leaf, Vector3(w - 0.16, 1.5, 0.116), Vector3(-w * 0.5, 1.25, 0), Kit.flat(Color(0.6, 0.76, 0.8), 0.25))
+	Kit.pane(Kit.box(door.leaf, Vector3(w - 0.16, 1.5, 0.116), Vector3(-w * 0.5, 1.25, 0), Kit.flat(Color(0.6, 0.76, 0.8), 0.25)))      # combat: a shot breaks it
 	Kit.box(door.leaf, Vector3(w - 0.22, 0.05, 0.14), Vector3(-w * 0.5, 1.02, 0), Color(0.78, 0.8, 0.84))
 
 

@@ -19,6 +19,10 @@
     236.0,
     45
    ],
+   "eject": [
+    146,
+    30
+   ],
    "toward": {
     "file": "pistol_toward.png",
     "hands": "pistol_toward_hands.png",
@@ -28,7 +32,15 @@
      100,
      188
     ],
-    "size": 1.15
+    "size": 1.15,
+    "muzzle": [
+     100,
+     62
+    ],
+    "eject": [
+     78,
+     36
+    ]
    },
    "away": {
     "file": "pistol_away.png",
@@ -66,6 +78,10 @@
     298.0,
     62
    ],
+   "eject": [
+    186,
+    50
+   ],
    "toward": {
     "file": "uzi_toward.png",
     "hands": "uzi_toward_hands.png",
@@ -75,7 +91,15 @@
      105,
      184
     ],
-    "size": 1.1
+    "size": 1.1,
+    "muzzle": [
+     105,
+     80
+    ],
+    "eject": [
+     67,
+     40
+    ]
    },
    "away": {
     "file": "uzi_away.png",
@@ -118,6 +142,10 @@
     66
    ],
    "size": 0.85,
+   "eject": [
+    300,
+    58
+   ],
    "toward": {
     "file": "ak_toward.png",
     "hands": "ak_toward_hands.png",
@@ -131,7 +159,15 @@
      164,
      232
     ],
-    "size": 0.92
+    "size": 0.92,
+    "muzzle": [
+     158,
+     98
+    ],
+    "eject": [
+     118,
+     130
+    ]
    },
    "away": {
     "file": "ak_away.png",

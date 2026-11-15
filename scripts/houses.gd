@@ -210,7 +210,7 @@ static func sash(g: Node3D, s: float, y0: float, ww: float, wh: float, trim: Col
 	fb(g, s - half - 0.15, s + half + 0.15, y0 - 0.13, y0 - 0.01, 0.0, 0.17, trim)
 	if lintel != null:
 		fb(g, s - half - 0.13, s + half + 0.13, y0 + wh + 0.04, y0 + wh + 0.24, 0.0, 0.08, lintel)
-	fb(g, s - half, s + half, y0 + 0.07, y0 + wh - 0.07, 0.05, 0.075, Kit.flat(lit, 1.1) if lit != null else PANE)
+	Kit.pane(fb(g, s - half, s + half, y0 + 0.07, y0 + wh - 0.07, 0.05, 0.075, Kit.flat(lit, 1.1) if lit != null else PANE))
 	var cloth: Variant = curtain
 	if cloth != null and lit == null:
 		cloth = (cloth as Color).darkened(0.6)
@@ -231,7 +231,7 @@ static func sash(g: Node3D, s: float, y0: float, ww: float, wh: float, trim: Col
 static func simple_window(g: Node3D, s: float, y0: float, ww: float, wh: float, trim: Color, lit: Variant = null, curtain: Variant = null) -> void:
 	var half := ww * 0.5
 	fb(g, s - half - 0.07, s + half + 0.07, y0 - 0.02, y0 + wh + 0.07, 0.0, 0.04, trim)
-	fb(g, s - half, s + half, y0 + 0.05, y0 + wh, 0.04, 0.06, Kit.flat(lit, 1.1) if lit != null else PANE)
+	Kit.pane(fb(g, s - half, s + half, y0 + 0.05, y0 + wh, 0.04, 0.06, Kit.flat(lit, 1.1) if lit != null else PANE))
 	fb(g, s - half - 0.1, s + half + 0.1, y0 - 0.1, y0 - 0.01, 0.0, 0.13, trim)
 	if curtain != null and lit != null:
 		for side: float in [-1.0, 1.0]:
@@ -457,7 +457,7 @@ static func _door(g: Node3D, s: float, h: Dictionary) -> void:
 	fb(g, s - 0.48, s + 0.48, f0, f0 + 2.16, 0.05, 0.085, leaf)
 	for y: float in [f0 + 0.25, f0 + 1.2]:
 		fb(g, s - 0.36, s + 0.36, y, y + 0.75, 0.085, 0.1, leaf.lightened(0.14))
-	fb(g, s - 0.48, s + 0.48, f0 + 2.26, f0 + 2.66, 0.05, 0.075, Kit.flat(LIT, 0.85) if _lit(h.get("lit", ""), 4) != null else PANE)
+	Kit.pane(fb(g, s - 0.48, s + 0.48, f0 + 2.26, f0 + 2.66, 0.05, 0.075, Kit.flat(LIT, 0.85) if _lit(h.get("lit", ""), 4) != null else PANE))
 	if h.get("no", "") != "":
 		Props.words(g, h.get("no", ""), Vector3(s, f0 + 2.46, 0.082), 0.2, GOLD)
 	var knob := s + (0.32 if h.get("door_left", true) else -0.32)
@@ -761,7 +761,7 @@ static func plain_house(g: Node3D, w: float, height: float, wall_look: Variant, 
 	var ds := 0.9 if door_left else w - 0.9
 	fb(g, ds - 0.62, ds + 0.62, F0, F0 + 2.78, 0.0, 0.05, trim)
 	fb(g, ds - 0.48, ds + 0.48, F0, F0 + 2.16, 0.05, 0.085, door)
-	fb(g, ds - 0.48, ds + 0.48, F0 + 2.26, F0 + 2.66, 0.05, 0.075, Kit.flat(LIT, 0.8) if lit.length() > 0 and lit[0] == "1" else PANE)
+	Kit.pane(fb(g, ds - 0.48, ds + 0.48, F0 + 2.26, F0 + 2.66, 0.05, 0.075, Kit.flat(LIT, 0.8) if lit.length() > 0 and lit[0] == "1" else PANE))
 	fb(g, ds - 0.7, ds + 0.7, 0.0, F0, -0.01, 0.45, MARBLE)
 	for k in 3:
 		fb(g, ds - 0.7, ds + 0.7, 0.0, F0 - RISE * (k + 1), 0.45 + 0.3 * k, 0.45 + 0.3 * (k + 1), MARBLE)

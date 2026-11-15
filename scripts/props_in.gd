@@ -782,7 +782,7 @@ static func front_window(p: Node3D, n: Node3D, u: float, v: float, y: float, w :
 			for s: float in [-1.0, 1.0]:
 				Kit.box(g, Vector3(w * 0.22, h - 0.04, 0.006), Vector3(s * w * 0.38, 0, 0.024), Kit.flat(Color(0.86, 0.3, 0.28), 0.3))
 	else:
-		Kit.box(g, Vector3(w * 0.3, h * 0.7, 0.006), Vector3(-w * 0.22, h * 0.05, 0.024), Color(0.27, 0.31, 0.44))       # a gleam on the dark glass
+		Kit.pane(g.get_child(0), [Kit.box(g, Vector3(w * 0.3, h * 0.7, 0.006), Vector3(-w * 0.22, h * 0.05, 0.024), Color(0.27, 0.31, 0.44))])       # a gleam on the dark glass
 	if stone is Color and keystone:
 		var key_stone: Color = stone
 		Kit.box(g, Vector3(0.16, 0.24, 0.12), Vector3(0, h * 0.5 + 0.15, 0.06), key_stone.darkened(0.08))           # the keystone
