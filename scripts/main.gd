@@ -772,6 +772,18 @@ func _teleport(to: Vector3, instant := false) -> void:
 
 ## Go to one of PLACES: the picture blacks out, he is put on the pavement
 ## outside it facing the camera, and the picture comes back.
+## He is arrested (`why` is shown): what he carries is taken off him and he is taken away. For now to the
+## police station; the prison, when it is built, takes this over (he arrives at its booking in a jumpsuit).
+func _arrest(why: String) -> void:
+	print("[arrest] ", why)
+	_aim_off()
+	_actor.weapon = ""
+	_state.disarm()
+	_state.flags["arrests"] = int(_state.flags.get("arrests", 0)) + 1
+	_state.touch()
+	_travel_to("police", true)
+
+
 func _travel_to(id: String, instant := false) -> void:
 	var known := false
 	for row: Dictionary in PLACES:
@@ -1316,8 +1328,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 				_next_colour(rack)
 			elif _ceiling():
 				_ceiling().visible = not _ceiling().visible
-		KEY_Q:
-			_actor.weapon = WEAPONS[(WEAPONS.find(_actor.weapon) + 1) % WEAPONS.size()]
+		KEY_Q:          # round what he has (player_state.gd `owned`), then nothing in his hands
+			var has: Array = [""] + WEAPONS.filter(func(w: String) -> bool: return w in _state.owned)
+			_actor.weapon = has[(has.find(_actor.weapon) + 1) % has.size()]
 		KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9:
 			var pick: int = event.physical_keycode - KEY_1
 			if pick < _characters.size():

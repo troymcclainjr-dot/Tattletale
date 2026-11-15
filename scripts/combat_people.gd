@@ -46,6 +46,7 @@ class Person:
 	var fall_t := -1.0
 	var pool: MeshInstance3D
 	var flee                     # his Flee while he is frightened
+	var foe := false             # armed and shooting back (combat_foes.gd drives him): a shot does not frighten him
 
 
 ## Stands in for someone's brain in main.gd's cast while he is frightened: main.gd calls tick() each frame.
@@ -247,7 +248,7 @@ func alarm(at: Vector3) -> void:
 
 func _frighten(p: Person, at: Vector3) -> void:
 	p.quiet = 0.0
-	if p.state != "calm":
+	if p.state != "calm" or p.foe:
 		return
 	_take_over(p)
 	p.state = "alarmed"

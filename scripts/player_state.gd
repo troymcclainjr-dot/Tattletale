@@ -18,6 +18,7 @@ var cash := START_CASH
 var health := MAX_HEALTH
 var loaded := {}            # weapon: rounds in its magazine
 var spare := {}             # weapon: rounds he carries besides
+var owned: Array = []      # the weapons he has (Q goes round these): he starts with the pistol; the gun store sells the rest
 var songs := 0              # songs recorded at the booth microphone
 var videos: Array = []      # each music video he has shot: a Dictionary of how it went
 var flags := {}             # anything else worth keeping: name to a value JSON can hold
@@ -33,6 +34,7 @@ func reset() -> void:
 	health = MAX_HEALTH
 	loaded = CLIP.duplicate()
 	spare = START_SPARE.duplicate()
+	owned = ["pistol"]
 	songs = 0
 	videos = []
 	flags = {}
@@ -51,6 +53,19 @@ func spend(amount: int) -> bool:
 	cash -= amount
 	changed.emit()
 	return true
+
+
+## He has this weapon from now on (bought, or picked up).
+func own(weapon: String) -> void:
+	if CLIP.has(weapon) and not weapon in owned:
+		owned.append(weapon)
+	changed.emit()
+
+
+## Every weapon is taken off him (searched, arrested).
+func disarm() -> void:
+	owned = []
+	changed.emit()
 
 
 func hurt(amount: int) -> void:
@@ -81,7 +96,7 @@ func touch() -> void:
 
 
 func to_save() -> Dictionary:
-	return {"cash": cash, "health": health, "loaded": loaded, "spare": spare, "songs": songs, "videos": videos, "flags": flags}
+	return {"cash": cash, "health": health, "loaded": loaded, "spare": spare, "owned": owned, "songs": songs, "videos": videos, "flags": flags}
 
 
 ## From a save. Anything the save does not have keeps its new-game value, so an older save still loads.
@@ -92,6 +107,7 @@ func from_save(data: Dictionary) -> void:
 	for weapon: String in CLIP:
 		loaded[weapon] = int(_dict(data.get("loaded")).get(weapon, loaded[weapon]))
 		spare[weapon] = int(_dict(data.get("spare")).get(weapon, spare[weapon]))
+	owned = (data["owned"] as Array).duplicate() if typeof(data.get("owned")) == TYPE_ARRAY else CLIP.keys()      # a save from before the gun store had all three
 	songs = int(data.get("songs", 0))
 	if typeof(data.get("videos")) == TYPE_ARRAY:
 		videos = data["videos"]
