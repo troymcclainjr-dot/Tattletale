@@ -14,6 +14,8 @@ extends RefCounted
 
 const Props := preload("res://scripts/props.gd")
 const In := preload("res://scripts/props_in.gd")
+const Alley := preload("res://scripts/props_alley.gd")      # the roll-up door in the stock room's back wall
+const Cellar := preload("res://scripts/plans/store_cellar.gd")      # the cellar under it, down from the pavement (strip)
 const F := 11.075            # the shop's street face
 
 
@@ -56,6 +58,13 @@ static func build(p: Node3D) -> void:
 	_shop(p, b1)
 	_back(p, b2)
 	_dress(p, b1, b2)
+	# The cellar under it (plans/store_cellar.gd): doors in the pavement, down.
+	Cellar.pavement_doors(p, st)
+	Cellar.build(p)
+	# The pavement's ends go on (main.gd's "goto:"): left along the strip to the
+	# gun store, right round the corner to Rose Hill Terrace (plans/street.gd).
+	p.use_point(st, "TO THE GUN STORE", -3.25, 12.2, "goto:gunstore", 1.2, 1.9)
+	p.use_point(st, "TO ROSE HILL", 10.45, 12.1, "goto:street", 1.2, 1.9)
 
 
 static func _street(p: Node3D, st: int, front: Node3D, brick: Variant) -> void:
@@ -126,7 +135,7 @@ static func _street(p: Node3D, st: int, front: Node3D, brick: Variant) -> void:
 	Props.payphone(p, st, 8.45, 11.08)
 	Props.bin(p, st, 6.4, 11.45)
 	Props.street_lamp(p, st, 2.6, 13.05)
-	Props.hydrant(p, st, 5.4, 13.0)
+	Props.hydrant(p, st, 7.4, 13.0)          # off the cellar doors (strip: it stood in front of them, and of him on them)
 
 
 ## A piece standing `d` proud of the shop's street face, its back 1 cm into the wall.
@@ -170,8 +179,12 @@ static func _back(p: Node3D, b: int) -> void:
 	Props.files(p, b, 3.2, 0.4, 0.0, 2)
 	Props.poster(p, b, 3.2, 0.08, 0.0, 0.4, 0.55, Color(0.85, 0.82, 0.7), "", 1.8)
 	Props.clock(p, b, 0.6, 0.08)
-	# The stock room.
-	Props.shelves(p, b, 6.9, 0.31, 0.0, 3.8)
+	# The stock room, and the roll-up door in its back wall out to the service
+	# alley behind the strip (plans/service.gd: E goes out there, and its CORNER
+	# STORE door comes back in).
+	Props.shelves(p, b, 8.0, 0.31, 0.0, 1.6)
+	Alley.loading_door(p, p.node_of(b), 6.0, 0.09, 0.0, 2.0, 2.2, "", false)
+	p.use_point(b, "SERVICE ALLEY", 6.0, 0.65, "goto:service", 1.0, 2.0)
 	Props.case_stack(p, b, 6.2, 2.0, 0.0, 3, 2)
 	Props.boxes(p, b, 8.3, 1.5, 3)
 	Props.bucket(p, b, 4.5, 0.5)
@@ -216,7 +229,7 @@ static func _dress(p: Node3D, b1: int, b2: int) -> void:
 	var stock := {"lower": Kit.tex("painted_block", 1.2, Color(0.55, 0.57, 0.6), true, Color(0.7, 0.74, 0.8)),
 			"dado": Kit.tex("in_hazard", 0.5, Color(0.9, 0.75, 0.15)), "dado_y": 1.2, "skirt": black, "skirt_h": 0.1, "surround": black}
 	In.room_walls(p, b2, 4.0, 0.0, 9.0, 4.2, stock, [], [{"a": 2.4, "b": 3.3}], [])
-	In.wall_strip(p, b2, 6.9, 0.075, 0.0, 2.4, 2.45)
+	In.wall_strip(p, b2, 8.0, 0.075, 0.0, 1.4, 2.45)
 	In.pendant(p, b2, 7.2, 2.6, 2.05, Props.DARK, "bulb", In.WARM, 0.3)
 	In.pegboard(p, b2, 8.925, 3.0, 270.0, 1.0, 0.7, 1.65, "tools")
 	In.mat(p, b2, 6.9, 0.85, 3.8, 0.06, Color(0.95, 0.78, 0.15))

@@ -11,6 +11,7 @@ extends RefCounted
 
 const Props := preload("res://scripts/props.gd")
 const Alley := preload("res://scripts/props_alley.gd")
+const Street := preload("res://scripts/props_street.gd")      # its sack(): the rubbish bags
 const Club := preload("res://scripts/props_club.gd")
 const Park := preload("res://scripts/props_park.gd")
 const Outdoor := preload("res://scripts/outdoor.gd")
@@ -40,17 +41,8 @@ static func bags(p: Node3D, b: int, u: float, v: float, n := 2, seed := 0.0) -> 
 	var node: Node3D = p.node_of(b)
 	for i in n:
 		var r := Props.rnd(seed + i * 3.3 + u * 0.7)
-		var size := 0.22 + 0.07 * r
 		var at: Vector3 = p.pt(u + (i - (n - 1) * 0.5) * 0.46 + (r - 0.5) * 0.08, v + (0.14 if i % 2 == 1 else -0.06))
-		var g := Kit.group(node, at, Vector3(0, r * 360.0, (r - 0.5) * 16.0))
-		var m := Alley.plastic(BAGS[(i + int(seed)) % BAGS.size()])
-		var sack := Kit.ball(g, size, Vector3(0, size * 0.92, 0), m, 12)
-		sack.scale = Vector3(1.0, 0.98, 0.9)
-		for s: Array in [[0.46, 0.5, 0.22, 0.6], [-0.42, 0.46, -0.24, 0.56], [0.05, 0.42, 0.5, 0.5]]:
-			Kit.ball(g, size * float(s[3]), Vector3(size * float(s[0]), size * float(s[1]), size * float(s[2])), m, 8)
-		Kit.cyl(g, size * 0.24, size * 0.26, Vector3(0, size * 1.92, 0), m, Vector3.ZERO, 7, size * 0.1)
-		for s: float in [-1.0, 1.0]:
-			Kit.box(g, Vector3(size * 0.22, size * 0.36, size * 0.02), Vector3(s * size * 0.1, size * 2.16, 0), m, Vector3(0, 0, s * -26.0))
+		Street.sack(node, at, 0.22 + 0.07 * r, BAGS[(i + int(seed)) % BAGS.size()], Vector3(0, r * 360.0, (r - 0.5) * 12.0))      # matte (the strip worker's)
 
 
 ## A board fence h high along u (or v) at `at`, from `from` to `to`: place.gd's

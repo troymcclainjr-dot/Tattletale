@@ -1,0 +1,14 @@
+{
+	"about": "Nia at the studio's back door in the service alley (plans/service.gd). Placeholder lines written on 2026-11-15 by the strip worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "Waiting on somebody?", "face": "happy", "next": "waiting"},
+			{"say": "You sing?", "face": "happy", "next": "sing"},
+			{"say": "Front door's round the other side.", "face": "smug", "next": "front"}
+		]},
+		"waiting": {"speaker": "npc", "face": "neutral", "line": "They said knock twice. I knocked four times.", "next": ""},
+		"sing": {"speaker": "npc", "face": "happy", "line": "The hook on the new one. If they ever open this door.", "next": ""},
+		"front": {"speaker": "npc", "face": "suspicious", "line": "Front door's for people who pay.", "next": ""}
+	}
+}

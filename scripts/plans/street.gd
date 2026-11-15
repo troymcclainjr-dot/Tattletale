@@ -136,6 +136,7 @@ static func build(p: Node3D) -> void:
 	p.use_point(st, "MISS BEA'S", homes["bea"]["door"], homes["bea"]["steps"] + 0.4, "goto:bea", 0.9, 2.4)
 	p.use_point(st, "TO THE PARK", WEST + 0.75, PAVE + 1.2, "goto:park", 1.2, 1.9)
 	p.use_point(st, "TO THE ALLEY", 57.88, -5.75, "goto:backs", 1.2, 1.9)      # the alley's mouth up Old York Road (plans/backs.gd)
+	p.use_point(st, "TO THE CORNER STORE", 69.0, 3.0, "goto:store", 1.2, 1.9)      # up Old York's far pavement, round to the corner store (plans/store.gd; strip)
 
 
 ## A box on the plan: u0..u1, v0..v1, y0..y1.

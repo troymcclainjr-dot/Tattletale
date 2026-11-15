@@ -57,26 +57,17 @@ static func plastic(look: Color) -> StandardMaterial3D:
 	return m
 
 
-## Rubbish bags, n in a heap round (u, v) on the plan: a full sack, lumpy where
-## what is in it presses out low down, pinched at the neck, its two tied ends
-## standing up in flaps; dark green-grey, white or blue-grey plastic with a
-## shine on it (a round black bag reads as a bomb, or as a hole in the ground;
-## balls one on another, as something else again). Decoration: they do not block.
+## Rubbish bags, n in a heap round (u, v) on the plan: props_street.gd's filled
+## sacks (`Street.sack`: slumped, lumpy low down, gathered at the neck, the tied
+## ends standing up) in dark green-grey, white or blue-grey bin-bag film, matte
+## (a round black bag reads as a bomb, or as a hole in the ground; balls one on
+## another, as something else again). Decoration: they do not block.
 static func bags(p: Node3D, b: int, u: float, v: float, n := 2, seed := 0.0) -> void:
 	var node: Node3D = p.node_of(b)
 	for i in n:
 		var r := Props.rnd(seed + i * 3.3 + u * 0.7)
-		var size := 0.22 + 0.07 * r
 		var at: Vector3 = p.pt(u + (i - (n - 1) * 0.5) * 0.46 + (r - 0.5) * 0.08, v + (0.14 if i % 2 == 1 else -0.06))
-		var g := Kit.group(node, at, Vector3(0, r * 360.0, (r - 0.5) * 16.0))
-		var m := plastic(BAGS[(i + int(seed)) % BAGS.size()])
-		var sack := Kit.ball(g, size, Vector3(0, size * 0.92, 0), m, 12)
-		sack.scale = Vector3(1.0, 0.98, 0.9)
-		for s: Array in [[0.46, 0.5, 0.22, 0.6], [-0.42, 0.46, -0.24, 0.56], [0.05, 0.42, 0.5, 0.5]]:     # lumps, low down
-			Kit.ball(g, size * float(s[3]), Vector3(size * float(s[0]), size * float(s[1]), size * float(s[2])), m, 8)
-		Kit.cyl(g, size * 0.24, size * 0.26, Vector3(0, size * 1.92, 0), m, Vector3.ZERO, 7, size * 0.1)       # pinched to the neck
-		for s: float in [-1.0, 1.0]:                # the tied ends, standing up
-			Kit.box(g, Vector3(size * 0.22, size * 0.36, size * 0.02), Vector3(s * size * 0.1, size * 2.16, 0), m, Vector3(0, 0, s * -26.0))
+		Street.sack(node, at, 0.22 + 0.07 * r, BAGS[(i + int(seed)) % BAGS.size()], Vector3(0, r * 360.0, (r - 0.5) * 12.0))
 
 
 # ----------------------------------------------------------- the club's back
@@ -97,8 +88,8 @@ static func back_door(p: Node3D, n: Node3D, u: float, v: float, yaw: float) -> N
 
 ## A roll-up loading door in a wall facing `yaw`, w wide and h high round (u, v)
 ## on its face: the housing over it, the rails, ribbed slats to the ground with
-## a padlock at the foot, the stencil on the housing.
-static func loading_door(p: Node3D, n: Node3D, u: float, v: float, yaw: float, w := 2.6, h := 2.6) -> Node3D:
+## a padlock at the foot (unless `locked` is false), the stencil (`words`) on the housing.
+static func loading_door(p: Node3D, n: Node3D, u: float, v: float, yaw: float, w := 2.6, h := 2.6, words := "DELIVERIES", locked := true) -> Node3D:
 	var g := Kit.group(n, p.pt(u, v), Vector3(0, yaw, 0))
 	var slats := Kit.tex("in_ribbed", 0.5, Color(0.48, 0.5, 0.52), false, Color(0.52, 0.54, 0.58))
 	var iron := Color(0.24, 0.25, 0.28)
@@ -107,8 +98,10 @@ static func loading_door(p: Node3D, n: Node3D, u: float, v: float, yaw: float, w
 		Kit.box(g, Vector3(0.1, h, 0.1), Vector3(s * (w * 0.5 + 0.05), h * 0.5, 0.05), iron)
 	Kit.box(g, Vector3(w, h, 0.04), Vector3(0, h * 0.5, 0.05), slats)
 	Kit.box(g, Vector3(w - 0.02, 0.08, 0.07), Vector3(0, 0.04, 0.06), iron.darkened(0.3))      # the bottom bar, its ends in the rails
-	Kit.box(g, Vector3(0.07, 0.1, 0.03), Vector3(w * 0.3, 0.13, 0.11), Props.STEEL)
-	Props.words(g, "DELIVERIES", Vector3(0, h + 0.21, 0.31), 0.12, Color(0.95, 0.85, 0.2))
+	if locked:
+		Kit.box(g, Vector3(0.07, 0.1, 0.03), Vector3(w * 0.3, 0.13, 0.11), Props.STEEL)
+	if words != "":
+		Props.words(g, words, Vector3(0, h + 0.21, 0.31), 0.12, Color(0.95, 0.85, 0.2))
 	return g
 
 
@@ -131,7 +124,7 @@ static func dumpster(p: Node3D, b: int, u: float, v: float, yaw: float, look: Co
 		var up := Kit.group(g, Vector3(-0.45, 1.17, -0.5), Vector3(-93, 0, 0))       # thrown back, against the wall
 		Kit.box(up, Vector3(0.88, 0.04, 1.04), Vector3(0, 0.02, 0.52), lid)
 		for k in 3:
-			var bag := Kit.ball(g, 0.25, Vector3(-0.72 + k * 0.24, 1.16 + 0.07 * (k % 2), -0.12 + 0.13 * k), plastic(BAGS[k % BAGS.size()]), 7)
+			var bag := Kit.ball(g, 0.25, Vector3(-0.72 + k * 0.24, 1.16 + 0.07 * (k % 2), -0.12 + 0.13 * k), Street.bag_look(BAGS[k % BAGS.size()]), 7)
 			bag.scale = Vector3(1.0, 0.72, 0.9)
 		Kit.box(g, Vector3(0.18, 0.22, 0.012), Vector3(-0.35, 1.32, 0.2), Props.PAPER, Vector3(20, 35, 15))
 	else:

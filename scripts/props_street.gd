@@ -394,9 +394,43 @@ static func litter(parent: Node3D, pos: Vector3, n: int) -> void:
 			Kit.cyl(parent, 0.045, 0.11, pos + Vector3(0, 0.045, 0), Color(0.95, 0.95, 0.92), Vector3(90, n * 71.0, 0), 8, 0.035)
 
 
-## Black rubbish bags heaped by a can (decoration: they do not block).
+## Black rubbish bags heaped by a can (decoration: they do not block): sack()s in
+## a black bag's dark grey (pure black reads as a hole, or a bomb).
 static func bags(parent: Node3D, pos: Vector3, n := 2) -> void:
 	for i in n:
-		var bag := Kit.ball(parent, 0.26, pos + Vector3(i * 0.38 - 0.19, 0.2, (i % 2) * 0.12), Color(0.08, 0.08, 0.1), 7)
-		bag.scale = Vector3(1.0, 0.8, 0.9)
-		Kit.cyl(parent, 0.05, 0.12, pos + Vector3(i * 0.38 - 0.19, 0.42, (i % 2) * 0.12), Color(0.08, 0.08, 0.1), Vector3.ZERO, 5)
+		sack(parent, pos + Vector3(i * 0.42 - 0.21, 0.0, (i % 2) * 0.12), 0.25 + 0.03 * (i % 2), BAG_BLACK, Vector3(0, 70.0 * i + 20.0, 4.0 - 8.0 * (i % 2)))
+
+
+const BAG_BLACK := Color(0.2, 0.21, 0.23)
+static var _bag_looks := {}
+
+
+## Bin-bag film: matte, the light lying on it softly with no glint (a filled bag,
+## not a balloon). One material for each colour.
+static func bag_look(look: Color) -> StandardMaterial3D:
+	var key := look.to_html()
+	if not _bag_looks.has(key):
+		var m := StandardMaterial3D.new()
+		m.albedo_color = look
+		m.roughness = 0.9
+		m.metallic_specular = 0.1
+		_bag_looks[key] = m
+	return _bag_looks[key]
+
+
+## A filled rubbish bag standing on the ground at `at` (in parent's space), about
+## `size` round: slumped under its own weight (wider than high, its foot sunk a
+## little where it sits), what is in it pressing out in lumps low down, its top
+## gathered to a neck and the two tied ends standing up. Every rubbish bag in the
+## game is one of these (props_alley.gd's bags, props_backs.gd's, Rose Hill's).
+static func sack(parent: Node3D, at: Vector3, size: float, look: Color, turn := Vector3.ZERO) -> Node3D:
+	var g := Kit.group(parent, at, turn)
+	var m := bag_look(look)
+	var body := Kit.ball(g, size, Vector3(0, size * 0.78, 0), m, 12)
+	body.scale = Vector3(1.08, 0.86, 0.97)
+	for s: Array in [[0.38, 0.42, 0.18, 0.56], [-0.36, 0.4, -0.2, 0.54], [0.02, 0.36, 0.4, 0.5]]:      # lumps, low down
+		Kit.ball(g, size * float(s[3]), Vector3(size * float(s[0]), size * float(s[1]), size * float(s[2])), m, 8)
+	Kit.cyl(g, size * 0.5, size * 0.62, Vector3(0, size * 1.6, 0), m, Vector3.ZERO, 8, size * 0.09)        # the top gathered in to the neck
+	for s: float in [-1.0, 1.0]:                # the tied ends, standing up
+		Kit.box(g, Vector3(size * 0.24, size * 0.36, size * 0.02), Vector3(s * size * 0.1, size * 2.04, 0), m, Vector3(0, 0, s * -28.0))
+	return g

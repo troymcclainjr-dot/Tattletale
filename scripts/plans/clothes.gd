@@ -32,6 +32,7 @@ extends RefCounted
 const Props := preload("res://scripts/props.gd")
 const Wear := preload("res://scripts/props_clothes.gd")
 const In := preload("res://scripts/props_in.gd")
+const Service := preload("res://scripts/props_service.gd")      # the stock room's back door
 
 const PURPLE := Color(0.36, 0.14, 0.5)
 const YELLOW := Color(1.0, 0.85, 0.2)
@@ -80,6 +81,10 @@ static func build(p: Node3D) -> void:
 	_floor(p, b1)
 	_back(p, b2)
 	_dress(p, b1, b2)
+	# The pavement's ends go on along the strip (main.gd's "goto:"): left past the
+	# check-cashing place to the club, right past the row to the studio.
+	p.use_point(st, "TO THE CLUB", -3.25, 12.2, "goto:club", 1.2, 1.9)
+	p.use_point(st, "TO THE STUDIO", 13.25, 12.2, "goto:studio", 1.2, 1.9)
 
 
 ## The shop door is mostly glass, with a push bar: added to the plain leaf
@@ -279,8 +284,12 @@ static func _back(p: Node3D, b: int) -> void:
 	Props.words(n, "STAFF ONLY", p.pt(5.515, 2.95, 2.35), 0.08, ink, 270.0)
 	p.use_point(b, "HIS OWN CLOTHES", 0.95, 1.25, "outfit:reset")
 	# The stock room: shelves of boxes, the sizes in stacks, new stock on a rail.
-	Wear.garment_rack(p, b, 6.55, 0.38, 0.0, 1.5)
-	Props.shelves(p, b, 8.7, 0.31, 0.0, 2.2, "boxes")
+	# Its steel back door between them, out to the service alley behind the strip
+	# (plans/service.gd: E goes out there, and its CLOTHING STORE door comes back in).
+	Wear.garment_rack(p, b, 6.35, 0.38, 0.0, 1.2)
+	Props.shelves(p, b, 8.95, 0.31, 0.0, 1.7, "boxes")
+	Service.steel_door(Kit.group(p.node_of(b), p.pt(7.525, 0.084), Vector3.ZERO, "BackDoor"))
+	p.use_point(b, "SERVICE ALLEY", 7.525, 0.7, "goto:service", 1.0, 2.0)
 	Wear.shoe_boxes(p, b, 9.62, 2.2, 270.0, 6, 7)
 	Props.boxes(p, b, 8.4, 1.0, 3)
 	Props.clock(p, b, 6.55, 0.08, 0.0, 2.45)

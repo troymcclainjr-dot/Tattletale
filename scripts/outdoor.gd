@@ -152,6 +152,7 @@ static func chain_link(tile_m := 0.6, tint := Color.WHITE) -> Material:
 ## ring to the colour higher up (Vector2.ZERO: the same all the way round).
 static func backdrop(parent: Node3D, centre: Vector3, glow: Array, moon := Vector3.INF, key := 1.0, dist := 900.0, toward := Vector2.ZERO) -> Node3D:
 	var g := Kit.group(parent, centre, Vector3.ZERO, "Backdrop")
+	g.set_meta("combat_fx", true)      # not something a shot hits or glass lands on: a 4 km plane and the sky ring swamp combat_world.gd's squares
 	var ground := MeshInstance3D.new()
 	var plane := PlaneMesh.new()
 	plane.size = Vector2(4000, 4000)

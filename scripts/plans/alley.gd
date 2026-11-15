@@ -147,7 +147,8 @@ static func _club(p: Node3D, st: int) -> void:
 	# The warehouse: its loading door, the bay in front of it boxed and hatched in
 	# yellow with the stencil along its edge, a tag up over the door (nobody's
 	# head under it, so it reads as paint, not as a name).
-	Alley.loading_door(p, n, 0.0, 3.6, 90.0, 2.6, 2.6)
+	Alley.loading_door(p, n, 0.0, 3.6, 90.0, 2.6, 2.6, "DELIVERIES", false)
+	p.use_point(st, "LIQUOR STORE", 0.9, 3.6, "goto:liquor", 1.1, 2.35)      # the liquor store's stock room (plans/liquor.gd; strip); its word over the tags
 	var paint := Color(0.75, 0.62, 0.15)
 	for k in 6:
 		Kit.box(n, Vector3(1.8, 0.006, 0.12), p.pt(1.2, 2.5 + 0.44 * k, 0.004), paint)

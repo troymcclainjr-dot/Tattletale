@@ -23,6 +23,8 @@ const FrontSet := preload("res://scripts/front_set.gd")
 const StudioSet := preload("res://scripts/studio_set.gd")
 const Door := preload("res://scripts/door.gd")
 const Portal := preload("res://scripts/portal.gd")
+const UsePoint := preload("res://scripts/use_point.gd")
+const Service := preload("res://scripts/props_service.gd")      # the booth's back door (strip)
 
 const RADIUS := 0.26                 # paper_actor.gd's: how close a middle may come to a wall in front of him or behind
 const REACH := 0.4                   # and to a wall beside him: his hands and feet reach that far
@@ -97,6 +99,27 @@ func build() -> void:
 	obstacles.append_array(street.OBSTACLES)
 	obstacles.append_array(front.OBSTACLES)
 	obstacles.append_array(control.OBSTACLES)
+	# The pavement's two ends go on along the strip (main.gd's "goto:"): left past
+	# the laundry to the clothing store, right past the pawn shop to the gun store.
+	_point(street, "TO THE CLOTHING STORE", Vector3(street.AREA.position.x + 0.65, 0, 7.4), "goto:clothes", 1.2, 1.9)
+	_point(street, "TO THE GUN STORE", Vector3(street.AREA.end.x - 0.65, 0, 7.35), "goto:gunstore", 1.2, 1.9)
+	# The booth's back wall: a steel door out to the service alley behind the
+	# strip (plans/service.gd: E goes out there, and its STUDIO door comes back in).
+	Service.steel_door(Kit.group(control.booth, Vector3(0.15, 0, StudioSet.BOOTH_Z0 + 0.002), Vector3.ZERO, "BackDoor"))
+	_point(control.booth, "SERVICE ALLEY", Vector3(0.15, 0, -4.5), "goto:service", 1.0, 2.0)
+
+
+## A use_point.gd spot in `parent` (shown and hidden with that room): main.gd acts on its id.
+func _point(parent: Node3D, label: String, at: Vector3, id: String, reach := 1.1, label_height := 1.5) -> Node3D:
+	var point: Node3D = UsePoint.new()
+	point.id = id
+	point.label = label
+	point.use_reach = reach
+	point.label_height = label_height
+	point.position = at
+	parent.add_child(point)
+	use_points.append(point)
+	return point
 
 
 ## The wall between the front room and the control room, and its padded door.
