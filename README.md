@@ -45,7 +45,7 @@ The game opens on a title screen: **NEW GAME**, **CONTINUE** and **SETTINGS**. P
 | F | Close-up on / off (head to waist) |
 | Tab | Next camera (follow, angle, angle_left, front, console, left, lounge, booth, top). In the studio only |
 | C | Control-room ceiling on / off. In the studio only |
-| M | The travel list: the places he can go. Click one, press its key (1 to 9, then 0, then the letters, skipping E and M), or pick it with the arrows and Enter, and he arrives on the street outside it. M or Esc closes the list. There are eighteen; past eight it runs in two columns, and past thirty it scrolls |
+| M | The travel list: the places he can go. Click one, press its key (1 to 9, then 0, then the letters, skipping E and M), or pick it with the arrows and Enter, and he arrives on the street outside it. M or Esc closes the list. There are nineteen; past eight it runs in two columns, and past thirty it scrolls |
 | F8 | Save a screenshot to the Godot user folder |
 | Esc | Ends a conversation, steps away from the microphone, or backs out of a menu. Otherwise quits |
 
