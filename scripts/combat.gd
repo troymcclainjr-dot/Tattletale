@@ -373,11 +373,11 @@ func step(bits: PackedStringArray) -> void:
 			await _raise()
 			var went: int = await _fire(n)
 			print("[shot] fire: %d of %d went off; %s; last: %s" % [went, n, _rounds(), _said(last)])
-		"reload":
+		"reload":           # reload (and wait till it is done) or reload:start (to catch it part-way)
 			var started := reload()
-			while _reload_left >= 0.0:
+			while _reload_left >= 0.0 and not (bits.size() > 1 and bits[1] == "start"):
 				await get_tree().process_frame
-			print("[shot] reload: %s; %s" % ["done" if started else "nothing to do", _rounds()])
+			print("[shot] reload: %s; %s" % [("started" if _reload_left >= 0.0 else "done") if started else "nothing to do", _rounds()])
 		"hurt":             # hurt:n
 			hurt(int(bits[1]) if bits.size() > 1 else 10)
 			print("[shot] hurt: health %d, cash %s" % [int(main._state.health), Hud.dollars(int(main._state.cash))])
@@ -517,15 +517,18 @@ func _rounds() -> String:
 
 func _said(shot: Dictionary) -> String:
 	var through := " (through %d panes)" % int(shot["panes"]) if int(shot.get("panes", 0)) > 0 else ""
+	var spot := ""
+	if shot.has("at"):
+		var at: Vector3 = shot["at"]
+		spot = " at %.2f, %.2f, %.2f" % [at.x, at.y, at.z]
 	match String(shot.get("what", "")):
 		"person":
-			var at: Vector3 = shot["at"]
-			return "%s, %s, at %.2f, %.2f%s" % [shot["who"], shot["result"], at.x, at.z, through]
+			return "%s, %s%s%s" % [shot["who"], shot["result"], spot, through]
 		"wall", "metal":
-			return "%s %s%s" % [shot["what"], shot.get("on", ""), through]
+			return "%s %s%s%s" % [shot["what"], shot.get("on", ""), spot, through]
 		"":
 			return "-"
-	return "%s%s" % [shot["what"], through]
+	return "%s%s%s" % [shot["what"], spot, through]
 
 
 ## --do=combatcheck: at this place, a shot at a window breaks it, enough shots at someone put him down with a

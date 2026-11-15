@@ -49,7 +49,8 @@ extends Node3D
 ##   face:front|side|back|left (turn him without walking; left is side-on, mirrored),
 ##   wear:piece:colour (wear:hat:#cc2222; wear: alone puts his own clothes back),
 ##   arm:who:weapon[:aim] (give someone else here a weapon: arm:TRE:ak:aim), day:n (make it day n).
-##   combat.gd's: fire or fire:n (he brings it up and pulls the trigger n times, as fast as the gun goes), reload,
+##   combat.gd's: fire or fire:n (he brings it up and pulls the trigger n times, as fast as the gun goes), reload
+##   (reload:start does not wait for it),
 ##   hurt:n (he takes n of his health), shoot:who or shoot:who:n (the cross on someone, by name, or someone: the
 ##   nearest; or window: a pane in sight; or car: a car's glass; then fire n), aimon:who (the cross on it, no
 ##   shot), hud:0 / hud:1, freeze (what is flying stops where it is), combatcheck (a window, someone put down,

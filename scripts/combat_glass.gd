@@ -15,6 +15,8 @@ const VOID := Color(0.035, 0.03, 0.05)
 const CRACK := Color(0.86, 0.92, 0.97)        # cracks on dark glass are light
 const BAND := 0.014                           # metres: the ink round a hole
 const CRACK_W := 0.007
+const GLINT := Color(0.84, 0.93, 1.0)         # a light edge outside the ink, so a hole shows on dark glass too
+const GLINT_W := 0.012
 
 static var _mats := {}
 
@@ -33,6 +35,15 @@ static func _mat(color: Color) -> StandardMaterial3D:
 ## Let the shared materials go (the game is closing).
 static func forget() -> void:
 	_mats.clear()
+
+
+## Is the pane drawn dark (a window with no light behind it)? Its cracks are drawn light.
+static func _dark(mi: MeshInstance3D) -> bool:
+	var mat := mi.get_active_material(0)
+	if not mat is BaseMaterial3D or clear(mi):
+		return false
+	var b := mat as BaseMaterial3D
+	return not b.emission_enabled and b.albedo_color.get_luminance() < 0.35
 
 
 ## Is the pane see-through (clear glass) rather than drawn dark or lit?
@@ -175,13 +186,16 @@ static func _build(pane: MeshInstance3D, plan: Dictionary) -> void:
 			for side: float in [1.0, -1.0]:
 				var z := d * 0.5 * side
 				st.set_normal(normal * side)
-				for v: int in ([tris[t], tris[t + 1], tris[t + 2]] if side > 0.0 else [tris[t], tris[t + 2], tris[t + 1]]):
+				# triangulate_polygon winds them anticlockwise; a front face in Godot winds clockwise
+				for v: int in ([tris[t], tris[t + 2], tris[t + 1]] if side > 0.0 else [tris[t], tris[t + 1], tris[t + 2]]):
 					st.add_vertex(at.call(poly[v], z))
 	_commit(st, mesh, pane.get_active_material(0))
 
-	# The ink round the hole and the cracks, on both faces.
+	# The ink round the hole, on both faces, and a light edge outside it (a little less proud, under the cracks).
 	st = SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var lit := SurfaceTool.new()
+	lit.begin(Mesh.PRIMITIVE_TRIANGLES)
 	for i in n:
 		var j := (i + 1) % n
 		var a0 := hole[i]
@@ -189,11 +203,19 @@ static func _build(pane: MeshInstance3D, plan: Dictionary) -> void:
 		var b0 := a0 + (a0 - c).normalized() * BAND
 		var b1 := a1 + (a1 - c).normalized() * BAND
 		_quad(st, at, [a0, a1, b1, b0], d)
+		var g0 := (b0 + (a0 - c).normalized() * GLINT_W).clamp(-half, half)
+		var g1 := (b1 + (a1 - c).normalized() * GLINT_W).clamp(-half, half)
+		_quad(lit, at, [b0.clamp(-half, half), b1.clamp(-half, half), g1, g0], d, 0.0006)
+	_commit(st, mesh, _mat(INK))
+	_commit(lit, mesh, _mat(GLINT))
+	# The cracks: ink, or light on a pane drawn dark.
+	st = SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	for line: PackedVector2Array in plan["cracks"]:
 		for i in line.size() - 1:
 			var side := (line[i + 1] - line[i]).normalized().orthogonal() * CRACK_W * 0.5
 			_quad(st, at, [line[i] - side, line[i + 1] - side, line[i + 1] + side, line[i] + side], d)
-	_commit(st, mesh, _mat(INK))
+	_commit(st, mesh, _mat(CRACK if _dark(pane) else INK))
 
 	# A pane drawn dark or lit has nothing to see through: the hole is dark.
 	if not clear(pane):
@@ -226,9 +248,9 @@ static func _commit(st: SurfaceTool, mesh: ArrayMesh, mat: Material) -> void:
 
 
 ## A strip on both faces, just proud of them.
-static func _quad(st: SurfaceTool, at: Callable, q: Array, d: float) -> void:
+static func _quad(st: SurfaceTool, at: Callable, q: Array, d: float, lift := 0.0012) -> void:
 	for side: float in [1.0, -1.0]:
-		var z := (d * 0.5 + 0.0012) * side
+		var z := (d * 0.5 + lift) * side
 		for v: Vector2 in [q[0], q[1], q[2], q[0], q[2], q[3]]:
 			st.add_vertex(at.call(v, z))
 		for v: Vector2 in [q[0], q[2], q[1], q[0], q[3], q[2]]:
