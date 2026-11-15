@@ -56,6 +56,9 @@ static func build(p: Node3D) -> void:
 	# The pavement runs east to Rose Hill Terrace (plans/street.gd: its west end
 	# is the park's corner). (Placeholder: the label.)
 	p.use_point(st, "TO ROSE HILL", 45.3, 26.2, "goto:street", 1.2, 1.9)
+	# And west to Argonne Court, Large Fry's street (plans/fry.gd: TO THE PARK
+	# at its east end). (Placeholder: the label.)
+	p.use_point(st, "TO ARGONNE COURT", -5.3, 26.2, "goto:fry", 1.2, 1.9)
 	# Night: the floodlights lay pools on the court, the alley lights and the
 	# windows do the rest; a cool moon (_sky) stands in for main.gd's warm sun.
 	p.ambient = 0.11
