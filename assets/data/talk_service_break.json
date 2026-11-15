@@ -1,0 +1,14 @@
+{
+	"about": "Kesha on her break at the clothing store's back door in the service alley (plans/service.gd). Placeholder lines written on 2026-11-15 by the strip worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "On your break?", "face": "happy", "next": "break"},
+			{"say": "Seen anybody back here?", "face": "suspicious", "next": "seen"},
+			{"say": "Any good stock come in?", "face": "happy", "next": "stock"}
+		]},
+		"break": {"speaker": "npc", "face": "neutral", "line": "Ten minutes. Then back to folding jeans.", "next": ""},
+		"seen": {"speaker": "npc", "face": "suspicious", "line": "Just the van. And him behind it. He thinks nobody sees him.", "next": ""},
+		"stock": {"speaker": "npc", "face": "happy", "line": "Sneakers Thursday. You didn't hear it from me.", "next": ""}
+	}
+}

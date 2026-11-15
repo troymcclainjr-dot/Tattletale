@@ -1,0 +1,14 @@
+{
+	"about": "Vic at his van in the service alley behind the strip (plans/service.gd). Placeholder lines written on 2026-11-15 by the strip worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "Need a hand?", "face": "happy", "next": "hand"},
+			{"say": "What's in the boxes?", "face": "suspicious", "next": "boxes"},
+			{"say": "You're blocking the alley.", "face": "smug", "next": "blocking"}
+		]},
+		"hand": {"speaker": "npc", "face": "neutral", "line": "Ten more cases and I'm gone. Hold the door if you want.", "next": ""},
+		"boxes": {"speaker": "npc", "face": "suspicious", "line": "Chips and soda. Same as every week.", "next": ""},
+		"blocking": {"speaker": "npc", "face": "neutral", "line": "Twenty minutes. Nobody comes back here anyway.", "next": ""}
+	}
+}
