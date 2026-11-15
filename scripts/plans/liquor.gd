@@ -152,7 +152,7 @@ static func _counter(p: Node3D, b: int) -> void:
 	Props.chair(p, b, 0.75, 5.4, 90.0)
 	p.person(b, "clerk", 4.6, 5.45, {"face": "bored"})
 	# Two customers (working names: parodies of the type, not of anyone): one at the counter, one by the wine.
-	p.person(p.rooms[1]["band"], "snoozy", 4.5, 7.7, {"name": "SNOOZY D", "face": "calm"})
+	p.person(p.rooms[1]["band"], "snoozy", 4.5, 7.7, {"name": "SNOOZY D", "face": "content"})
 	p.person(p.rooms[1]["band"], "doc", 7.7, 10.4, {"name": "DOC DRAY", "face": "focused"})
 
 

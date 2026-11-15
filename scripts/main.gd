@@ -37,6 +37,8 @@ extends Node3D
 ##             to judge how things are held: --lineup=ak:e:sc+sa+fc (weapon may be none). A pose is two or three
 ##             letters: s side, f front, b back; then c carrying, a pointing it; then m mirrored (facing left),
 ##             w walking, r running. So sam is side-on, pointing it to the left; fcr is running at the camera.
+##         [--strip=weapons:rigs:views[:frames]]   frames through one run cycle, side by side, to judge the sprint
+##             (run_strip.gd): --strip=none+ak:e:s+f+b:8 writes <shot>_e_none_s.png and so on beside the shot.
 ##   Steps run in order after the walk: use (press E), wait:seconds, frames:n, hover:n,
 ##   pick:n, next (E in a conversation), clickbox (click the talk box), walk:x:y:seconds (hold an arrow key:
 ##   a direction on screen), go:x:z (walk straight to that spot on
@@ -47,7 +49,9 @@ extends Node3D
 ##   weapon:name (pistol, uzi, ak, or none), aim:1 / aim:0, aimat:x:y (the red cross at that screen spot), sprint:1 / sprint:0,
 ##   face:front|side|back|left (turn him without walking; left is side-on, mirrored),
 ##   wear:piece:colour (wear:hat:#cc2222; wear: alone puts his own clothes back),
-##   arm:who:weapon[:aim] (give someone else here a weapon: arm:TRE:ak:aim), day:n (make it day n).
+##   arm:who:weapon[:aim] (give someone else here a weapon: arm:TRE:ak:aim), day:n (make it day n),
+##   expr:name or expr:who:name (an expression set as the game sets one, unlike --face: a moment such as a laugh
+##   settles into an open-eyed face after paper_face.gd's SETTLE; expr:CHUY:calm for someone else here).
 
 const Building := preload("res://scripts/building.gd")
 const Place := preload("res://scripts/place.gd")
@@ -74,6 +78,8 @@ const TravelMenu := preload("res://scripts/travel_menu.gd")
 const TitleScreen := preload("res://scripts/title_screen.gd")
 const ChooseScreen := preload("res://scripts/choose_screen.gd")
 const FONT := preload("res://assets/fonts/Bungee-Regular.ttf")   # Pen Lucy's display font
+const RunStrip := preload("res://scripts/run_strip.gd")       # --strip: frames through a run cycle
+const FaceCheck := preload("res://scripts/face_check.gd")     # --check-faces: nobody rests with eyes that cannot blink
 
 ## The follow camera keeps this far from him, off to the right. It may not go
 ## past the right wall of the room he is in (each room says how far) or rise to
@@ -192,6 +198,7 @@ var _picks := {}               # which colour of WARDROBE each of those is: piec
 var _day := 0                  # days since the game began; he sleeps in his own bed to end one
 var _state := PlayerState.new()     # his cash, health, rounds, songs and videos (player_state.gd): kept in the save
 var _shot_lineup := ""         # screenshot mode: --lineup's weapon:rig:poses
+var _shot_strip := ""          # screenshot mode: --strip's weapons:rigs:views:frames
 
 
 func _ready() -> void:
@@ -377,6 +384,8 @@ func _ready() -> void:
 			_shot_eye = arg.trim_prefix("--eye=").split_floats(",")
 		elif arg.begins_with("--lineup="):
 			_shot_lineup = arg.trim_prefix("--lineup=")
+		elif arg.begins_with("--strip="):
+			_shot_strip = arg.trim_prefix("--strip=")
 		elif arg.begins_with("--save="):   # keep the game in this file instead (for trying CONTINUE)
 			_save_path = arg.trim_prefix("--save=")
 		elif arg == "--title" or arg == "--settings" or arg.begins_with("--choose"):
@@ -392,11 +401,13 @@ func _ready() -> void:
 					seen[line] = true
 					print("[shot] faces: ", line)
 			print("[shot] faces: %d overlapping pairs" % seen.size())
+			FaceCheck.report(_cast.get(_place, []))
 	_set_character(who)
 	_actor.areas = _building.walk_areas()
 	_room = _building.room_at_pos(_actor.position, 0)
 	_building.show_room(_room)
 	if _actor.face and face != "":
+		_actor.face.hold = true          # a still of that face: a moment (a laugh) is kept, not settled
 		_actor.face.set_expression(face, true)
 	if _actor.face and mouth != "":
 		_actor.face.hold_mouth(mouth)
@@ -1278,7 +1289,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 				var faces: Array = _actor.face.names()
 				var step := 1 if event.physical_keycode == KEY_X else -1
 				_actor.show_face()
-				_actor.face.set_expression(faces[posmod(faces.find(_actor.face.expression) + step, faces.size())])
+				_actor.face.set_expression(faces[posmod(faces.find(_actor.face.asked) + step, faces.size())])
 		KEY_F:
 			_close = not _close
 			_set_camera(_cam_name)
@@ -1505,6 +1516,15 @@ func _take_shot() -> void:
 			"day":          # day:n: make it day n (0 is the first), and dress everyone for it
 				_day = int(bits[1])
 				_dress_for_day()
+			"expr":         # expr:laugh (the lead) or expr:CHUY:calm (someone here), set as the game sets it
+				var face_of: Node3D = _actor
+				for member: Dictionary in _cast.get(_place, []):
+					if bits.size() > 2 and String(member["actor"].name).to_lower() == bits[1].to_lower():
+						face_of = member["actor"]
+				if face_of.face:
+					face_of.face.hold = false
+					face_of.face.set_expression(bits[bits.size() - 1])
+					print("[shot] expr: %s on %s" % [bits[bits.size() - 1], face_of.name])
 			"frywalk":
 				var way := Vector2(float(bits[1]), float(bits[2]))
 				for i in int(float(bits[3]) * 60.0):
@@ -1536,6 +1556,12 @@ func _take_shot() -> void:
 		_camera.look_at_from_position(Vector3(_shot_eye[0], _shot_eye[1], _shot_eye[2]), Vector3(_shot_eye[3], _shot_eye[4], _shot_eye[5]))
 		_face_cards()
 	_find_nearest()
+	if _shot_strip != "":           # run_strip.gd saves its own pictures
+		_tag.visible = false
+		_hint.visible = false
+		await RunStrip.shoot(self, _camera, _shot_strip, _shot_path, _outfit_of(_look))
+		get_tree().quit()
+		return
 	if _shot_lineup != "":
 		_lineup(_shot_lineup)
 	print("[shot] %s: in the %s at %.2f, %.2f; nearest: %s; window at %s" % [_place, _building.rooms[_room]["name"], _actor.position.x, _actor.position.z, _nearest.use_name() if _nearest else "-", DisplayServer.window_get_position()])

@@ -15,14 +15,19 @@ extends Node3D
 ## "fx" lists the extras it shows (see FX); "talk" is the set of mouths it
 ## talks with (see TALK; "plain" when left out).
 ## Brows sit under hair and hats: one lifted into the bandana goes under it.
+## An expression with an eye that cannot blink (not in BLINKING_EYES: shut, a
+## laugh's arcs, hearts, spirals) is a moment, not a face to stand about in: its
+## "rest" names the open-eyed expression of the same mood it settles into when
+## it is left on someone who is not talking (SETTLE). People are placed with
+## open-eyed faces; `--check-faces` counts any that are not.
 const EXPRESSIONS := {
 	"neutral": {"eyes": "eye_open", "mouth": "mouth_neutral", "brows": "brow_straight", "l": [0.0, 0.0], "r": [0.0, 0.0]},
 	"happy": {"eyes": "eye_open", "mouth": "mouth_smile", "brows": "brow_arched", "l": [0.06, -6.0], "r": [0.06, -6.0], "talk": "happy"},
-	"grin": {"eyes": "eye_happy", "mouth": "mouth_grin", "brows": "brow_arched", "l": [0.08, -8.0], "r": [0.08, -8.0], "talk": "happy"},
-	"laugh": {"eyes": "eye_happy", "mouth": "mouth_laugh", "brows": "brow_arched", "l": [0.1, -10.0], "r": [0.1, -10.0], "talk": "happy"},
-	"wink": {"eyes": "eye_open", "eye_l": "eye_happy", "mouth": "mouth_smirk", "brows": "brow_arched", "l": [-0.08, 6.0], "r": [0.1, -6.0], "talk": "sly"},
-	"calm": {"eyes": "eye_shut", "mouth": "mouth_smile", "brows": "brow_arched", "l": [0.02, -4.0], "r": [0.02, -4.0]},
-	"preachy": {"eyes": "eye_shut", "mouth": "mouth_small", "brows": "brow_arched", "l": [0.12, -8.0], "r": [0.12, -8.0]},
+	"grin": {"eyes": "eye_happy", "mouth": "mouth_grin", "brows": "brow_arched", "l": [0.08, -8.0], "r": [0.08, -8.0], "talk": "happy", "rest": "beaming"},
+	"laugh": {"eyes": "eye_happy", "mouth": "mouth_laugh", "brows": "brow_arched", "l": [0.1, -10.0], "r": [0.1, -10.0], "talk": "happy", "rest": "beaming"},
+	"wink": {"eyes": "eye_open", "eye_l": "eye_happy", "mouth": "mouth_smirk", "brows": "brow_arched", "l": [-0.08, 6.0], "r": [0.1, -6.0], "talk": "sly", "rest": "smug"},
+	"calm": {"eyes": "eye_shut", "mouth": "mouth_smile", "brows": "brow_arched", "l": [0.02, -4.0], "r": [0.02, -4.0], "rest": "content"},
+	"preachy": {"eyes": "eye_shut", "mouth": "mouth_small", "brows": "brow_arched", "l": [0.12, -8.0], "r": [0.12, -8.0], "rest": "lofty"},
 	"focused": {"eyes": "eye_glare", "mouth": "mouth_firm", "brows": "brow_tapered", "l": [-0.16, 10.0], "r": [-0.16, 10.0]},
 	"angry": {"eyes": "eye_open", "mouth": "mouth_grit", "brows": "brow_tapered", "l": [-0.14, 24.0], "r": [-0.14, 24.0], "talk": "angry"},
 	"shout": {"eyes": "eye_glare", "mouth": "mouth_shout", "brows": "brow_tapered", "l": [-0.18, 22.0], "r": [-0.18, 22.0], "talk": "angry"},
@@ -35,19 +40,27 @@ const EXPRESSIONS := {
 	"smug": {"eyes": "eye_half", "mouth": "mouth_smirk", "brows": "brow_straight", "l": [-0.06, 4.0], "r": [0.1, -10.0], "talk": "sly"},
 	"bored": {"eyes": "eye_half", "mouth": "mouth_neutral", "brows": "brow_straight", "l": [-0.1, -2.0], "r": [-0.1, -2.0]},
 	"scared": {"eyes": "eye_fear", "mouth": "mouth_wail", "brows": "brow_worried", "l": [0.0, -18.0], "r": [0.0, -18.0], "fx": ["sweat"], "talk": "scared"},
-	"crying": {"eyes": "eye_pinch", "mouth": "mouth_wail", "brows": "brow_worried", "l": [-0.04, -22.0], "r": [-0.04, -22.0], "fx": ["tears"], "talk": "sad"},
-	"hurt": {"eyes": "eye_pinch", "mouth": "mouth_grit", "brows": "brow_worried", "l": [-0.08, -20.0], "r": [-0.08, -20.0], "fx": ["sweat"], "talk": "angry"},
+	"crying": {"eyes": "eye_pinch", "mouth": "mouth_wail", "brows": "brow_worried", "l": [-0.04, -22.0], "r": [-0.04, -22.0], "fx": ["tears"], "talk": "sad", "rest": "teary"},
+	"hurt": {"eyes": "eye_pinch", "mouth": "mouth_grit", "brows": "brow_worried", "l": [-0.08, -20.0], "r": [-0.08, -20.0], "fx": ["sweat"], "talk": "angry", "rest": "wince"},
 	"disgusted": {"eyes": "eye_half", "eye_l": "eye_squint", "mouth": "mouth_bleh", "brows": "brow_tapered", "l": [-0.18, 16.0], "r": [-0.04, -4.0]},
 	"confused": {"eyes": "eye_open", "eye_l": "eye_wide", "mouth": "mouth_skew", "brows": "brow_arched", "l": [0.1, -8.0], "r": [-0.12, 10.0]},
-	"embarrassed": {"eyes": "eye_happy", "mouth": "mouth_wavy", "brows": "brow_worried", "l": [0.0, -14.0], "r": [0.0, -14.0], "fx": ["blush"], "talk": "scared"},
+	"embarrassed": {"eyes": "eye_happy", "mouth": "mouth_wavy", "brows": "brow_worried", "l": [0.0, -14.0], "r": [0.0, -14.0], "fx": ["blush"], "talk": "scared", "rest": "bashful"},
 	"guilty": {"eyes": "eye_side", "mouth": "mouth_eek", "brows": "brow_worried", "l": [0.0, -14.0], "r": [0.0, -14.0], "fx": ["sweat"], "talk": "scared"},
 	"pleading": {"eyes": "eye_shine", "mouth": "mouth_wobble", "brows": "brow_worried", "l": [-0.04, -24.0], "r": [-0.04, -24.0], "talk": "sad"},
-	"dizzy": {"eyes": "eye_spiral", "mouth": "mouth_wavy", "brows": "brow_arched", "l": [0.1, -10.0], "r": [-0.06, 10.0]},
-	"love": {"eyes": "eye_heart", "mouth": "mouth_smile", "brows": "brow_arched", "l": [0.08, -8.0], "r": [0.08, -8.0], "fx": ["blush"], "talk": "happy"},
+	"dizzy": {"eyes": "eye_spiral", "mouth": "mouth_wavy", "brows": "brow_arched", "l": [0.1, -10.0], "r": [-0.06, 10.0], "rest": "confused"},
+	"love": {"eyes": "eye_heart", "mouth": "mouth_smile", "brows": "brow_arched", "l": [0.08, -8.0], "r": [0.08, -8.0], "fx": ["blush"], "talk": "happy", "rest": "smitten"},
 	"furious": {"eyes": "eye_glare", "mouth": "mouth_snarl", "brows": "brow_tapered", "l": [-0.22, 28.0], "r": [-0.22, 28.0], "fx": ["vein"], "talk": "angry"},
 	"innocent": {"eyes": "eye_look", "mouth": "mouth_whistle", "brows": "brow_arched", "l": [0.08, -6.0], "r": [0.1, -6.0]},
 	"sleepy": {"eyes": "eye_sleepy", "mouth": "mouth_small", "brows": "brow_straight", "l": [0.04, -6.0], "r": [0.04, -6.0]},
 	"sly": {"eyes": "eye_glare", "mouth": "mouth_grin", "brows": "brow_tapered", "l": [-0.12, 18.0], "r": [-0.06, 12.0], "talk": "sly"},
+	# The open-eyed faces the moments above settle into, each keeping its mood.
+	"content": {"eyes": "eye_half", "mouth": "mouth_smile", "brows": "brow_arched", "l": [0.04, -4.0], "r": [0.04, -4.0]},
+	"lofty": {"eyes": "eye_half", "mouth": "mouth_small", "brows": "brow_arched", "l": [0.14, -8.0], "r": [0.14, -8.0]},
+	"beaming": {"eyes": "eye_open", "mouth": "mouth_grin", "brows": "brow_arched", "l": [0.08, -8.0], "r": [0.08, -8.0], "talk": "happy"},
+	"bashful": {"eyes": "eye_side", "mouth": "mouth_wavy", "brows": "brow_worried", "l": [0.0, -14.0], "r": [0.0, -14.0], "fx": ["blush"], "talk": "scared"},
+	"teary": {"eyes": "eye_shine", "mouth": "mouth_wobble", "brows": "brow_worried", "l": [-0.04, -22.0], "r": [-0.04, -22.0], "fx": ["tears"], "talk": "sad"},
+	"smitten": {"eyes": "eye_shine", "mouth": "mouth_smile", "brows": "brow_arched", "l": [0.08, -8.0], "r": [0.08, -8.0], "fx": ["blush"], "talk": "happy"},
+	"wince": {"eyes": "eye_squint", "mouth": "mouth_grit", "brows": "brow_worried", "l": [-0.08, -20.0], "r": [-0.08, -20.0], "fx": ["sweat"], "talk": "angry"},
 }
 ## The mouths a face flaps between while talking, by the feeling it talks with.
 ## Every set opens and shuts; an angry face talks through its teeth, a sad one
@@ -84,9 +97,12 @@ const ON_SKIN := ["mouth", "eye_l", "eye_r", "brow_l", "brow_r"]
 const PLAIN := {"eye_": "eye_open", "mouth_": "mouth_neutral", "brow_": "brow_straight"}
 const FACE_SHADER := preload("res://shaders/paper_face.gdshader")
 const LIFT := 0.012        # how much nearer the eye than the body card the face is drawn, metres
+const SETTLE := 1.5        # seconds a moment (an expression whose eyes cannot blink) lasts on someone not talking
 
-var expression := "neutral"
+var expression := "neutral"     # the expression on show (a moment may have settled into its "rest")
+var asked := "neutral"          # the expression last asked for with set_expression
 var talking := false
+var hold := false               # keep a moment as it is: someone asleep or out cold, or a still picture of it
 
 var _dir := ""
 var _rig := {}
@@ -115,6 +131,7 @@ var _layout := {}          # how the face sits on the drawing on show; empty for
 var _hidden: Array = []    # slots the drawing on show leaves out
 var _mouth_now := ""       # the mouth on show, by its front name
 var _under: Texture2D      # the body drawing on show (parts on skin are cut off by what is not skin)
+var _still := 0.0          # seconds a moment has been on show without talking (it settles at SETTLE)
 
 
 func setup(dir: String, rig: Dictionary, card_height: float, body_px: Vector2) -> void:
@@ -182,6 +199,40 @@ func set_expression(wanted: String, snap := false) -> void:
 	if not EXPRESSIONS.has(wanted):
 		push_warning("No expression called %s" % wanted)
 		return
+	asked = wanted
+	_still = 0.0
+	_apply(wanted, snap)
+
+
+## Can both eyes of this expression blink? If not it is a moment (see EXPRESSIONS).
+static func blinks(name: String) -> bool:
+	var e: Dictionary = EXPRESSIONS.get(name, EXPRESSIONS["neutral"])
+	return e.get("eye_l", e["eyes"]) in BLINKING_EYES and e.get("eye_r", e["eyes"]) in BLINKING_EYES
+
+
+## The open-eyed expression a moment settles into (itself, for one that can blink).
+static func rest_of(name: String) -> String:
+	return String(EXPRESSIONS.get(name, {}).get("rest", name))
+
+
+## Can the eyes on show blink? True where the drawing on show hides them (shades, the back of his head).
+func can_blink() -> bool:
+	for i in 2:
+		if not ["eye_l", "eye_r"][i] in _hidden and not _eyes[i] in BLINKING_EYES:
+			return false
+	return true
+
+
+## A moment has lasted long enough: the open-eyed face of its mood, the eyes opening as from a blink.
+func _settle() -> void:
+	_still = 0.0
+	_apply(rest_of(expression), false)
+	_blink_t = BLINK[0]
+	_blink_stage = 2
+	_show_eyes()
+
+
+func _apply(wanted: String, snap: bool) -> void:
 	expression = wanted
 	var e: Dictionary = EXPRESSIONS[wanted]
 	_eyes = [e.get("eye_l", e["eyes"]), e.get("eye_r", e["eyes"])]
@@ -247,6 +298,14 @@ func _process(delta: float) -> void:
 	if not _fx.is_empty():
 		_fx_time += delta
 		_place_fx()
+
+	# A moment (eyes that cannot blink) left on someone who is not talking settles into its open-eyed rest.
+	if talking or hold or not EXPRESSIONS[expression].has("rest"):
+		_still = 0.0
+	else:
+		_still += delta
+		if _still >= SETTLE:
+			_settle()
 
 	# Blink: half shut, shut, half shut, open.
 	if _blink_t >= 0.0:

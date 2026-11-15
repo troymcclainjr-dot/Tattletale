@@ -60,7 +60,7 @@ static func build(p: Node3D) -> void:
 	# Three from the neighbourhood, on the court (working names).
 	p.person(st, "tre", 15.5, 15.2, {"name": "TRE", "face": "happy"})
 	p.person(st, "dee", 18.2, 13.6, {"name": "BIG DEE", "face": "smug"})
-	p.person(st, "chuy", 24.5, 16.4, {"name": "CHUY", "face": "calm"})
+	p.person(st, "chuy", 24.5, 16.4, {"name": "CHUY", "face": "content"})
 	p.room("COURT", st, 0.0, FENCE_V, W, D, null, {"street": true})
 	_ground(p, st)
 	_fences(p, st)
