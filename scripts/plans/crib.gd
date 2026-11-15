@@ -7,7 +7,9 @@ extends RefCounted
 ## front door opens onto Rose Hill (plans/street.gd): E by the door inside
 ## takes him out of it there, and the travel list (OUTSIDE) puts him on Rose
 ## Hill at the door. The front is drawn there, by `front` below, with the door
-## and the windows where these rooms have them. (Placeholder: the number.)
+## and the windows where these rooms have them. E at the back yard's gate goes
+## out into the alley behind the row (plans/backs.gd). (Placeholders: the
+## number, the gate's BACK GATE.)
 ##
 ##   ground floor:  living room | dining room (the stairs) | kitchen wing, side yard | back yard
 ##   upstairs:      his room | hall, bathroom | back bedroom
@@ -234,11 +236,12 @@ static func _ground(p: Node3D, g1: int, g2: int, g3: int, g4: int) -> void:
 	Props.chair(p, g3, 2.85, 4.8, 0.0, Props.VINYL)
 	Props.chair(p, g3, 2.85, 6.4, 180.0, Props.VINYL)
 	Props.poster(p, g3, 1.7, 3.48, 0.0, 0.45, 0.6, Color(0.85, 0.82, 0.7), "", 1.7)
-	# The yard: dustbins, and a gate to the alley that stays shut.
+	# The yard: dustbins, and the gate to the alley (E there: out into the backs, plans/backs.gd).
 	Props.cans(p, g4, 4.3, 0.55, 2)
 	Props.bench(p, g4, 0.45, 1.6, 90.0, 1.4, Color(0.4, 0.3, 0.2))
 	var n: Node3D = p.node_of(g4)
 	p.slab(n, true, 0.05, 1.9, 2.9, 0.0, 1.7, 0.07, Color(0.36, 0.38, 0.4))
+	p.use_point(g4, "BACK GATE", 2.4, 0.6, "goto:backs", 1.0, 1.9)
 	Kit.box(n, Vector3(16.0, 0.3, 3.0), p.pt(2.5, -1.5, -0.2), Kit.tex("asphalt", 3.0, Color(0.2, 0.22, 0.27)))      # the alley
 	# Across the alley: the backs of the next row's garages.
 	p.slab(n, true, -3.0, -5.5, 10.5, 0.0, 2.7, 0.2, Kit.tex("brick", 1.5, Color(0.4, 0.22, 0.2), true, Color(0.6, 0.56, 0.62)))

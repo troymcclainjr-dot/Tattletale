@@ -43,7 +43,9 @@ extends RefCounted
 ## Invented here (placeholders): the house number 510, the WELCOME mat, "GOD
 ## BLESS OUR HOME" on the sampler over her bed, "MARCH 1994" on the calendar
 ## from her shop (the shop's name on it is the owners' own: MISS BEA'S CORNER
-## GROCERY), and the door names FRONT DOOR, SEWING ROOM DOOR, BATHROOM DOOR.
+## GROCERY), and the door names FRONT DOOR, SEWING ROOM DOOR, BATHROOM DOOR,
+## BACK DOOR (E by the pantry's back door: out into her yard and the alley,
+## plans/backs.gd).
 
 const Props := preload("res://scripts/props.gd")
 const Bea := preload("res://scripts/props_bea.gd")
@@ -487,6 +489,7 @@ static func _back_rooms(p: Node3D, b: int, sun_paint: Variant) -> void:
 	p.slab(n, true, 0.14, 7.9, 8.45, 1.2, 1.9, 0.02, Color(0.2, 0.25, 0.35))
 	p.slab(n, true, 0.155, 7.92, 8.43, 1.6, 1.88, 0.02, Color(0.95, 0.85, 0.55))
 	Kit.ball(n, 0.035, p.pt(7.88, 0.19, 1.0), Bea.BRASS, 6)
+	p.use_point(b, "BACK DOOR", 7.9, 0.55, "goto:backs", 1.0, 2.0)      # out into her yard in the backs (plans/backs.gd)
 
 
 static func pantry_groove() -> Color:

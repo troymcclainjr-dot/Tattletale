@@ -23,7 +23,9 @@ extends RefCounted
 ##   ROSE HILL TERRACE   the paved strips in front of the porches, Miss Bea's
 ##                       yard, the north pavement, the road, the corner, and
 ##                       Old York Road from 10 m up it across to a step onto its
-##                       far pavement. The cars, poles, lamps, steps and the
+##                       far pavement, and its near pavement on up to the alley's
+##                       mouth behind 532 (E there goes into the backs,
+##                       plans/backs.gd). The cars, poles, lamps, steps and the
 ##                       rest stand in it. West of the row only the pavement and
 ##                       the road, along the park's railing: at its end E goes
 ##                       on to the park (plans/park.gd).
@@ -57,7 +59,7 @@ extends RefCounted
 ## pavement; Camille Porter across from her) are not added.
 ##
 ## Invented words (placeholders): "BUS STOP", "MAIL", and the use points'
-## "HOME", "MISS BEA'S", "TO THE PARK". "STOP" is the road sign. The house
+## "HOME", "MISS BEA'S", "TO THE PARK", "TO THE ALLEY". "STOP" is the road sign. The house
 ## numbers are the old game's.
 ##
 ## Numbers are metres on the plan (see place.gd): u from the left end of 516,
@@ -115,7 +117,7 @@ static func build(p: Node3D) -> void:
 	# the pavement; the parked cars it looks across fade while they are in the way.
 	var street: int = p.room(NAME, st, WEST, 2.0, right, FAR, null, {
 		"street": true,
-		"areas": [[ROW_END, STRIP, right, FAR], [WEST, PAVE, ROW_END, FAR], [51.68, D, CORNER, PAVE], [CORNER, 2.0, right, PAVE]],
+		"areas": [[ROW_END, STRIP, right, FAR], [WEST, PAVE, ROW_END + 2.0, FAR], [51.68, D, CORNER, PAVE], [CORNER, 2.0, right, PAVE], [CORNER, -7.5, OY0 - 0.15, 3.0]],
 		"cam_near": 1.9, "cam_y": 3.4, "look_y": 3.0})
 	p.rooms[street]["cam_max_x"] = p.pt(EAST - 2.6, 0.0).x  # never up against the houses across Old York Road
 	Walk.begin()                    # the ground's thousands of pieces, gathered into a few meshes
@@ -132,6 +134,7 @@ static func build(p: Node3D) -> void:
 	p.use_point(st, "HOME", homes["crib"]["door"], homes["crib"]["steps"] + 0.35, "goto:crib", 0.9, 2.4)
 	p.use_point(st, "MISS BEA'S", homes["bea"]["door"], homes["bea"]["steps"] + 0.4, "goto:bea", 0.9, 2.4)
 	p.use_point(st, "TO THE PARK", WEST + 0.75, PAVE + 1.2, "goto:park", 1.2, 1.9)
+	p.use_point(st, "TO THE ALLEY", 57.88, -5.75, "goto:backs", 1.2, 1.9)      # the alley's mouth up Old York Road (plans/backs.gd)
 
 
 ## A box on the plan: u0..u1, v0..v1, y0..y1.
@@ -606,16 +609,16 @@ static func _context(p: Node3D, st: int) -> void:
 		s += 3.1
 		k += 1
 	# Rose Hill's own back yards: a board fence along the alley, trees whose
-	# crowns stand over the roofs.
+	# crowns stand over the roofs (where plans/backs.gd has them in the yards).
 	_gb(p, p.node_of(st), ROW_END, CORNER - 0.13, -4.05, -3.95, 0.0, 1.8, Color(0.45, 0.33, 0.23))
-	Outdoor.tree(p, st, -35.5, -2.1, "a", 1.1, 120.0)
-	Outdoor.tree(p, st, 9.5, -1.6, "a", 1.15, 30.0)
+	Outdoor.tree(p, st, -33.6, -2.5, "a", 1.1, 120.0)
+	Outdoor.tree(p, st, 11.0, -2.4, "a", 1.15, 30.0)
 	Outdoor.tree(p, st, 30.5, -2.0, "b", 1.3, 140.0)
 	Outdoor.tree(p, st, 47.5, -1.4, "a", 1.0, 250.0)
-	Outdoor.tree(p, st, -15.0, -2.2, "b", 1.2, 80.0)
-	Outdoor.tree(p, st, -27.0, -1.8, "d", 1.1, 200.0)
+	Outdoor.tree(p, st, -10.6, -2.6, "b", 1.2, 80.0)
+	Outdoor.tree(p, st, -28.6, -2.2, "d", 1.1, 200.0)
 	Outdoor.tree(p, st, 0.5, -2.4, "d", 1.2, 310.0)
-	Outdoor.tree(p, st, 20.0, -1.5, "a", 0.95, 170.0)
+	Outdoor.tree(p, st, 15.0, 1.4, "a", 0.95, 170.0)
 	Outdoor.tree(p, st, 39.0, -2.3, "d", 1.05, 60.0)
 
 

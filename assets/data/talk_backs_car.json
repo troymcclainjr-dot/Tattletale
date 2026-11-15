@@ -1,0 +1,14 @@
+{
+	"about": "Ronnie by the car under the tarp on 522's yard (plans/backs.gd). Placeholder lines written on 2026-11-15 by the homes worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "What's under the tarp?", "face": "focused", "next": "tarp"},
+			{"say": "Does it run?", "face": "suspicious", "next": "run"},
+			{"say": "Need a hand?", "face": "happy", "next": "hand"}
+		]},
+		"tarp": {"speaker": "npc", "face": "neutral", "line": "A car. Allegedly.", "next": ""},
+		"run": {"speaker": "npc", "face": "happy", "line": "It runs when it wants. Like me.", "next": ""},
+		"hand": {"speaker": "npc", "face": "neutral", "line": "I need a carburetor. Got one of those?", "next": ""}
+	}
+}

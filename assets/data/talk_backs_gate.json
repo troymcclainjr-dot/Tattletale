@@ -1,0 +1,14 @@
+{
+	"about": "Nia at 526's open gate in the alley (plans/backs.gd). Placeholder lines written on 2026-11-15 by the homes worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "Evening.", "face": "happy", "next": "evening"},
+			{"say": "Seen anybody cutting through?", "face": "suspicious", "next": "through"},
+			{"say": "Nice washing.", "face": "happy", "next": "washing"}
+		]},
+		"evening": {"speaker": "npc", "face": "neutral", "line": "It's always evening back here. Sun never finds the alley.", "next": ""},
+		"through": {"speaker": "npc", "face": "neutral", "line": "Everybody cuts through. It's an alley.", "next": ""},
+		"washing": {"speaker": "npc", "face": "suspicious", "line": "Don't touch the washing.", "next": ""}
+	}
+}

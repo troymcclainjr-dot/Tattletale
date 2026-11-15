@@ -30,7 +30,8 @@
 			"park": {"who": ["tre", "dee", "chuy"], "odds": 0.45, "weapons": {"pistol": 3, "uzi": 1}},
 			"alley": {"who": ["tre", "rell", "lil", "ronnie"], "odds": 0.55, "weapons": {"pistol": 3, "uzi": 2, "ak": 1}},
 			"club": {"who": ["dee", "snoozy", "chuy", "vic"], "odds": 0.3, "weapons": {"pistol": 3, "uzi": 1}},
-			"liquor": {"who": ["snoozy", "doc"], "odds": 0.2, "weapons": {"pistol": 1}}
+			"liquor": {"who": ["snoozy", "doc"], "odds": 0.2, "weapons": {"pistol": 1}},
+			"backs": {"who": ["vic", "ronnie"], "odds": 0.35, "weapons": {"pistol": 3, "uzi": 1}}
 		},
 		"sight": 18.0,
 		"alert": 12.0,
