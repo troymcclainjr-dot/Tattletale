@@ -22,6 +22,7 @@ extends Node3D
 ## outside the studio; CONTINUE goes back to the place he was last at.
 ##   E at the booth microphone: he performs, seen through the control-room glass
 ##                  with black bars top and bottom; Esc steps away
+##   E at the camcorder in the control room: plan, shoot and premiere a music video (video_shoot.gd)
 ##
 ## In a conversation: click a line (it turns yellow under the mouse) or press
 ## its number; E, Space, Enter or a click moves on.
@@ -53,7 +54,8 @@ extends Node3D
 ##   wear:piece:colour (wear:hat:#cc2222; wear: alone puts his own clothes back),
 ##   arm:who:weapon[:aim] (give someone else here a weapon: arm:TRE:ak:aim), day:n (make it day n),
 ##   expr:name or expr:who:name (an expression set as the game sets one, unlike --face: a moment such as a laugh
-##   settles into an open-eyed face after paper_face.gd's SETTLE; expr:CHUY:calm for someone else here).
+##   settles into an open-eyed face after paper_face.gd's SETTLE; expr:CHUY:calm for someone else here),
+##   video:... (the music video, a stage at a time: video:song, video:plan, video:shoot ... see video_shoot.gd).
 
 const Building := preload("res://scripts/building.gd")
 const Place := preload("res://scripts/place.gd")
@@ -96,6 +98,7 @@ const MOODS := ["focused", "preachy", "smug", "shout", "happy"]     # his face c
 const WEAPONS := ["", "pistol", "uzi", "ak"]      # Q goes round these
 const Crosshair := preload("res://scripts/crosshair.gd")
 const PlayerState := preload("res://scripts/player_state.gd")
+const VideoShoot := preload("res://scripts/video_shoot.gd")
 const AIM_SIDE := 0.96      # radians: the cross this far above or below level (55 degrees) is still "to the side"
 const AIM_AWAY := true      # turn his back to aim at a cross well above him (paper_actor.gd HOLDS back_point: his elbows out at his
                             # sides, the gun unseen in front of him); false: he stays side-on and tips it up as far as AIM_TIP
@@ -200,6 +203,7 @@ var _look := {}                # what he has taken off the racks, if his clothes
 var _picks := {}               # which colour of WARDROBE each of those is: piece to its number in the list
 var _day := 0                  # days since the game began; he sleeps in his own bed to end one
 var _state := PlayerState.new()     # his cash, health, rounds, songs and videos (player_state.gd): kept in the save
+var _video: Node               # the music video: the camcorder in the studio, the shoot, the premiere (video_shoot.gd)
 var _shot_lineup := ""         # screenshot mode: --lineup's weapon:rig:poses
 var _shot_strip := ""          # screenshot mode: --strip's weapons:rigs:views:frames
 
@@ -334,6 +338,9 @@ func _ready() -> void:
 	_choose.build(_rig_dir("e"))
 	_choose.started.connect(_begin_game)
 	_choose.cancelled.connect(_leave_choose)
+	_video = VideoShoot.new()
+	add_child(_video)
+	_video.setup(self)
 
 	var curtain := CanvasLayer.new()
 	curtain.layer = 20
@@ -1531,6 +1538,8 @@ func _take_shot() -> void:
 					face_of.face.hold = false
 					face_of.face.set_expression(bits[bits.size() - 1])
 					print("[shot] expr: %s on %s" % [bits[bits.size() - 1], face_of.name])
+			"video":        # video:song, video:plan, video:shoot ...: see video_shoot.gd
+				await _video.shot_step(bits)
 			"frywalk":
 				var way := Vector2(float(bits[1]), float(bits[2]))
 				for i in int(float(bits[3]) * 60.0):
@@ -1550,6 +1559,8 @@ func _take_shot() -> void:
 		pass                        # its own camera
 	elif _performing:
 		_perform_cam(0.0)
+	elif _mode == "video" and _video.stage_name == "shoot":
+		_video.hold_camera()          # the shoot's own camera
 	else:
 		_change_room(_building.room_at_pos(_actor.position, _room), true)
 		if _close:

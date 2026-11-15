@@ -48,6 +48,7 @@ var obstacles: Array = []
 var portals: Array = []              # none here; a Place may have some (stairs)
 var watchers: Array = []             # none here; a Place may have some (walk_light.gd)
 var mic: Node3D                      # the booth microphone: E steps up to it (`to` is where he stands) and main.gd puts on the show
+var use_points: Array = []           # more use_point.gd spots, added from outside (video_shoot.gd's camcorder)
 var active := -1
 var title := "THE BACK ROOM"
 var arrive := Vector3(1.97, 0, 7.35)     # on the pavement, in front of the street door
@@ -188,6 +189,7 @@ func show_room(n: int) -> void:
 func usables() -> Array:
 	var out := doors.duplicate()
 	out.append(mic)
+	out.append_array(use_points)
 	return out
 
 

@@ -1,0 +1,96 @@
+{
+ "chain": {
+  "front": [
+   {
+    "file": "chain.png",
+    "rect": [
+     386,
+     652,
+     236,
+     352
+    ]
+   }
+  ],
+  "side": [
+   {
+    "file": "chain_side.png",
+    "rect": [
+     500,
+     680,
+     170,
+     300
+    ]
+   }
+  ]
+ },
+ "shades": {
+  "front": [
+   {
+    "file": "shades.png",
+    "rect": [
+     330,
+     232,
+     290,
+     230
+    ]
+   }
+  ],
+  "side": [
+   {
+    "file": "shades_side.png",
+    "rect": [
+     440,
+     270,
+     330,
+     180
+    ]
+   }
+  ]
+ },
+ "studs": {
+  "front": [
+   {
+    "file": "stud.png",
+    "rect": [
+     166,
+     568,
+     40,
+     40
+    ]
+   },
+   {
+    "file": "stud.png",
+    "rect": [
+     770,
+     420,
+     40,
+     40
+    ]
+   }
+  ],
+  "side": [
+   {
+    "file": "stud.png",
+    "rect": [
+     376,
+     536,
+     40,
+     40
+    ]
+   }
+  ]
+ },
+ "bill": {
+  "file": "bill.png",
+  "rect": [
+   0,
+   0,
+   200,
+   92
+  ],
+  "size_m": [
+   0.2,
+   0.092
+  ]
+ }
+}
