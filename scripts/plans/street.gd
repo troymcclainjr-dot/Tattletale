@@ -51,6 +51,7 @@ extends RefCounted
 const Props := preload("res://scripts/props.gd")
 const Street := preload("res://scripts/props_street.gd")
 const Outdoor := preload("res://scripts/outdoor.gd")
+const Walk := preload("res://scripts/sidewalk.gd")
 
 const NAME := "ROSE HILL TERRACE"
 const SIGN := "ROSE HILL TER"
@@ -72,6 +73,10 @@ const LEFT := -32.0       # how far the street is drawn to the left
 const BACK := -60.0       # and up Old York Road (the yards behind the row)
 const NORTH := -170.0     # how far Old York Road itself runs on up, into the dusk
 const FRONT := 40.0       # and down it
+## The party walls (and the ends of the rows), where the pavement has its expansion joints.
+const WALLS := [-27.5, -19.99, -19.29, -12.75, -6.38, 0.0, 6.33, 12.86, 19.24, 25.64, 32.02, 38.53, 45.0, 51.78]
+## What each house has between its steps and the pavement, 508 to 532 (sidewalk.gd's front()).
+const FRONTS := ["old", "yard", "brick", "a", "yard", "paint", "a", "old", "new", "yard", "brick", "new", "a"]
 
 
 static func build(p: Node3D) -> void:
@@ -90,8 +95,10 @@ static func build(p: Node3D) -> void:
 		"areas": [[0.0, STRIP, right, FAR], [51.78, D, CORNER, PAVE], [CORNER, 2.0, right, PAVE]],
 		"cam_near": 1.9, "cam_y": 3.4, "look_y": 3.0})
 	p.rooms[street]["cam_max_x"] = p.pt(EAST - 2.6, 0.0).x  # never up against the houses across Old York Road
+	Walk.begin()                    # the ground's thousands of pieces, gathered into a few meshes
 	_ground(p, st)
 	_row(p, st)
+	Walk.end()
 	_kerbside(p, st)
 	_corner(p, st)
 	_context(p, st)
@@ -133,56 +140,155 @@ static func _gb_run(p: Node3D, n: Node3D, u0: float, u1: float, v0: float, v1: f
 
 static func _ground(p: Node3D, st: int) -> void:
 	var n: Node3D = p.node_of(st)
-	var walk := Outdoor.pavement()
 	var paved := Outdoor.tex("out_paving", 3.2, Color(0.6, 0.58, 0.55), Color(0.86, 0.85, 0.83))
-	var tar := Outdoor.tex("out_asphalt", 9.6, Color(0.24, 0.26, 0.31))       # Rose Hill's is wide: its cracks further apart
+	var tar := Walk.asphalt()                                   # Rose Hill's and Old York's, worn grey
 	var alley := Outdoor.tex("out_asphalt", 4.8, Color(0.3, 0.3, 0.32))
-	var kerb := Outdoor.KERB
-	var gutter := Outdoor.GUTTER
 	var dirt := Color(0.28, 0.25, 0.21)
 	_gb(p, n, LEFT - 30.0, 120.0, NORTH - 20.0, FRONT + 10.0, -0.8, -0.5, Color(0.12, 0.13, 0.12))
 	# Behind the row: the back yards, the alley, the next street's yards.
 	_gb(p, n, LEFT, CORNER, BACK, D, -0.3, -0.02, dirt)
 	_gb_run(p, n, LEFT, CORNER - 0.02, -7.5, -4.0, -0.3, -0.01, alley)
-	# The paved strip in front of the porches (under them too), the pavement,
-	# Old York Road's near pavement round the corner.
-	_gb_run(p, n, LEFT, CORNER, D, PAVE, -0.3, 0.0, paved)
-	_gb_run(p, n, LEFT, OY0 - 0.15, PAVE, KERB, -0.3, 0.0, walk)
-	_gb_run(p, n, CORNER, OY0 - 0.15, NORTH, PAVE, -0.3, 0.0, walk)
-	# Kerbs, a little proud of the pavement, the roads, the gutters along them.
-	_gb_run(p, n, LEFT, OY0, KERB, ROAD, -0.3, 0.015, kerb)
-	_gb_run(p, n, OY0 - 0.15, OY0, NORTH, KERB, -0.3, 0.015, kerb)
-	_gb_run(p, n, LEFT, OY0, FAR, FAR + 0.15, -0.3, 0.015, kerb)
-	_gb_run(p, n, OY0 - 0.15, OY0, FAR + 0.15, FRONT, -0.3, 0.015, kerb)
-	_gb_run(p, n, OY1, OY1 + 0.15, NORTH, FRONT, -0.3, 0.015, kerb)
+	# Under the pavements' slabs and kerbs: the dirt that shows down the joints.
+	# (Its top under the ramps' feet and the tree pits' dirt; a centimetre short
+	# of the kerbs' faces, so that no two faces lie in one plane.)
+	_gb_run(p, n, LEFT, OY0 - 0.01, D, ROAD - 0.01, -0.31, -0.06, Walk.JOINT)
+	_gb_run(p, n, CORNER, OY0 - 0.01, NORTH, D, -0.31, -0.06, Walk.JOINT, 20.0)
+	_gb_run(p, n, LEFT, OY0 - 0.01, FAR, NEAR, -0.31, -0.06, Walk.JOINT)
+	_gb_run(p, n, CORNER, OY0 - 0.01, NEAR, FRONT, -0.31, -0.06, Walk.JOINT)
+	_gb_run(p, n, OY1, OYE, NORTH, FRONT, -0.31, -0.06, Walk.JOINT, 20.0)
+	# The pavement (sidewalk.gd): concrete slabs one across, square to the kerb,
+	# an expansion joint at every party wall (the porches' strips are _row's).
+	# Under the lamps gum, by the cans grease; tree pits long empty, a root's
+	# heave beside one; in front of 524 a run of slabs relaid every which way.
+	Walk.run(p, n, true, LEFT, CORNER, PAVE, KERB, WALLS, {
+		-30.5: "old", -24.0: "patch", -21.0: "crack", -19.6: "dirty", -18.4: "old", -15.0: "pit", -13.6: "heave",
+		-11.9: "stain", -10.4: "new", -8.5: "crack", -5.5: "old", -2.4: "gum", 2.4: "crack", 10.4: "stain",
+		14.6: "pit", 16.8: "heave", 18.4: "crack", 21.6: "old", 23.2: "stain", 26.4: "new", 28.0: "patch",
+		29.6: "brick", 31.2: "half", 34.5: "pit", 36.2: "lift", 37.7: "split", 39.3: "gum", 42.5: "stain",
+		44.2: "warm", 45.8: "new", 47.5: "new", 49.2: "sunk", 52.6: "old", 54.2: "crack"}, 3.0)
+	# A black line where the houses' strips meet the city's pavement.
+	_gb_run(p, n, LEFT, CORNER, PAVE - 0.007, PAVE + 0.007, -0.3, -0.006, Walk.FILL)
+	# Old York Road's pavements, on up past 532 and the alley's mouth (its
+	# kerb laid low for the cars), and the near ones across Rose Hill (bare).
+	var oy_walls: Array = [10.0, 1.0, -4.0, -7.5]
+	var w := -12.0
+	while w > NORTH:
+		oy_walls.append(w)
+		w -= 4.5 if w > -44.0 else 4.6
+	Walk.run(p, n, false, NORTH, PAVE, CORNER, OY0 - 0.15, oy_walls, {
+		12.0: "old", 5.0: "gum", 1.5: "stain", -1.5: "crack", -4.9: "drive", -6.6: "drive", -14.0: "heave",
+		-20.5: "split", -26.0: "new", -33.0: "patch", -47.0: "crack", -60.0: "old"}, 5.0)
+	Walk.run(p, n, true, LEFT, CORNER, FAR + 0.15, NEAR, WALLS, {-5.0: "patch", 10.0: "crack", 30.0: "new", 47.0: "old"}, 7.0, -1)
+	Walk.run(p, n, false, NEAR, FRONT, CORNER, OY0 - 0.15, [33.0], {31.0: "crack"}, 9.0)
+	Walk.run(p, n, false, NORTH, PAVE, OY1 + 0.15, OYE, oy_walls, {2.0: "crack", -9.0: "new"}, 11.0, -1)
+	Walk.run(p, n, false, PAVE + 1.2, FRONT, OY1 + 0.15, OYE, [], {20.0: "stain"}, 12.0, -1)
+	Walk.slab(p, n, false, PAVE + Walk.GAP * 0.5, PAVE + 1.2 - Walk.GAP * 0.5, OY1 + 1.25 + Walk.GAP, OYE - Walk.GAP * 0.5, "old", 13.0, -1)
+	_gb_run(p, n, OYE, EAST + 12.0, NORTH, FRONT, -0.3, 0.0, paved, 20.0)
+	# Granite kerbs in stones, a storm drain's mouth in the north one; concrete gutters.
+	Walk.kerb(p, n, true, LEFT, CORNER, KERB, ROAD, [[52.4, 53.3, "inlet"]], 1.0)
+	Walk.kerb(p, n, false, NORTH, PAVE, OY0 - 0.15, OY0, [[-7.5, -4.0, "drop"]], 2.0)
+	Walk.kerb(p, n, true, LEFT, CORNER, FAR, FAR + 0.15, [], 3.0, -1)
+	Walk.kerb(p, n, false, FAR + 0.15, FRONT, OY0 - 0.15, OY0, [], 4.0)
+	Walk.kerb(p, n, false, NORTH, FRONT, OY1, OY1 + 0.15, [[14.0, 15.2, "gap"]], 5.0, -1)
+	Walk.gutter(p, n, true, LEFT, OY0, ROAD, ROAD + 0.45, 1.0)
+	Walk.gutter(p, n, true, LEFT, OY0, FAR, FAR - 0.45, 2.0)
+	Walk.gutter(p, n, false, NORTH, ROAD + 0.45, OY0, OY0 + 0.45, 3.0)
+	Walk.gutter(p, n, false, FAR - 0.45, FRONT, OY0, OY0 + 0.45, 4.0)
+	Walk.gutter(p, n, false, NORTH, FRONT, OY1, OY1 - 0.45, 5.0)
+	Walk.drain(p, n, 52.45, 53.25, ROAD + 0.01, ROAD + 0.4)
+	_corners(p, n)
+	# The roads: worn asphalt, dug up and patched, cracks sealed with tar.
 	_gb_run(p, n, LEFT, OY0, ROAD, FAR, -0.36, -0.06, tar)
 	_gb_run(p, n, OY0, OY1, NORTH, FRONT, -0.36, -0.06, tar)
-	_gb_run(p, n, LEFT, OY0, ROAD, ROAD + 0.36, -0.06, -0.048, gutter)
-	_gb_run(p, n, LEFT, OY0, FAR - 0.36, FAR, -0.06, -0.048, gutter)
-	_gb_run(p, n, OY0, OY0 + 0.36, NORTH, ROAD, -0.06, -0.048, gutter)
-	_gb_run(p, n, OY0, OY0 + 0.36, FAR, FRONT, -0.06, -0.048, gutter)
-	_gb_run(p, n, OY1 - 0.36, OY1, NORTH, FRONT, -0.06, -0.048, gutter)
-	# The near pavement (bare), Old York Road's far pavement and the yards behind it.
-	_gb_run(p, n, LEFT, OY0 - 0.15, FAR + 0.15, NEAR, -0.3, 0.0, walk)
-	_gb_run(p, n, CORNER, OY0 - 0.15, NEAR, FRONT, -0.3, 0.0, walk)
-	_gb_run(p, n, OY1 + 0.15, OYE, NORTH, FRONT, -0.3, 0.0, walk)
-	_gb_run(p, n, OYE, EAST + 12.0, NORTH, FRONT, -0.3, 0.0, paved, 20.0)
-	# Rose Hill's paint: pairs of worn yellow dashes every 12 m down the middle,
-	# no lines along it. Old York Road has its double yellow line.
-	var yellow := Color(0.84, 0.69, 0.25)
+	for at: Array in [[27.6, 28.3, ROAD + 0.5, 20.6], [33.0, 35.2, 22.2, 23.8], [44.0, 55.2, 23.4, 24.2], [4.0, 5.4, 18.0, 19.1], [-14.0, -9.5, 23.9, 25.0], [60.5, 62.5, 4.0, 6.0], [64.4, 67.9, -22.0, -19.5]]:
+		Walk.patch(p, n, at[0], at[1], at[2], at[3])
+	# The seam where the asphalt meets the gutter, sealed: straight, a little ragged.
+	var seam: Array = []
+	var su := LEFT
+	while true:
+		seam.append(Vector2(su, ROAD + 0.47 + (Props.rnd(su * 1.3) - 0.5) * 0.016))
+		if su >= OY0 + 0.47:
+			break
+		su = minf(su + 2.3, OY0 + 0.47)
+	Walk.tar_line(p, n, seam, 0.03, 0.0)
+	# Sealed cracks, all out in the lanes (none under the parked cars): down the
+	# joint just off the middle where the two passes of the paver met, down the
+	# far lane's wheel track, and a few short ones across.
+	Walk.tar_line(p, n, Walk.wander(Vector2(-14.5, 21.8), 0.0, 6, 1.5, 2.0, 6.0))
+	Walk.tar_line(p, n, Walk.wander(Vector2(19.0, 21.8), 0.0, 7, 1.4, 3.0, 6.0))
+	Walk.tar_line(p, n, Walk.wander(Vector2(-6.0, 24.2), 0.0, 8, 1.3, 4.0, 8.0))
+	for at: Vector3 in [Vector3(9.5, 18.9, 91.0), Vector3(37.4, 19.3, 93.0), Vector3(-18.0, 19.2, 88.0)]:
+		Walk.tar_line(p, n, Walk.wander(Vector2(at.x, at.y), at.z, 4, 1.15, at.x, 10.0))
+	# Up Old York Road, two lengths down its east lane and one in the west, one across.
+	Walk.tar_line(p, n, Walk.wander(Vector2(66.3, -58.0), 90.0, 14, 1.6, 5.0, 8.0))
+	Walk.tar_line(p, n, Walk.wander(Vector2(61.0, -12.0), 90.0, 7, 1.5, 7.0, 8.0))
+	Walk.tar_line(p, n, Walk.wander(Vector2(64.3, -6.5), 0.0, 3, 0.95, 8.0, 10.0))
+	Walk.tar_line(p, n, Walk.wander(Vector2(61.0, 21.0), 95.0, 6, 1.5, 6.0))
+	# Oil where cars stand, in the gaps between those parked now.
+	for at: Vector3 in [Vector3(41.6, 17.5, 20.0), Vector3(33.2, 17.4, -10.0), Vector3(25.5, 17.6, 35.0), Vector3(9.4, 17.45, 0.0), Vector3(1.2, 17.55, -25.0), Vector3(17.8, 17.5, 60.0)]:
+		Walk.oil(p, n, at.x, at.y, 0.9, 0.55, at.z)
+	# Rose Hill's paint: pairs of yellow dashes every 12 m down the middle, worn
+	# to pieces; no lines along it. Old York Road's double yellow line stops
+	# either side of the crosswalk at the corner.
+	var yellow := Walk.YELLOW
 	var u := 3.0 - 24.0
 	while u < OY0 - 2.0:
 		for v: float in [MID - 0.15, MID + 0.15]:
-			_gb(p, n, u - 0.6, u + 0.6, v - 0.09, v + 0.09, -0.06, -0.055, yellow)
+			Walk.paint(p, n, u - 0.6, u + 0.6, v - 0.09, v + 0.09, yellow, u + v, 0.3)
 		u += 12.0
 	for c: float in [63.71, 63.95]:
-		_gb_run(p, n, c - 0.05, c + 0.05, NORTH, FRONT, -0.06, -0.055, Color(0.9, 0.74, 0.22), 20.0)
-	# A storm drain in the gutter, manhole covers.
-	_gb(p, n, 52.4, 53.3, ROAD + 0.02, ROAD + 0.4, -0.048, -0.041, Color(0.1, 0.1, 0.11))
-	for i in 5:
-		_gb(p, n, 52.47 + i * 0.17, 52.53 + i * 0.17, ROAD + 0.06, ROAD + 0.36, -0.041, -0.037, Color(0.3, 0.3, 0.32))
-	for at: Vector2 in [Vector2(17.0, 22.4), Vector2(41.5, 19.6), Vector2(63.0, 8.5)]:
-		Kit.cyl(n, 0.36, 0.012, p.pt(at.x, at.y, -0.054), Color(0.26, 0.26, 0.28), Vector3.ZERO, 12)
+		for span: Array in [[NORTH, 13.0], [16.2, FRONT]]:
+			Walk.paint(p, n, c - 0.05, c + 0.05, span[0], span[1], Color(0.86, 0.72, 0.24), c + float(span[0]), 0.06, 3.0)
+	for at: Vector2 in [Vector2(17.0, 22.4), Vector2(41.5, 19.6), Vector2(62.6, 8.5), Vector2(63.0, -30.0)]:
+		Walk.manhole(p, n, at.x, at.y)
+
+
+## The corner of Old York Road: a kerb cut each way across the road from the
+## corner (a ramp down through the kerb, a red pad of dots at its foot), the
+## crosswalks between them, faded, and the stop line; the near corner's ramp.
+static func _corners(p: Node3D, n: Node3D) -> void:
+	var r0 := CORNER                 # the ramp across Rose Hill, in line with Old York's pavement
+	var r1 := CORNER + 1.2
+	var q0 := PAVE                   # the ramp across Old York, in line with Rose Hill's
+	var q1 := PAVE + 1.2
+	Walk.ramp(p, n, true, r0, r1, q1 + Walk.GAP * 0.5, ROAD)
+	Walk.ramp(p, n, false, q0 + Walk.GAP * 0.5, q1 - Walk.GAP * 0.5, r1 + Walk.GAP, OY0)
+	Walk.slab(p, n, true, r0 + Walk.GAP * 0.5, r1 - Walk.GAP * 0.5, q0 + Walk.GAP * 0.5, q1 - Walk.GAP * 0.5, "a", 1.0)
+	Walk.slab(p, n, true, r1 + Walk.GAP * 0.5, OY0 - 0.15 - Walk.GAP * 0.5, q1 + Walk.GAP * 0.5, KERB - Walk.GAP * 0.5, "b", 2.0)
+	# The corner stone between the two ramps.
+	Walk.piece(p, n, true, r1 + Walk.GAP * 0.5, OY0, KERB, ROAD, -0.3, Walk.KERB_TOP, Walk.look("out_granite", 1.0, Color.WHITE, Walk.GRANITE[1]))
+	Walk.piece(p, n, false, q1 + Walk.GAP * 0.5, KERB, OY0 - 0.15, OY0, -0.3, Walk.KERB_TOP, Walk.look("out_granite", 1.0, Color.WHITE, Walk.GRANITE[2]))
+	# Across the road on Rose Hill's near side, and on Old York's far side.
+	Walk.ramp(p, n, true, r0, r1, FAR + 1.2, FAR)
+	Walk.slab(p, n, true, r0 + Walk.GAP * 0.5, r1 - Walk.GAP * 0.5, FAR + 1.2 + Walk.GAP, NEAR - Walk.GAP * 0.5, "a", 3.0, -1)
+	Walk.slab(p, n, true, r1 + Walk.GAP * 0.5, OY0 - 0.15 - Walk.GAP * 0.5, FAR + 0.15 + Walk.GAP * 0.5, NEAR - Walk.GAP * 0.5, "old", 4.0, -1)
+	Walk.piece(p, n, true, r1 + Walk.GAP * 0.5, OY0, FAR, FAR + 0.15, -0.3, Walk.KERB_TOP, Walk.look("out_granite", 1.0, Color.WHITE, Walk.GRANITE[0]))
+	Walk.ramp(p, n, false, q0 + Walk.GAP * 0.5, q1 - Walk.GAP * 0.5, OY1 + 1.25, OY1)
+	# The crosswalks, ladders of wide white bars: the bars the wheels run over
+	# worn to pieces and grey, the rest whole. The stop line.
+	var white := Walk.WHITE_PAINT.darkened(0.12)
+	var v := ROAD + 0.75
+	var k := 0
+	while v < FAR - 0.85:
+		var worn := _near(v + 0.2, [19.2, 20.8, 22.7, 24.3]) < 0.45     # Rose Hill's wheel tracks, each way
+		Walk.paint(p, n, r0 + 0.6 - 1.2, r1 - 0.6 + 1.2, v, v + 0.4, white, 10.0 + k, 0.4 if worn else 0.03, 0.3, 0.14 if worn else 0.03)
+		v += 0.9
+		k += 1
+	var u := OY0 + 0.75
+	while u < OY1 - 0.85:
+		var worn := _near(u + 0.2, [60.6, 62.2, 65.4, 67.0]) < 0.45     # Old York's
+		Walk.paint(p, n, u, u + 0.4, q0 + 0.6 - 1.2, q1 - 0.6 + 1.2, white, 30.0 + k, 0.4 if worn else 0.03, 0.3, 0.14 if worn else 0.03)
+		u += 0.9
+		k += 1
+	Walk.paint(p, n, CORNER - 1.3, CORNER - 0.95, MID + 0.1, FAR - 0.5, white, 50.0, 0.25, 0.3, 0.1)
+
+
+## How far `x` is from the nearest of `marks`.
+static func _near(x: float, marks: Array) -> float:
+	var best := INF
+	for m: float in marks:
+		best = minf(best, absf(x - m))
+	return best
 
 
 # -------------------------------------------------------------------- the row
@@ -212,19 +318,39 @@ static func _row(p: Node3D, st: int) -> void:
 		[45.0, 6.78, {"no": "530", "wall": _brick(Color(0.9, 0.86, 0.86)), "trim": Street.CREAM, "door": dc["wood"], "door_left": true, "bay": "cream", "lintel": stone, "height": 8.41, "chimney": true, "lit": "10111", "curtain": Color(0.95, 0.93, 0.86), "pots": true, "porch_light": true}],
 		[51.78, 4.9, {"no": "532", "wall": formstone, "trim": Street.WHITE, "door": dc["green"], "door_left": false, "bay": "cream", "height": 8.27, "chimney": true, "porch": false, "lit": "10011", "curtain": Color(0.55, 0.32, 0.62), "porch_light": true}],
 	]
-	for row: Array in houses:
+	var n: Node3D = p.node_of(st)
+	for i in houses.size():
+		var row: Array = houses[i]
 		var u0: float = row[0]
 		var w: float = row[1]
 		var h: Dictionary = row[2]
 		Street.porch_house(p, st, u0, D, w, h)
 		# The steps take up floor.
 		var door: float = u0 + (0.9 if h.get("door_left", true) else w - 0.9)
-		if h.get("porch", true):
+		var porch: bool = h.get("porch", true)
+		if porch:
 			p.block(door - 0.625, STRIP, door + 0.625, STRIP + 0.9)
 		else:
 			p.block(door - 0.7, D, door + 0.7, D + 1.35)
-	# The gap between 508's row and 510's, dark.
-	_gb(p, p.node_of(st), -19.99, -19.29, 1.0, D - 0.3, 0.0, 6.5, Color(0.08, 0.08, 0.1))
+		# Its own strip down to the pavement (sidewalk.gd), the porch or the
+		# stoop sitting on it, tar at the party wall; in the pavement its water
+		# meter's lid near the kerb, its gas valve in front of the steps.
+		var v0 := STRIP if porch else D
+		Walk.front(p, n, u0 + Walk.WIDE * 0.5, u0 + w - Walk.WIDE * 0.5, v0, PAVE - Walk.GAP * 0.5, door, FRONTS[i], u0)
+		if porch:
+			Walk.footing(p, n, u0, u0 + w, STRIP, door, 1.25, 0.9)
+		else:
+			Walk.footing(p, n, door, door, D, door, 1.4, 1.35)
+		Walk.piece(p, n, true, u0 - 0.009, u0 + 0.009, v0, PAVE - 0.007, -0.3, -0.006, Walk.FILL)
+		Walk.lid(p, n, u0 + 0.8, KERB - 0.5, "water")
+		Walk.lid(p, n, door, PAVE + 0.32, "gas")
+	# The gap between 508's row and 510's, dark; a slab of walk into it.
+	_gb(p, n, -19.99, -19.29, 1.0, D - 0.3, 0.0, 6.5, Color(0.08, 0.08, 0.1))
+	Walk.front(p, n, -19.99 + Walk.WIDE * 0.5, -19.29 - Walk.WIDE * 0.5, D, PAVE - Walk.GAP * 0.5, -19.64, "dirty", 7.0)
+	# A power company's vault by the pole, sewer cleanouts.
+	Walk.lid(p, n, 21.95, KERB - 0.62, "vault")
+	Walk.lid(p, n, 9.0, PAVE + 0.25, "cleanout")
+	Walk.lid(p, n, 34.0, PAVE + 0.25, "cleanout")
 
 
 # ---------------------------------------------------------------- kerbside

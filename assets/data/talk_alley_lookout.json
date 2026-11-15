@@ -1,0 +1,14 @@
+{
+	"about": "Lil, the lookout on her crate in the back lot's alley (plans/alley.gd). Placeholder lines written on 2026-11-15 by the places worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "Nice night for it.", "face": "happy", "next": "night"},
+			{"say": "Who are you watching for?", "face": "suspicious", "next": "watching"},
+			{"say": "Is this crate taken?", "face": "focused", "next": "crate"}
+		]},
+		"night": {"speaker": "npc", "face": "neutral", "line": "For what? I'm sitting on a crate.", "next": ""},
+		"watching": {"speaker": "npc", "face": "suspicious", "line": "Whoever's watching me. So far that's you.", "next": ""},
+		"crate": {"speaker": "npc", "face": "neutral", "line": "It's taken. Look at it. I'm on it.", "next": ""}
+	}
+}

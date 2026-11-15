@@ -1,0 +1,14 @@
+{
+	"about": "Tre on the corner at the mouth of the back lot (plans/alley.gd). Placeholder lines written on 2026-11-15 by the places worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "Seen anybody come through?", "face": "suspicious", "next": "seen"},
+			{"say": "What's back there?", "face": "focused", "next": "back"},
+			{"say": "Nice shoes.", "face": "happy", "next": "shoes"}
+		]},
+		"seen": {"speaker": "npc", "face": "suspicious", "line": "Just you. Twice now, if you keep standing there.", "next": ""},
+		"back": {"speaker": "npc", "face": "neutral", "line": "Back where? It's an alley. It's got a back.", "next": ""},
+		"shoes": {"speaker": "npc", "face": "neutral", "line": "I know.", "next": ""}
+	}
+}

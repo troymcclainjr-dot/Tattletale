@@ -1,0 +1,14 @@
+{
+	"about": "The bartender at the club (plans/club.gd). Placeholder lines written on 2026-11-14 by the places worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "A glass of milk, please. Two percent.", "face": "happy", "next": "milk"},
+			{"say": "Seen anything strange tonight? Asking for a friend.", "face": "suspicious", "next": "strange"},
+			{"say": "Is that tip jar declared income?", "face": "focused", "next": "tips"}
+		]},
+		"milk": {"speaker": "npc", "face": "neutral", "line": "We got beer, and we got water out the tap. Pick one.", "next": ""},
+		"strange": {"speaker": "npc", "face": "neutral", "line": "Every night. Your friend can ask me himself.", "next": ""},
+		"tips": {"speaker": "npc", "face": "neutral", "line": "It's declared empty. Look at it.", "next": ""}
+	}
+}

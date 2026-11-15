@@ -1,0 +1,14 @@
+{
+	"about": "The doorman outside the club (plans/club.gd). Placeholder lines written on 2026-11-14 by the places worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "Does this establishment hold a valid liquor licence?", "face": "focused", "next": "licence"},
+			{"say": "I'm on the list.", "face": "smug", "next": "list"},
+			{"say": "What's the cover tonight?", "face": "happy", "next": "cover"}
+		]},
+		"licence": {"speaker": "npc", "face": "neutral", "line": "It's on the wall. Behind the other licence.", "next": ""},
+		"list": {"speaker": "npc", "face": "neutral", "line": "Ain't no list. There's me.", "next": ""},
+		"cover": {"speaker": "npc", "face": "neutral", "line": "Five before midnight. Ten after. Twenty for you.", "next": ""}
+	}
+}

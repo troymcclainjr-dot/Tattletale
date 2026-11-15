@@ -63,6 +63,10 @@ extends Node3D
 ##   nearest; or window: a pane in sight; or car: a car's glass; then fire n), aimon:who (the cross on it, no
 ##   shot), hud:0 / hud:1, freeze (what is flying stops where it is), combatcheck (a window, someone put down,
 ##   the rounds and the HUD checked; it prints its problems). In --lineup an x in a pose catches him firing.
+##   More in shot_steps.gd, for many pictures in one run: snap:name (a picture now, beside the --shot file),
+##   eye:x:y:z:x:y:z[:fov] (later pictures from there; eye: alone, back to following him), place:id, at:x:z,
+##   room:NAME (stand him there), beat:n (hold the dancers at that beat), stats (draw calls and frame time),
+##   check (--check-walk and --check-faces for the place he is in now).
 
 const Building := preload("res://scripts/building.gd")
 const Place := preload("res://scripts/place.gd")
@@ -80,8 +84,11 @@ const PLANS := {
 	"street": "res://scripts/plans/street.gd",
 	"bea": "res://scripts/plans/bea.gd",
 	"clothes": "res://scripts/plans/clothes.gd",
+	"club": "res://scripts/plans/club.gd",
+	"alley": "res://scripts/plans/alley.gd",
 }
 const FlickerCheck := preload("res://scripts/flicker_check.gd")
+const ShotSteps := preload("res://scripts/shot_steps.gd")      # more --do steps: snap, eye, place, at, room, beat, stats, check
 const PaperActor := preload("res://scripts/paper_actor.gd")
 const Wanderer := preload("res://scripts/wanderer.gd")
 const TalkBox := preload("res://scripts/talk_box.gd")
@@ -144,6 +151,8 @@ const PLACES := [
 	{"id": "street", "name": "ROSE HILL TERRACE", "note": "THE BLOCK"},
 	{"id": "bea", "name": "MISS BEA'S HOUSE", "note": "PORCH-FRONT HOUSE"},
 	{"id": "clothes", "name": "CLOTHING STORE", "note": "FRESH THREADS"},
+	{"id": "club", "name": "THE LOWDOWN", "note": "NIGHT CLUB"},
+	{"id": "alley", "name": "THE BACK LOT", "note": "BEHIND THE LOWDOWN"},
 ]
 
 ## name: [camera position, look-at point, vertical field of view]
@@ -168,6 +177,7 @@ var _actor: Node3D             # the lead
 var _fry: Node3D               # the second character
 var _fry_brain: Node
 var _cast := {}                # place id: the people there, each {"actor", "brain" (or null), "talk" (a file, or "")}
+var _came_from := ""           # the place he has just left through a door to this one (a "goto:" use point)
 var _talk_with: Node3D         # who he is talking to
 var _wander := false           # screenshot mode: let the wanderers wander
 var _usables: Array = []       # everything E can be used on
@@ -516,6 +526,10 @@ func _open_place(id: String) -> void:
 		if member["talk"] != "":
 			_usables.append(member["actor"])
 	_actor.position = _building.arrive
+	for point: Node3D in _building.use_points if "use_points" in _building else []:
+		if _came_from != "" and point.id == "goto:" + _came_from:
+			_actor.position = point.global_position      # through a door between two places: out of the door back
+	_came_from = ""
 	_actor.areas = _building.walk_areas()
 	_room = _building.room_at_pos(_actor.position, 0)
 	_building.show_room(_room)
@@ -536,6 +550,8 @@ func _people(id: String, site: Node3D) -> void:
 		npc.reach = who.get("reach", npc.REACH)
 		npc.weapon = who.get("weapon", "")
 		npc.aiming = who.get("aiming", false)
+		npc.performing = who.get("dance", false)      # dancing: the performance at the microphone, from beat "beat" on
+		npc._beat = who.get("beat", 0.0)
 		npc.obstacles = site.obstacles
 		npc.others = [_actor]
 		if npc.face and who.has("face"):
@@ -552,7 +568,7 @@ func _people(id: String, site: Node3D) -> void:
 		var talk: String = who.get("talk", "")
 		if talk != "":
 			npc.used.connect(_start_talk.bind(npc, talk))
-		cast.append({"actor": npc, "brain": brain, "talk": talk})
+		cast.append({"actor": npc, "brain": brain, "talk": talk, "wear": who.get("wear", {})})
 	_cast[id] = cast
 	_dress_for_day()
 
@@ -895,6 +911,9 @@ func _use_point(id: String, _by: Node3D) -> void:
 			_picks[piece] = next
 		_dress_lead()
 		_save_game()
+	elif id.begins_with("goto:"):      # a door to another place: he comes out of its door back here (_open_place)
+		_came_from = _place
+		_travel_to(id.trim_prefix("goto:"))
 	elif id == "sleep":
 		_cut_to(func() -> void:
 			_day += 1
@@ -988,6 +1007,9 @@ func _dress_for_day() -> void:
 	for id: String in _cast:
 		for member: Dictionary in _cast[id]:
 			var npc: Node3D = member["actor"]
+			if npc.has_wardrobe() and not member.get("wear", {}).is_empty():
+				npc.wear(_outfit_of(member["wear"]))      # dressed for that place by its plan ("wear"): the same every day
+				continue
 			if npc.has_wardrobe():       # layers: a different cut as well as colour
 				var look := {}
 				if _day > 0:
@@ -1557,6 +1579,8 @@ func _take_shot() -> void:
 				for i in int(float(bits[3]) * 60.0):
 					_fry.walk(_floor_dir(way), way, 1.0 / 60.0)
 				print("[shot] fry walked to %.2f, %.2f" % [_fry.position.x, _fry.position.z])
+			"snap", "eye", "place", "at", "room", "beat", "stats", "check":     # shot_steps.gd: many pictures in one run, from anywhere
+				await ShotSteps.step(self, bits)
 			_:              # fire, reload, hurt, shoot, aimon, hud, freeze, combatcheck
 				await _combat.step(bits)
 	if _shot_talk > 0.0 and _actor.face:
