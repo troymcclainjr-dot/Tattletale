@@ -1,8 +1,10 @@
 extends RefCounted
 ## The back lot's props (plans/alley.gd): the club's back door and loading
-## door, dumpsters, a car stripped and left on blocks, tyres, a mattress, a
-## sleeper under his blanket, steam off a grate, a street lamp gone dark, the
-## backs of the row with its boarded house, and the stash room's things. As in
+## door, dumpsters, rubbish bags, a car stripped and left on blocks, tyres, a
+## mattress, a sleeper under his blanket, a burning drum, steam off a grate, a
+## street lamp gone dark, the lookout's perch, the backs of the row with its
+## boarded house, the stash room's things, and the watcher that cuts the lot's
+## fence down when the camera is behind it. As in
 ## props.gd each takes (u, v) on the plan and `yaw` (0 faces the street, 90
 ## right, 180 the back, 270 left), keeps its floor clear through place.gd's
 ## `prop` unless it says not, and returns its group. Every word on them is a
@@ -13,8 +15,10 @@ const Club := preload("res://scripts/props_club.gd")
 const Street := preload("res://scripts/props_street.gd")
 const Park := preload("res://scripts/props_park.gd")
 
-const RUBBER := Color(0.07, 0.07, 0.08)
+const RUBBER := Color(0.13, 0.13, 0.14)        # old rubber, gone grey (black reads as a hole in the ground)
 const RUST := Color(0.42, 0.21, 0.1)
+const BAGS := [Color(0.26, 0.3, 0.27), Color(0.8, 0.8, 0.76), Color(0.3, 0.32, 0.38)]      # rubbish bags: dark green-grey, white, blue-grey
+const PERCH := 0.305                          # the top of the lookout's perch (perch): where her feet go
 const PLY := Color(0.55, 0.42, 0.26)          # plywood over the vacant's door and windows (houses.gd's)
 const BLOCK := Color(0.52, 0.52, 0.5)         # cinder block
 const STEEL := Color(0.3, 0.33, 0.36)
@@ -23,15 +27,56 @@ const STONE := Color(0.6, 0.58, 0.53)         # sills and lintels
 
 
 ## Tags in spray paint on a face of `parent` that faces +z, at depth z: each
-## mark [text, x, y, height, tilt] (made-up words, placeholders).
+## mark [text, x, y, height, tilt] (made-up words, placeholders; props_club.gd's spray).
 static func tags_on(parent: Node3D, marks: Array, z: float, seed := 0.0) -> void:
 	for i in marks.size():
 		var m: Array = marks[i]
 		var c: Color = Club.SPRAY[int(Props.rnd(seed + i * 4.1) * Club.SPRAY.size()) % Club.SPRAY.size()]
-		var l := Props.words(parent, String(m[0]), Vector3(float(m[1]), float(m[2]), z + i * 0.002), float(m[3]), c)
-		l.rotation_degrees.z = float(m[4])
-		l.outline_size = 10
-		l.outline_modulate = Color(0.05, 0.05, 0.06)
+		Club.spray(parent, String(m[0]), Vector3(float(m[1]), float(m[2]), z + i * 0.003), float(m[3]), c, float(m[4]), seed + i * 7.7)
+
+
+## Rust come through paint, on a face of `parent` that faces +z, round `at`
+## (its z just off the face), about `size` across: three blots of rust, one
+## over another, each its own shape and turned its own way (never a square).
+static func rust(parent: Node3D, at: Vector3, size: float, seed := 0.0) -> void:
+	var tones := [RUST, RUST.darkened(0.25), Color(0.56, 0.3, 0.14)]
+	for k in 3:
+		var r1 := Props.rnd(seed + k * 1.9)
+		var r2 := Props.rnd(seed + k * 3.7 + 0.3)
+		var turn := Kit.group(parent, at + Vector3((r1 - 0.5) * size * 0.5, (r2 - 0.5) * size * 0.35, 0.0006 * k), Vector3(0, 0, r2 * 180.0))
+		var blot := Kit.cyl(turn, size * (0.5 - 0.13 * k), 0.001, Vector3.ZERO, tones[k], Vector3(90, 0, 0), 7)
+		blot.scale = Vector3(1.0 + 0.7 * r1, 1.0, 0.45 + 0.4 * r2)
+
+
+## Black bin-bag plastic, in a colour: a shine on it where the lamps catch it.
+static func plastic(look: Color) -> StandardMaterial3D:
+	var m := StandardMaterial3D.new()
+	m.albedo_color = look
+	m.roughness = 0.32
+	m.metallic_specular = 0.8
+	return m
+
+
+## Rubbish bags, n in a heap round (u, v) on the plan: a full sack, lumpy where
+## what is in it presses out low down, pinched at the neck, its two tied ends
+## standing up in flaps; dark green-grey, white or blue-grey plastic with a
+## shine on it (a round black bag reads as a bomb, or as a hole in the ground;
+## balls one on another, as something else again). Decoration: they do not block.
+static func bags(p: Node3D, b: int, u: float, v: float, n := 2, seed := 0.0) -> void:
+	var node: Node3D = p.node_of(b)
+	for i in n:
+		var r := Props.rnd(seed + i * 3.3 + u * 0.7)
+		var size := 0.22 + 0.07 * r
+		var at: Vector3 = p.pt(u + (i - (n - 1) * 0.5) * 0.46 + (r - 0.5) * 0.08, v + (0.14 if i % 2 == 1 else -0.06))
+		var g := Kit.group(node, at, Vector3(0, r * 360.0, (r - 0.5) * 16.0))
+		var m := plastic(BAGS[(i + int(seed)) % BAGS.size()])
+		var sack := Kit.ball(g, size, Vector3(0, size * 0.92, 0), m, 12)
+		sack.scale = Vector3(1.0, 0.98, 0.9)
+		for s: Array in [[0.46, 0.5, 0.22, 0.6], [-0.42, 0.46, -0.24, 0.56], [0.05, 0.42, 0.5, 0.5]]:     # lumps, low down
+			Kit.ball(g, size * float(s[3]), Vector3(size * float(s[0]), size * float(s[1]), size * float(s[2])), m, 8)
+		Kit.cyl(g, size * 0.24, size * 0.26, Vector3(0, size * 1.92, 0), m, Vector3.ZERO, 7, size * 0.1)       # pinched to the neck
+		for s: float in [-1.0, 1.0]:                # the tied ends, standing up
+			Kit.box(g, Vector3(size * 0.22, size * 0.36, size * 0.02), Vector3(s * size * 0.1, size * 2.16, 0), m, Vector3(0, 0, s * -26.0))
 
 
 # ----------------------------------------------------------- the club's back
@@ -86,7 +131,7 @@ static func dumpster(p: Node3D, b: int, u: float, v: float, yaw: float, look: Co
 		var up := Kit.group(g, Vector3(-0.45, 1.17, -0.5), Vector3(-93, 0, 0))       # thrown back, against the wall
 		Kit.box(up, Vector3(0.88, 0.04, 1.04), Vector3(0, 0.02, 0.52), lid)
 		for k in 3:
-			var bag := Kit.ball(g, 0.25, Vector3(-0.72 + k * 0.24, 1.16 + 0.07 * (k % 2), -0.12 + 0.13 * k), Color(0.09, 0.09, 0.1), 7)
+			var bag := Kit.ball(g, 0.25, Vector3(-0.72 + k * 0.24, 1.16 + 0.07 * (k % 2), -0.12 + 0.13 * k), plastic(BAGS[k % BAGS.size()]), 7)
 			bag.scale = Vector3(1.0, 0.72, 0.9)
 		Kit.box(g, Vector3(0.18, 0.22, 0.012), Vector3(-0.35, 1.32, 0.2), Props.PAPER, Vector3(20, 35, 15))
 	else:
@@ -94,7 +139,7 @@ static func dumpster(p: Node3D, b: int, u: float, v: float, yaw: float, look: Co
 			Kit.box(g, Vector3(0.88, 0.04, 1.04), Vector3(s * 0.45, 1.19, 0), lid, Vector3(0, 0, s * 2.0))
 	for k in 3:
 		var r := Props.rnd(u * 1.7 + v + k * 3.1 + seed)
-		Kit.box(g, Vector3(0.2 + 0.25 * r, 0.12 + 0.2 * Props.rnd(k + u + seed), 0.004), Vector3(-0.6 + k * 0.55, 0.3 + 0.45 * r, 0.503), RUST)
+		rust(g, Vector3(-0.6 + k * 0.55, 0.3 + 0.45 * r, 0.502), 0.2 + 0.2 * r, u + k * 2.7 + seed)
 	Props.words(g, "KEEP LID CLOSED", Vector3(0.0, 0.98, 0.51), 0.055, Color(0.9, 0.88, 0.8), 0.0, false)
 	tags_on(g, marks, 0.514, seed)
 	return g
@@ -152,14 +197,16 @@ static func stripped_car(p: Node3D, b: int, u: float, v: float, yaw: float, pain
 		Kit.box(g, Vector3(0.06, y2 - y1, 0.1), Vector3(s * (w * 0.5 - 0.1), (y1 + y2) * 0.5, 0.05), faded)
 		Kit.tube(g, Vector3(s * (w * 0.5 - 0.07), y1, -1.32), Vector3(s * (w * 0.5 - 0.12), y2, -0.88), 0.035, faded, 5)
 	Kit.box(g, Vector3(w - 0.18, 0.05, 1.56), Vector3(0, y2 + 0.025, -0.13), faded)
-	Kit.box(g, Vector3(0.5, 0.004, 0.4), Vector3(0.2, y2 + 0.052, -0.4), RUST)
+	rust(Kit.group(g, Vector3(0.2, y2 + 0.05, -0.4), Vector3(-90, 0, 0)), Vector3(0, 0, 0.002), 0.42, u + 0.5)      # (a face looking up)
 	Kit.box(g, Vector3(w - 0.12, 0.42, 0.85), Vector3(0, y0 + 0.21, -l * 0.5 + 0.5), inside)
 	var boot := Kit.group(g, Vector3(0, y1 + 0.02, -1.34), Vector3(68, 0, 0))
 	Kit.box(boot, Vector3(w - 0.08, 0.04, 0.84), Vector3(0, 0, -0.42), faded)
 	# Rust on the near side's wings (never out over the door holes), the tags.
+	var near := Kit.group(g, Vector3(-w * 0.5, 0, 0), Vector3(0, -90, 0))         # its +z looks out of the near side
 	for k in 4:
 		var r := Props.rnd(u * 2.1 + v * 0.3 + k * 1.9)
-		Kit.box(g, Vector3(0.004, 0.1 + 0.16 * r, 0.25 + 0.3 * r), Vector3(-w * 0.5 - 0.003, y0 + 0.12 + 0.3 * r, [l * 0.5 - 0.47, -l * 0.5 + 0.45, l * 0.5 - 0.75, -l * 0.5 + 0.8][k]), RUST)
+		var along: float = [l * 0.5 - 0.47, -l * 0.5 + 0.45, l * 0.5 - 0.75, -l * 0.5 + 0.8][k]
+		rust(near, Vector3(along, y0 + 0.14 + 0.24 * r, 0.002), 0.18 + 0.12 * r, u + k * 3.3)
 	if not marks.is_empty():
 		var side := Kit.group(g, Vector3(-w * 0.5 - 0.01, 0, 0), Vector3(0, -90, 0))
 		tags_on(side, marks, 0.0, u)
@@ -204,8 +251,9 @@ static func mattress(p: Node3D, b: int, u: float, v: float, yaw: float, lean := 
 
 
 ## Somebody asleep under a blanket on flattened cardboard, seen only as the
-## lump of him, the soles of his shoes and his bag (no face). His head is at
-## the +z end; it faces `yaw`. It takes 1.0 by 2.1 of floor.
+## lump of him, the back of his woolly hat, the soles of his shoes and his
+## pack (no face: he has turned it to the wall). His head is at the +z end; it
+## faces `yaw`. It takes 1.0 by 2.1 of floor.
 static func sleeper(p: Node3D, b: int, u: float, v: float, yaw: float, blanket := Color(0.32, 0.34, 0.24)) -> Node3D:
 	var g: Node3D = p.prop(b, u, v, yaw, 1.0, 2.1)
 	var card := Color(0.58, 0.45, 0.3)
@@ -217,15 +265,21 @@ static func sleeper(p: Node3D, b: int, u: float, v: float, yaw: float, blanket :
 		lump.scale = Vector3(1.05, float(s[3]) / float(s[2]), 1.7)
 	for x: float in [-0.08, 0.1]:                 # the soles of his shoes, out of the end of it
 		Kit.box(g, Vector3(0.1, 0.25, 0.05), Vector3(x, 0.13, -0.92), Color(0.82, 0.8, 0.74), Vector3(-15, x * 60.0, 0))
-	var bag := Kit.ball(g, 0.2, Vector3(0.32, 0.17, 0.9), Color(0.9, 0.9, 0.88), 8)
-	bag.scale = Vector3(1.0, 0.85, 0.8)
+	var wool := Color(0.5, 0.16, 0.14)
+	var hat := Kit.ball(g, 0.13, Vector3(-0.02, 0.12, 0.9), wool, 10)
+	hat.scale = Vector3(1.0, 0.95, 1.1)
+	Kit.cyl(g, 0.135, 0.06, Vector3(-0.02, 0.12, 0.8), wool.darkened(0.25), Vector3(90, 0, 0), 10)        # its turned-up brim, where the blanket comes up to it
+	var pack := Kit.group(g, Vector3(0.36, 0.0, 0.62), Vector3(0, -12, 0))                                  # his pack by his head, lying on its back
+	Kit.bevel(pack, Vector3(0.3, 0.13, 0.42), Vector3(0, 0.075, 0), Color(0.22, 0.3, 0.46), 0.04)
+	Kit.bevel(pack, Vector3(0.22, 0.05, 0.18), Vector3(0, 0.15, 0.08), Color(0.18, 0.24, 0.38), 0.02)
 	Kit.cyl(g, 0.04, 0.1, Vector3(-0.38, 0.05, 1.0), Color(0.92, 0.9, 0.84), Vector3.ZERO, 8, 0.05)      # a cup for change
 	return g
 
 
-## A drum somebody burns rubbish in to keep warm: rusted, the fire showing over
-## its rim, holes punched round its foot glowing, and a warm light on the ground
-## round it (`energy`).
+## A drum somebody burns rubbish in to keep warm: rusted, the fire over its rim
+## (flames, each a picture turned to the camera, stretching and shrinking), holes
+## punched round its foot glowing, and a warm light round it (`energy`) that
+## wavers with the flames (Flicker).
 static func burn_barrel(p: Node3D, b: int, u: float, v: float, energy := 1.4) -> Node3D:
 	var g: Node3D = p.prop(b, u, v, 0.0, 0.62, 0.62)
 	var drum := Color(0.3, 0.17, 0.1)
@@ -235,15 +289,75 @@ static func burn_barrel(p: Node3D, b: int, u: float, v: float, energy := 1.4) ->
 	Kit.cyl(g, 0.3, 0.03, Vector3(0, 0.85, 0), drum.darkened(0.35), Vector3.ZERO, 12)
 	Kit.cyl(g, 0.27, 0.02, Vector3(0, 0.83, 0), Kit.flat(Color(1.0, 0.45, 0.12), 2.2), Vector3.ZERO, 12)     # the coals under the rim
 	var orange := Kit.flat(Color(1.0, 0.5, 0.12), 2.6)
-	var yellow := Kit.flat(Color(1.0, 0.85, 0.35), 3.0)
-	for f: Array in [[Vector3(-0.08, 0, 0.04), 0.13, 0.42, orange], [Vector3(0.1, 0, -0.05), 0.11, 0.34, orange],
-			[Vector3(0.02, 0, 0.1), 0.08, 0.3, yellow], [Vector3(-0.03, 0, -0.08), 0.07, 0.24, yellow]]:
-		Kit.cyl(g, f[1], f[2], (f[0] as Vector3) + Vector3(0, 0.84 + float(f[2]) * 0.5, 0), f[3], Vector3.ZERO, 6, 0.0)
 	for k in 5:
 		var a := TAU * k / 5.0 + 0.4
 		Kit.cyl(g, 0.03, 0.01, Vector3(sin(a) * 0.292, 0.12, cos(a) * 0.292), orange, Vector3(90, rad_to_deg(a), 0), 8)
-	Kit.omni(g, Vector3(0, 1.3, 0), Color(1.0, 0.62, 0.3), energy, 5.5)
+	var fire := Flicker.new()
+	fire.name = "Fire"
+	g.add_child(fire)
+	var art := _flame()
+	for f: Array in [[Vector3(-0.07, 0.83, 0.03), 0.4, 0.66], [Vector3(0.1, 0.83, -0.05), 0.32, 0.5], [Vector3(0.0, 0.83, 0.09), 0.26, 0.4], [Vector3(-0.12, 0.83, -0.08), 0.22, 0.34]]:
+		var q := QuadMesh.new()
+		q.size = Vector2(f[1], f[2])
+		q.center_offset = Vector3(0, float(f[2]) * 0.5, 0)       # its foot in the drum: it grows up from there
+		var flame := MeshInstance3D.new()
+		flame.mesh = q
+		var m := StandardMaterial3D.new()
+		m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		m.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		m.billboard_mode = BaseMaterial3D.BILLBOARD_FIXED_Y
+		m.billboard_keep_scale = true
+		m.albedo_texture = art
+		flame.material_override = m
+		flame.position = f[0]
+		flame.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		fire.add_child(flame)
+		fire.flames.append(flame)
+	fire.light = Kit.omni(g, Vector3(0, 1.3, 0), Color(1.0, 0.62, 0.3), energy, 5.5)
+	fire.energy = energy
+	fire.step(0.0)
 	return g
+
+
+## A flame: a teardrop, round at its foot and drawn up to a point, white-yellow
+## in its heart, orange to red at its edges and its tip, its edges soft.
+static func _flame() -> Texture2D:
+	var w := 32
+	var h := 64
+	var img := Image.create(w, h, false, Image.FORMAT_RGBA8)
+	for y in h:
+		var t := 1.0 - float(y) / float(h - 1)                       # 0 at its foot, 1 at its tip
+		var half := 0.46 * pow(1.0 - t, 0.6) * sqrt(clampf(t * 5.0, 0.0, 1.0))
+		for x in w:
+			var d := absf((x + 0.5) / w - 0.5)
+			var a := clampf((half - d) / maxf(half * 0.45, 0.002), 0.0, 1.0)
+			var heart := clampf(1.0 - d / maxf(half, 0.002), 0.0, 1.0)
+			var c := Color(0.95, 0.25, 0.05).lerp(Color(1.0, 0.68, 0.2), heart).lerp(Color(1.0, 0.95, 0.75), heart * heart * (1.0 - t))
+			img.set_pixel(x, y, Color(c.r, c.g, c.b, a * (1.0 - 0.4 * t)))
+	return ImageTexture.create_from_image(img)
+
+
+## A fire's flicker: its flames stretch and shrink and sway, each to its own
+## beat, and its light wavers with them.
+class Flicker extends Node3D:
+	var flames: Array = []
+	var light: OmniLight3D = null
+	var energy := 1.4
+	var _t := 0.0
+
+	func _process(delta: float) -> void:
+		if is_visible_in_tree():
+			step(delta)
+
+	func step(delta: float) -> void:
+		_t += delta
+		for i in flames.size():
+			var f: Node3D = flames[i]
+			var up := 1.0 + 0.2 * sin(_t * (8.0 + i * 2.3) + i * 1.7) + 0.1 * sin(_t * (17.0 + i * 3.1) + i)
+			f.scale = Vector3(1.0 + 0.1 * sin(_t * (6.0 + i) + i * 2.9), up, 1.0)
+		if light:
+			light.light_energy = energy * (0.84 + 0.1 * sin(_t * 9.0) + 0.06 * sin(_t * 23.0 + 1.3))
 
 
 ## An extractor fan in a wall facing `yaw` (its face at (u, v)), its middle y up:
@@ -259,18 +373,79 @@ static func vent(p: Node3D, n: Node3D, u: float, v: float, yaw: float, y: float)
 
 
 ## A storm grate in the alley with steam coming off it to about head height
-## (decoration: it does not block; nobody trips on a grate). The puffs are
-## props_bea.gd's stockpot steam made bigger: white, overlapping, fading out.
+## (decoration: it does not block; nobody trips on a grate): soft puffs, each a
+## picture turned to the camera, that rise off it, grow, lean off on the draught
+## and thin out, one after another (Drift).
 static func steam_grate(p: Node3D, b: int, u: float, v: float) -> Node3D:
 	var g := Kit.group(p.node_of(b), p.pt(u, v))
 	Kit.box(g, Vector3(0.94, 0.012, 0.66), Vector3(0, 0.006, 0), Color(0.04, 0.04, 0.05))
 	for k in 7:
 		Kit.box(g, Vector3(0.03, 0.012, 0.6), Vector3(-0.39 + k * 0.13, 0.018, 0), Color(0.22, 0.23, 0.25))
-	for k in 8:                      # puffs, wider and fainter as they rise and drift, each over the last
-		var t := k / 7.0
-		var puff := Kit.ball(g, 0.15 + 0.2 * t, Vector3(0.05 * k + 0.05 * sin(k * 1.7), 0.12 + 0.2 * k, -0.03 * k), Color(0.92, 0.93, 0.95, 0.3 - 0.028 * k), 10)
-		puff.scale = Vector3(1.2, 0.75, 1.2)
+	var drift := Drift.new()
+	drift.name = "Steam"
+	g.add_child(drift)
+	var soft := _puff()
+	for k in 10:
+		var m := StandardMaterial3D.new()
+		m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		m.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+		m.billboard_keep_scale = true
+		m.albedo_texture = soft
+		m.albedo_color = Color(0.8, 0.82, 0.86, 0.0)
+		var q := QuadMesh.new()
+		q.size = Vector2.ONE
+		var puff := MeshInstance3D.new()
+		puff.mesh = q
+		puff.material_override = m
+		puff.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		drift.add_child(puff)
+		drift.puffs.append(puff)
+	drift.step(0.0)                  # placed before the first frame
 	return g
+
+
+## A soft round puff: white, thick in the middle, gone at the edge.
+static func _puff() -> Texture2D:
+	var grad := Gradient.new()
+	grad.set_color(0, Color(1, 1, 1, 1))
+	grad.set_color(1, Color(1, 1, 1, 0))
+	grad.add_point(0.5, Color(1, 1, 1, 0.45))
+	var t := GradientTexture2D.new()
+	t.gradient = grad
+	t.fill = GradientTexture2D.FILL_RADIAL
+	t.fill_from = Vector2(0.5, 0.5)
+	t.fill_to = Vector2(1.0, 0.5)
+	t.width = 64
+	t.height = 64
+	return t
+
+
+## Steam off a grate: each puff rises from the grate to about head height in
+## LIFE seconds, growing, leaning off with the draught and thinning out, then
+## starts again; they are spread along the climb, so there is always a column.
+class Drift extends Node3D:
+	const LIFE := 3.4
+	var puffs: Array = []
+	var _t := 0.0
+
+	func _process(delta: float) -> void:
+		if is_visible_in_tree():
+			step(delta)
+
+	func step(delta: float) -> void:
+		_t += delta
+		var n := puffs.size()
+		for i in n:
+			var s := fposmod(_t / LIFE + float(i) / n, 1.0)            # how far up this one is, 0..1
+			var puff: MeshInstance3D = puffs[i]
+			var size := 0.32 + 0.9 * s
+			puff.position = Vector3(0.3 * s * s + 0.05 * sin(i * 1.9 + _t * 0.8), 0.14 + 1.8 * s, -0.1 * s)
+			puff.scale = Vector3(size, size * 0.85, 1.0)
+			var m := puff.material_override as StandardMaterial3D
+			var c := m.albedo_color
+			c.a = 0.36 * smoothstep(0.0, 0.12, s) * pow(1.0 - s, 1.4)
+			m.albedo_color = c
 
 
 ## A street lamp that has gone out: a cobra head like the street's, dark.
@@ -296,12 +471,15 @@ static func rubble(p: Node3D, b: int, u: float, v: float, w := 1.6) -> Node3D:
 	return g
 
 
-## Milk crate with a scrap of board across it: a seat, a step, a lookout's perch.
-## It does not keep its floor clear: whoever stands on it does.
-static func perch(p: Node3D, b: int, u: float, v: float, look := Color(0.88, 0.6, 0.12)) -> Node3D:
-	var g := Kit.group(p.node_of(b), p.pt(u, v))
-	Park.crate(g, Vector3.ZERO, 8.0, look)
-	Kit.box(g, Vector3(0.38, 0.016, 0.34), Vector3(0, 0.288, 0), PLY.darkened(0.15), Vector3(0, -6, 0))
+## Two milk crates side by side with a scrap of board across them: a seat, a
+## step, a lookout's perch, its long side along x turned `yaw` (to lie across
+## the camera's view, under the width of whoever stands on it). Its top is
+## PERCH high. It does not keep its floor clear: whoever stands on it does.
+static func perch(p: Node3D, b: int, u: float, v: float, yaw := 0.0, look := Color(0.88, 0.6, 0.12)) -> Node3D:
+	var g := Kit.group(p.node_of(b), p.pt(u, v), Vector3(0, yaw, 0))
+	Park.crate(g, Vector3(-0.185, 0, 0), 4.0, look)
+	Park.crate(g, Vector3(0.195, 0, 0.02), -5.0, look.darkened(0.15))
+	Kit.box(g, Vector3(0.8, 0.025, 0.3), Vector3(0.0, PERCH - 0.0125, 0.0), PLY.darkened(0.15), Vector3(0, -3, 0))
 	return g
 
 
@@ -421,3 +599,50 @@ static func lath(parent: Node3D, x: float, y: float, z: float, w: float, h: floa
 			continue
 		var cut := 0.06 + 0.12 * Props.rnd(x * 3.1 + k * 1.7)
 		Kit.box(parent, Vector3(span - cut, 0.03, 0.006), Vector3(x + mid + (Props.rnd(y + k) - 0.5) * (cut - 0.04), y + at, z + 0.007), Color(0.55, 0.42, 0.28))
+
+
+# ------------------------------------------------------------------- the fences
+
+## The watcher (see Cutaway) for a fence along u at v on the plan, built in
+## `tall`, with its stub built in `stub` (hidden till it is wanted).
+static func cutaway(p: Node3D, b: int, tall: Node3D, stub: Node3D, v: float) -> Cutaway:
+	var c := Cutaway.new()
+	c.name = "Cutaway"
+	c.tall = tall
+	c.stub = stub
+	c.line_z = p.pt(0.0, v).z
+	stub.visible = false
+	p.node_of(b).add_child(c)
+	p.watchers.append(c)
+	return c
+
+
+## The watcher for a fence the camera comes round behind (the lot's chain link
+## along the street): while the camera is past its line and he is on the far
+## side of it, the fence is put away and a knee-high stub of it stands in its
+## place, so the mesh is never a screen over him (props_street.gd's CarFade
+## only fades it, and so near the camera even a ghost of it is a screen). It
+## blocks the same either way: what stops him is the place's, not these.
+## The place tells it where he is (place.watchers), or it finds him.
+class Cutaway extends Node3D:
+	var tall: Node3D = null          # the fence as it stands
+	var stub: Node3D = null          # the low one shown in its place
+	var line_z := 0.0                # the fence's line, world z: the camera is past it when its z is greater
+	var _at := Vector3.INF
+	var _lead: Node3D = null
+
+	func watch(at: Vector3, _delta: float) -> void:
+		_at = at
+
+	func _process(_delta: float) -> void:
+		var cam := get_viewport().get_camera_3d()
+		if cam == null or tall == null or stub == null or not is_visible_in_tree():
+			return
+		if _lead == null and get_tree().current_scene:
+			_lead = get_tree().current_scene.get_node_or_null("Player") as Node3D
+		if _lead:
+			_at = _lead.global_position
+		var eye := cam.global_position
+		var cut := _at != Vector3.INF and eye.z > line_z and _at.z < line_z and eye.distance_to(_at) < 16.0
+		tall.visible = not cut
+		stub.visible = cut
