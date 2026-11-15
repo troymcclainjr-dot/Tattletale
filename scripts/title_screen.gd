@@ -1,7 +1,9 @@
 extends CanvasLayer
 ## The title screen: the game's name over the darkened street, and three
 ## things to pick: NEW GAME, CONTINUE (greyed out until there is a game to go
-## back to) and SETTINGS. Settings has one switch so far, FULLSCREEN, and BACK.
+## back to) and SETTINGS. Settings has FULLSCREEN, MUSIC (how loud the beats
+## and the voice are: Enter or a click goes up a tenth and round to 0%, Left /
+## Right a tenth down or up) and BACK.
 ##
 ## Pick with the mouse, or Up / Down and Enter. Esc backs out of settings; on
 ## the title itself it quits.
@@ -9,11 +11,14 @@ extends CanvasLayer
 ##   var title: CanvasLayer = TitleScreen.new()
 ##   add_child(title)
 ##   title.open(can_continue, fullscreen_now)
+##   title.set_music(level)        # 0 .. 1, what the MUSIC row shows
 ##   title.new_game.connect(...)   title.continue_game.connect(...)   title.fullscreen_set.connect(func(on): ...)
+##   title.music_set.connect(func(level): ...)
 
 signal new_game
 signal continue_game
 signal fullscreen_set(on: bool)
+signal music_set(level: float)
 
 const FONT := preload("res://assets/fonts/Bungee-Regular.ttf")
 const PAPER := Color("#f6f1e3")
@@ -26,6 +31,8 @@ var _new: Button
 var _continue: Button
 var _full: Button
 var _fullscreen := false
+var _music: Button
+var _level := 0.8
 
 
 func _init() -> void:
@@ -63,7 +70,11 @@ func _init() -> void:
 	column.add_child(_settings)
 	_full = _button("", _toggle_fullscreen)
 	_settings.add_child(_full)
+	_music = _button("", _step_music.bind(0.1, true))
+	_music.gui_input.connect(_music_keys)
+	_settings.add_child(_music)
 	_settings.add_child(_button("BACK", _show_settings.bind(false)))
+	set_music(_level)
 	visible = false
 
 
@@ -95,6 +106,29 @@ func _toggle_fullscreen() -> void:
 	_fullscreen = not _fullscreen
 	_full.text = "FULLSCREEN    %s" % ("ON" if _fullscreen else "OFF")
 	fullscreen_set.emit(_fullscreen)
+
+
+## What the MUSIC row shows (main.gd's setting), 0 .. 1.
+func set_music(level: float) -> void:
+	_level = clampf(snappedf(level, 0.1), 0.0, 1.0)
+	_music.text = "MUSIC    %d%%" % roundi(_level * 100.0)
+
+
+## A tenth up or down; `round_to_zero`: past 100% it goes back to 0%.
+func _step_music(by: float, round_to_zero := false) -> void:
+	var to := snappedf(_level + by, 0.1)
+	if round_to_zero and to > 1.0001:
+		to = 0.0
+	set_music(to)
+	music_set.emit(_level)
+
+
+## Left / Right on the MUSIC row.
+func _music_keys(event: InputEvent) -> void:
+	var key := event as InputEventKey
+	if key and key.pressed and (key.physical_keycode == KEY_LEFT or key.physical_keycode == KEY_RIGHT):
+		_step_music(0.1 if key.physical_keycode == KEY_RIGHT else -0.1)
+		_music.accept_event()
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
