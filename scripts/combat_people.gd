@@ -49,6 +49,7 @@ const HOLD_NEAR := 60.0          # pixels: the red cross this near someone's dra
 const HOLD_CONE := 0.2           # radians: pointing with no cross (Ctrl), the barrel this near the line to someone
 const RELEASE := 0.4             # seconds of the cross off him before someone held up runs
 const HANDS_TIME := 0.2          # seconds to get his hands up, or down
+const LIE_APART := 0.7           # metres: he falls no nearer than this to the line anyone lying there lies along, or to anyone's feet
 
 
 class Person:
@@ -592,10 +593,11 @@ func _hold_up(p: Person) -> void:
 	p.state = "held"
 	p.off_t = 0.0
 	p.flee.go(PackedVector2Array(), [])
-	p.flee.face_front = false
-	_look_at(p, main._actor.global_position)
+	p.flee.face_front = true                  # square to us with his hands up (turned towards him, the card read as squeezed)
 	if p.actor.face:
 		p.actor.face.set_expression("scared", true)
+		var to: Vector3 = main._actor.global_position - p.actor.global_position
+		p.actor.face.look(signf(main._screen_dir(Vector2(to.x, to.z)).x))      # his eyes on him
 
 
 # ------------------------------------------------------------ down
@@ -659,7 +661,8 @@ static func _still(a: Node3D) -> void:
 	a.walk(Vector2.ZERO, Vector2.ZERO, 0.0)          # posed so at once
 
 
-## The way his head goes as he falls: across the screen, away from the shot, where there is floor for him.
+## The way his head goes as he falls: across the screen, away from the shot, where there is floor for him (and
+## nobody lying or standing there); with no such way, across the screen all the same.
 func _fall_way(p: Person, dir: Vector3) -> Vector3:
 	var eye: Basis = main._camera.global_transform.basis
 	var right := Vector3(eye.x.x, 0.0, eye.x.z).normalized()
@@ -685,6 +688,22 @@ func _room_to_lie(p: Person, way: Vector3) -> bool:
 		for prop: Rect2 in b.obstacles:
 			if prop.grow(0.05).has_point(flat):
 				return false
+	# Not across anyone lying there already, nor over anyone's feet (in a crowd put down at once, the next to go
+	# down would have them under someone's head).
+	var feet := Vector2(a.global_position.x, a.global_position.z)
+	var line_from := feet + Vector2(way.x, way.z) * float(a.height) * 0.3
+	var line_to := feet + Vector2(way.x, way.z) * float(a.height)
+	for q: Person in here():
+		if q == p or not q.actor.is_visible_in_tree():
+			continue
+		var other := q.actor
+		var their_feet := Vector2(other.global_position.x, other.global_position.z)
+		var their_head := their_feet
+		if q.state == "dead":
+			their_head += Vector2(other.fall_to.x, other.fall_to.z) * float(other.height)
+		var near := Geometry2D.get_closest_points_between_segments(line_from, line_to, their_feet, their_head)
+		if near[0].distance_to(near[1]) < LIE_APART:
+			return false
 	return true
 
 

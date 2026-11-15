@@ -8,6 +8,7 @@ extends RefCounted
 ##                        where he is each half second for 3 seconds more, and what holds him up)
 ##   runcover[:name]      a shot (unless people are frightened already); the moment someone in sight is part-way to
 ##                        his hiding place everything stops and a picture is taken, from the camera's side of him
+##                        and the shooter, the two of them in it
 ##   hidden[:name]        a shot (unless people are hiding already) and, once they have hidden, a picture of the
 ##                        one in sight nearest the shooter, the two of them in it
 ##   gunpoint[:name]      he goes up to the nearest person in sight and points his gun at him: a picture once his
@@ -15,7 +16,8 @@ extends RefCounted
 ##   deadrow[:name]       every character with the dead face, standing on three shelves (name.png) and lying as
 ##                        the dead lie, seen as the game sees them (name_lying.png), on a plain backdrop far above
 ##   deadcheck[:name]     everyone here put down at once (the dancers too); once they lie still a picture (if
-##                        named) and two seconds of frames: does anything about any of them move?
+##                        named) and two seconds of frames: does anything about any of them move? (and where each
+##                        lies, feet to head)
 ##
 ## Pictures are saved beside the --shot file, as shot_steps.gd's snap does.
 
@@ -271,7 +273,8 @@ static func _runcover(main: Node, name: String) -> void:
 	print("[shot] runcover: %s, running for %.2f, %.2f, at %.2f, %.2f, his card turned %.0f degrees%s" % [_called(runner),
 			runner.spot.x, runner.spot.y, a.position.x, a.position.z, rad_to_deg(wrapf(a._yaw, -PI, PI)),
 			" (his back)" if cos(a._yaw) < 0.0 else ""])
-	await _picture_of(main, a.global_position, name)
+	var lead: Node3D = main._actor
+	await _picture_of(main, (a.global_position + lead.global_position) * 0.5, name, a.global_position.distance_to(lead.global_position))
 
 
 static func _hidden(main: Node, name: String) -> void:
@@ -350,6 +353,8 @@ static func _gunpoint(main: Node, name: String) -> void:
 		await main.get_tree().process_frame
 		t += 1.0 / 60.0
 	print("[shot] gunpoint: the cross off him, %.2f s later he is %s" % [t, near.state])
+	main._aim_off()
+	lead.aiming = false
 
 
 ## Stand him 2 to 4 m to one side of `p` across the screen (not between him and the camera, where the two flat
@@ -415,11 +420,11 @@ static func _deadrow(main: Node, name: String) -> void:
 	# Lying as the dead lie, head to the right of the picture, seen as the follow camera sees the floor.
 	for i in made.size():
 		var who: Node3D = made[i]
-		who.position = origin + Vector3((float(i % 4) - 1.5) * 2.3, 0.0, float(i / 4) * 1.0 - 2.0)
+		who.position = origin + Vector3((float(i % 4) - 1.5) * 2.3, 0.0, float(i / 4) * 1.4 - 0.8)     # in front of the backdrop, under the shelf
 		who.fall_to = Vector3.RIGHT
 		who.fallen = 1.0
 		who.walk(Vector2.ZERO, Vector2.ZERO, 1.0 / 60.0)
-	var look := origin + Vector3(0.75, 0.0, 0.0)          # the middle of them all (they lie head to the right)
+	var look := origin + Vector3(0.75, 0.0, 2.0)          # the middle of them all (they lie head to the right)
 	var away: Vector3 = main.FOLLOW_OFFSET.normalized()
 	await _picture(main, name + "_lying", look + away * 8.0 + Vector3(0.0, 2.9, 0.0), look, 40.0)
 	for who: Node3D in made:
@@ -469,11 +474,13 @@ static func _deadcheck(main: Node, name: String) -> void:
 		var eyes := "-"
 		if a.face:
 			eyes = "%s/%s, mouth %s" % [a.face._nodes["eye_l"].get_meta("part", ""), a.face._nodes["eye_r"].get_meta("part", ""), a.face.shown_mouth()]
+		var head: Vector3 = a.global_position + a.fall_to * float(a.height)
+		var lies := "lying from %.2f, %.2f to %.2f, %.2f" % [a.global_position.x, a.global_position.z, head.x, head.z]
 		if moved.has(p):
-			print("[shot] deadcheck:   %s%s: MOVED (%s)" % [_called(p), " (was dancing)" if danced[p] else "", moved[p]])
+			print("[shot] deadcheck:   %s%s: MOVED (%s); %s" % [_called(p), " (was dancing)" if danced[p] else "", moved[p], lies])
 		else:
 			still += 1
-			print("[shot] deadcheck:   %s%s: still; eyes %s" % [_called(p), " (was dancing)" if danced[p] else "", eyes])
+			print("[shot] deadcheck:   %s%s: still; eyes %s; %s" % [_called(p), " (was dancing)" if danced[p] else "", eyes, lies])
 	print("[shot] deadcheck: %s: %d down, %d still, %d MOVED" % [main._place, down.size(), still, down.size() - still])
 
 
