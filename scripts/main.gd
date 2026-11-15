@@ -63,6 +63,11 @@ extends Node3D
 ##   nearest; or window: a pane in sight; or car: a car's glass; then fire n), aimon:who (the cross on it, no
 ##   shot), hud:0 / hud:1, freeze (what is flying stops where it is), combatcheck (a window, someone put down,
 ##   the rounds and the HUD checked; it prints its problems). In --lineup an x in a pose catches him firing.
+##   combat_foes.gd's (nobody is armed in a run till one of these wakes them): foe:on / foe:off, foe:arm:who[:weapon]
+##   (he carries it, out of sight), foe:alert[:who] (the armed here draw), foe:cops[:seconds] (he holds a gun where
+##   the police can see him), foe:hitme[:n], foe:putaway, foe:stash, foe:through[:red|green[:in]] (through the
+##   courthouse's metal detector), foe:search[:seconds], foe:go:x:z[:run], foe:run:seconds,
+##   foe:until:shot|hit|draw|down[:seconds] (on until the next one), foecheck (what happened, and its problems).
 ##   More in shot_steps.gd, for many pictures in one run: snap:name (a picture now, beside the --shot file),
 ##   eye:x:y:z:x:y:z[:fov] (later pictures from there; eye: alone, back to following him), place:id, at:x:z,
 ##   room:NAME (stand him there), beat:n (hold the dancers at that beat), stats (draw calls and frame time),
