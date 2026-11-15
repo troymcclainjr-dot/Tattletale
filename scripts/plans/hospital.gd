@@ -13,6 +13,7 @@ extends RefCounted
 
 const Props := preload("res://scripts/props.gd")
 const In := preload("res://scripts/props_in.gd")
+const Basement := preload("res://scripts/plans/hospital_basement.gd")
 const WHITE := Color(0.9, 0.92, 0.9)
 
 
@@ -84,6 +85,10 @@ static func build(p: Node3D) -> void:
 	_ward(p, b2)
 	_back(p, b3)
 	_dress(p, b1, b2, b3)
+	# Under it (the civic worker's): the service lift in the supply room's back
+	# wall down to the basement, and the stair up from it to the pavement at the
+	# ramp's mouth.
+	Basement.build(p, st, b3)
 
 
 static func _street(p: Node3D, st: int, front: Node3D, panel: Variant) -> void:
@@ -315,7 +320,7 @@ static func _back(p: Node3D, b: int) -> void:
 	Props.cooler(p, b, 13.05, 5.8)
 	Props.clock(p, b, 12.2, 0.08)
 	# The supply room.
-	Props.shelves(p, b, 15.75, 0.31, 0.0, 3.8, "boxes", Props.STEEL)
+	Props.shelves(p, b, 16.5, 0.31, 0.0, 2.2, "boxes", Props.STEEL)          # (shorter, for the lift's doors: plans/hospital_basement.gd)
 	Props.shelves(p, b, 13.81, 5.2, 90.0, 1.8, "boxes", Props.STEEL)
 	Props.oxygen(p, b, 17.5, 5.9, 2)
 	Props.boxes(p, b, 16.9, 3.3, 4)
