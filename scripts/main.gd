@@ -67,6 +67,11 @@ extends Node3D
 ##   eye:x:y:z:x:y:z[:fov] (later pictures from there; eye: alone, back to following him), place:id, at:x:z,
 ##   room:NAME (stand him there), beat:n (hold the dancers at that beat), stats (draw calls and frame time),
 ##   check (--check-walk and --check-faces for the place he is in now).
+##   In shop_steps.gd, the gun store and the travel list: shop:counter (E at the counter), shop:buy:uzi (a row of its
+##   list: uzi, ak, pistol, rounds:pistol ...), shop:click:row (a real click on it), shop:close, shop:state (cash,
+##   weapons, rounds), shop:shoot:lane[:n[:cm]] (in that booth of the range, n shots at its target), shop:fresh:lane
+##   [:seconds] (a fresh paper), list:fill:n (the travel list with n rows, made-up ones after the real ones),
+##   list:size:w:h (the window that size), list:click:i (a real click on row i).
 
 const Building := preload("res://scripts/building.gd")
 const Place := preload("res://scripts/place.gd")
@@ -86,9 +91,11 @@ const PLANS := {
 	"clothes": "res://scripts/plans/clothes.gd",
 	"club": "res://scripts/plans/club.gd",
 	"alley": "res://scripts/plans/alley.gd",
+	"gunstore": "res://scripts/plans/gunstore.gd",
 }
 const FlickerCheck := preload("res://scripts/flicker_check.gd")
 const ShotSteps := preload("res://scripts/shot_steps.gd")      # more --do steps: snap, eye, place, at, room, beat, stats, check
+const ShopSteps := preload("res://scripts/shop_steps.gd")      # --do steps for the gun store (shop:...) and the travel list (list:...)
 const PaperActor := preload("res://scripts/paper_actor.gd")
 const Wanderer := preload("res://scripts/wanderer.gd")
 const TalkBox := preload("res://scripts/talk_box.gd")
@@ -153,6 +160,7 @@ const PLACES := [
 	{"id": "clothes", "name": "CLOTHING STORE", "note": "FRESH THREADS"},
 	{"id": "club", "name": "THE LOWDOWN", "note": "NIGHT CLUB"},
 	{"id": "alley", "name": "THE BACK LOT", "note": "BEHIND THE LOWDOWN"},
+	{"id": "gunstore", "name": "GUN STORE", "note": "PEN LUCY ARMS"},
 ]
 
 ## name: [camera position, look-at point, vertical field of view]
@@ -1594,6 +1602,8 @@ func _take_shot() -> void:
 				print("[shot] fry walked to %.2f, %.2f" % [_fry.position.x, _fry.position.z])
 			"snap", "eye", "place", "at", "room", "beat", "stats", "check":     # shot_steps.gd: many pictures in one run, from anywhere
 				await ShotSteps.step(self, bits)
+			"shop", "list":     # shop_steps.gd: the gun store's counter and range; the travel list filled with made-up rows
+				await ShopSteps.step(self, bits)
 			_:              # fire, reload, hurt, shoot, aimon, hud, freeze, combatcheck
 				await _combat.step(bits)
 	if _shot_talk > 0.0 and _actor.face:
