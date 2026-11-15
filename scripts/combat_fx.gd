@@ -1,20 +1,36 @@
 extends Node3D
 ## What shots look like, drawn like everything else here: flat colours inside a fat ink line, no fading
 ## see-through stuff (a thing that goes, shrinks away). Everything is a flat shape built once and reused:
-## a muzzle flash (a paper star for a frame or two, with a quick warm light), spent cases thrown from the
-## port that bounce and lie on the floor, a puff and a mark where a shot hits a wall, a spark on metal,
-## shards of glass, drops of blood and the pool that spreads under someone who is down.
+## a muzzle flash (a paper star for a frame or two, with a quick warm light), now and then a tracer (a bright
+## streak from the muzzle to where the round ended, gone in a few frames), spent cases thrown from the port that
+## bounce and lie on the floor, a puff and a mark where a shot hits a wall, a spark on metal, the pieces a pane
+## breaks into and crumbs of glass, drops of blood and the pool that spreads under someone who is down.
 ##
-## Capped: at most SHELLS cases, MARKS marks and SHARDS shards lie about; past that the oldest is taken
-## up and used again. Nothing is made while shooting but the marks' first round.
+## What falls lands on whatever is really under it where it comes down (`world`, the place's combat_world.gd:
+## a floor, a step, a porch roof, a car's bonnet, the pavement outside a window), bounces off walls, and lies
+## there in the room it landed in (`node_for`). Without a world it lands at the height it was given.
+##
+## Capped: at most SHELLS cases, MARKS marks, SHARDS crumbs and PIECES pieces of glass lie about; past that the
+## oldest is taken up and used again. Nothing is made while shooting but the marks' first round and the pieces.
 
 const SHELLS := 40
 const MARKS := 60
 const SHARDS := 90
+const PIECES := 120
 const GRAVITY := 9.8
 
-enum {FLASH, SHELL, PUFF, CHIP, SPARK, STREAK, SHARD, DROP, BURST, MARK}
-const CAPS := {FLASH: 8, SHELL: SHELLS, PUFF: 10, CHIP: 24, SPARK: 6, STREAK: 30, SHARD: SHARDS, DROP: 40, BURST: 6, MARK: MARKS}
+enum {FLASH, SHELL, PUFF, CHIP, SPARK, STREAK, SHARD, DROP, BURST, MARK, PIECE, TRACER}
+const CAPS := {FLASH: 8, SHELL: SHELLS, PUFF: 10, CHIP: 24, SPARK: 6, STREAK: 30, SHARD: SHARDS, DROP: 40, BURST: 6, MARK: MARKS,
+		PIECE: PIECES, TRACER: 8}
+## A tracer: metres either side of its line at its head (its tail is a quarter of that), and seconds it shows.
+## Further off it is drawn wider (TRACER_SPREAD per metre from the eye, to TRACER_WIDEST), so it reads at any range.
+const TRACER_WIDTH := 0.024
+const TRACER_SPREAD := 0.006
+const TRACER_WIDEST := 0.06
+const TRACER_LIFE := 0.09
+## Glass that comes down this near a pane's plane (x, metres) and no further below its lowest edge (y) is on the
+## window itself (its frame, its sill): it is tipped off, so it ends on the ground below (placeholder numbers).
+const OFF_WINDOW := Vector2(0.3, 0.4)
 
 const INK := Color(0.03, 0.02, 0.05)
 const BRASS := Color(0.88, 0.66, 0.24)
@@ -27,6 +43,7 @@ const BLOOD_LIGHT := Color(0.8, 0.1, 0.16)
 const POOL := Color(0.44, 0.03, 0.07)
 const POOL_LIGHT := Color(0.58, 0.05, 0.1)
 const SHARD_LOOK := Color(0.85, 0.94, 0.98)
+const FIRE_EDGE := Color(0.93, 0.42, 0.08)
 
 
 class Bit:
@@ -44,10 +61,21 @@ class Bit:
 	var resting := false
 	var tumble := 0.0
 	var stretch := 1.0          # a flash is this much longer than it is wide; a streak, along its way
+	var turn := Basis.IDENTITY  # a piece of glass: how it lies (its face is z) ...
+	var axis := Vector3.UP      # ... what it turns about as it falls ...
+	var lift := 0.004           # ... and how far off what it lands on it lies
+	var tips := 0               # times it has tipped off an edge it landed on
+	var from := Vector3.ZERO    # a tracer: from the muzzle ...
+	var to := Vector3.ZERO      # ... to where the round ended
+	var pane := Vector3.ZERO    # glass: the middle of the pane it came from ...
+	var pane_n := Vector3.ZERO  # ... its face (ZERO: none) ...
+	var pane_low := 0.0         # ... and lower than this it is clear of the window (see _off_window)
 
 
 var camera: Camera3D
 var frozen := false             # a picture: nothing moves
+var world: RefCounted           # the place's combat_world.gd: what falling things land on (null: at their `ground`)
+var node_for := Callable()      # where something that has landed at a point goes (its room), so it hides with it
 var _mat: StandardMaterial3D
 var _meshes := {}               # kind: Array of meshes (a few of each, told apart by rng)
 var _bits := {}                 # kind: Array of Bit, at most CAPS[kind]
@@ -80,6 +108,8 @@ func _init() -> void:
 	_meshes[BURST] = [_star_mesh(7, 0.42, BLOOD_LIGHT, Color(0.95, 0.25, 0.3), 0.12)]
 	_meshes[MARK] = [_mark_mesh(14, false), _mark_mesh(15, false), _mark_mesh(16, false)]
 	_meshes[MARK + 100] = [_mark_mesh(17, true), _mark_mesh(18, true)]          # on metal: a dent
+	_meshes[PIECE] = [_shard_mesh(9)]          # each piece gets a mesh of its own shape
+	_meshes[TRACER] = [_tracer_mesh()]
 	_light = OmniLight3D.new()
 	_light.light_color = Color(1.0, 0.72, 0.36)
 	_light.omni_range = 4.5
@@ -257,6 +287,65 @@ func _pool_mesh(salt: int) -> ArrayMesh:
 	return _end(st)
 
 
+## A tracer, 1 long along x (from the muzzle at 0 to where the round ended at 1) and 1 either side at its head:
+## a hot edge round a yellow streak round a white core, thin at the tail and blunt at the head, a layer apart.
+func _tracer_mesh() -> ArrayMesh:
+	var xs := [0.0, 0.12, 0.35, 0.6, 0.8, 0.93, 0.985, 1.0]
+	var ws := [0.0, 0.22, 0.38, 0.55, 0.75, 0.95, 0.85, 0.35]
+	var st := _begin()
+	for layer: Array in [[FIRE_EDGE, 1.0, 0.0], [FIRE, 0.68, 0.002], [FIRE_CORE, 0.32, 0.004]]:
+		st.set_color(layer[0])
+		var k: float = layer[1]
+		var z: float = layer[2]
+		for i in xs.size() - 1:
+			var x0: float = xs[i]
+			var x1: float = xs[i + 1]
+			var w0: float = ws[i] * k
+			var w1: float = ws[i + 1] * k
+			for v: Vector3 in [Vector3(x0, -w0, z), Vector3(x1, -w1, z), Vector3(x1, w1, z), Vector3(x0, -w0, z), Vector3(x1, w1, z), Vector3(x0, w0, z)]:
+				st.add_vertex(v)
+	return _end(st)
+
+
+## A piece of a pane as it came away (`poly`, about its middle, in metres): pale glass in a fat ink line, on
+## both faces (it turns over as it falls).
+func _piece_mesh(poly: PackedVector2Array, size: float) -> ArrayMesh:
+	var w := clampf(0.004 + 0.03 * size, 0.005, 0.011)
+	var ink := poly
+	var best := 0.0
+	for grown: PackedVector2Array in Geometry2D.offset_polygon(poly, w, Geometry2D.JOIN_MITER):
+		var a := absf(_area2(grown))
+		if a > best:
+			best = a
+			ink = grown
+	var st := _begin()
+	_flat(st, ink, INK, 0.0)
+	_flat(st, poly, SHARD_LOOK, 0.0015)
+	_flat(st, poly, SHARD_LOOK, -0.0015)
+	return _end(st)
+
+
+## A filled outline (any shape) in layer z.
+func _flat(st: SurfaceTool, poly: PackedVector2Array, color: Color, z: float) -> void:
+	st.set_color(color)
+	var tris := Geometry2D.triangulate_polygon(poly)
+	if tris.is_empty():
+		var mid := Vector2.ZERO
+		for p: Vector2 in poly:
+			mid += p
+		_fan(st, poly, color, z, mid / float(maxi(poly.size(), 1)))
+		return
+	for i in tris:
+		st.add_vertex(Vector3(poly[i].x, poly[i].y, z))
+
+
+static func _area2(poly: PackedVector2Array) -> float:
+	var a := 0.0
+	for i in poly.size():
+		a += poly[i].cross(poly[(i + 1) % poly.size()])
+	return a
+
+
 # ---------------------------------------------------------------- the pool of bits
 
 func _take(kind: int, parent: Node3D) -> Bit:
@@ -286,6 +375,8 @@ func _take(kind: int, parent: Node3D) -> Bit:
 	bit.alive = true
 	bit.resting = false
 	bit.t = 0.0
+	bit.tips = 0
+	bit.pane_n = Vector3.ZERO
 	bit.node.visible = true
 	return bit
 
@@ -385,7 +476,8 @@ func impact(at: Vector3, normal: Vector3, on: MeshInstance3D, metal: bool, paren
 
 
 ## Glass flies from a hole at `center` (facing `normal`, about `radius` across) the way the shot went (`dir`).
-func shards(center: Vector3, normal: Vector3, dir: Vector3, radius: float, count: int, ground: float, parent: Node3D) -> void:
+## `window`: what combat_glass.gd's shatter() said of the pane (they do not stay on its sill).
+func shards(center: Vector3, normal: Vector3, dir: Vector3, radius: float, count: int, ground: float, parent: Node3D, window := {}) -> void:
 	var x := normal.cross(Vector3.UP if absf(normal.y) < 0.9 else Vector3.RIGHT).normalized()
 	var y := normal.cross(x)
 	var through := normal * signf(normal.dot(dir) if normal.dot(dir) != 0.0 else 1.0)
@@ -401,6 +493,66 @@ func shards(center: Vector3, normal: Vector3, dir: Vector3, radius: float, count
 		bit.tumble = _rng.randf() * TAU
 		bit.ang = _rng.randf() * TAU
 		bit.life = 99999.0
+		_from_window(bit, window)
+		_show(bit)
+
+
+## Glass from a pane does not stay on the window (its frame, its sill): it remembers where the pane was.
+func _from_window(bit: Bit, window: Dictionary) -> void:
+	if window.has("middle"):
+		bit.pane = window["middle"]
+		bit.pane_n = window["normal"]
+		bit.pane_low = float(window["low"]) - OFF_WINDOW.y
+
+
+## A tracer: a bright streak from `from` (the muzzle) to `to` (where the round ended), whole for a frame or two,
+## then its tail running in to the far end; gone in TRACER_LIFE. Drawn flat towards the camera, so it shows
+## whichever way he faces.
+func tracer(from: Vector3, to: Vector3, parent: Node3D) -> void:
+	if camera == null or from.distance_to(to) < 0.3:
+		return
+	var bit := _take(TRACER, parent)
+	bit.from = from
+	bit.to = to
+	bit.size = TRACER_WIDTH
+	bit.life = TRACER_LIFE
+	_show(bit)
+
+
+## The pieces of a pane that came away (combat_glass.gd's shatter() result `broke`) fall from where they were:
+## those by the hit thrown the way the round went (a few back towards the gun), big ones mostly dropping, all
+## turning over; they lie where they land. Lower than `ground` (nothing caught them) they are taken up.
+func pieces(broke: Dictionary, dir: Vector3, ground: float, parent: Node3D) -> void:
+	var basis: Basis = broke["basis"]
+	var normal: Vector3 = broke["normal"]
+	var center: Vector3 = broke["center"]
+	var e := float(broke.get("power", 1.0))
+	var through := normal * (1.0 if normal.dot(dir) >= 0.0 else -1.0)
+	for f: Dictionary in broke["fallen"]:
+		var bit := _take(PIECE, parent)
+		var size := float(f["size"])
+		bit.node.mesh = _piece_mesh(f["poly"], size)
+		bit.turn = basis
+		bit.pos = f["at"]
+		bit.size = size
+		var out: Vector3 = bit.pos - center
+		out -= normal * out.dot(normal)
+		out = out.normalized() if out.length() > 1e-4 else basis.x
+		var push := sqrt(e) / (1.0 + float(f["near"]) / 0.12)      # the nearer the hit, the harder it goes
+		var back := size < 0.08 and _rng.randf() < 0.18
+		var way := -through if back else through
+		if size > 0.12:
+			bit.vel = way * _rng.randf_range(0.3, 0.75) + out * _rng.randf_range(0.0, 0.25)
+		else:
+			bit.vel = way * (_rng.randf_range(0.45, 1.0) + _rng.randf_range(1.0, 2.4) * push) * (0.55 if back else 1.0) \
+					+ out * _rng.randf_range(0.15, 0.7) * push + Vector3.UP * _rng.randf_range(0.0, 0.6) * push
+		var ax := basis.x * _rng.randf_range(-1.0, 1.0) + basis.y * _rng.randf_range(-1.0, 1.0) + basis.z * _rng.randf_range(-0.3, 0.3)
+		bit.axis = ax.normalized() if ax.length() > 0.05 else basis.x
+		bit.spin = _rng.randf_range(4.0, 15.0) / (1.0 + size * 14.0) * (1.0 if _rng.randf() < 0.5 else -1.0)
+		bit.lift = _rng.randf_range(0.003, 0.007)
+		bit.ground = ground
+		bit.life = 99999.0
+		_from_window(bit, broke)
 		_show(bit)
 
 
@@ -455,14 +607,36 @@ func lift_pool(node: MeshInstance3D) -> void:
 		node.queue_free()
 
 
-## He has gone somewhere else: what was in the air is gone. What lies about stays where it is.
+## He has gone somewhere else: cases and glass still in the air come down at once where they would have landed
+## (they are there when he comes back); the rest of what was in the air is gone. What lies about stays.
 func drop_moving() -> void:
+	var eye := camera.global_transform.basis if camera else Basis.IDENTITY
 	for kind: int in _bits:
 		for bit: Bit in _bits[kind]:
-			if bit.alive and not bit.resting and kind != MARK:
-				_kill(bit)
+			if not bit.alive or bit.resting or kind == MARK:
+				continue
+			if world != null and (kind == SHELL or kind == SHARD or kind == PIECE):
+				var steps := 0
+				while bit.alive and not bit.resting and steps < 300:
+					_fall(bit, 1.0 / 60.0)
+					steps += 1
+				if bit.alive and bit.resting:
+					_place_falling(bit, eye)
+					continue
+			_kill(bit)
 	_light.visible = false
 	_light_t = -1.0
+
+
+## Turn what is drawn facing the camera to face it as it is now (a picture from another eye, nothing moving).
+func face_camera() -> void:
+	if camera == null:
+		return
+	var eye := camera.global_transform.basis
+	for kind: int in [SHELL, SHARD, CHIP, DROP, STREAK, TRACER]:
+		for bit: Bit in _bits[kind]:
+			if bit.alive:
+				_place_falling(bit, eye)
 
 
 ## A new day: every case, shard and mark is gone.
@@ -492,6 +666,15 @@ func count(kind: int, resting_only := false) -> int:
 		if bit.alive and (bit.resting or not resting_only):
 			n += 1
 	return n
+
+
+## Where each of a kind lies (for the checks).
+func lying(kind: int) -> Array:
+	var out: Array = []
+	for bit: Bit in _bits[kind]:
+		if bit.alive and bit.resting:
+			out.append(bit.pos)
+	return out
 
 
 # ---------------------------------------------------------------- each frame
@@ -539,36 +722,158 @@ func _tick_bit(bit: Bit, delta: float, eye: Basis) -> void:
 				_fall(bit, delta)
 			if bit.alive:
 				_place_falling(bit, eye)
+		PIECE:
+			if not bit.resting or bit.t == 0.0:
+				_fall(bit, delta)
+				if bit.alive:
+					_place_falling(bit, eye)
+		TRACER:
+			_place_falling(bit, eye)
+
+
+## How far above what it lies on a bit's middle is.
+func _lie(bit: Bit) -> float:
+	match bit.kind:
+		SHELL:
+			return bit.size * 0.21 + 0.004
+		PIECE:
+			return bit.lift
+	return bit.size * 0.35
 
 
 func _fall(bit: Bit, delta: float) -> void:
-	bit.vel.y -= GRAVITY * delta
-	bit.pos += bit.vel * delta
-	bit.ang += bit.spin * delta
-	bit.tumble += absf(bit.spin) * 0.7 * delta
-	var lie := bit.ground + (bit.size * 0.21 + 0.004 if bit.kind == SHELL else bit.size * 0.35)
-	if bit.pos.y > lie or bit.vel.y > 0.0:
+	if delta <= 0.0:
 		return
-	bit.pos.y = lie
+	bit.vel.y -= GRAVITY * delta
+	if bit.kind == PIECE:
+		var drag := 1.0 - minf(0.8 * delta, 0.5)             # flat glass sails a little
+		bit.vel.x *= drag
+		bit.vel.z *= drag
+		bit.turn = bit.turn.rotated(bit.axis, bit.spin * delta).orthonormalized()
+	else:
+		bit.ang += bit.spin * delta
+		bit.tumble += absf(bit.spin) * 0.7 * delta
+	var foot := Vector3(0.0, _lie(bit), 0.0)
+	var step := bit.vel * delta
+	if world != null:
+		var hit: Dictionary = world.fall_hit(bit.pos - foot, bit.pos - foot + step)
+		if not hit.is_empty():
+			var n: Vector3 = hit["normal"]
+			var at: Vector3 = hit["pos"]
+			if n.y > 0.55:                                    # something to lie on
+				bit.pos = at + foot
+				_land(bit, at, n)
+			else:                                             # a wall, the side of something: off it
+				bit.pos = at + foot + n * 0.003
+				bit.vel = (bit.vel - 2.0 * bit.vel.dot(n) * n) * 0.35
+				bit.spin *= 0.6
+			return
+	bit.pos += step
+	if bit.pos.y - foot.y > bit.ground or bit.vel.y > 0.0:
+		return
+	if bit.kind == PIECE:                                     # under everything: nothing caught it
+		_kill(bit)
+		return
+	bit.pos.y = bit.ground + foot.y
+	_land(bit, Vector3(bit.pos.x, bit.ground, bit.pos.z), Vector3.UP)
+
+
+## It comes down at `at` on something facing `n`: it stops (or bounces, or is gone) there.
+func _land(bit: Bit, at: Vector3, n: Vector3) -> void:
+	if bit.pane_n != Vector3.ZERO and bit.tips < 4:           # on the window it came from: off it
+		var off := (at - bit.pane).dot(bit.pane_n)
+		if absf(off) < OFF_WINDOW.x and at.y > bit.pane_low:
+			var going := bit.vel.dot(bit.pane_n)
+			var side := signf(off) if absf(off) > 0.005 else (signf(going) if absf(going) > 0.01 else 1.0)
+			bit.tips += 1
+			bit.vel = bit.pane_n * side * _rng.randf_range(0.7, 1.2) + Vector3.UP * 0.35
+			bit.pos += bit.pane_n * side * 0.02 + n * 0.01
+			return
 	match bit.kind:
 		DROP, CHIP, STREAK:
 			_kill(bit)
+			return
 		SHELL:
 			if absf(bit.vel.y) > 0.9:        # it bounces
 				bit.vel = Vector3(bit.vel.x * 0.55, -bit.vel.y * 0.38, bit.vel.z * 0.55)
 				bit.spin *= 0.55
-			else:
-				bit.vel = Vector3.ZERO
-				bit.resting = true
-				bit.ang = (0.0 if cos(bit.ang) >= 0.0 else PI) + _rng.randf_range(-0.12, 0.12)       # on its side
+				return
+			bit.vel = Vector3.ZERO
+			bit.resting = true
+			bit.ang = (0.0 if cos(bit.ang) >= 0.0 else PI) + _rng.randf_range(-0.12, 0.12)       # on its side
 		SHARD:
 			bit.vel = Vector3.ZERO
 			bit.resting = true
 			bit.tumble = PI * 0.5 * _rng.randf_range(0.6, 1.0)      # lying, seen nearly edge on
+		PIECE:
+			var off := _overhang(bit, at)
+			if off != Vector3.ZERO and bit.tips < 3:        # most of it over an edge (a sill, a step): it tips off
+				bit.tips += 1
+				bit.vel = off * _rng.randf_range(0.5, 0.8) + Vector3.DOWN * 0.2
+				bit.pos += off * bit.size * 0.25 + n * 0.01
+				return
+			bit.vel = Vector3.ZERO
+			bit.resting = true
+			var x := bit.turn.x - n * bit.turn.x.dot(n)
+			if x.length() < 0.1:
+				x = n.cross(Vector3.FORWARD if absf(n.z) < 0.9 else Vector3.RIGHT)
+			x = x.normalized()
+			bit.turn = Basis(x, n.cross(x), n)
+			bit.pos = at + n * bit.lift
+	if node_for.is_valid():                  # it belongs to the room it lies in now
+		var into: Variant = node_for.call(bit.pos)
+		if into is Node3D and is_instance_valid(into) and into != bit.node.get_parent():
+			bit.node.reparent(into)
+
+
+## A piece come down at `at`: which way it would tip off if most of it is over nothing (ZERO if it lies flat).
+## Small pieces lie anywhere.
+func _overhang(bit: Bit, at: Vector3) -> Vector3:
+	if world == null or bit.size < 0.06:
+		return Vector3.ZERO
+	var r := bit.size * 0.45
+	var free: Array = []
+	for d: Vector3 in [Vector3(1, 0, 0), Vector3(-1, 0, 0), Vector3(0, 0, 1), Vector3(0, 0, -1)]:
+		var p := at + d * r
+		if world.fall_hit(p + Vector3(0.0, 0.04, 0.0), p - Vector3(0.0, 0.06, 0.0)).is_empty():
+			free.append(d)
+	if free.size() < 2:
+		return Vector3.ZERO
+	var going := Vector3(bit.vel.x, 0.0, bit.vel.z)
+	var best: Vector3 = free[0]
+	for d: Vector3 in free:                  # off the side it was going
+		if d.dot(going) > best.dot(going):
+			best = d
+	return best
+
+
+## A tracer from bit.from to bit.to, its tail running in towards the far end as it goes.
+func _place_tracer(bit: Bit) -> void:
+	var k := bit.t / bit.life
+	var a := bit.from.lerp(bit.to, smoothstep(0.3, 1.0, k) * 0.92)
+	var along := bit.to - a
+	var to_eye := camera.global_position - (a + bit.to) * 0.5 if camera else Vector3.BACK
+	var side := along.cross(to_eye)
+	if side.length_squared() < 1e-10:
+		side = along.cross(Vector3.UP)
+	side = side.normalized()
+	var face := along.cross(side).normalized()
+	if face.dot(to_eye) < 0.0:
+		face = -face
+		side = -side
+	var wide := bit.size                     # wider further off, so it reads about as wide on screen
+	if camera:
+		var eye := camera.global_position
+		wide = clampf(eye.distance_to(Geometry3D.get_closest_point_to_segment(eye, a, bit.to)) * TRACER_SPREAD, bit.size, TRACER_WIDEST)
+	bit.node.global_transform = Transform3D(Basis(along, side * wide, face), a)
 
 
 func _place_falling(bit: Bit, eye: Basis) -> void:
 	match bit.kind:
+		PIECE:
+			bit.node.global_transform = Transform3D(bit.turn, bit.pos)
+		TRACER:
+			_place_tracer(bit)
 		SHELL:
 			_place_billboard(bit, eye, Vector2(bit.size, bit.size))
 		SHARD:

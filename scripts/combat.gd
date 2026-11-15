@@ -16,6 +16,7 @@ const Glass := preload("res://scripts/combat_glass.gd")
 const People := preload("res://scripts/combat_people.gd")
 const Hud := preload("res://scripts/combat_hud.gd")
 const PlayerState := preload("res://scripts/player_state.gd")
+const FxSteps := preload("res://scripts/combat_fx_steps.gd")     # the tracer and glass --do steps
 
 ## Placeholder numbers. every: seconds between shots; auto: it fires while the button is held; damage: of a
 ## person's 100; spread: radians either side of the cross; reload: seconds; flash and shell: metres long (the
@@ -47,13 +48,21 @@ var _place := ""
 var _day := -1
 var _frozen := false
 var _spot_pane: MeshInstance3D      # the pane _target_of("window") found
+var tracers := "some"               # which rounds draw a tracer: "some" (the rule in _tracer_due), "every", "none"
+var _tracer_rng := RandomNumberGenerator.new()
+var _rounds_of := {}                # a gun: rounds it has fired (every TRACER_EVERY-th of an automatic's is a tracer)
+## Placeholder rule: a pistol round is a tracer by this chance; an automatic's every this many rounds.
+const TRACER_CHANCE := 0.3
+const TRACER_EVERY := 3
 
 
 func _ready() -> void:
 	main = get_parent()
 	_rng.seed = 7
+	_tracer_rng.seed = 11
 	fx = Fx.new()
 	fx.name = "CombatFx"
+	fx.node_for = _lands_in
 	add_child(fx)
 	hud = Hud.new()
 	add_child(hud)
@@ -91,6 +100,7 @@ func _process(delta: float) -> void:
 	hud.visible = show_hud and main._mode == "play" and main._shot_lineup == "" and not main._talk.is_open() and not main._travel.is_open()
 	hud._panel.modulate.a = 1.0 - float(main._bar)
 	if main._scripted and not main.is_processing():
+		fx.face_camera()            # (but what is drawn facing the camera faces the picture's eye)
 		return                      # a screenshot's last frames: everything stays where it is
 	var dt := 1.0 / 60.0 if main._scripted else delta
 	fx.camera = main._camera
@@ -123,6 +133,7 @@ func _watch() -> void:
 		if _building != null:
 			people.left(_place)
 			fx.drop_moving()
+		fx.world = _worlds.get(main._building, null)
 		_building = main._building
 		_place = main._place
 		people.reconcile(_place)
@@ -182,11 +193,39 @@ func _shoot(w: String) -> void:
 	var dir := _scatter((target - muzzle).normalized(), spread)
 	var room := _node_for(lead.global_position)
 	var chest := lead.global_position + Vector3(0.0, lead.height * 0.62, 0.0)
-	last = _trace(muzzle, dir, int(gun["damage"]), chest)
+	fx.world = world_for(main._building)
+	last = _trace(muzzle, dir, int(gun["damage"]), chest, float(Glass.POWER.get(w, 1.0)))
 	lead.recoil = 1.0
 	fx.flash(gp, float(gun["flash"]), room)
+	if _tracer_due(w) and not gp.is_empty() and (last["from"] as Vector3).is_equal_approx(muzzle):
+		_tracer(gp, last.get("at", muzzle + dir * RANGE), room)
 	_eject(gp, gun, room, lead.global_position.y)
 	people.alarm(lead.global_position)
+
+
+## Is this round a tracer? (tracers: every, none, or the placeholder rule: some pistol rounds, an automatic's
+## every TRACER_EVERY-th; seeded, so the same shots show the same tracers.)
+func _tracer_due(w: String) -> bool:
+	_rounds_of[w] = int(_rounds_of.get(w, 0)) + 1
+	match tracers:
+		"every":
+			return true
+		"none":
+			return false
+	if GUNS.get(w, {}).get("auto", false):
+		return int(_rounds_of[w]) % TRACER_EVERY == 0
+	return _tracer_rng.randf() < TRACER_CHANCE
+
+
+## A tracer from the tip of the gun to `end`. Pointed away from us the gun is hidden in front of him: the streak
+## starts behind him and comes out round his outline; otherwise it starts in front of the gun's drawing.
+func _tracer(gp: Dictionary, end: Vector3, room: Node3D) -> void:
+	var cam: Camera3D = main._camera
+	var start: Vector3 = gp["muzzle"]
+	var to_eye := (cam.global_position - start).normalized()
+	start += -to_eye * 0.25 if String(gp.get("art", "")) == "away" else to_eye * 0.05
+	end -= (end - start).normalized() * 0.02
+	fx.tracer(start, end, room)
 
 
 ## Where the shot is going: what the red cross is over, or along the barrel with no cross.
@@ -204,9 +243,9 @@ func _target(gp: Dictionary, muzzle: Vector3) -> Vector3:
 	var who: Dictionary = people.pick(from, d)
 	if not who.is_empty() and float(who["dist"]) < solid + 0.3:
 		return who["point"]
-	var panes: Array = hit["panes"]
-	if not panes.is_empty():
-		return panes[0]["pos"]
+	for pane: Dictionary in hit["panes"]:          # the first pane with glass where the cross is (not a hole)
+		if not Glass.in_hole(pane["entry"].mi, pane["pos"]):
+			return pane["pos"]
 	return hit["pos"] if hit["hit"] else far
 
 
@@ -221,9 +260,10 @@ func _scatter(dir: Vector3, spread: float) -> Vector3:
 	return (dir + (x * cos(a) + y * sin(a)) * tan(r)).normalized()
 
 
-## The shot itself: glass on the way breaks, and the first person or solid thing takes it. If the gun pokes
-## through a wall he stands against (from his chest to the muzzle), the shot goes into that wall.
-func _trace(muzzle: Vector3, dir: Vector3, damage: int, chest: Vector3) -> Dictionary:
+## The shot itself: glass on the way breaks (as hard as `power`: Glass.POWER), and the first person or solid
+## thing takes it. If the gun pokes through a wall he stands against (from his chest to the muzzle), the shot
+## goes into that wall.
+func _trace(muzzle: Vector3, dir: Vector3, damage: int, chest: Vector3, power := 1.0) -> Dictionary:
 	var w := world_for(main._building)
 	var from := muzzle
 	var end := muzzle + dir * RANGE
@@ -239,12 +279,15 @@ func _trace(muzzle: Vector3, dir: Vector3, damage: int, chest: Vector3) -> Dicti
 	if person_first:
 		stop = float(who["t"])
 	var broke := 0
+	var through: Array = []                       # where it went through glass: [the pane, the point, broke it]
 	for pane: Dictionary in hit["panes"]:
 		if float(pane["t"]) >= stop:
 			break
-		if _break(pane["entry"].mi, pane["pos"], dir):
+		var did := _break(pane["entry"].mi, pane["pos"], dir, power)
+		through.append([pane["entry"].mi, pane["pos"], did])
+		if did:
 			broke += 1
-	var out := {"what": "nothing", "panes": broke, "from": from}
+	var out := {"what": "nothing", "panes": broke, "from": from, "glass": through}
 	if person_first:
 		var p: RefCounted = who["person"]
 		out["what"] = "person"
@@ -257,23 +300,37 @@ func _trace(muzzle: Vector3, dir: Vector3, damage: int, chest: Vector3) -> Dicti
 		if hit["block"]:
 			out["what"] = "car glass"
 			Glass.crack(hit["mi"], at, hit["normal"], _rng)
-			fx.shards(at, hit["normal"], dir, 0.08, 6, w.floor_at(at, main._actor.global_position.y), _node_for(at))
+			fx.shards(at, hit["normal"], dir, 0.08, 6, main._actor.global_position.y - 3.0, _node_for(at))
 		else:
 			out["what"] = "metal" if hit["metal"] else "wall"
 			out["on"] = String((hit["mi"] as Node).name)
-			fx.impact(at, hit["normal"], hit["mi"], hit["metal"], _node_for(at), w.floor_at(at, main._actor.global_position.y))
+			if not _behind_glass(at, through):        # glass set on a solid (a door's panel): its hole shows dark, not a mark
+				fx.impact(at, hit["normal"], hit["mi"], hit["metal"], _node_for(at), w.floor_at(at, main._actor.global_position.y))
 	return out
 
 
-## Break a pane at `pos` (unless the shot goes through its hole). True if it broke.
-func _break(mi: MeshInstance3D, pos: Vector3, dir: Vector3) -> bool:
+## Is `at` within the glass the round has just gone through (a pane laid on a solid door, its back in the wood)?
+func _behind_glass(at: Vector3, through: Array) -> bool:
+	for g: Array in through:
+		var mi: MeshInstance3D = g[0]
+		if is_instance_valid(mi) and mi.get_aabb().grow(0.01).has_point(mi.global_transform.affine_inverse() * at):
+			return true
+	return false
+
+
+## Break a pane at `pos` as hard as `power` (unless the shot goes through a hole in it): what comes away falls,
+## with a few crumbs. True if it broke.
+func _break(mi: MeshInstance3D, pos: Vector3, dir: Vector3, power := 1.0) -> bool:
 	if Glass.in_hole(mi, pos):
 		return false
-	var hole: Dictionary = Glass.shatter(mi, pos, _rng, _twins(mi))
-	var centre: Vector3 = hole["center"]
-	var ground: float = world_for(main._building).floor_at(centre, main._actor.global_position.y)
-	var count := clampi(10 + int(float(hole["radius"]) * 24.0), 10, 22)
-	fx.shards(centre, hole["normal"], dir, float(hole["radius"]), count, ground, _node_for(centre))
+	var broke: Dictionary = Glass.shatter(mi, pos, dir, power, _twins(mi))
+	if broke.is_empty():
+		return false
+	var centre: Vector3 = broke["center"]
+	var deep: float = minf(main._actor.global_position.y, centre.y) - 3.0      # nothing caught it: gone
+	var room := _node_for(centre)
+	fx.pieces(broke, dir, deep, room)
+	fx.shards(centre, broke["normal"], dir, 0.05, 3 + int(3.0 * float(broke["power"])), deep, room, broke)
 	return true
 
 
@@ -305,6 +362,14 @@ func _eject(gp: Dictionary, gun: Dictionary, room: Node3D, ground: float) -> voi
 ## The node things at `at` go in, so that they are hidden with their room.
 func _node_for(at: Vector3) -> Node3D:
 	return people._node_for(at)
+
+
+## Where something that has come down at `at` lies: the room it is in, at the place it fell in (which may be
+## being left: combat_fx.gd's drop_moving()).
+func _lands_in(at: Vector3) -> Node3D:
+	if _building == null or not is_instance_valid(_building):
+		return null
+	return people._node_for(at, _building)
 
 
 # ------------------------------------------------------------ reloading, hurt
@@ -403,7 +468,10 @@ func step(bits: PackedStringArray) -> void:
 		"combatcheck":
 			await _check()
 		_:
-			print("[shot] unknown step: %s" % ":".join(bits))
+			if FxSteps.STEPS.has(bits[0]):     # tracers, glassseed, panes, pane, hitpane, paneeye, panestrip, otherside, glasscheck
+				await FxSteps.step(self, bits)
+			else:
+				print("[shot] unknown step: %s" % ":".join(bits))
 
 
 ## He brings up what he holds, if it is not up yet.
@@ -707,6 +775,7 @@ func _check() -> void:
 			int(state.loaded[w]), int(state.spare[w]), int(state.health), Hud.dollars(int(state.cash)), "ok" if same else "WRONG"])
 	if not same:
 		problems += 1
+	problems += await FxSteps.check(self, pane)       # the glass (combat_fx_steps.gd)
 	print("[shot] check: %d problems" % problems)
 
 
