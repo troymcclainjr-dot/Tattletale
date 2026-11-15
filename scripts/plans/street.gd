@@ -76,7 +76,7 @@ const FRONT := 40.0       # and down it
 ## The party walls (and the ends of the rows), where the pavement has its expansion joints.
 const WALLS := [-27.5, -19.99, -19.29, -12.75, -6.38, 0.0, 6.33, 12.86, 19.24, 25.64, 32.02, 38.53, 45.0, 51.78]
 ## What each house has between its steps and the pavement, 508 to 532 (sidewalk.gd's front()).
-const FRONTS := ["old", "yard", "brick", "a", "yard", "paint", "a", "old", "turf", "yard", "brick", "new", "a"]
+const FRONTS := ["old", "yard", "brick", "a", "yard", "paint", "a", "old", "new", "yard", "brick", "new", "a"]
 
 
 static func build(p: Node3D) -> void:
@@ -210,14 +210,20 @@ static func _ground(p: Node3D, st: int) -> void:
 		if su >= OY0 + 0.47:
 			break
 		su = minf(su + 2.3, OY0 + 0.47)
-	Walk.tar_line(p, n, seam, 0.04, 0.0)
-	Walk.tar_line(p, n, Walk.wander(Vector2(-25.0, 19.2), 3.0, 14, 1.6, 2.0))
-	Walk.tar_line(p, n, Walk.wander(Vector2(8.0, 23.6), -4.0, 18, 1.5, 3.0))
-	Walk.tar_line(p, n, Walk.wander(Vector2(36.5, 18.4), 2.0, 10, 1.4, 4.0))
-	for at: Vector2 in [Vector2(12.0, ROAD + 0.5), Vector2(30.8, ROAD + 0.5), Vector2(47.0, ROAD + 0.5), Vector2(-4.0, ROAD + 0.5)]:
-		Walk.tar_line(p, n, Walk.wander(at, 84.0, 5, 1.0, at.x, 20.0))
-	Walk.tar_line(p, n, Walk.wander(Vector2(66.2, -60.0), 90.0, 40, 1.9, 5.0, 8.0))
-	Walk.tar_line(p, n, Walk.wander(Vector2(61.0, 21.0), 95.0, 9, 1.6, 6.0))
+	Walk.tar_line(p, n, seam, 0.03, 0.0)
+	# Sealed cracks, all out in the lanes (none under the parked cars): down the
+	# joint just off the middle where the two passes of the paver met, down the
+	# far lane's wheel track, and a few short ones across.
+	Walk.tar_line(p, n, Walk.wander(Vector2(-14.5, 21.8), 0.0, 6, 1.5, 2.0, 6.0))
+	Walk.tar_line(p, n, Walk.wander(Vector2(19.0, 21.8), 0.0, 7, 1.4, 3.0, 6.0))
+	Walk.tar_line(p, n, Walk.wander(Vector2(-6.0, 24.2), 0.0, 8, 1.3, 4.0, 8.0))
+	for at: Vector3 in [Vector3(9.5, 18.9, 91.0), Vector3(37.4, 19.3, 93.0), Vector3(-18.0, 19.2, 88.0)]:
+		Walk.tar_line(p, n, Walk.wander(Vector2(at.x, at.y), at.z, 4, 1.15, at.x, 10.0))
+	# Up Old York Road, two lengths down its east lane and one in the west, one across.
+	Walk.tar_line(p, n, Walk.wander(Vector2(66.3, -58.0), 90.0, 14, 1.6, 5.0, 8.0))
+	Walk.tar_line(p, n, Walk.wander(Vector2(61.0, -12.0), 90.0, 7, 1.5, 7.0, 8.0))
+	Walk.tar_line(p, n, Walk.wander(Vector2(64.3, -6.5), 0.0, 3, 0.95, 8.0, 10.0))
+	Walk.tar_line(p, n, Walk.wander(Vector2(61.0, 21.0), 95.0, 6, 1.5, 6.0))
 	# Oil where cars stand, in the gaps between those parked now.
 	for at: Vector3 in [Vector3(41.6, 17.5, 20.0), Vector3(33.2, 17.4, -10.0), Vector3(25.5, 17.6, 35.0), Vector3(9.4, 17.45, 0.0), Vector3(1.2, 17.55, -25.0), Vector3(17.8, 17.5, 60.0)]:
 		Walk.oil(p, n, at.x, at.y, 0.9, 0.55, at.z)

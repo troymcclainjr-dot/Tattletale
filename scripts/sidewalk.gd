@@ -26,7 +26,8 @@ const WIDE := 0.03              # an expansion joint, at a party wall
 const STEP := 1.6               # about how far apart the tooled joints are
 const JOINT := Color(0.24, 0.22, 0.2)         # the dirt down a joint
 const GRIME := Color(0.17, 0.16, 0.15)        # packed into a tooled joint, near the top
-const FILL := Color(0.07, 0.07, 0.08)         # tar: in an expansion joint, sealing a crack
+const FILL := Color(0.07, 0.07, 0.08)         # tar: in an expansion joint
+const SEAL := Color(0.15, 0.15, 0.17)         # crack sealer on the road, gone grey (black there reads as a cable)
 const IRON := Color(0.2, 0.2, 0.21)
 const RUST := Color(0.36, 0.24, 0.18)
 const CONCRETE := Color(0.8, 0.78, 0.74)      # a slab as it came out of the mould
@@ -41,9 +42,9 @@ const TONES := {
 	"a": Color(0.92, 0.91, 0.88),       # the run as it was poured
 	"b": Color(0.88, 0.87, 0.85),       # its neighbour from the same pour
 	"new": Color(1.0, 1.0, 0.98),       # a replacement: paler, cleaner
-	"old": Color(0.76, 0.75, 0.73),
+	"old": Color(0.81, 0.8, 0.78),
 	"warm": Color(0.93, 0.87, 0.78),    # a different mix
-	"dirty": Color(0.66, 0.65, 0.63),
+	"dirty": Color(0.71, 0.7, 0.68),
 }
 const GRANITE := [Color(0.74, 0.74, 0.73), Color(0.68, 0.68, 0.68), Color(0.78, 0.77, 0.74)]
 
@@ -90,8 +91,14 @@ static func asphalt() -> Material:
 	return look("out_asphalt_old", 4.0, Color(0.27, 0.28, 0.32))
 
 
+## Newer asphalt, a shade darker than the road round it (any darker and a patch reads as a hole).
 static func patch_look() -> Material:
-	return look("out_asphalt_patch", 2.0, Color(0.17, 0.17, 0.2))
+	return look("out_asphalt_patch", 2.0, Color(0.17, 0.17, 0.2), Color(1.25, 1.25, 1.22))
+
+
+## Cold patch shovelled into a dug-up slab of pavement: greyer and lighter than the road's.
+static func cold_patch() -> Material:
+	return look("out_asphalt_patch", 2.0, Color(0.17, 0.17, 0.2), Color(1.85, 1.8, 1.72))
 
 
 ## One flat piece: a0..a1 along the run, c0..c1 across it, y0..y1. `tilt`:
@@ -273,7 +280,7 @@ static func slab(p: Node3D, n: Node3D, along_u: bool, a0: float, a1: float, c0: 
 			piece(p, n, along_u, a0, a1, c0, cut - 0.008, y0, 0.0, concrete("old" if kerb_side > 0 else "new"))
 			piece(p, n, along_u, a0, a1, cut + 0.008, c1, y0, 0.0, concrete("new" if kerb_side > 0 else "old"))
 		"patch":
-			piece(p, n, along_u, a0, a1, c0, c1, y0, -0.004, patch_look())
+			piece(p, n, along_u, a0, a1, c0, c1, y0, -0.004, cold_patch())
 		"brick":
 			piece(p, n, along_u, a0, a1, c0, c1, y0, 0.0, Kit.tex("brick", 1.5, Color(0.5, 0.3, 0.25), true, Color(0.78, 0.72, 0.7)))
 		"pit":
@@ -284,8 +291,9 @@ static func slab(p: Node3D, n: Node3D, along_u: bool, a0: float, a1: float, c0: 
 			piece(p, n, along_u, a0, a1, c0, c1, y0, 0.0, concrete(kind))
 
 
-## A slab with an empty tree pit at its kerb end: the tree long gone, dirt a
-## little below the pavement, weeds, a concrete frame round it.
+## A slab with a tree pit at its kerb end: the tree cut down long ago, its stump
+## sawn off level with the kerb, dirt a little below the pavement, weeds, a
+## concrete frame round it.
 static func _pit(p: Node3D, n: Node3D, along_u: bool, a0: float, a1: float, c0: float, c1: float, key: float, kerb_side: int) -> void:
 	var deep := 0.95                  # the pit, across the walk
 	var rim := 0.16                   # the concrete either side of it
@@ -302,6 +310,14 @@ static func _pit(p: Node3D, n: Node3D, along_u: bool, a0: float, a1: float, c0: 
 	piece(p, n, along_u, a0, a0 + rim, k0 + GAP * 0.5, k1, y0, 0.0, concrete("old"))
 	piece(p, n, along_u, a1 - rim, a1, k0 + GAP * 0.5, k1, y0, 0.0, concrete("old"))
 	piece(p, n, along_u, a0 + rim, a1 - rim, k0 + GAP * 0.5, k1, y0, -0.05, look("out_dirt", 1.2, Color(0.3, 0.24, 0.18)))
+	# The stump: grey bark, its top no higher than the kerb's (2 cm), sawn pale, the heart gone dark.
+	var sa := (a0 + a1) * 0.5 + (Props.rnd(key + 0.7) - 0.5) * 0.25
+	var sc := (k0 + k1) * 0.5
+	var foot: Vector3 = p.pt(sa, sc, -0.05) if along_u else p.pt(sc, sa, -0.05)
+	var turn := Vector3(0, Props.rnd(key + 1.3) * 90.0, 0)
+	Kit.cyl(n, 0.2, 0.07, foot + Vector3(0, 0.035, 0), Color(0.33, 0.29, 0.25), turn, 9, 0.16)
+	Kit.cyl(n, 0.145, 0.004, foot + Vector3(0, 0.072, 0), Color(0.62, 0.53, 0.4), turn, 9)
+	Kit.cyl(n, 0.06, 0.004, foot + Vector3(0, 0.0735, 0), Color(0.36, 0.28, 0.2), turn, 7)
 	# Weeds: decoration, nothing to trip on.
 	var weed := [Color(0.36, 0.42, 0.2), Color(0.5, 0.48, 0.26), Color(0.3, 0.36, 0.18)]
 	for w in 6:
@@ -317,11 +333,12 @@ static func _pit(p: Node3D, n: Node3D, along_u: bool, a0: float, a1: float, c0: 
 ## A house's own strip between its porch steps and the pavement, u0..u1 by
 ## v0..v1 (the joints already taken off), the steps at `door` (1.25 wide):
 ##   "concrete", "new", "old"  a slab either side of the walk and one in front of the steps
-##   "yard"      dead grass either side of a concrete walk
+##   "yard"      a bed of dead grass either side of a concrete walk, kerbed in
+##               old concrete, the dirt showing through in patches, weeds
 ##   "brick"     brick pavers, two of them gone
 ##   "paint"     concrete painted (porch paint), worn through on the walk
 ##   "turf"      plastic grass either side of the walk
-static func front(p: Node3D, n: Node3D, u0: float, u1: float, v0: float, v1: float, door: float, kind: String, key: float, paint := Color(0.45, 0.49, 0.5)) -> void:
+static func front(p: Node3D, n: Node3D, u0: float, u1: float, v0: float, v1: float, door: float, kind: String, key: float, paint := Color(0.7, 0.73, 0.74)) -> void:
 	var w0 := door - 0.66
 	var w1 := door + 0.66
 	var y0 := -0.3
@@ -333,13 +350,30 @@ static func front(p: Node3D, n: Node3D, u0: float, u1: float, v0: float, v1: flo
 	var walk_u0 := w0 + GAP * 0.5 if w0 - u0 > 0.12 else u0
 	var walk_u1 := w1 - GAP * 0.5 if u1 - w1 > 0.12 else u1
 	match kind:
-		"yard", "turf":
-			var grass: Material = look("out_dead_grass", 1.6, Color(0.46, 0.42, 0.27)) if kind == "yard" else look("out_turf", 1.0, Color(0.27, 0.41, 0.26))
+		"yard":
+			var grass: Material = look("out_dead_grass", 2.4, Color(0.46, 0.42, 0.27), Color(0.86, 0.88, 0.8))
+			var edge := 0.08
+			for s: Array in sides:
+				var b0: float = s[0]
+				var b1: float = s[1]
+				if b1 - b0 < 0.4:
+					piece(p, n, true, b0, b1, v0, v1, y0, 0.0, concrete("old"))
+					continue
+				# The bed's kerb, old concrete all round; the bed 3 cm down in it.
+				piece(p, n, true, b0, b1, v0, v0 + edge, y0, 0.0, concrete("old"))
+				piece(p, n, true, b0, b1, v1 - edge, v1, y0, 0.0, concrete("old"))
+				piece(p, n, true, b0, b0 + edge, v0 + edge + GAP * 0.5, v1 - edge - GAP * 0.5, y0, 0.0, concrete("old"))
+				piece(p, n, true, b1 - edge, b1, v0 + edge + GAP * 0.5, v1 - edge - GAP * 0.5, y0, 0.0, concrete("old"))
+				piece(p, n, true, b0 + edge + GAP * 0.5, b1 - edge - GAP * 0.5, v0 + edge + GAP * 0.5, v1 - edge - GAP * 0.5, y0, -0.03, grass)
+				_bed(p, n, b0 + edge + 0.06, b1 - edge - 0.06, v0 + edge + 0.06, v1 - edge - 0.06, key + b0)
+			piece(p, n, true, walk_u0, walk_u1, v0, v1, y0, 0.0, concrete("b"))
+		"turf":
+			var turf: Material = look("out_turf", 1.0, Color(0.27, 0.41, 0.26))
 			for s: Array in sides:
 				if float(s[1]) - float(s[0]) < 0.4:
 					piece(p, n, true, s[0], s[1], v0, v1, y0, 0.0, concrete("old"))
 				else:
-					piece(p, n, true, s[0], s[1], v0, v1, y0, -0.012 if kind == "yard" else 0.004, grass)
+					piece(p, n, true, s[0], s[1], v0, v1, y0, 0.004, turf)
 			piece(p, n, true, walk_u0, walk_u1, v0, v1, y0, 0.0, concrete("b"))
 		"brick":
 			var brick := Kit.tex("brick", 1.2, Color(0.5, 0.3, 0.25), true, Color(0.82, 0.72, 0.68))
@@ -358,6 +392,30 @@ static func front(p: Node3D, n: Node3D, u0: float, u1: float, v0: float, v1: flo
 			for s: Array in sides:
 				piece(p, n, true, s[0], s[1], v0, v1, y0, 0.0, concrete(tone))
 			piece(p, n, true, walk_u0, walk_u1, v0, v1, y0, 0.0, concrete("b" if tone == "a" else tone))
+
+
+## What grows in a yard's bed, u0..u1 by v0..v1 (its top at -0.03): bare dirt
+## showing in ragged patches, greener clumps where the water stands, tufts and
+## weeds. All of it lies flat or stands a hand high: nothing to walk round.
+static func _bed(p: Node3D, n: Node3D, u0: float, u1: float, v0: float, v1: float, key: float) -> void:
+	var top := -0.03
+	var dirt := look("out_dirt", 1.2, Color(0.3, 0.24, 0.18))
+	var spots := maxi(2, roundi((u1 - u0) * (v1 - v0) * 1.2))
+	for i in spots:
+		var u := lerpf(u0 + 0.15, u1 - 0.15, Props.rnd(key + i * 2.9))
+		var v := lerpf(v0 + 0.15, v1 - 0.15, Props.rnd(key + i * 4.3))
+		var w := 0.18 + Props.rnd(key + i * 1.1) * 0.3
+		var d := 0.12 + Props.rnd(key + i * 3.9) * 0.2
+		var green := i % 3 == 1
+		var blot := Kit.cyl(n, 0.5, 0.004, p.pt(u, v, top + 0.0015 + (0.001 if green else 0.0)), Color(0.33, 0.37, 0.2) if green else dirt, Vector3(0, Props.rnd(key + i * 5.7) * 180.0, 0), 9)
+		blot.scale = Vector3(w, 1.0, d)
+	var weed := [Color(0.38, 0.43, 0.2), Color(0.52, 0.49, 0.27), Color(0.31, 0.37, 0.18), Color(0.45, 0.4, 0.24)]
+	var tufts := maxi(4, roundi((u1 - u0) * (v1 - v0) * 3.0))
+	for i in tufts:
+		var u := lerpf(u0, u1, Props.rnd(key + i * 3.7 + 0.5))
+		var v := lerpf(v0, v1, Props.rnd(key + i * 5.3 + 0.5))
+		var h := 0.05 + Props.rnd(key + i * 1.9) * (0.16 if i % 4 == 0 else 0.07)
+		Kit.cyl(n, 0.03 + h * 0.25, h, p.pt(u, v, top + h * 0.5), weed[i % 4], Vector3(0, i * 40.0, 0), 5, 0.0)
 
 
 ## Where a porch meets the ground: a dark footing along the deck's front, u0..u1
@@ -467,7 +525,7 @@ static func lid(p: Node3D, n: Node3D, u: float, v: float, kind: String) -> void:
 			Kit.cyl(n, 0.075, 0.02, p.pt(u, v, -0.005), Color(0.3, 0.3, 0.3), Vector3.ZERO, 10)
 			Kit.cyl(n, 0.045, 0.02, p.pt(u, v, -0.004), Color(0.75, 0.62, 0.2), Vector3.ZERO, 8)
 		"vault":
-			flat(p, n, u - 0.32, u + 0.32, v - 0.47, v + 0.47, -0.05, 0.004, look("out_tread", 0.5, IRON))
+			flat(p, n, u - 0.32, u + 0.32, v - 0.47, v + 0.47, -0.05, 0.004, look("out_tread", 0.5, IRON, Color(1.45, 1.45, 1.4)))
 		"cleanout":
 			flat(p, n, u - 0.09, u + 0.09, v - 0.09, v + 0.09, -0.05, 0.005, IRON)
 
@@ -480,39 +538,73 @@ static func manhole(p: Node3D, n: Node3D, u: float, v: float, r := 0.36) -> void
 	Kit.cyl(n, r, 0.02, p.pt(u, v, ROAD_TOP + 0.001), look("out_lid", r * 2.0, Color(0.24, 0.24, 0.25), Color.WHITE, true), Vector3.ZERO, 16)
 
 
-## A patch in the road, u0..u1 by v0..v1 (where it was dug up): darker, newer
-## asphalt, a band of tar sealing it all round.
+## A patch in the road, u0..u1 by v0..v1 (where it was dug up): newer asphalt,
+## a shade darker, a thin band of sealer round it.
 static func patch(p: Node3D, n: Node3D, u0: float, u1: float, v0: float, v1: float) -> void:
 	var y0 := ROAD_TOP - 0.002          # all of it a thin skin on the road
 	flat(p, n, u0, u1, v0, v1, y0, ROAD_TOP + 0.006, patch_look())
-	var s := 0.04
-	flat(p, n, u0 - s, u1 + s, v0 - s, v0, y0, ROAD_TOP + 0.007, FILL)
-	flat(p, n, u0 - s, u1 + s, v1, v1 + s, y0, ROAD_TOP + 0.007, FILL)
-	flat(p, n, u0 - s, u0, v0, v1, y0, ROAD_TOP + 0.007, FILL)
-	flat(p, n, u1, u1 + s, v0, v1, y0, ROAD_TOP + 0.007, FILL)
+	var s := 0.025
+	flat(p, n, u0 - s, u1 + s, v0 - s, v0, y0, ROAD_TOP + 0.007, SEAL)
+	flat(p, n, u0 - s, u1 + s, v1, v1 + s, y0, ROAD_TOP + 0.007, SEAL)
+	flat(p, n, u0 - s, u0, v0, v1, y0, ROAD_TOP + 0.007, SEAL)
+	flat(p, n, u1, u1 + s, v0, v1, y0, ROAD_TOP + 0.007, SEAL)
 
 
-## A crack in the road sealed with tar: a black line through `pts` (plan
-## points), 4 cm wide, lying on the road, each leg broken into short kinks
-## `jitter` metres either side (0: straight legs, as along the gutter).
+## A crack in the road sealed with tar: a grey-black line through `pts` (plan
+## points) about `w` wide, lying on the road, each leg broken into short kinks
+## `jitter` metres either side (0: straight legs, as along the gutter). A
+## kinked one thins to nothing at its ends, its width wanders, and a long one
+## throws short spurs off to one side or the other, as a crack does and a
+## cable never would.
 static func tar_line(p: Node3D, n: Node3D, pts: Array, w := 0.04, jitter := 0.05) -> void:
+	var line := _kinks(pts, jitter)
+	_seal(p, n, line, w, jitter > 0.0)
+	if jitter <= 0.0:
+		return
+	var count := line.size() - 1
+	for i in range(5, count - 4, 10):
+		var a: Vector2 = line[i]
+		var r := Props.rnd(a.x * 1.9 + a.y * 7.3)
+		if r < 0.25:
+			continue
+		var d: Vector2 = (line[i + 1] - a).normalized()
+		var turn := (35.0 + r * 25.0) * (1.0 if int(r * 100.0) % 2 == 0 else -1.0)
+		var dir := d.rotated(deg_to_rad(turn))
+		var spur: Array = [a, a + dir * (0.3 + r * 0.25), a + dir * (0.55 + r * 0.45) + dir.orthogonal() * 0.08]
+		_seal(p, n, _kinks(spur, jitter * 0.7), w * 0.7, true, true)
+
+
+## A line through `pts`, each leg broken into kinks about 0.3 m long, `jitter` either side.
+static func _kinks(pts: Array, jitter: float) -> Array:
 	var line: Array = [pts[0]]
 	for i in range(pts.size() - 1):
 		var a: Vector2 = pts[i]
 		var b: Vector2 = pts[i + 1]
-		var k := maxi(1, ceili(a.distance_to(b) / 0.45)) if jitter > 0.0 else 1
+		var k := maxi(1, ceili(a.distance_to(b) / 0.3)) if jitter > 0.0 else 1
 		var side := (b - a).orthogonal().normalized()
 		for j in range(1, k + 1):
 			var at := a.lerp(b, float(j) / k)
 			if j < k:
 				at += side * (Props.rnd(at.x * 3.1 + at.y * 1.7) - 0.5) * 2.0 * jitter
 			line.append(at)
-	for i in range(line.size() - 1):
+	return line
+
+
+## The sealer along `line`: `taper` thins it to a hair at both ends (`spur`: only
+## at its far end) and lets its width wander a little from leg to leg.
+static func _seal(p: Node3D, n: Node3D, line: Array, w: float, taper: bool, spur := false) -> void:
+	var count := line.size() - 1
+	for i in count:
 		var a: Vector2 = line[i]
 		var b: Vector2 = line[i + 1]
 		var d := b - a
 		var mid := (a + b) * 0.5
-		_box(n, Vector3(d.length() + w * 0.6, 0.006, w), p.pt(mid.x, mid.y, ROAD_TOP + 0.0), FILL, Vector3(0, rad_to_deg(atan2(-d.y, d.x)), 0))
+		var thick := w
+		if taper:
+			var t := (i + 0.5) / count
+			var swell := 1.0 - t if spur else sin(PI * t)
+			thick = w * (0.3 + 0.7 * sqrt(swell)) * (0.75 + Props.rnd(mid.x * 2.3 + mid.y * 4.1) * 0.5)
+		_box(n, Vector3(d.length() + thick * 0.6, 0.006, thick), p.pt(mid.x, mid.y, ROAD_TOP + 0.0), SEAL, Vector3(0, rad_to_deg(atan2(-d.y, d.x)), 0))
 
 
 ## A wandering line from `from`, heading `dir` (degrees on the plan: 0 along +u,
@@ -539,25 +631,93 @@ static func oil(p: Node3D, n: Node3D, u: float, v: float, w: float, d: float, tu
 		blot.scale = Vector3(w * float(b[2]), 1.0, d * float(b[3]))
 
 
-## Paint on the road, u0..u1 by v0..v1, worn: cut into pieces about `bit` long
-## with some missing (`wear` 0: whole .. 1: mostly gone) and some faded more.
+## Paint on the road, u0..u1 by v0..v1, whole but worn: laid in pieces about
+## `bit` long (the lamps), the whole of it faded toward the road's grey by up
+## to `fade`, and where the wheels run (`wear` 0.1 and over) the road showing
+## through it in ragged blots (worn_paint), so it still reads as one bar of paint.
 static func paint(p: Node3D, n: Node3D, u0: float, u1: float, v0: float, v1: float, colour: Color, key: float, wear := 0.3, bit := 0.4, fade := 0.12) -> void:
 	var along_u := u1 - u0 >= v1 - v0
 	var a0 := u0 if along_u else v0
 	var a1 := u1 if along_u else v1
 	var pieces := maxi(1, roundi((a1 - a0) / bit))
 	var size := (a1 - a0) / pieces
+	var tone := colour.lerp(Color(0.42, 0.42, 0.44), fade * (0.5 + Props.rnd(key + 0.37) * 0.5))
+	var look_: Variant = tone if wear < 0.1 else worn_paint(tone, wear)
 	for i in pieces:
-		var r := Props.rnd(key + i * 1.9)
-		if r < wear:
-			continue
 		var s0 := a0 + i * size
 		var s1 := s0 + size
-		if r < wear * 1.5:                      # half gone
-			s1 = s0 + size * 0.5
-		var tone := colour.lerp(Color(0.42, 0.42, 0.44), fade * floorf(Props.rnd(key + i * 3.7) * 3.0))
 		# A skin of paint lying on the road, clear of its faces.
 		if along_u:
-			flat(p, n, s0, s1, v0, v1, ROAD_TOP + 0.0005, ROAD_TOP + 0.004, tone)
+			flat(p, n, s0, s1, v0, v1, ROAD_TOP + 0.0005, ROAD_TOP + 0.004, look_)
 		else:
-			flat(p, n, u0, u1, s0, s1, ROAD_TOP + 0.0005, ROAD_TOP + 0.004, tone)
+			flat(p, n, u0, u1, s0, s1, ROAD_TOP + 0.0005, ROAD_TOP + 0.004, look_)
+
+
+## Paint worn by tyres: `tone`, with the road's own picture (laid on the world
+## as the road's is, so the two meet seamlessly) showing through in ragged
+## blots over about `wear` of it.
+static func worn_paint(tone: Color, wear: float) -> Material:
+	var key := "worn_%s_%.2f" % [tone.to_html(), wear]
+	if _mats.has(key):
+		return _mats[key]
+	var path := Kit.TEX_DIR + "out_asphalt_old.png"
+	if not ResourceLoader.exists(path):
+		_mats[key] = Kit.flat(tone.lerp(Color(0.42, 0.42, 0.44), wear))
+		return _mats[key]
+	var m := StandardMaterial3D.new()
+	m.albedo_color = tone
+	m.roughness = 1.0
+	m.metallic_specular = 0.0
+	m.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC
+	m.uv1_triplanar = true
+	m.uv1_world_triplanar = true
+	m.uv1_triplanar_sharpness = 8.0
+	m.uv1_scale = Vector3.ONE / 4.0                 # as asphalt()'s
+	m.detail_enabled = true
+	m.detail_uv_layer = BaseMaterial3D.DETAIL_UV_1
+	m.detail_blend_mode = BaseMaterial3D.BLEND_MODE_MIX
+	m.detail_albedo = load(path)
+	m.detail_mask = _wear_mask(0.75 - wear * 0.45)
+	_mats[key] = m
+	return m
+
+
+## A mask 4 m square, 128 pixels a side, tiling: white in ragged blots where the
+## paint is gone (smooth noise in two sizes, cut at `cut`).
+static func _wear_mask(cut: float) -> Texture2D:
+	var key := "wear_mask_%.2f" % cut
+	if _mats.has(key):
+		return _mats[key]
+	var size := 128
+	var coarse := _lattice(20, 1.0)
+	var fine := _lattice(48, 7.0)
+	var img := Image.create(size, size, false, Image.FORMAT_L8)
+	for y in size:
+		for x in size:
+			var v := _smooth(coarse, 20, x, y, size) * 0.62 + _smooth(fine, 48, x, y, size) * 0.38
+			img.set_pixel(x, y, Color.WHITE if v > cut else Color.BLACK)
+	_mats[key] = ImageTexture.create_from_image(img)
+	return _mats[key]
+
+
+static func _lattice(cells: int, seed: float) -> PackedFloat32Array:
+	var out := PackedFloat32Array()
+	out.resize(cells * cells)
+	for i in out.size():
+		out[i] = Props.rnd(seed + i * 0.731)
+	return out
+
+
+## Smooth noise from a `cells` square lattice at pixel x, y of a `size` square, wrapping.
+static func _smooth(grid: PackedFloat32Array, cells: int, x: int, y: int, size: int) -> float:
+	var fx := float(x) * cells / size
+	var fy := float(y) * cells / size
+	var x0 := floori(fx)
+	var y0 := floori(fy)
+	var tx := smoothstep(0.0, 1.0, fx - x0)
+	var ty := smoothstep(0.0, 1.0, fy - y0)
+	var x1 := (x0 + 1) % cells
+	var y1 := (y0 + 1) % cells
+	var top := lerpf(grid[y0 * cells + x0], grid[y0 * cells + x1], tx)
+	var bottom := lerpf(grid[y1 * cells + x0], grid[y1 * cells + x1], tx)
+	return lerpf(top, bottom, ty)
