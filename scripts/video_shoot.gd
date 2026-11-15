@@ -30,12 +30,14 @@ extends Node
 ##   video:seed:n         the next take's luck
 ##   video:shoot          SHOOT IT on the board
 ##   video:auto:skill     the take plays itself from here at that skill, 0 .. 1
-##   video:key:J          a key pressed in the take; video:walk:-1 / 1 / 0 holds left, right or nothing
+##   video:key:W          a key pressed in the take; video:walk:-1 / 1 / 0 holds left, right or nothing
+##   video:hold:W:0.4     that key held down that long as from the keyboard, the take running as in play (Left,
+##                        Right, E ...; due: the key the next move wants); prints the hits and how far he walked
 ##   video:until:beat     run the take to that beat and hold it (count-in 0..4, ACTION at 4); video:until:end
 ##   video:prompt         run it until the next move is just reaching the ring
 ##   video:at:id          run it until that mishap is asking for E
 ##   video:for:beats      run it on that many beats from where it is
-##   video:live:seconds   let it run as it does in play for that long (in real time, the keyboard's keys; key:J presses one)
+##   video:live:seconds   let it run as it does in play for that long (in real time, the keyboard's keys; key:W presses one)
 ##   video:premiere       run the rest of the take, to the premiere
 ##   video:next           Enter on the premiere; video:results straight to the money; video:done back to the game
 ##   video:esc            Esc at whatever is up
@@ -349,11 +351,41 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	_take.press(OS.get_keycode_string(event.physical_keycode))
 
 
-## WASD or the arrows, as a direction on screen.
+## The left and right arrows, as a direction on screen: he walks along his line on those alone (W A S D are
+## the moves, so they never walk him during a take).
 func _held() -> Vector2:
-	return Vector2(
-		Input.get_axis("ui_left", "ui_right") + float(Input.is_physical_key_pressed(KEY_D)) - float(Input.is_physical_key_pressed(KEY_A)),
-		Input.get_axis("ui_up", "ui_down") + float(Input.is_physical_key_pressed(KEY_S)) - float(Input.is_physical_key_pressed(KEY_W))).limit_length(1.0)
+	return Vector2(Input.get_axis("ui_left", "ui_right"), 0.0)
+
+
+## A key held down for `seconds` as from the keyboard (through the game's own input), the take running as in
+## play meanwhile, then let go; prints what the take made of it and how far he walked. "due" is the key the
+## next move wants.
+func _hold(key: String, seconds: float) -> void:
+	if key == "due":
+		key = "W"
+		for p: Dictionary in _take.prompts:
+			if p["state"] == "due" and float(p["beat"]) > _take.beat() - 0.3:
+				key = String(p["key"])
+				break
+	var hits := (_take.prompts as Array).filter(func(p: Dictionary) -> bool: return p["state"] == "hit").size()
+	var flubs: int = _take._flubs
+	var x: float = main._actor.position.x
+	var down := InputEventKey.new()
+	down.physical_keycode = OS.find_keycode_from_string(key)
+	down.keycode = down.physical_keycode
+	down.pressed = true
+	Input.parse_input_event(down)
+	_live = true
+	await main._wait(seconds)
+	_live = false
+	var up := InputEventKey.new()
+	up.physical_keycode = down.physical_keycode
+	up.keycode = down.keycode
+	up.pressed = false
+	Input.parse_input_event(up)
+	await get_tree().process_frame
+	var now := (_take.prompts as Array).filter(func(p: Dictionary) -> bool: return p["state"] == "hit").size()
+	print("[shot] video: held %s for %.2f s: moves hit %d -> %d, off beat %d -> %d; he walked %.2f m along his line" % [key, seconds, hits, now, flubs, _take._flubs, main._actor.position.x - x])
 
 
 ## Catch the next moment wanted: the same picture the camera sees, without the viewfinder.
@@ -577,6 +609,9 @@ func shot_step(bits: PackedStringArray) -> void:
 		"walk":
 			if _take:
 				_take.hold_dir = Vector2(float(arg), 0.0)
+		"hold":
+			if _take:
+				await _hold(arg, float(bits[3]) if bits.size() > 3 else 0.3)
 		"until":
 			if _take:
 				await run_to(_take.end_beat() + 1.0 if arg == "end" else float(arg))

@@ -55,13 +55,13 @@
 		]}
 	],
 	"moves": [
-		{"id": "point", "name": "POINT AT THE LENS", "key": "J", "face": "smug", "arms": [0.35, 1.3, 0.9, -0.2], "lean": 0.0},
-		{"id": "wide", "name": "ARMS WIDE", "key": "K", "face": "shout", "arms": [-1.5, 1.5, 0.0, 0.0], "lean": 0.0},
-		{"id": "lean", "name": "LEAN BACK", "key": "L", "face": "smug", "arms": [-0.45, 0.45, 0.3, -0.3], "lean": 0.3},
-		{"id": "chain", "name": "FLASH THE CHAIN", "key": "U", "face": "grin", "arms": [0.75, 0.2, 1.1, 0.0], "lean": 0.0, "needs": "chain"},
-		{"id": "cash", "name": "THROW THE CASH", "key": "I", "face": "laugh", "arms": [-0.3, 2.5, 0.0, 0.2], "lean": 0.0, "beats": 1.0, "needs": "rain"},
-		{"id": "sign", "name": "THROW IT UP", "key": "O", "face": "focused", "arms": [-2.85, 0.15, -0.2, 0.0], "lean": 0.0},
-		{"id": "aim", "name": "AIM AT THE LENS", "key": "H", "face": "angry", "arms": [], "lean": 0.0, "beats": 1.5, "needs": "weapon"}
+		{"id": "point", "name": "POINT AT THE LENS", "key": "D", "face": "smug", "arms": [0.35, 1.3, 0.9, -0.2], "lean": 0.0},
+		{"id": "wide", "name": "ARMS WIDE", "key": "A", "face": "shout", "arms": [-1.5, 1.5, 0.0, 0.0], "lean": 0.0},
+		{"id": "lean", "name": "LEAN BACK", "key": "S", "face": "smug", "arms": [-0.45, 0.45, 0.3, -0.3], "lean": 0.3},
+		{"id": "chain", "name": "FLASH THE CHAIN", "key": "A", "face": "grin", "arms": [0.75, 0.2, 1.1, 0.0], "lean": 0.0, "needs": "chain"},
+		{"id": "cash", "name": "THROW THE CASH", "key": "W", "face": "laugh", "arms": [-0.3, 2.5, 0.0, 0.2], "lean": 0.0, "beats": 1.0, "needs": "rain"},
+		{"id": "sign", "name": "THROW IT UP", "key": "W", "face": "focused", "arms": [-2.85, 0.15, -0.2, 0.0], "lean": 0.0},
+		{"id": "aim", "name": "AIM AT THE LENS", "key": "D", "face": "angry", "arms": [], "lean": 0.0, "beats": 1.5, "needs": "weapon"}
 	],
 	"take": {
 		"count_in": 4,
@@ -204,7 +204,7 @@
 		"or": "OR",
 		"alarm": "WEE-OO",
 		"siren": "WOOP WOOP",
-		"take_keys": "A D  STAY IN SHOT     ESC  WALK OFF SET",
+		"take_keys": "W A S D  MOVES     LEFT RIGHT  STAY IN SHOT     ESC  WALK OFF SET",
 		"walked_off": "WALKED OFF THE SET. NOTHING SPENT.",
 		"premiere": "WORLD PREMIERE",
 		"looks": "LOOKS",
