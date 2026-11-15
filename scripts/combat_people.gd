@@ -19,7 +19,7 @@ const REACT := 18.0              # metres: people this near a shot are frightene
 const CALM := 12.0               # seconds with no shot before the frightened go back to what they were doing
 const FALL := 0.55               # seconds to go down
 const POOL_SECONDS := 4.0        # for the pool to spread
-const POOL_RADIUS := 0.55        # metres, about
+const POOL_RADIUS := 0.95        # metres, about (the ring is 0.8 of it, wobbling): it shows round someone the size of the lead
 const FLEE_CONE := 0.7           # radians: drawn only from the front, he runs no further than this from straight at the camera
 const TURN := 0.22               # seconds to turn round before running a new way (paper_actor.gd's flip, and a little)
 const GRID := 0.25               # metres: the squares a runner's way is found on
@@ -430,6 +430,7 @@ func _die(p: Person, dir: Vector3, lay := Vector3.ZERO, write := true) -> void:
 		a.face.hold_mouth("mouth_oh")
 		a.face.look(0.0)
 	a.fall_to = lay if lay != Vector3.ZERO else _fall_way(p, dir)
+	a.fall_lift = _floor_under(p) - a.global_position.y
 	p.fall_t = 0.0
 	_out_of_the_way(p)
 	if write:
@@ -450,7 +451,7 @@ func _fall_way(p: Person, dir: Vector3) -> Vector3:
 
 func _room_to_lie(p: Person, way: Vector3) -> bool:
 	var a := p.actor
-	var b: Node3D = main._building
+	var b := _site_of(p)
 	var room: Dictionary = b.rooms[b.room_at_pos(a.global_position, 0)]
 	var floor_rect: Rect2 = room.get("rect", room.get("area", Rect2()))
 	floor_rect = floor_rect.grow(-0.12)
@@ -507,13 +508,15 @@ func reconcile(place: String) -> void:
 			_die(p, Vector3.ZERO, Vector3(float(at[2]), 0.0, float(at[3])), false)
 			p.fall_t = FALL
 			p.actor.fallen = 1.0
-			_pool_for(p, 0.0)
 		elif not who.has(key) and p.state == "dead":
 			_revive(p)
-	if place == main._place:
+	if place == main._place and main._building.is_visible_in_tree():
 		for p: Person in here():
 			if p.state == "dead":
 				_out_of_the_way(p)
+				if p.pool == null and p.fall_t >= FALL:           # down when he came: his floor and his pool, now it can be seen
+					p.actor.fall_lift = _floor_under(p) - p.actor.global_position.y
+					_pool_for(p, 0.0)
 
 
 func _revive(p: Person) -> void:
@@ -552,16 +555,34 @@ func _pool_for(p: Person, seconds: float) -> void:
 	var a := p.actor
 	var feet: Vector3 = a.global_position
 	var at: Vector3 = feet + a.fall_to * a.height * 0.42
-	var w = world_of.call(main._building)
-	var y: float = w.floor_at(Vector3(at.x, feet.y + 0.05, at.z), feet.y) if w else feet.y
-	p.pool = fx.pool(Vector3(at.x, y + 0.004, at.z), POOL_RADIUS * a.reach / 0.4, seconds, _node_for(feet))
+	p.pool = fx.pool(Vector3(at.x, _floor_under(p) + 0.004, at.z), POOL_RADIUS * a.reach / 0.4, seconds, _node_for(feet, _site_of(p)))
+
+
+## The place someone belongs to (its node).
+func _site_of(p: Person) -> Node3D:
+	return main._sites.get(p.place, main._building)
+
+
+## The top of the floor he lies on: the highest under his feet, middle and head that is no more than a step
+## above his feet (a court, a rug; not a bench his head is under).
+func _floor_under(p: Person) -> float:
+	var a := p.actor
+	var feet: Vector3 = a.global_position
+	var w = world_of.call(_site_of(p))
+	if w == null:
+		return feet.y
+	var top := feet.y
+	for k: float in [0.0, 0.45, 0.85]:
+		var at: Vector3 = feet + a.fall_to * a.height * k
+		top = maxf(top, w.floor_at(Vector3(at.x, feet.y - 0.38, at.z), feet.y))      # it looks down from 0.12 above his feet
+	return top
 
 
 ## The node things on the floor at `at` go in, so that they are hidden with the room (a band of a place,
 ## a room of the studio).
-func _node_for(at: Vector3) -> Node3D:
-	var b: Node3D = main._building
-	var room: Dictionary = b.rooms[b.room_at_pos(at, maxi(main._room, 0))]
+func _node_for(at: Vector3, site: Node3D = null) -> Node3D:
+	var b: Node3D = site if site else main._building
+	var room: Dictionary = b.rooms[b.room_at_pos(at, maxi(main._room, 0) if b == main._building else 0)]
 	if room.has("node"):
 		return room["node"]
 	return b.node_of(room["band"])

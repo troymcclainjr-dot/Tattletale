@@ -159,7 +159,7 @@ func _neighbours() -> void:
 	Kit.box(self, Vector3(lw, 3.4, t), Vector3(lx, 1.7, zc), Kit.tex("stucco", 2.0, Color(0.86, 0.74, 0.68)))
 	_cornice(self, -10.5, SHOP_X0, 3.4, Color(0.22, 0.56, 0.6), 0.3, false, true)
 	var lit := Kit.flat(Color(1.0, 0.95, 0.75), 1.1)
-	Kit.box(self, Vector3(4.2, 1.5, 0.03), Vector3(-6.6, 1.6, WALL_Z1 + 0.012), lit)
+	Kit.pane(Kit.box(self, Vector3(4.2, 1.5, 0.03), Vector3(-6.6, 1.6, WALL_Z1 + 0.012), lit))      # combat: a shot breaks it
 	for i in 5:
 		Kit.disc(self, 0.26, Vector3(-8.25 + i * 0.85, 1.25, WALL_Z1 + 0.03), Color(0.75, 0.78, 0.8), 0.008, 14)
 		Kit.disc(self, 0.18, Vector3(-8.25 + i * 0.85, 1.25, WALL_Z1 + 0.036), Color(0.35, 0.5, 0.62), 0.008, 14)
@@ -170,7 +170,7 @@ func _neighbours() -> void:
 	for x: float in [-7.82, -5.27]:
 		Kit.box(self, Vector3(0.05, 1.52, 0.04), Vector3(x, 1.6, WALL_Z1 + 0.02), ALUMINIUM)    # ends inside the rails, not on the glass's edge
 	Kit.box(self, Vector3(4.34, 0.78, 0.04), Vector3(-6.6, 0.39, WALL_Z1 + 0.02), Color(0.16, 0.42, 0.45))
-	Kit.box(self, Vector3(0.75, 2.0, 0.03), Vector3(-3.825, 1.0, WALL_Z1 + 0.012), lit)
+	Kit.pane(Kit.box(self, Vector3(0.75, 2.0, 0.03), Vector3(-3.825, 1.0, WALL_Z1 + 0.012), lit))      # combat: and its glass door
 	for x: float in [-4.22, -3.43]:
 		Kit.box(self, Vector3(0.06, 2.12, 0.05), Vector3(x, 1.06, WALL_Z1 + 0.025), ALUMINIUM)
 	Kit.box(self, Vector3(0.73, 0.06, 0.05), Vector3(-3.825, 2.09, WALL_Z1 + 0.025), ALUMINIUM)

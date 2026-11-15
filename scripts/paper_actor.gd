@@ -1179,6 +1179,7 @@ var flinch := 0.0               # just shot: his card tips this many radians (ab
 var cower := 0.0                # 0 .. 1: frightened, he shrinks down and shakes
 var fallen := 0.0               # 0 standing .. 1 lying on the floor face up, his head towards `fall_to`
 var fall_to := Vector3.RIGHT    # a direction on the floor
+var fall_lift := 0.0            # metres: the floor he lies on is this far above his feet (a court, a rug)
 
 
 ## Where the muzzle and the ejection port of what he holds are in the world, for the pose he is in, from its
@@ -1239,4 +1240,4 @@ func _hurt_pose() -> void:
 	var head := Vector3(fall_to.x, 0.0, fall_to.z).normalized()
 	var lie := Basis(head.cross(Vector3.UP), head, Vector3.UP)
 	var turn := stand.get_rotation_quaternion().slerp(lie.get_rotation_quaternion(), k)
-	_pivot.global_transform = Transform3D(Basis(turn), global_position + Vector3(0.0, 0.022 * k, 0.0))
+	_pivot.global_transform = Transform3D(Basis(turn), global_position + Vector3(0.0, (fall_lift + 0.022) * k, 0.0))

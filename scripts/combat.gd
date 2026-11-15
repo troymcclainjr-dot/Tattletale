@@ -519,7 +519,8 @@ func _said(shot: Dictionary) -> String:
 	var through := " (through %d panes)" % int(shot["panes"]) if int(shot.get("panes", 0)) > 0 else ""
 	match String(shot.get("what", "")):
 		"person":
-			return "%s, %s%s" % [shot["who"], shot["result"], through]
+			var at: Vector3 = shot["at"]
+			return "%s, %s, at %.2f, %.2f%s" % [shot["who"], shot["result"], at.x, at.z, through]
 		"wall", "metal":
 			return "%s %s%s" % [shot["what"], shot.get("on", ""), through]
 		"":
