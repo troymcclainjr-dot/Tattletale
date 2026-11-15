@@ -63,6 +63,8 @@ extends Node3D
 ##   nearest; or window: a pane in sight; or car: a car's glass; then fire n), aimon:who (the cross on it, no
 ##   shot), hud:0 / hud:1, freeze (what is flying stops where it is), combatcheck (a window, someone put down,
 ##   the rounds and the HUD checked; it prints its problems). In --lineup an x in a pose catches him firing.
+##   Tracers and glass (combat_fx_steps.gd says more): tracers:every|some|none, glassseed:n, panes, pane:near|x:y:z|i,
+##   hitpane:spot[:n], paneeye[:dist], panestrip:name:n[:spot], otherside[:dist], fireat:x:y:z[:n], glasscheck.
 ##   More in shot_steps.gd, for many pictures in one run: snap:name (a picture now, beside the --shot file),
 ##   eye:x:y:z:x:y:z[:fov] (later pictures from there; eye: alone, back to following him), place:id, at:x:z,
 ##   room:NAME (stand him there), beat:n (hold the dancers at that beat), stats (draw calls and frame time),
