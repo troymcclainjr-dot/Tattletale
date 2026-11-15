@@ -55,9 +55,11 @@ static func stool(p: Node3D, b: int, u: float, v: float, torn := false, h := 0.7
 ## The bar: a padded red front split here and there and gaffer-taped, a black
 ## armrest roll along it, a brass foot rail, a dark wooden top with the rings
 ## of old drinks, and on it glasses, bottles, an ashtray and napkins. Its
-## customers' side is its front. The top is at 1.12.
-static func bar(p: Node3D, b: int, u: float, v: float, yaw: float, w: float) -> Node3D:
+## customers' side is its front. It is drawn with its top at 1.12 and squashed
+## to `top` (low enough, and the one serving shows over it from the camera).
+static func bar(p: Node3D, b: int, u: float, v: float, yaw: float, w: float, top := 1.12) -> Node3D:
 	var g: Node3D = p.prop(b, u, v, yaw, w, 0.66)
+	g.scale.y = top / 1.12
 	Kit.box(g, Vector3(w - 0.06, 0.12, 0.56), Vector3(0, 0.06, -0.02), BLACK)
 	Kit.box(g, Vector3(w, 0.94, 0.49), Vector3(0, 0.59, -0.065), TOP.darkened(0.35))      # meeting the padding's back, not under it
 	Kit.box(g, Vector3(w, 0.86, 0.08), Vector3(0, 0.55, 0.22), quilt())
@@ -123,7 +125,11 @@ static func back_bar(p: Node3D, b: int, u: float, v: float, yaw: float, w: float
 	Props.till(g, Vector3(-w * 0.5 + 0.6, 0.92, 0.05), 0.0)
 	Kit.box(g, Vector3(0.5, 0.36, 0.42), Vector3(w * 0.5 - 0.5, 1.1, 0.0), Color(0.6, 0.62, 0.66))      # the ice bin
 	Kit.box(g, Vector3(0.44, 0.02, 0.36), Vector3(w * 0.5 - 0.5, 1.281, 0.0), Color(0.85, 0.92, 0.95))
-	Props.neon(g, "ICE COLD", Vector3(w * 0.25, 2.42, -0.2), 0.12, Color(0.35, 0.75, 1.0))
+	# The beer sign: the words in tubes on a black board, a tube round its edge.
+	var ice := Color(0.35, 0.75, 1.0)
+	Kit.box(g, Vector3(0.76, 0.24, 0.02), Vector3(w * 0.25, 2.42, -0.235), BLACK)
+	Props.neon(g, "ICE COLD", Vector3(w * 0.25, 2.42, -0.2), 0.12, ice)
+	In.neon_shape(g, [[Vector2(-0.35, -0.1), Vector2(0.35, -0.1), Vector2(0.35, 0.1), Vector2(-0.35, 0.1), Vector2(-0.35, -0.1)]], Vector3(w * 0.25, 2.42, -0.222), ice, 0.0, 0.007)
 	return g
 
 
@@ -247,7 +253,8 @@ static func dj_booth(p: Node3D, b: int, u: float, v: float, yaw: float, w := 2.2
 
 ## The light rig over the dance floor: a black truss on chains from the
 ## ceiling, a can light for each colour along it, tipped down, and under each
-## a coloured lamp that floods the floor; a mirror ball off its middle.
+## a coloured lamp that floods the floor; a mirror ball off its middle, silver
+## squares all over it, catching the light.
 static func light_rig(p: Node3D, b: int, u0: float, u1: float, v: float, y: float, colours: Array, ceil := 2.9) -> Node3D:
 	var g := Kit.group(p.node_of(b), p.pt((u0 + u1) * 0.5, v), Vector3.ZERO)
 	var w := u1 - u0
@@ -271,13 +278,39 @@ static func light_rig(p: Node3D, b: int, u0: float, u1: float, v: float, y: floa
 		Kit.cyl(can, 0.074, 0.01, Vector3(0, -0.131, 0), Kit.flat(c, 3.0), Vector3.ZERO, 10)
 		Kit.omni(g, Vector3(x, y - 0.55, 0.45 * toward), c, 1.5, 5.0)
 	Kit.tube(g, Vector3(0, y, 0), Vector3(0, y - 0.3, 0), 0.006, CHROME, 4)
-	Kit.ball(g, 0.15, Vector3(0, y - 0.45, 0), Kit.flat(Color(0.82, 0.84, 0.9), 0.35), 8)
+	Kit.ball(g, 0.2, Vector3(0, y - 0.5, 0), _mirror(), 16)
 	return g
+
+
+## A mirror ball's skin: rows of little square mirrors in dark grout, each a
+## different grey, a few catching a lamp full on; lit a little from within so
+## they show in the dark.
+static func _mirror() -> Material:
+	var cols := 28
+	var rows := 14
+	var px := 8
+	var img := Image.create(cols * px, rows * px, false, Image.FORMAT_RGB8)
+	img.fill(Color(0.08, 0.08, 0.1))
+	for r in rows:
+		for c in cols:
+			var k := Props.rnd(r * 31.7 + c * 7.3 + 0.5)
+			var grey := 1.0 if k > 0.88 else 0.22 + 0.5 * k
+			img.fill_rect(Rect2i(c * px + 1, r * px + 1, px - 2, px - 2), Color(grey * 0.96, grey * 0.98, grey))
+	var t := ImageTexture.create_from_image(img)
+	var m := StandardMaterial3D.new()
+	m.albedo_texture = t
+	m.albedo_color = Color(0.85, 0.87, 0.92)
+	m.metallic_specular = 0.9           # glints from the rig's lamps
+	m.roughness = 0.25
+	m.emission_enabled = true
+	m.emission = Color(0.42, 0.43, 0.48)
+	m.emission_texture = t
+	return m
 
 
 ## A pool table: green felt with a taped-over rip, in fat wooden rails with
 ## pockets at the corners and sides, on four turned legs; the balls and a cue
-## left on it, its long lamp hanging over it on two chains.
+## left on it, its lamp (three shades on a bar) hanging over it on two chains.
 static func pool_table(p: Node3D, b: int, u: float, v: float, yaw: float, ceil := 2.9) -> Node3D:
 	var w := 2.3
 	var d := 1.3
@@ -301,12 +334,19 @@ static func pool_table(p: Node3D, b: int, u: float, v: float, yaw: float, ceil :
 	Kit.tube(g, Vector3(-0.95, 0.845, 0.36), Vector3(0.45, 0.835, -0.12), 0.012, Color(0.78, 0.62, 0.38), 6)
 	Kit.box(g, Vector3(0.42, 0.003, 0.05), Vector3(0.45, 0.8115, 0.2), TAPE, Vector3(0, 25, 0))
 	Kit.box(g, Vector3(0.025, 0.02, 0.025), Vector3(w * 0.5 - 0.06, 0.87, d * 0.5 - 0.3), Color(0.2, 0.4, 0.8))
-	# Its lamp: a long green shade, lit underneath.
+	# Its lamp: three little green shades on a brass bar, lit underneath, hung
+	# high: the camera looks across the table at the dance floor, and any lower
+	# they hide the dancers. Its light makes a pool on the felt.
+	var lamp := 2.4
+	var shade := Color(0.12, 0.34, 0.2)
+	Kit.tube(g, Vector3(-0.74, lamp + 0.2, 0), Vector3(0.74, lamp + 0.2, 0), 0.012, BRASS, 6)
 	for x: float in [-0.5, 0.5]:
-		Kit.tube(g, Vector3(x, 2.46, 0), Vector3(x, ceil, 0), 0.007, Color(0.2, 0.2, 0.22), 4)
-	Kit.bevel(g, Vector3(1.3, 0.16, 0.34), Vector3(0, 2.38, 0), Color(0.12, 0.34, 0.2), 0.04)
-	Kit.box(g, Vector3(1.2, 0.01, 0.26), Vector3(0, 2.297, 0), Kit.flat(Color(1.0, 0.92, 0.7), 1.6))
-	Kit.omni(g, Vector3(0, 1.9, 0), Color(1.0, 0.88, 0.62), 1.2, 3.4)
+		Kit.tube(g, Vector3(x, lamp + 0.2, 0), Vector3(x, ceil, 0), 0.007, Color(0.2, 0.2, 0.22), 4)
+	for x: float in [-0.6, 0.0, 0.6]:
+		Kit.cyl(g, 0.17, 0.15, Vector3(x, lamp + 0.075, 0), shade, Vector3.ZERO, 12, 0.05)
+		Kit.cyl(g, 0.15, 0.006, Vector3(x, lamp - 0.004, 0), Kit.flat(Color(1.0, 0.92, 0.7), 1.6), Vector3.ZERO, 12)
+		Kit.tube(g, Vector3(x, lamp + 0.15, 0), Vector3(x, lamp + 0.2, 0), 0.008, BRASS, 4)
+	Kit.omni(g, Vector3(0, 1.75, 0), Color(1.0, 0.88, 0.62), 2.2, 1.8)      # short reach: a pool on the felt, not the room
 	return g
 
 
@@ -343,7 +383,8 @@ static func arcade(p: Node3D, b: int, u: float, v: float, yaw: float, title := "
 ## A dropped ceiling of square tiles, seen only from below (it never hides the
 ## room from a camera over it): the tiles in `stains` (their corners, [u, v],
 ## on the 0.6 m grid) are water-stained, and at `hole` one is gone, a cable
-## hanging out of the dark and the tile itself dangling by a corner.
+## hanging out of the dark and the tile itself on the floor under it, broken in
+## two (left where it fell: flat, nothing to walk round).
 static func ceiling(p: Node3D, b: int, u0: float, v0: float, u1: float, v1: float, y: float, stains: Array, hole: Array) -> void:
 	var n: Node3D = p.node_of(b)
 	_under(n, p.rect(u0, v0, u1, v1), y, Kit.tex("ceiling_tile", 0.6, Color(0.5, 0.46, 0.4), true, Color(0.44, 0.4, 0.34)))      # gone yellow-brown with smoke
@@ -358,8 +399,9 @@ static func ceiling(p: Node3D, b: int, u0: float, v0: float, u1: float, v1: floa
 		var c := Vector3(r.get_center().x, y, r.get_center().y)
 		Kit.tube(n, c + Vector3(0.1, 0.0, 0.05), c + Vector3(0.16, -0.45, 0.1), 0.008, BLACK, 4)
 		Kit.tube(n, c + Vector3(0.16, -0.45, 0.1), c + Vector3(0.1, -0.62, 0.02), 0.008, BLACK, 4)
-		var hang := Kit.group(n, Vector3(r.position.x, y - 0.01, r.end.y), Vector3(-62, 0, 0))
-		Kit.box(hang, Vector3(0.58, 0.012, 0.58), Vector3(0.29, 0.0, -0.29), Kit.tex("ceiling_tile", 0.6, Color(0.5, 0.46, 0.4), false, Color(0.42, 0.37, 0.3)))
+		var fallen := Kit.tex("ceiling_tile", 0.6, Color(0.5, 0.46, 0.4), false, Color(0.5, 0.45, 0.38))
+		Kit.box(n, Vector3(0.58, 0.012, 0.34), Vector3(c.x + 0.08, 0.008, c.z - 0.12), fallen, Vector3(0, 17, 0))
+		Kit.box(n, Vector3(0.5, 0.012, 0.24), Vector3(c.x - 0.18, 0.009, c.z + 0.26), fallen, Vector3(4, -21, 0))
 
 
 ## Litter on a floor (decoration: it does not block): crushed cups, cans,
@@ -436,10 +478,53 @@ static func tags(p: Node3D, b: Variant, u: float, v: float, yaw: float, marks: A
 	for i in marks.size():
 		var m: Array = marks[i]
 		var c: Color = SPRAY[int(Props.rnd(seed + i * 4.1) * SPRAY.size()) % SPRAY.size()]
-		var l := Props.words(g, String(m[0]), Vector3(float(m[1]), float(m[2]), 0.004 + i * 0.002), float(m[3]), c)
-		l.rotation_degrees.z = float(m[4])
-		l.outline_size = 10
-		l.outline_modulate = Color(0.05, 0.05, 0.06)
+		spray(g, String(m[0]), Vector3(float(m[1]), float(m[2]), 0.004 + i * 0.003), float(m[3]), c, float(m[4]), seed + i * 7.7)
+
+
+## One tag, sprayed on a face of `parent` that faces +z, centred at `pos`, `h`
+## high, tipped `tilt` degrees: fat letters crowding each other, each a little
+## bigger or smaller, higher or lower and leaning its own way than the last,
+## filled in `colour` and outlined in another of SPRAY's, a black shadow off to
+## one side, the paint run down from a letter or two. Lit by the place's lights
+## like the wall under it (not glowing, as a word in the picture's frame would).
+static func spray(parent: Node3D, text: String, pos: Vector3, h: float, colour: Color, tilt := 0.0, seed := 0.0) -> Node3D:
+	var g := Kit.group(parent, pos, Vector3(0, 0, tilt))
+	var at_fill := SPRAY.find(colour)
+	var rim: Color = SPRAY[(maxi(at_fill, 0) + 1 + int(Props.rnd(seed + 0.3) * (SPRAY.size() - 1))) % SPRAY.size()]
+	var px := h / 96.0
+	var widths: Array = []
+	var total := 0.0
+	for ch in text:
+		var w: float = Props.FONT.get_string_size(ch, HORIZONTAL_ALIGNMENT_LEFT, -1, 96).x * px * (0.5 if ch == " " else 0.84)
+		widths.append(w)
+		total += w
+	var x := -total * 0.5
+	for i in text.length():
+		var w: float = widths[i]
+		if text[i] != " ":
+			var r1 := Props.rnd(seed + i * 1.37)
+			var r2 := Props.rnd(seed + i * 2.71)
+			var lh := h * (0.9 + r1 * 0.26)
+			var at := Vector3(x + w * 0.5, (r2 - 0.5) * h * 0.16, i * 0.0004)
+			var lean := (r2 - 0.5) * 18.0
+			var shadow := Props.words(g, text[i], at + Vector3(h * 0.05, -h * 0.05, -0.0012), lh, Color(0.05, 0.05, 0.06))
+			var letter := Props.words(g, text[i], at, lh, colour)
+			for l: Label3D in [shadow, letter]:
+				l.rotation_degrees.z = lean
+				l.shaded = true
+				l.outline_size = 14
+			shadow.outline_modulate = Color(0.05, 0.05, 0.06)
+			letter.outline_modulate = rim
+			letter.render_priority = 2
+			letter.outline_render_priority = 1
+			if Props.rnd(seed + i * 3.3) < 0.4:              # a run of paint
+				var run := h * (0.2 + Props.rnd(seed + i * 4.4) * 0.6)
+				var dx := (Props.rnd(seed + i * 5.5) - 0.5) * w * 0.5
+				var foot := at + Vector3(dx, -lh * 0.4 - run * 0.5, -0.0008)
+				Kit.box(g, Vector3(h * 0.055, run, 0.0004), foot, colour.darkened(0.15))
+				Kit.box(g, Vector3(h * 0.085, h * 0.085, 0.0004), foot - Vector3(0, run * 0.5, 0), colour.darkened(0.15))
+		x += w
+	return g
 
 
 ## The club's sign over its door: a black board on brackets with the name in
@@ -518,6 +603,36 @@ static func hand_dryer(p: Node3D, b: int, u: float, v: float, yaw: float, y := 1
 	return g
 
 
+## A urinal on a wall facing `yaw`, its floor space (0.44 by 0.36) centred at
+## (u, v): a white bowl open at the front, a chrome flush pipe up the wall from
+## it, a stain on the floor under it.
+static func urinal(p: Node3D, b: int, u: float, v: float, yaw: float) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, 0.44, 0.36)
+	var china := Color(0.93, 0.93, 0.9)
+	Kit.cyl(g, 0.2, 0.66, Vector3(0, 0.78, -0.12), china, Vector3.ZERO, 12, 0.17)
+	Kit.box(g, Vector3(0.26, 0.38, 0.02), Vector3(0, 0.7, 0.07), Color(0.72, 0.73, 0.7))       # the bowl inside, in shade
+	Kit.box(g, Vector3(0.3, 0.05, 0.06), Vector3(0, 0.49, 0.06), china)                        # its lip
+	Kit.cyl(g, 0.03, 0.02, Vector3(0, 0.53, 0.04), Color(0.3, 0.55, 0.85), Vector3.ZERO, 8)    # the puck
+	Kit.box(g, Vector3(0.09, 0.08, 0.06), Vector3(0, 1.17, -0.14), Props.STEEL)
+	Kit.cyl(g, 0.016, 0.6, Vector3(0, 1.5, -0.15), Props.STEEL, Vector3.ZERO, 6)
+	var stain := Kit.cyl(g, 0.2, 0.003, Vector3(0, 0.0025, 0.16), Color(0.6, 0.56, 0.32, 0.55), Vector3.ZERO, 12)
+	stain.scale = Vector3(1.0, 1.0, 0.7)
+	return g
+
+
+## A sticky patch on a floor, where something was spilled and never mopped:
+## three ellipses run together at (u, v) about w by d, darker than the floor
+## and with a shine on it. Flat: decoration, it does not block.
+static func spill(p: Node3D, b: Variant, u: float, v: float, w: float, d: float, look: Color, seed := 0.0) -> void:
+	var m := Kit.flat(look).duplicate() as StandardMaterial3D
+	m.roughness = 0.4             # a dull sheen: shinier and a lamp over it turns the whole patch pale
+	m.metallic_specular = 0.45
+	for k in 3:
+		var at := Vector2((Props.rnd(seed + k * 1.3) - 0.5) * w * 0.45, (Props.rnd(seed + k * 2.9) - 0.5) * d * 0.45)
+		var blot := Kit.cyl(In._node(p, b), 0.5, 0.003, p.pt(u + at.x, v + at.y, 0.0015 + k * 0.0004), m, Vector3(0, Props.rnd(seed + k * 4.7) * 180.0, 0), 12)
+		blot.scale = Vector3(w * (0.55 + 0.35 * Props.rnd(seed + k * 5.3)), 1.0, d * (0.55 + 0.35 * Props.rnd(seed + k * 6.1)))
+
+
 ## A row of n toilet stalls with their backs to the back wall (v0, facing the
 ## street), from u0 (a side wall), each w wide and d deep: grey steel partitions
 ## on feet, a door in each front (the last off its top hinge, hanging), a toilet
@@ -542,6 +657,6 @@ static func stalls(p: Node3D, b: int, u0: float, v0: float, n: int, w := 1.0, d 
 		else:
 			var hang := Kit.group(node, p.pt(x - w * 0.5 + 0.06, front, 0.22), Vector3(0, -28, -7))
 			Kit.box(hang, Vector3(w - 0.1, 1.6, 0.03), Vector3((w - 0.1) * 0.5, 0.8, 0.0), steel.lightened(0.08))
-			Props.words(hang, "ZAYDO", Vector3((w - 0.1) * 0.5, 1.1, 0.018), 0.1, SPRAY[0])
+			spray(hang, "ZAYDO", Vector3((w - 0.1) * 0.5, 1.1, 0.018), 0.1, SPRAY[0], 0.0, u0 + 3.0)
 			p.block(x - w * 0.5 + 0.06, front, x + w * 0.5 - 0.1, front + 0.45)      # the door hanging open
 	p.block(u0, v0, u0 + n * w, front + 0.03)

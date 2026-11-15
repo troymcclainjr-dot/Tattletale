@@ -80,8 +80,10 @@ static func build(p: Node3D) -> void:
 
 
 ## The front: black brick with the dead sign over the door, a caged lamp, the
-## window blacked out behind a shutter half down and tagged, flyers pasted up
-## left of the door; the rope and the doorman's stool on the pavement. A boarded
+## window blacked out behind a shutter half down and tagged, flyers pasted on
+## the glass under it and on the brick left of the door; the rope on the
+## pavement, the line along it ending at the doorman by the door, his stool
+## behind him. Inside, the window boarded and papered with flyers. A boarded
 ## house on the left, a lit one on the right, a street lamp.
 static func _street(p: Node3D, st: int, front: Node3D) -> void:
 	var n: Node3D = p.node_of(st)
@@ -93,18 +95,22 @@ static func _street(p: Node3D, st: int, front: Node3D) -> void:
 	In.sconce(p, front, 5.55, F, 0.0, "cage", 2.45, In.WARM, 0.7)
 	Club.shutter(p, front, F, WINDOW["a"], WINDOW["b"], 1.45, WINDOW["head"])
 	Club.tags(p, front, 8.8, F + 0.137, 0.0, [["MIZZLE", -0.6, 1.95, 0.24, 6.0], ["GRIMLO", 0.8, 1.65, 0.18, -4.0]], 3.0)
+	Club.flyers(p, front, 8.8, F, 0.0, 3.0, 0.5, 0.92, 7)                  # on the glass under the shutter
 	Club.flyers(p, front, 3.0, F, 0.0, 2.6, 1.3, 0.8, 14)
-	Kit.box(front, Vector3(0.5, 0.36, 0.02), p.pt(6.75, F + 0.01, 1.55), Props.PAPER)
-	Props.words(front, "NO HATS\nNO HOODS\nID REQUIRED", p.pt(6.75, F + 0.021, 1.55), 0.07, Color(0.15, 0.15, 0.2), 0.0, false)
+	Kit.box(front, Vector3(0.5, 0.36, 0.02), p.pt(4.6, F + 0.01, 1.55), Props.PAPER)
+	Props.words(front, "NO HATS\nNO HOODS\nID REQUIRED", p.pt(4.6, F + 0.021, 1.55), 0.07, Color(0.15, 0.15, 0.2), 0.0, false)
+	# Inside, the window boarded over, flyers on the boards (with the wall, hidden when it is).
+	p.slab(front, true, 15.9, WINDOW["a"], WINDOW["b"], WINDOW["sill"], WINDOW["head"], 0.02, Kit.tex("in_boards", 1.2, Color(0.36, 0.28, 0.2), true, Color(0.5, 0.42, 0.36)))
+	Club.flyers(p, front, 8.8, 15.89, 180.0, 2.8, 1.0, 1.05, 9)
 	var old_brick := Kit.tex("brick", 1.5, Color(0.4, 0.22, 0.2), true, Color(0.62, 0.58, 0.62))
 	Props.rowhouse(p, n, -5.0, 16.0, old_brick, true)
 	Props.rowhouse(p, n, 12.0, 16.0, old_brick, false, true)
 	Props.rowhouse(p, n, 17.0, 16.0, old_brick, true)
 	Props.street_lamp(p, st, 0.6, 18.05)
 	Props.bin(p, st, 11.5, 16.45)
-	Club.rope(p, st, [6.7, 7.9, 9.1], 16.95)
-	Club.tall_stool(p, st, 4.1, 16.4)
-	Club.litter(p, st, 7.2, 16.55, 4.4, 0.6, 7, 7.0)
+	Club.rope(p, st, [7.25, 8.45, 9.65], 16.95)
+	Club.tall_stool(p, st, 6.5, 16.38)
+	Club.litter(p, st, 10.9, 16.6, 1.0, 0.5, 4, 7.0)
 
 
 ## The main room.
@@ -112,10 +118,10 @@ static func _main(p: Node3D, b: int) -> void:
 	var n: Node3D = p.node_of(b)
 	# The bar down the left wall, the back bar behind it, the stools.
 	Club.back_bar(p, b, 0.325, 12.1, 90.0, 6.4)
-	Club.bar(p, b, 2.18, 12.36, 90.0, 7.12)
+	Club.bar(p, b, 2.18, 12.36, 90.0, 7.12, 1.0)
 	var v := 9.4
 	for i in 6:
-		if i != 3:                 # a gap at the bar, for someone standing
+		if i != 0:                 # a gap at the bar's far end, for someone standing
 			Club.stool(p, b, 2.75, v, i == 1 or i == 4)
 		v += 0.92
 	# The DJ against the back wall, speakers either side, the dance floor in front
@@ -138,23 +144,29 @@ static func _main(p: Node3D, b: int) -> void:
 	for at: float in [9.6, 12.2, 14.6]:
 		In.pendant(p, b, 1.25, at, 2.05, Color(0.55, 0.06, 0.08), "cone", In.WARM, 0.6)
 	Club.ceiling(p, b, 0.0, 6.0, 12.0, 16.0, 2.89, [[1.2, 10.0], [3.0, 13.6], [9.6, 7.6], [10.2, 8.2], [6.0, 14.8], [10.8, 12.4]], [4.2, 11.2])
-	# Sticky patches, cable taped across the floor, a mop bucket left by the toilets.
-	for s: Array in [[4.6, 12.6, 0.9, 0.5], [3.4, 9.0, 0.6, 0.45], [6.1, 14.6, 0.7, 0.4]]:
-		In.mat(p, b, s[0], s[1], s[2], s[3], Color(0.16, 0.08, 0.1))
-	Kit.box(n, Vector3(0.05, 0.004, 1.6), p.pt(7.0, 7.9, 0.002), Club.TAPE, Vector3(0, 12, 0))
+	# Sticky patches, the speaker's cable taped down across the floor, a mop bucket left by the toilets.
+	for s: Array in [[4.4, 12.8, 0.9, 0.55], [3.5, 10.6, 0.6, 0.45], [5.9, 14.7, 0.7, 0.45]]:
+		Club.spill(p, b, s[0], s[1], s[2], s[3], Color(0.09, 0.04, 0.05), s[0] + s[1])      # darker than the carpet, or under a lamp it reads pale
+	var cable := Kit.group(n, p.pt(7.05, 7.75), Vector3(0, 12, 0))
+	Kit.box(cable, Vector3(0.022, 0.012, 1.5), Vector3(0, 0.006, 0), Club.BLACK)
+	for k in 4:
+		Kit.box(cable, Vector3(0.1, 0.003, 0.05), Vector3(0, 0.0135, -0.6 + 0.4 * k), Club.TAPE, Vector3(0, 8.0 * (k % 2) - 4.0, 0))
 	Props.bucket(p, b, 3.9, 6.55)
-	# What has been dropped and not swept up.
-	Club.litter(p, b, 3.25, 12.2, 0.7, 5.6, 8, 1.0)
-	Club.litter(p, b, 10.3, 8.75, 0.5, 3.4, 4, 2.0)
-	Club.litter(p, b, 5.2, 11.4, 0.9, 1.6, 3, 3.0)
-	Club.litter(p, b, 5.0, 15.1, 1.6, 0.8, 4, 4.0)
+	# What has been dropped and not swept up: kicked to the foot of the bar, under
+	# the booths' tables, into the corner by the jukebox.
+	Club.litter(p, b, 3.05, 12.6, 0.3, 4.6, 5, 1.0)
+	Club.litter(p, b, 10.75, 7.2, 0.35, 0.5, 2, 2.0)
+	Club.litter(p, b, 10.75, 10.05, 0.35, 0.5, 2, 3.0)
+	Club.litter(p, b, 4.5, 15.55, 0.6, 0.4, 3, 4.0)
 
 
-## The back: the toilets (two stalls, the basins, the dryer), the hall to the
-## back door (empties, a keg, the payphone, the fuse box), the office (desk,
-## safe, files, a couch).
+## The back: the toilets (two stalls, two urinals, the basins, the dryer), the
+## hall to the back door (empties, a keg, the payphone, the fuse box), the
+## office (desk, safe, files, a couch, a rug, boxes).
 static func _back(p: Node3D, b: int) -> void:
 	Club.stalls(p, b, 0.075, 0.075, 2, 1.0, 1.5)
+	for at: float in [2.65, 3.3]:
+		Club.urinal(p, b, at, 0.084 + 0.18, 0.0)
 	for at: float in [3.0, 4.1]:
 		Props.basin(p, b, 3.91, at, 270.0)
 	Club.hand_dryer(p, b, 4.116, 5.0, 270.0)       # things on a dressed wall go on its skin (In.SKIN off its face)
@@ -168,13 +180,15 @@ static func _back(p: Node3D, b: int) -> void:
 	Props.payphone(p, b, 4.284, 4.4, 90.0)
 	Club.fuse_box(p, b, 6.916, 4.6, 270.0)
 	Props.bucket(p, b, 6.5, 5.3)
-	Club.litter(p, b, 3.1, 3.4, 0.9, 2.2, 5, 5.0)
-	Club.litter(p, b, 5.7, 3.6, 0.9, 1.8, 3, 6.0)
+	Club.litter(p, b, 3.55, 2.2, 0.4, 0.4, 3, 5.0)
+	Club.litter(p, b, 6.55, 2.2, 0.3, 0.6, 2, 6.0)
 	# The office.
+	Props.rug(p, b, 9.4, 2.75, 2.6, 1.7, Color(0.48, 0.18, 0.16))
 	Props.desk(p, b, 9.4, 1.0, 0.0, Props.WOOD_DARK, 2)
 	Props.safe(p, b, 11.55, 0.4, 0.0)
 	Props.files(p, b, 7.75, 0.4, 0.0, 2)
-	Props.couch(p, b, 11.47, 3.7, 270.0, 1.9, Color(0.3, 0.22, 0.16))
+	Props.couch(p, b, 11.47, 3.7, 270.0, 1.9, Color(0.56, 0.36, 0.22))
+	Props.boxes(p, b, 10.6, 5.45, 3)
 
 
 ## The rooms' walls and floors. The main room: cheap dark panelling to a red
@@ -211,29 +225,33 @@ static func _dress(p: Node3D, b1: int, b2: int) -> void:
 
 
 ## Who is here (names are placeholders; the regulars wear what they wear out):
-## the doorman out front; the bartender behind the bar; the DJ and two dancing in
-## front of him; two drinking; the seller in the toilets.
+## the doorman out front at the head of the rope; the bartender behind the bar;
+## the DJ and two dancing to one side of him; one drinking at the bar's far end,
+## one at the end of the booths; the seller in the toilets. They stand where the
+## follow camera, which looks in from the front and right, seldom lines one up
+## behind another (flat people in a line read as one), and away from the front
+## wall, where it would come in right over them and they would fill the picture.
 static func _people(p: Node3D, st: int, b1: int, b2: int) -> void:
-	p.person(st, "dee", 4.75, 16.7, {"name": "BIG DEE", "face": "neutral", "talk": "talk_club_door.json",
+	p.person(st, "dee", 6.6, 16.95, {"name": "BIG DEE", "face": "neutral", "talk": "talk_club_door.json",
 			"wear": {"hat": {"item": ""}, "jacket": {"item": "puffer", "colour": BLACK},
 				"shirt": {"item": "tee", "colour": BLACK}, "trousers": {"item": "jeans", "colour": BLACK},
 				"shoes": {"item": "boots", "colour": BLACK}}})
-	p.person(b1, "kesha", 1.2, 11.6, {"name": "KESHA", "face": "neutral", "talk": "talk_club_bar.json",
-			"roam": [0.575, 8.6, 1.85, 15.9], "speed": 0.55})
+	p.person(b1, "kesha", 1.3, 12.6, {"name": "KESHA", "face": "neutral", "talk": "talk_club_bar.json",
+			"roam": [0.8, 9.9, 1.85, 15.9], "speed": 0.55})      # close behind the bar, never behind the one at its end
 	p.person(b1, "doc", 8.4, 6.38, {"name": "DOC DRAY", "face": "happy", "dance": true, "beat": 4.0,
 			"wear": {"hat": {"item": "cap", "colour": "#c42828"}, "jacket": {"item": ""},
 				"shirt": {"item": "jersey", "colour": "#c8aa28"}, "trousers": {"item": "baggy", "colour": BLACK},
 				"shoes": {"item": "hightops", "colour": "#c42828"}}})
-	p.person(b1, "nia", 6.6, 9.5, {"name": "NIA", "face": "happy", "dance": true, "beat": 0.0})
-	p.person(b1, "huff", 8.6, 10.5, {"name": "HUFF DADDY", "face": "happy", "dance": true, "beat": 8.0,
+	p.person(b1, "nia", 5.8, 9.4, {"name": "NIA", "face": "happy", "dance": true, "beat": 0.0})
+	p.person(b1, "huff", 6.9, 8.9, {"name": "HUFF DADDY", "face": "happy", "dance": true, "beat": 8.0,
 			"wear": {"hat": {"item": "cap", "colour": "#e6e6e2"}, "jacket": {"item": ""},
 				"shirt": {"item": "tee", "colour": "#285aaa"}, "trousers": {"item": "track", "colour": BLACK},
 				"shoes": {"item": "sneakers", "colour": "#ececE8"}}})
-	p.person(b1, "snoozy", 2.98, 12.16, {"name": "SNOOZY D", "face": "neutral",
+	p.person(b1, "snoozy", 2.98, 9.4, {"name": "SNOOZY D", "face": "neutral",
 			"wear": {"hat": {"item": "beanie", "colour": "#d67828"}, "jacket": {"item": "hoodie", "colour": "#96969c"},
 				"trousers": {"item": "jeans", "colour": BLACK}, "shoes": {"item": "sneakers", "colour": "#ececE8"}}})
-	p.person(b1, "chuy", 10.15, 10.05, {"name": "CHUY", "face": "suspicious",
+	p.person(b1, "chuy", 10.3, 8.6, {"name": "CHUY", "face": "suspicious",
 			"wear": {"hat": {"item": "cap", "colour": "#284696"}, "jacket": {"item": "flannel", "colour": "#3c6e3c"},
 				"shirt": {"item": "tee", "colour": BLACK}, "trousers": {"item": "jeans", "colour": "#32508c"},
 				"shoes": {"item": "boots", "colour": "#6e4628"}}})
-	p.person(b2, "vic", 2.6, 2.6, {"name": "VIC", "face": "suspicious"})
+	p.person(b2, "vic", 1.5, 2.9, {"name": "VIC", "face": "suspicious"})      # by the stalls: the camera in here stays left of the urinals, so not in front of them
