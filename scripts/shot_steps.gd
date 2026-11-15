@@ -43,6 +43,8 @@ static func step(main: Node, bits: PackedStringArray) -> void:
 				var npc: Node3D = member["actor"]
 				if npc.performing:
 					npc._beat = float(bits[1])
+					npc._groove = 1.0                                 # in full swing: a shot run has had no frames to get going
+					npc.walk(Vector2.ZERO, Vector2.ZERO, 0.0)        # pose him at that beat now (a snap stops the clock)
 					held += 1
 			print("[shot] beat %s: %d dancing" % [bits[1], held])
 		"stats":
