@@ -8,15 +8,16 @@ extends Node
 ## the lane and is pressed as it reaches the ring: within "timing"'s "perfect"
 ## seconds is PERFECT, within "good" is GOOD, later is a MISS, and a move key
 ## pressed with nothing due is OFF BEAT. The moves are video.json's "moves":
-## each has its key, a face, how his arms go ([left, right, left bow, right
-## bow], radians: see paper_card.gdshader's arm_*_angle) and how far he leans;
-## one that "needs" something (the chain, cash to throw, a weapon) is only asked
-## for while he has it. The entourage do each move he lands after him, and look
-## lost when he misses.
+## each has its key (W, A, S or D; two moves can share one), a face, how his
+## arms go ([left, right, left bow, right bow], radians: see
+## paper_card.gdshader's arm_*_angle) and how far he leans; one that "needs"
+## something (the chain, cash to throw, a weapon) is only asked for while he
+## has it. The entourage do each move he lands after him, and look lost when he
+## misses.
 ##
 ## Large Fry pans the camera now and then ("drift"; never while a mishap is on,
-## never further than he can walk); he has to walk along his line (A, D or the
-## arrows) to stay inside the brackets ("frame"), or what he does counts for
+## never further than he can walk); he has to walk along his line (the left and
+## right arrows) to stay inside the brackets ("frame"), or what he does counts for
 ## half and polish drains away. Two or three mishaps happen ("mishaps"; each video.json
 ## "mishaps" row that "needs" what this video has can): each comes on, then
 ## asks for E for "answer_beats" beats. Answering is the "answer" outcome, not
@@ -57,7 +58,7 @@ var done := false
 
 var _take := {}
 var _moves := {}                 # id: its row
-var _keys := {}                  # key: move id
+var _keys := {}                  # key: the ids of the moves on it, in video.json's order
 var _rng := RandomNumberGenerator.new()
 var _seed := 0
 var _count_in := 4.0
@@ -110,7 +111,9 @@ func setup(main_node: Node3D, stage_node: Node3D, ui_node: CanvasLayer, video: D
 	_weapon = String(main._actor.weapon)
 	for m: Dictionary in data["moves"]:
 		_moves[m["id"]] = m
-		_keys[String(m["key"])] = m["id"]
+		if not _keys.has(String(m["key"])):
+			_keys[String(m["key"])] = []
+		(_keys[String(m["key"])] as Array).append(String(m["id"]))
 	var beat := _count_in
 	for section: Dictionary in _take["sections"]:
 		var pattern := String(section["pattern"])
@@ -263,7 +266,9 @@ func end_beat() -> float:
 
 # --------------------------------------------------------------------- input
 
-## A key pressed during the take: a move's key, or E for a mishap.
+## A key pressed during the take: a move's key (W, A, S, D), or E for a mishap.
+## A key lands whichever of its moves is due nearest now; pressed with none due
+## it is OFF BEAT, and he does its plain move (the one that needs nothing).
 func press(key: String) -> void:
 	if done:
 		return
@@ -276,18 +281,18 @@ func press(key: String) -> void:
 		return
 	if not _keys.has(key) or b < _count_in - 0.5 or b > _song_end + 0.5:
 		return
-	var id: String = _keys[key]
-	if not _can_do(id):
-		return
 	var best: Dictionary = {}
 	var gap := INF
 	for p: Dictionary in prompts:
-		if p["state"] == "due" and p["key"] == key:
+		if p["state"] == "due" and p["key"] == key and _can_do(String(p["move"])):
 			var d := absf(float(p["beat"]) * BEAT - time)
 			if d < gap:
 				gap = d
 				best = p
 	var words: Dictionary = data["words"]
+	var id := String(best["move"]) if not best.is_empty() and gap <= _good else _plain(key)
+	if id == "":
+		return
 	if not best.is_empty() and gap <= _good:
 		var perfect := gap <= _perfect
 		var value := 1.0 if perfect else 0.6
@@ -309,6 +314,17 @@ func press(key: String) -> void:
 		_chaos += float(_take.get("flub_chaos", 1.0))
 		ui.judge(String(words.get("flub", "OFF BEAT")), MISS)
 		_start_move(id)
+
+
+## What a key does pressed off the beat: its move that needs nothing (else the first of its moves he can do now).
+func _plain(key: String) -> String:
+	for id: String in _keys[key]:
+		if not (_moves[id] as Dictionary).has("needs"):
+			return id
+	for id: String in _keys[key]:
+		if _can_do(id):
+			return id
+	return ""
 
 
 func _start_move(id: String) -> void:
