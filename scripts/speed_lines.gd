@@ -6,8 +6,8 @@ extends Node3D
 ## behind him the way he came, on a card just behind his own, redrawn a dozen times a second (like
 ## drawings on twos) so they flicker as cartoon speed lines do. At every step, in every view, a puff
 ## of dust is kicked up where his foot leaves the ground: a small inked cloud that stays where it was
-## kicked (so it falls behind him, or comes towards us as he runs away), swells and fades in a third
-## of a second. Running at the camera or away from it there are only the puffs: a stroke along the way
+## kicked (so it falls behind him, or comes towards us as he runs away, though never over him), swells
+## and fades in a third of a second. Running at the camera or away from it there are only the puffs: a stroke along the way
 ## he runs would be a dot, and strokes standing off his sides (a comic's zoom lines, tried) read as a
 ## start of fright, not as speed.
 
@@ -16,7 +16,7 @@ const SHOW := 0.6                        # the run (0 walking .. 1 flat out) the
 const BOIL := 0.08                       # seconds between redrawings of the strokes
 const CARD := Vector2(3.4, 2.4)          # metres: the card the strokes are drawn on, its foot FOOT below his
 const FOOT := 0.2
-const LINES := [[0.78, 0.27, 0.6], [0.53, 0.26, 0.8], [0.3, 0.31, 0.56]]   # side-on, each stroke: height (of his), start behind his middle, length (metres)
+const LINES := [[0.78, 0.43, 0.6], [0.53, 0.26, 0.8], [0.3, 0.4, 0.56]]    # side-on, each stroke: height (of his), start behind his leaning middle, length (metres)
 const LINE_W := 0.017                    # metres: half the width of a stroke at its thick end
 const HALO := 0.007                      # metres: the pale edge round it, so it shows on a dark ground too
 const PUFF_LIFE := 0.34                  # seconds
@@ -35,16 +35,20 @@ var _flip := 1.0
 var _rng := RandomNumberGenerator.new()
 
 
+func _ready() -> void:
+	_rng.seed = 1114          # the same flicker every run, so two pictures of a sprint can be compared
+
+
 ## Each frame he walks. `run`: 0 walking .. 1 flat out; `yaw` his card's turn (PI: mirrored, facing left);
 ## `dir` the way he goes on the floor (x, z), `screen` the same on screen (x right, y towards us);
-## `phase` his walk cycle; `tall` his height.
-func tick(delta: float, run: float, view: String, yaw: float, dir: Vector2, screen: Vector2, phase: float, tall: float) -> void:
+## `phase` his walk cycle; `tall` his height; `lean` how far his card leans forward from his feet (radians).
+func tick(delta: float, run: float, view: String, yaw: float, dir: Vector2, screen: Vector2, phase: float, tall: float, lean: float) -> void:
 	var moving := dir.length() > 0.01
 	_shown = move_toward(_shown, smoothstep(SHOW, 1.0, run) if moving else 0.0, delta * 5.0)
 	var k := tall / LEAD
 	var facing := 1.0 if cos(yaw) >= 0.0 else -1.0
 	if _shown > 0.0 and view == "side":
-		_draw_strokes(delta, k, tall, facing, screen)
+		_draw_strokes(delta, k, tall, facing, screen, lean)
 	elif _card:
 		_card.visible = false
 	# A puff each time a foot leaves the ground: twice a cycle. Running away, it is kicked back towards us.
@@ -52,6 +56,7 @@ func tick(delta: float, run: float, view: String, yaw: float, dir: Vector2, scre
 		var x := -facing * 0.19 * k if view == "side" else (-0.17 if int(floor(phase / PI)) % 2 == 0 else 0.17) * k
 		_kick(Vector3(x, PUFF * k * 0.62, 0.04 if view == "back" else -0.04), Vector3(-dir.x, 0.0, -dir.y), k)
 	_phase = phase
+	var cam := get_viewport().get_camera_3d()
 	for puff: Dictionary in _puffs:
 		if puff["age"] >= 1.0:
 			continue
@@ -61,13 +66,25 @@ func tick(delta: float, run: float, view: String, yaw: float, dir: Vector2, scre
 		node.visible = puff["age"] < 1.0
 		var s: float = 2.0 * PUFF * float(puff["k"]) * (1.0 + 0.85 * sqrt(float(puff["age"])))
 		var b := global_transform.basis.orthonormalized()         # it faces the camera, as he does
-		node.global_transform = Transform3D(Basis(b.x * s, b.y * s, b.z), puff["at"])
+		var at: Vector3 = puff["at"]
+		if cam and cam.projection == Camera3D.PROJECTION_PERSPECTIVE:
+			# Running away from us he leaves it nearer us than he is, and it would be drawn over his feet. It is
+			# pushed back along the line of sight to just behind him, as big on the screen and in the same place,
+			# so he hides it where they overlap.
+			var eye := cam.global_position
+			var ahead := -cam.global_transform.basis.z
+			var depth := (at - eye).dot(ahead)
+			var his := (global_position - eye).dot(ahead) + 0.05
+			if depth > 0.01 and depth < his:
+				at = eye + (at - eye) * (his / depth)
+				s *= his / depth
+		node.global_transform = Transform3D(Basis(b.x * s, b.y * s, b.z), at)
 		(puff["mat"] as ShaderMaterial).set_shader_parameter("age", puff["age"])
 		(puff["mat"] as ShaderMaterial).set_shader_parameter("strength", _shown)
 
 
 ## The strokes behind him, side-on: from just clear of his back (and of an arm or leg swung back), the way he came.
-func _draw_strokes(delta: float, k: float, tall: float, facing: float, screen: Vector2) -> void:
+func _draw_strokes(delta: float, k: float, tall: float, facing: float, screen: Vector2, lean: float) -> void:
 	if _card == null:
 		_card = MeshInstance3D.new()
 		var quad := QuadMesh.new()
@@ -106,7 +123,7 @@ func _draw_strokes(delta: float, k: float, tall: float, facing: float, screen: V
 		var y := float(row[0]) * tall + 0.025 * k * float(_jitter[i * 3])
 		var out := (float(row[1]) + 0.03 * float(_jitter[i * 3 + 1])) * k
 		var reach := float(row[2]) * k * (1.0 + 0.22 * float(_jitter[i * 3 + 2]))
-		var a := Vector2(-facing * out, y)
+		var a := Vector2(facing * (y * tan(lean) - out), y)          # leaning, he is further forward the higher up
 		var b := a - way * reach
 		from.append(a - mid)
 		to.append(b - mid)

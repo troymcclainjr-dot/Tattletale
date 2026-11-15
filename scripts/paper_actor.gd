@@ -29,6 +29,7 @@ const RUN_SWING := 0.15       # sprinting side-on, the arm swings this much furt
 const RUN_CURL := 0.6         # ...and bows this much at the elbow; its hand turns as one piece (the card's arm_l_hand)
 const RUN_PUMP := 0.6         # from the front or the back, a pumping arm bows in at the elbow this much at most
 const RUN_BEND := 0.07        # sprinting, an arm has turned all the way this far from its shoulder (about its elbow)
+const RUN_LEAN := 0.2         # side-on, sprinting he leans forward this much more than walking, radians (was 0.11: read as upright)
 const SpeedLines := preload("res://scripts/speed_lines.gd")
 const SLOT_ID := {"hat": 1, "jacket": 2, "shirt": 3, "trousers": 4, "shoes": 5}      # a wardrobe slot's number on the card (REGIONS)
 const REGIONS := ["", "hat", "jacket", "shirt", "trousers", "shoes", "sleeve"]     # the clothes a drawing can have (outfit.py), by number
@@ -37,6 +38,10 @@ const ARM_BEND_HELD := 0.06     # holding something it turns at the shoulder, st
 const ARM_JOINT := 0.034        # what was drawn this close to a shoulder stays put under the moving arm (paper_card.gdshader's arm_joint)...
 const ARM_JOINT_HELD := 0.04    # ...and a little more of it when the arm is turned a long way, to something he holds
 const AWAY_LEAN := 0.3           # pointing away, it leans no further than this from straight up the screen, radians
+const AWAY_BODY := 0.35          # ...and he leans this much of that way himself, from his feet
+const AWAY_FOOT := 0.25          # ...lifted so the foot he leans onto stays on the floor: his feet reach this much of his height out from his middle
+const ELBOW_CUT := 0.26          # pointing away (HOLDS "elbows"): each arm, as drawn, ends at the elbow this far down it, of its length
+const ELBOW_ROUND := 0.75        # ...rounded off along a circle this many of its widths in radius, on the middle of the arm
 const UNDER_IN := 3               # a shirt under a sleeved jacket stops this many pixels inside the jacket's edge
 const ARM_STUB := 0.04            # an arm raised from behind his sleeve: this much of it, from the shoulder, is not drawn
 const ARM_ROOT := 0.075           # an arm that goes behind him to a rifle's handguard: this much of it, from the shoulder, is not drawn
@@ -72,6 +77,8 @@ const LEAD_ARM := 0.083       # metres: how thick the lead's arm is drawn. What 
 ##   behind the thing and its fists go behind his body too (it is further off than his head), and his forearm over the fist
 ##   arms_under  his arms go behind his body (he faces away, they are in front of him) while the thing and its fists stay in front
 ##   hidden the thing and its fists are not drawn at all (pointed away from us, his body is in the way)
+##   elbows pointed away from us: his upper arms go forward, seen end-on, short and out at his sides; the rest of his arms,
+##          his hands and the thing are in front of him, out of sight (_elbows_out). "grip" still says where the thing is
 ## view_carry is how it is carried and view_aim how it is pointed across the screen; view_point is how it is pointed
 ## along the line of sight: front_point at the camera, back_point away from it (aim_way).
 ## A thing with a "fore" point (weapons.json) is held with both hands: the other fist goes there.
@@ -83,7 +90,7 @@ const HOLDS := {
 		"front_aim": {"grip": [-1.18, -0.06], "angle": 0.0, "flip": true, "curl": -0.2},
 		"back_carry": {"angle": 82.0, "arm": "r"},
 		"front_point": {"art": "toward", "grip": [0.56, 0.46], "angle": 0.0, "flip": true},
-		"back_point": {"art": "away", "arms_under": true, "behind": true, "flip": false, "arm": "r", "grip": [1.15, -1.27]},
+		"back_point": {"art": "away", "hidden": true, "elbows": true, "arms_under": true, "flip": false, "arm": "r", "grip": [-0.62, 0.05]},
 	},
 	"uzi": {
 		"side_carry": {"grip": [0.74, 1.08], "angle": 52.0, "curl": 0.3},
@@ -92,7 +99,7 @@ const HOLDS := {
 		"front_aim": {"grip": [-1.12, 0.04], "angle": 0.0, "flip": true, "curl": -0.3},
 		"back_carry": {"angle": 80.0, "arm": "r", "gun_under": true},
 		"front_point": {"art": "toward", "grip": [0.56, 0.5], "angle": 0.0, "flip": true},
-		"back_point": {"art": "away", "arms_under": true, "behind": true, "flip": false, "arm": "r", "grip": [1.15, -1.27]},
+		"back_point": {"art": "away", "hidden": true, "elbows": true, "arms_under": true, "flip": false, "arm": "r", "grip": [-0.62, 0.05]},
 	},
 	"ak": {
 		"side_carry": {"grip": [0.62, 1.02], "angle": 20.0, "curl": 0.5, "fore_curl": 0.3, "far": [0.45, 0.6], "over": true},
@@ -100,7 +107,7 @@ const HOLDS := {
 		"front_carry": {"grip": [0.44, 1.0], "angle": -21.0, "curl": 0.0, "fore_curl": -0.7},
 		"back_carry": {"at": [-0.44, 1.0], "angle": -24.0, "flip": true, "arm": "r", "grip": [-0.5, 0.96], "curl": -0.3, "fore_at": [0.45, 0.86], "fore_curl": 0.3, "under": true},
 		"front_point": {"art": "toward", "grip": [0.3, 0.5], "angle": 0.0, "curl": 0.0, "fore_curl": 0.0},
-		"back_point": {"art": "away", "arms_under": true, "behind": true, "flip": false, "arm": "r", "grip": [0.98, -0.76], "curl": 0.0, "fore_curl": 0.0},
+		"back_point": {"art": "away", "hidden": true, "elbows": true, "arms_under": true, "flip": true, "arm": "r", "grip": [-0.62, 0.05]},
 	},
 }
 
@@ -369,7 +376,7 @@ func walk(dir: Vector2, screen: Vector2, delta: float) -> void:
 	if face:
 		face.set_side(1.0 if cos(_yaw) >= 0.0 else -1.0)
 	_pose()
-	_speed.tick(delta, _run * _gait, view, _yaw, dir, screen, _phase, height)
+	_speed.tick(delta, _run * _gait, view, _yaw, dir, screen, _phase, height, -_card.rotation.z)
 
 
 ## Where the limbs are at this point of the walk cycle.
@@ -406,7 +413,7 @@ func _pose() -> void:
 		_put("arm_r_angle", 0.0)
 		_put("arm_r_curl", 0.0)
 		_card.position.y = 0.035 * together * (1.0 - _run) + 0.075 * apart     # walking he is highest as the legs pass; running, in mid-stride
-		_card.rotation.z = -(0.045 + 0.11 * _run) * g      # lean into it
+		_card.rotation.z = -(0.045 + RUN_LEAN * _run) * g      # lean into it
 	else:
 		# Seen from the front or back the feet lift in turn and the body rocks over the planted one.
 		_put("swing_l", 0.0)
@@ -928,6 +935,7 @@ func face_way(way: String, mirrored := false) -> void:
 ## from behind his chest.
 func _hold() -> void:
 	var held := weapon if weapon != "" else _held_name
+	_put("cut_round", Vector2(0.0, 1.0))         # an arm's cut end is straight across, unless _elbows_out rounds it
 	weapons()
 	var carry := _hold_row(held, view + "_carry")
 	var info: Dictionary = weapons().get("weapons", {}).get(held, {})
@@ -997,6 +1005,10 @@ func _hold() -> void:
 	if pose.get("hidden", false):       # nothing of it shows: his arms are whole, with no cut ends to ink
 		_put("rim_ink", 0.0)
 		_put("joint_half", false)
+	if aim_way == "away" and view == "back" and point.get("elbows", false):      # he leans a little the way he points
+		var tip := clampf(aim_lean, -AWAY_LEAN, AWAY_LEAN) * AWAY_BODY * a
+		_card.rotation.z -= tip
+		_card.position.y += absf(sin(tip)) * AWAY_FOOT * height      # onto one foot: the card turns about his middle, and that foot would sink
 	if pose.get("arms_under", false):   # his arms go behind him from the shoulder: straight from it, no joint disc left outside his body
 		_bend = 0.012
 		_put("arm_reach", _bend)
@@ -1072,6 +1084,9 @@ func _hold() -> void:
 	var over: bool = pose.get("over", false) and key == "l" and k > 0.5
 	_over.visible = over
 	_mat.set_shader_parameter("layer", 1 if over else 0)
+	if pose.get("elbows", false):
+		_elbows_out(k)
+		return
 
 	# The other hand, on the second fist.
 	var other := "r" if key == "l" else "l"
@@ -1137,6 +1152,29 @@ func _hold() -> void:
 	_put(pre2 + "cut", (wrist2 + FORE_IN) / _px.y if k > 0.5 and not under else 9.0)
 	if pose.get("arms_under", false) and k > 0.5:
 		_put(pre2 + "cut", (wrist2 - 12.0) / _px.y)
+
+
+## Pointed away from us (HOLDS "elbows"): each upper arm goes forward, so from behind it is short, seen end-on,
+## and sticks out at his side from under his shoulder, ending at the elbow; the rest of it, his hands and what
+## he holds are in front of him, hidden by his body.
+func _elbows_out(k: float) -> void:
+	for side: String in ["l", "r"]:
+		if not _arms.has(side):
+			continue
+		var pre := "arm_%s_" % side
+		# As drawn, only shorter: turned or squashed, it pulls the inked edge of his sleeve out across it.
+		_put(pre + "angle", lerp_angle(float(_mat.get_shader_parameter(pre + "angle")), 0.0, k))
+		_put(pre + "curl", 0.0)
+		_put(pre + "stretch", 1.0)
+		_put(pre + "cut", ELBOW_CUT * float(_arms[side]["len"]) / _px.y)
+		if _pivots.has(side):
+			_put(pre + "pivot", _pivots[side])
+	_put("arm_elbow", Vector2.ZERO)
+	_put("far_arm_copy", false)
+	_put("arm_from", Vector2.ZERO)
+	_put("arms_under", false)            # where it is drawn, it is not over his body
+	_put("rim_ink", RIM_INK / _px.y)
+	_put("cut_round", Vector2(ELBOW_ROUND * float(_arms.get("r", _arms.get("l", {"width": 0.0}))["width"]) / _px.y, 1.0))     # a round elbow
 
 
 ## Where a hold puts the fist on the grip, from the shoulder, in pixels. With no

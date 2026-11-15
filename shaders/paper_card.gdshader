@@ -202,6 +202,8 @@ vec2 arm_source(vec2 uv, vec2 pivot, float angle, float curl, float stretch, vec
 	return pivot + d / vec2(aspect, 1.0);
 }
 
+#include "res://shaders/arm_end.gdshaderinc"
+
 // One arm's colour from where it sits in arm_art (alpha 0 where src is not arm).
 // `body_side` is +1 if the body is to the right of this arm in the drawing.
 vec4 arm(vec2 src, vec2 pivot, float cut, float body_side, bool left, vec2 dx, vec2 dy) {
@@ -209,7 +211,8 @@ vec4 arm(vec2 src, vec2 pivot, float cut, float body_side, bool left, vec2 dx, v
 		return vec4(0.0);
 	}
 	float along_arm = length((src - pivot) * vec2(aspect, 1.0));
-	if (along_arm > cut || along_arm < (left ? arm_from.x : arm_from.y)) {
+	float past = past_cut((src - pivot) * vec2(aspect, 1.0), left ? arm_l_axis : arm_r_axis, cut);     // arm_end.gdshaderinc
+	if (past > 0.0 || along_arm < (left ? arm_from.x : arm_from.y)) {
 		return vec4(0.0);
 	}
 	vec4 m = textureLod(limbs, src, 0.0);
@@ -218,7 +221,7 @@ vec4 arm(vec2 src, vec2 pivot, float cut, float body_side, bool left, vec2 dx, v
 	}
 	vec4 c = textureGrad(arm_art, src, dx, dy);
 	c.rgb = dress(c.rgb, src, arm_regions);
-	if (rim_ink > 0.0 && cut < 8.0 && c.a > 0.5 && along_arm > cut - rim_ink) {
+	if (rim_ink > 0.0 && cut < 8.0 && c.a > 0.5 && past > -rim_ink) {
 		c.rgb = ink;       // the cut end: whatever of it a fist does not cover is closed with a line
 	}
 	float root = left ? arm_from.x : arm_from.y;

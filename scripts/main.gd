@@ -37,6 +37,7 @@ extends Node3D
 ##             to judge how things are held: --lineup=ak:e:sc+sa+fc (weapon may be none). A pose is two or three
 ##             letters: s side, f front, b back; then c carrying, a pointing it; then m mirrored (facing left),
 ##             w walking, r running. So sam is side-on, pointing it to the left; fcr is running at the camera.
+##             The weapon and the rig may each be a list, one for each pose: --lineup=pistol,uzi,ak:e:bp+bp+bp.
 ##         [--strip=weapons:rigs:views[:frames]]   frames through one run cycle, side by side, to judge the sprint
 ##             (run_strip.gd): --strip=none+ak:e:s+f+b:8 writes <shot>_e_none_s.png and so on beside the shot.
 ##   Steps run in order after the walk: use (press E), wait:seconds, frames:n, hover:n,
@@ -47,6 +48,7 @@ extends Node3D
 ##   outfit:slot=item[#rrggbb],slot=item... (someone whose clothes are layers: outfit:jacket=hoodie,hat=none; outfit: alone undoes it),
 ##   stand:id (stand him at the use point with that id: stand:outfit:hat, stand:sleep),
 ##   weapon:name (pistol, uzi, ak, or none), aim:1 / aim:0, aimat:x:y (the red cross at that screen spot), sprint:1 / sprint:0,
+##   aimsweep:seconds (the cross goes up over him and back, then wavers where he turns his back: prints how often he turned),
 ##   face:front|side|back|left (turn him without walking; left is side-on, mirrored),
 ##   wear:piece:colour (wear:hat:#cc2222; wear: alone puts his own clothes back),
 ##   arm:who:weapon[:aim] (give someone else here a weapon: arm:TRE:ak:aim), day:n (make it day n),
@@ -80,6 +82,7 @@ const ChooseScreen := preload("res://scripts/choose_screen.gd")
 const FONT := preload("res://assets/fonts/Bungee-Regular.ttf")   # Pen Lucy's display font
 const RunStrip := preload("res://scripts/run_strip.gd")       # --strip: frames through a run cycle
 const FaceCheck := preload("res://scripts/face_check.gd")     # --check-faces: nobody rests with eyes that cannot blink
+const AimSweep := preload("res://scripts/aim_sweep.gd")       # --do=aimsweep: no flicker between side-on and his back
 
 ## The follow camera keeps this far from him, off to the right. It may not go
 ## past the right wall of the room he is in (each room says how far) or rise to
@@ -94,8 +97,8 @@ const WEAPONS := ["", "pistol", "uzi", "ak"]      # Q goes round these
 const Crosshair := preload("res://scripts/crosshair.gd")
 const PlayerState := preload("res://scripts/player_state.gd")
 const AIM_SIDE := 0.96      # radians: the cross this far above or below level (55 degrees) is still "to the side"
-const AIM_AWAY := false     # turn his back to aim at a cross well above him. Off: that pose (a gun held up beside his head) reads as
-                            # pointing at the sky, not away from us, so he stays side-on and tips it up as far as AIM_TIP
+const AIM_AWAY := true      # turn his back to aim at a cross well above him (paper_actor.gd HOLDS back_point: his elbows out at his
+                            # sides, the gun unseen in front of him); false: he stays side-on and tips it up as far as AIM_TIP
 const AIM_TIP := 0.6        # ...and side-on he tips what he holds up or down no further than this
 
 ## What is on the racks of the clothing store: the colours each piece of
@@ -1357,7 +1360,8 @@ func _lineup(spec: String) -> void:
 		var spot := origin + Vector3((i - (poses.size() - 1) * 0.5) * gap, 0, 0)
 		who.position = spot
 		who.areas = [Rect2(-99, -99, 198, 198)]
-		who.weapon = "" if bits[0] == "none" else bits[0]
+		var held: String = bits[0].split(",")[i % bits[0].split(",").size()]        # one for all, or one for each pose
+		who.weapon = "" if held == "none" else held
 		who.aiming = pose.substr(1, 1) in ["a", "p"]
 		var way: String = {"s": "side", "f": "front", "b": "back"}.get(pose.substr(0, 1), "front")
 		if pose.substr(1, 1) == "p":        # pointed along the line of sight: at the camera from the front, away from the back
@@ -1498,6 +1502,8 @@ func _take_shot() -> void:
 					_aim_off()
 			"aimat":        # aimat:x:y puts the red cross at that spot on the screen (pixels) and he points at it
 				_aim_at(Vector2(float(bits[1]), float(bits[2])))
+			"aimsweep":     # aimsweep:seconds: the cross goes up over him and back, then wavers at the edge (aim_sweep.gd)
+				await AimSweep.run(self, _actor, _camera, AIM_SIDE, float(bits[1]) if bits.size() > 1 else 2.0)
 			"sprint":
 				_actor.sprinting = bits[1] == "1"
 			"face":         # face:front, face:side, face:back, face:left (side-on, mirrored)
