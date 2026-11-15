@@ -1,0 +1,14 @@
+{
+	"about": "The officer at the dayroom's station in the county jail's cell block (plans/prison.gd). Placeholder lines written on 2026-11-15 by the prison worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "When do I get out?", "face": "focused", "next": "out"},
+			{"say": "I've got information for you.", "face": "smug", "next": "info"},
+			{"say": "Can I go upstairs?", "face": "happy", "next": "up"}
+		]},
+		"out": {"speaker": "npc", "face": "neutral", "line": "You hit your bunk tonight, you walk out in the morning. Your clothes'll be waiting.", "next": ""},
+		"info": {"speaker": "npc", "face": "neutral", "line": "Everybody in here's got information. Write it down. Mail it to nobody.", "next": ""},
+		"up": {"speaker": "npc", "face": "neutral", "line": "Stairs are right there. Tier two's same as tier one, higher.", "next": ""}
+	}
+}

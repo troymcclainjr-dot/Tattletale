@@ -1,0 +1,14 @@
+{
+	"about": "The desk officer behind the glass in the county jail's visitor lobby (plans/prison.gd). Placeholder lines written on 2026-11-15 by the prison worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "I'm here to visit.", "face": "happy", "next": "visit"},
+			{"say": "What's through the gate?", "face": "suspicious", "next": "gate"},
+			{"say": "I'd like to report a crime.", "face": "focused", "next": "report"}
+		]},
+		"visit": {"speaker": "npc", "face": "neutral", "line": "Visiting room's through that door on your right. Booths one to three.", "next": ""},
+		"gate": {"speaker": "npc", "face": "neutral", "line": "Staff only. That door don't open for you.", "next": ""},
+		"report": {"speaker": "npc", "face": "neutral", "line": "You're at a jail, sir. Everybody here already got reported.", "next": ""}
+	}
+}

@@ -1,0 +1,14 @@
+{
+	"about": "Big Dee, an inmate who runs the dayroom's television in the county jail (plans/prison.gd). Placeholder lines written on 2026-11-15 by the prison worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "What are you in for?", "face": "suspicious", "next": "for"},
+			{"say": "Who runs the TV?", "face": "happy", "next": "tv"},
+			{"say": "Heard anything good?", "face": "smug", "next": "heard"}
+		]},
+		"for": {"speaker": "npc", "face": "neutral", "line": "Being in the wrong place. You?", "next": ""},
+		"tv": {"speaker": "npc", "face": "neutral", "line": "Whoever's biggest. Today that's me.", "next": ""},
+		"heard": {"speaker": "npc", "face": "neutral", "line": "I heard you talk a lot. That's what I heard.", "next": ""}
+	}
+}
