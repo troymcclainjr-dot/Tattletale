@@ -70,6 +70,7 @@ const PLANS := {
 	"bea": "res://scripts/plans/bea.gd",
 	"clothes": "res://scripts/plans/clothes.gd",
 	"club": "res://scripts/plans/club.gd",
+	"alley": "res://scripts/plans/alley.gd",
 }
 const FlickerCheck := preload("res://scripts/flicker_check.gd")
 const ShotSteps := preload("res://scripts/shot_steps.gd")      # more --do steps: snap, eye, place, at, room, beat, stats, check
@@ -131,6 +132,7 @@ const PLACES := [
 	{"id": "bea", "name": "MISS BEA'S HOUSE", "note": "PORCH-FRONT HOUSE"},
 	{"id": "clothes", "name": "CLOTHING STORE", "note": "FRESH THREADS"},
 	{"id": "club", "name": "THE LOWDOWN", "note": "NIGHT CLUB"},
+	{"id": "alley", "name": "THE BACK LOT", "note": "BEHIND THE LOWDOWN"},
 ]
 
 ## name: [camera position, look-at point, vertical field of view]

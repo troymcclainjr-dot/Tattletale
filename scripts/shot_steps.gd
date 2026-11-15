@@ -87,6 +87,7 @@ static func _stand(main: Node, at: Vector3) -> void:
 ## As the end of _take_shot does, without quitting: the camera to its place, a few frames, the picture.
 static func _snap(main: Node, name: String) -> void:
 	main.set_process(false)
+	main._fade.color.a = 0.0                  # (as _take_shot does: a fade from a door or a trip may still be up)
 	main._change_room(main._building.room_at_pos(main._actor.position, main._room), true)
 	if main._close:
 		main._frame_close()

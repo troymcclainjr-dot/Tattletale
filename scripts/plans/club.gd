@@ -161,6 +161,7 @@ static func _back(p: Node3D, b: int) -> void:
 	Props.bin(p, b, 3.85, 1.9)
 	# The hall.
 	Club.fire_door(p, b, 5.6, 0.084, 0.0)
+	p.use_point(b, "BACK DOOR", 5.6, 0.75, "goto:alley", 1.1, 2.0)
 	Props.case_stack(p, b, 4.75, 2.6, 90.0, 2, 2, Color(0.2, 0.3, 0.55))
 	Club.keg(p, b, 6.6, 1.0)
 	Club.keg(p, b, 6.6, 1.55)
@@ -200,7 +201,7 @@ static func _dress(p: Node3D, b1: int, b2: int) -> void:
 			"dado": Color(0.2, 0.2, 0.22), "dado_y": 1.2, "skirt": Color(0.2, 0.2, 0.22), "skirt_h": 0.1}
 	In.room_walls(p, b2, 4.2, 0.0, 7.0, 6.0, hall, [], [], [TO_OFFICE])
 	Club.flyers(p, b2, 4.284, 2.4, 90.0, 1.0, 0.8, 1.2, 6)
-	In.pendant(p, b2, 5.3, 3.6, 2.25, Color(0.3, 0.3, 0.3), "bulb", In.WARM, 0.5)
+	In.pendant(p, b2, 6.0, 3.2, 2.25, Color(0.3, 0.3, 0.3), "bulb", In.WARM, 0.5)      # (right of the camera's way to the back door's word)
 	var office := {"lower": Kit.tex("wood_panel", 1.0, Color(0.35, 0.22, 0.14), true, Color(0.5, 0.36, 0.26)),
 			"upper": Kit.tex("wood_panel", 1.0, Color(0.35, 0.22, 0.14), true, Color(0.5, 0.36, 0.26)),
 			"dado": Color(0.25, 0.16, 0.1), "skirt": Color(0.2, 0.13, 0.08)}

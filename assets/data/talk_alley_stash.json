@@ -1,0 +1,14 @@
+{
+	"about": "Ronnie, at the table in the back room of the boarded house off the back lot (plans/alley.gd). Placeholder lines written on 2026-11-15 by the places worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "Is this your place?", "face": "focused", "next": "place"},
+			{"say": "What's the scale for?", "face": "suspicious", "next": "scale"},
+			{"say": "Smells like soup in here.", "face": "happy", "next": "soup"}
+		]},
+		"place": {"speaker": "npc", "face": "neutral", "line": "It's nobody's place. That's why I like it.", "next": ""},
+		"scale": {"speaker": "npc", "face": "suspicious", "line": "Letters. I mail a lot of letters.", "next": ""},
+		"soup": {"speaker": "npc", "face": "neutral", "line": "Then go home and eat some.", "next": ""}
+	}
+}
