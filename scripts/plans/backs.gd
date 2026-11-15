@@ -56,6 +56,7 @@ const Park := preload("res://scripts/props_park.gd")
 const Alley := preload("res://scripts/props_alley.gd")
 const Backs := preload("res://scripts/props_backs.gd")
 const StreetPlan := preload("res://scripts/plans/street.gd")
+const ParkPlan := preload("res://scripts/plans/park.gd")
 
 const NAME := "ROSE HILL BACKS"
 const ALLEY := 14.0        # the yards' fences; the alley runs from here to NEAR
@@ -111,7 +112,7 @@ static func build(p: Node3D) -> void:
 	p.use_point(st, "HOME", 25.92, 14.65, "goto:crib", 1.0, 1.9)
 	p.use_point(st, "MISS BEA'S", 93.58, 10.3, "goto:bea", 0.9, 2.0)
 	p.use_point(st, "OLD YORK ROAD", 21.6, 15.75, "goto:street", 1.2, 1.9)
-	p.use_point(st, "TO THE PARK", 125.75, 14.65, "goto:park", 1.0, 1.9)
+	p.use_point(st, "TO THE PARK", PARK_W - (ParkPlan.CUT[0] + ParkPlan.CUT[1]) * 0.5, 14.65, "goto:park", 1.0, 1.9)
 
 
 ## A box on the plan: u0..u1, v0..v1, y0..y1.
@@ -142,10 +143,11 @@ static func _spout(p: Node3D, n: Node3D, u: float, v: float, h: float, foot := 0
 static func _ground(p: Node3D, st: int) -> void:
 	var n: Node3D = p.node_of(st)
 	_gb(p, n, -60.0, 260.0, -120.0, 90.0, -0.8, -0.5, Color(0.12, 0.13, 0.12))
-	# The alley: Rose Hill's asphalt at its mouth (street.gd lays it), then
-	# concrete (park.gd's) with a gutter down the middle. In pieces 12 m long at
-	# most: the renderer lights a mesh with eight lamps at most.
-	var asphalt := Outdoor.tex("out_asphalt", 4.8, Color(0.3, 0.3, 0.32))
+	# The alley: asphalt at its mouth, Old York Road's (street.gd's alley there
+	# has a crack drawn in, and close to, a long black crack read as a cable),
+	# then concrete (park.gd's) with a gutter down the middle. In pieces 12 m
+	# long at most: the renderer lights a mesh with eight lamps at most.
+	var asphalt := Walk.asphalt()
 	var concrete := Kit.tex("sidewalk", 2.4, Color(0.55, 0.55, 0.55), true, Color(0.66, 0.66, 0.7))
 	var gutter := Color(0.3, 0.31, 0.33)
 	var cuts: Array = [CORNER, CORNER + 4.0]
@@ -265,9 +267,10 @@ static func _crib(p: Node3D, st: int) -> void:
 	# The yard: rails along the alley and the party wall, the gate (crib.gd's),
 	# the board fence on Old York Road's side (street.gd's); the cans, the bench.
 	var wire := Color(0.5, 0.52, 0.52)
-	p.rail(st, true, 13.95, 23.5, CRIB[1] - 0.1, wire, 1.5)
+	p.rail(st, true, 13.95, 23.5, 25.42, wire, 1.5)
+	p.rail(st, true, 13.95, 26.42, CRIB[1] - 0.1, wire, 1.5)
 	p.rail(st, false, CRIB[1] - 0.05, BACK + 0.1, 13.95, wire, 1.5)
-	p.slab(n, true, 13.92, 25.42, 26.42, 0.0, 1.7, 0.07, Color(0.36, 0.38, 0.4))
+	Backs.rail_gate(p, n, true, 13.95, 25.42, 26.42, 1.5, Color(0.36, 0.38, 0.4), true)
 	Backs.boards(p, n, false, CRIB[0] + 0.08, 6.8, ALLEY, 1.8, Color(0.5, 0.36, 0.24), 1.0)
 	Props.cans(p, st, 24.02, 13.45, 2)
 	Props.bench(p, st, 27.87, 12.4, 270.0, 1.4, Color(0.4, 0.3, 0.2))
@@ -374,9 +377,11 @@ static func _dead_yard(p: Node3D, st: int) -> void:
 	p.block(gone, MAIN, u1, BACK)
 	Outdoor.tree(p, st, 65.0, 8.6, "a", 0.95, 170.0)
 	# The fences: chain-link down the left side with a hole torn in it (its mesh
-	# peeled back against the rest), the boards along the alley mostly down.
+	# peeled back against the rest and rolled up, the roll kept clear of walkers),
+	# the boards along the alley mostly down.
 	p.fence(st, false, u0 + 0.03, MAIN, ALLEY - 0.06, [[9.0, 11.0]], 1.2, "chain")
 	Backs.torn(p, n, false, u0 + 0.03, 9.0, 11.0, 1.2, 1.0)
+	p.block(u0 + 0.03, 11.45, u0 + 0.5, 11.95)
 	Backs.broken_boards(p, n, ALLEY - 0.06, [[u0 + 0.03, 61.5, 1.3], [65.6, u1 - 0.04, 1.4]],
 		[[62.3, 13.2, 1.3, 75.0], [63.4, 12.95, 1.1, 100.0], [64.6, 13.4, 1.2, 82.0], [62.9, 13.65, 0.9, 20.0], [61.9, 12.6, 0.7, 140.0]], 3.0)
 	# The ground: dirt, weeds.
@@ -448,22 +453,31 @@ static func _bea(p: Node3D, st: int) -> void:
 	Park._window(n, p.pt(99.35, 6.0), 0.0, 1.6, 4.55, 5.65, true, bo.merged({"curtain": Color(0.98, 0.9, 0.55)}, true))
 	Park._window(n, p.pt(BEA[1], -0.95), 90.0, 1.1, 4.3, 5.6, true, bo)
 	# Her yard: grass, the clothes line (sheets, a blue one, a pink one), the
-	# board fence down both sides and along the alley, the gate swung right back.
-	# Along the alley it is lower than bea.gd's 1.5 m: at 1.5 it hid him in the
-	# yard from the camera across the alley.
+	# board fence down both sides and along the alley (bea.gd's 1.5 m), the gate
+	# swung right back. The camera looks over the alley's fence into the yard:
+	# that fence and its gate, the far side's and the washing each fade while
+	# they would hide him (props_street.gd's CarFade, as the street's cars do).
 	_gb(p, n, BEA[0], BEA[1], 9.0, ALLEY, -0.1, 0.0, Kit.tex("stucco", 2.5, Color(0.35, 0.5, 0.25), true, Color(0.44, 0.74, 0.36)))
-	Backs.washing(p, n, 94.25, 101.25, 11.2, 1.9, [[99.15, 100.35, Color(0.95, 0.95, 0.92), 0.75], [97.25, 98.45, Color(0.75, 0.82, 0.95), 0.75], [95.35, 96.55, Color(0.95, 0.8, 0.85), 0.75]])
+	var fade = Street.car_fade(p, st)
+	var line := Kit.group(n)
+	Backs.washing(p, line, 94.25, 101.25, 11.2, 1.9, [[99.15, 100.35, Color(0.95, 0.95, 0.92), 0.75], [97.25, 98.45, Color(0.75, 0.82, 0.95), 0.75], [95.35, 96.55, Color(0.95, 0.8, 0.85), 0.75]])
 	p.block(94.25, 11.15, 101.25, 11.25)
 	var boards := Color(0.52, 0.42, 0.32)
-	Backs.boards(p, n, true, ALLEY, BEA[0], 93.1, 1.1, boards)
-	Backs.boards(p, n, true, ALLEY, 94.1, BEA[1], 1.1, boards)
+	var along := Kit.group(n)
+	Backs.boards(p, along, true, ALLEY, BEA[0], 93.1, 1.5, boards)
+	Backs.boards(p, along, true, ALLEY, 94.1, BEA[1], 1.5, boards)
 	p.fence(st, true, ALLEY, 93.1, 94.1, [[93.1, 94.1]])          # the gateway (its fence is the two runs above)
-	Backs.boards(p, n, false, BEA[0] + 0.03, 9.0, ALLEY - 0.06, 1.5, boards, 1.0)
-	Backs.boards(p, n, false, BEA[1] - 0.03, 9.0, ALLEY - 0.06, 1.5, boards, -1.0)
+	# (The side fences stop short of the alley's: their end posts would stand in
+	# its corner posts, the tops in one plane, and the faded ones apart.)
+	Backs.boards(p, n, false, BEA[0] + 0.03, 9.0, ALLEY - 0.11, 1.5, boards, 1.0)
+	var far := Kit.group(n)
+	Backs.boards(p, far, false, BEA[1] - 0.03, 9.0, ALLEY - 0.11, 1.5, boards, -1.0)
 	var leaf := Outdoor.tex("out_boards", 1.2, boards, Color(0.96, 0.88, 0.78), false)
-	_gb(p, n, 94.16, 95.08, ALLEY - 0.1, ALLEY - 0.06, 0.05, 1.05, leaf)
-	for y: float in [0.25, 0.8]:
-		_gb(p, n, 94.16, 95.08, ALLEY - 0.13, ALLEY - 0.1, y, y + 0.08, boards.darkened(0.2))
+	_gb(p, along, 94.16, 95.08, ALLEY - 0.1, ALLEY - 0.06, 0.05, 1.45, leaf)
+	for y: float in [0.3, 1.1]:
+		_gb(p, along, 94.16, 95.08, ALLEY - 0.13, ALLEY - 0.1, y, y + 0.08, boards.darkened(0.2))
+	for g: Node3D in [along, far, line]:
+		fade.add(g)
 	Outdoor.shrub(p, st, 100.9, 13.3, "a", 0.8, 30.0)
 
 
@@ -507,25 +521,35 @@ static func _poles(p: Node3D, st: int) -> void:
 
 # ------------------------------------------------------- the park's corner lot
 
-## West of 504 the park's corner lot (park.gd's CORNER): grass, the restroom
-## block, a tree, behind a chain-link fence along the alley broken open (E at
-## the gap goes through: park.gd's TO THE ALLEY is on its far side); then the
-## court behind its own tall fence, its lights on, the hoop, the scoreboard.
-## Junk dumped across the alley where the court's fence begins.
+## West of 504 the park's corner lot (park.gd's CORNER LOT): grass, the
+## restroom block with its back to the alley, the path worn to the gap, the bed
+## beyond, behind a chain-link fence along the alley broken open (E at the gap
+## goes through: park.gd's TO THE ALLEY is on its far side); then the court
+## behind its own tall fence with the opening into the lot, its lights on, the
+## hoop, the scoreboard. Junk dumped across the alley where the court's fence
+## begins.
 static func _park_end(p: Node3D, st: int) -> void:
 	var n: Node3D = p.node_of(st)
 	var lawn := Outdoor.tex("out_grass", 3.6, Color(0.24, 0.46, 0.22), Color(0.68, 0.76, 0.72))
 	var grass := Outdoor.tex("out_grass", 3.0, Color(0.32, 0.62, 0.26))
 	for span: Array in [[3.3, ALLEY], [-7.4, 3.3]]:
 		Walk.flat(p, n, LOT + 0.05, COURT, span[0], span[1], -0.3, 0.0, lawn)
-	Backs.restroom(p, st, 129.3, 9.9, 180.0)
-	Outdoor.tree(p, st, 128.6, 7.5, "b", 1.2, 300.0)
-	Outdoor.tree(p, st, 130.5, -1.0, "a", 1.0, 40.0)
-	Outdoor.shrub(p, st, 131.6, 2.0, "a", 1.0, 20.0)
-	Outdoor.shrub(p, st, 125.6, 3.4, "d", 0.9, 140.0)
-	p.fence(st, true, ALLEY, LOT, COURT, [[125.1, 126.4]], 1.8, "chain")
-	Backs.torn(p, n, true, ALLEY, 125.1, 126.4, 1.8, -1.0, true)
-	Park.litter(n, p.pt(125.8, 13.3, 0.03), 125.0, 3)
+	# (All of it park.gd's corner lot, turned round: the park's (u, v) is (173 - u, 17.6 - v) here.)
+	Backs.restroom(p, st, PARK_W - 43.0, 17.6 - 5.5, 180.0, true)
+	var dirt := Outdoor.tex("out_dirt", 2.0, Color(0.36, 0.3, 0.22))
+	Walk.flat(p, n, PARK_W - 47.3, PARK_W - 40.6, 17.6 - 9.15, 17.6 - 8.25, 0.0, 0.012, dirt)          # the path worn across it
+	Walk.flat(p, n, PARK_W - 48.05, PARK_W - 47.05, 17.6 - 8.9, ALLEY + 0.5, 0.0, 0.016, dirt)          # (on over the broken kerb into the alley)
+	Walk.flat(p, n, PARK_W - 48.51, PARK_W - 40.03, 17.6 - 12.72, 17.6 - 12.6, -0.01, 0.13, Color(0.7, 0.69, 0.66))   # its bed's kerb
+	for s: Array in ParkPlan.LOT_SHRUBS:
+		Outdoor.shrub(p, st, PARK_W - float(s[0]), 17.6 - float(s[1]), s[2], s[3], float(s[4]) + 180.0)
+	Park.crate(n, p.pt(PARK_W - 46.15, 17.6 - 6.7, 0.0), 168.0, Color(0.85, 0.2, 0.18))
+	Kit.cyl(n, 0.035, 0.24, p.pt(PARK_W - 45.3, 17.6 - 8.4, 0.035), Color(0.24, 0.42, 0.24), Vector3(0, 305, 90), 8)
+	var cut := [PARK_W - float(ParkPlan.CUT[1]), PARK_W - float(ParkPlan.CUT[0])]
+	p.fence(st, true, ALLEY, LOT, COURT, [cut], 1.8, "chain")
+	Backs.torn(p, n, true, ALLEY, cut[0], cut[1], 1.8, -1.0, true, false, 55.0)
+	Park.litter(n, p.pt(125.7, 12.9, 0.03), 125.0, 3)
+	Park.litter(n, p.pt(128.6, 9.5, 0.03), 131.0, 3)
+	p.fence(st, true, -7.4, LOT, COURT, [], 1.05, "rail", Color(0.13, 0.3, 0.22))        # its railing along the park's pavement
 	# The court (park.gd's, turned round): the asphalt pad in pieces, the beds'
 	# grass inside the fence, the court and its lines, the fences and the
 	# concrete kerb along the alley under them, the lights at this end.
@@ -537,16 +561,32 @@ static func _park_end(p: Node3D, st: int) -> void:
 		Walk.flat(p, n, u, u1, 4.1, ALLEY, -0.17, 0.03, tar)
 		u = u1
 	Walk.flat(p, n, COURT, COURT + 1.8, -7.4, ALLEY, -0.3, 0.0, grass)
-	_gb(p, n, COURT + 1.81, COURT + 1.93, -5.79, ALLEY - 0.01, -0.01, 0.13, Color(0.7, 0.69, 0.66))
+	# The bed's kerb, and the concrete path through it from the opening in the fence.
+	var way := [17.6 - float(ParkPlan.OPENING[1]), 17.6 - float(ParkPlan.OPENING[0])]
+	_gb(p, n, COURT + 1.81, COURT + 1.93, -5.79, way[0], -0.01, 0.13, Color(0.7, 0.69, 0.66))
+	_gb(p, n, COURT + 1.81, COURT + 1.93, way[1], ALLEY - 0.01, -0.01, 0.13, Color(0.7, 0.69, 0.66))
+	_gb(p, n, PARK_W - 40.6, COURT + 1.79, way[0], way[1], -0.165, 0.035, Outdoor.pavement())
 	var green := Color(0.2, 0.52, 0.4)
 	var blue := Color(0.18, 0.36, 0.66)
 	Park.court(p, st, 139.0, -4.4, 167.0, 10.6, Outdoor.tex("out_court", 9.6, green, green), Outdoor.tex("out_court", 9.6, blue, blue))
 	Park.hoop(p, st, 138.1, 3.1, 90.0)
 	p.fence(st, true, ALLEY, COURT, PARK_W, [], 3.6, "chain")
-	p.fence(st, false, COURT, -5.0, 12.0, [], 3.6, "chain")
-	p.fence(st, false, COURT, 13.4, ALLEY, [], 3.6, "chain")
+	p.fence(st, false, COURT, -5.0, way[0], [], 3.6, "chain")         # (two runs, not a gap: no one walks in there from here)
+	p.fence(st, false, COURT, way[1], ALLEY, [], 3.6, "chain")
 	p.fence(st, false, COURT, -7.4, -5.0, [], 1.05, "rail", Color(0.13, 0.3, 0.22))
-	_gb(p, n, LOT, COURT + 0.01, ALLEY - 0.15, ALLEY + 0.15, -0.08, 0.08, Color(0.6, 0.6, 0.58))     # (its end a centimetre past the lawn's)
+	var mid: float = (way[0] + way[1]) * 0.5                 # over the opening, a rail and chain-link (park.gd's)
+	for y: float in [2.2, 3.57]:
+		Kit.cyl(n, 0.024, way[1] - way[0], p.pt(COURT, mid, y), Color(0.55, 0.58, 0.6), Vector3(90, 0, 0), 8)
+	var header := MeshInstance3D.new()
+	var q := QuadMesh.new()
+	q.size = Vector2(way[1] - way[0] - 0.04, 3.53 - 2.24)
+	header.mesh = q
+	header.material_override = Outdoor.chain_link()
+	header.position = p.pt(COURT, mid, (2.24 + 3.53) * 0.5)
+	header.rotation_degrees = Vector3(0, 90, 0)
+	n.add_child(header)
+	for run: Array in [[LOT, PARK_W - 48.04], [PARK_W - 47.06, COURT + 0.01]]:      # (broken out where the path crosses; its end a centimetre past the lawn's)
+		_gb(p, n, run[0], run[1], ALLEY - 0.15, ALLEY + 0.15, -0.08, 0.08, Color(0.6, 0.6, 0.58))
 	_gb(p, n, COURT, PARK_W, ALLEY - 0.15, ALLEY + 0.15, -0.08, 0.08, Color(0.6, 0.6, 0.58))
 	Park.floodlight(p, st, 135.6, 13.45, 180.0, 7.6, 2, 12.0, 6.5, true, Vector2(140.8, 6.0), 30.0)
 	Park.floodlight(p, st, 147.5, 13.45, 180.0, 7.6, 2, 12.0, 6.5, true, Vector2(148.0, 5.8), 30.0)
@@ -554,22 +594,24 @@ static func _park_end(p: Node3D, st: int) -> void:
 	Park.barrel(p, st, 138.4, 13.25, Color(0.12, 0.42, 0.62), "PARKS")
 	Park.park_bench(p, st, 135.45, 6.6, 90.0)
 	var low := ["a", "d", "c", "a", "d", "c"]
-	var vs := [9.6, 6.4, 3.1, 0.2, -2.7, -5.2]
+	var vs := [10.9, 6.4, 3.1, 0.2, -2.7, -5.2]
 	for i in vs.size():
 		var k: String = low[i]
 		Outdoor.shrub(p, st, 133.9, vs[i], k, 0.7 + 0.15 * Props.rnd(17.6 - vs[i]), 270.0 if k == "c" else 55.0 * (i + 6) + 180.0)
+	Outdoor.shrub(p, st, 133.9, 12.4, "b", 0.95, 190.0)
 	# Dumped where the alley meets the court's fence: a mattress, a couch on its
-	# end, tyres, bags; the city's sign over them (park.gd's words).
+	# end, tyres, bags; the city's sign over them, wired to the court's fence
+	# (park.gd's words; on a pole of its own by the alley's end, it stood between
+	# the camera and him).
 	Alley.mattress(p, st, 134.3, 15.1, 80.0, 18.0)
 	Props.couch(p, st, 135.6, 16.6, 200.0, 1.9, Color(0.38, 0.42, 0.3))
 	Alley.tyres(p, st, 136.6, 14.9, 3, true)
 	Backs.bags(p, st, 134.9, 16.9, 2, 5.0)
 	Backs.bags(p, st, 134.6, 16.0, 1, 7.0)
 	Backs.bags(p, st, 137.3, 16.2, 2, 6.0)
-	var sign_post := Kit.group(n, p.pt(134.0, 17.2))
-	Kit.cyl(sign_post, 0.03, 2.4, Vector3(0, 1.2, 0), Park.GALV, Vector3.ZERO, 6)
-	Kit.box(sign_post, Vector3(0.6, 0.4, 0.02), Vector3(0, 2.15, 0.04), Color(0.92, 0.9, 0.84), Vector3(0, 0, -3))
-	Props.words(sign_post, "NO DUMPING", Vector3(0, 2.15, 0.055), 0.09, Color(0.75, 0.12, 0.1)).rotation_degrees.z = -3.0
+	var sign_board := Kit.group(n, p.pt(134.2, ALLEY + 0.04, 2.0), Vector3(0, 0, -3))         # (between the fence's end post and the next)
+	Kit.box(sign_board, Vector3(0.6, 0.4, 0.02), Vector3.ZERO, Color(0.92, 0.9, 0.84))
+	Props.words(sign_board, "NO DUMPING", Vector3(0, 0, 0.015), 0.09, Color(0.75, 0.12, 0.1))
 
 
 # ---------------------------------------------------------- beyond the row

@@ -341,8 +341,19 @@ static func _stair_hall(p: Node3D, b: int) -> void:
 	var n: Node3D = p.node_of(b)
 	Props.stairs(p, b, FLIGHT_U, STAIR_V, 0.0, 0.95, STAIR_L)
 	p.portal(b, "GO UPSTAIRS", FLIGHT_U, 9.0, UP + FLIGHT_U - 0.2, 5.62)
-	Props.words(n, "APT 2", p.pt(12.6, 5.09, 1.75), 0.1, Color(0.9, 0.86, 0.72))
+	_number(n, "APT 2", p.pt(12.6, 5.09, 1.75))
 	In.mat(p, b, 11.75, 5.42, 0.8, 0.36, Color(0.3, 0.26, 0.2))
+
+
+## A flat's number by its door, on a dark plate screwed to the wall (the words
+## alone on a wall read as the game's own labels, not a sign). `at` is where the
+## words stand, the plate a centimetre behind them.
+static func _number(n: Node3D, text: String, at: Vector3, yaw := 0.0) -> void:
+	var g := Kit.group(n, at, Vector3(0, yaw, 0))
+	Kit.box(g, Vector3(0.44, 0.17, 0.012), Vector3(0, 0, -0.008), Color(0.27, 0.22, 0.18))
+	for x: float in [-0.19, 0.19]:
+		Kit.box(g, Vector3(0.016, 0.016, 0.006), Vector3(x, 0, -0.001), Color(0.7, 0.62, 0.42))       # the screws
+	Props.words(g, text, Vector3.ZERO, 0.1, Color(0.9, 0.86, 0.72))
 
 
 ## The 2nd floor's hall: the well the flight comes up, the flight on up to the
@@ -358,8 +369,8 @@ static func _upstairs(p: Node3D, b: int) -> void:
 	p.slab(n, true, 5.1, UP + 9.71, UP + 10.28, 0.0, 2.08, 0.03, Props.STEEL)
 	p.slab(n, true, 5.12, UP + 9.3, UP + 10.1, 1.25, 1.55, 0.006, Props.PAPER)
 	Props.words(n, "OUT OF ORDER", p.pt(UP + 9.7, 5.128, 1.4), 0.07, Color(0.7, 0.1, 0.1))
-	Props.words(n, "APT 3", p.pt(UP + 8.49, 7.1, 1.75), 0.1, Color(0.9, 0.86, 0.72), 90.0)
-	Props.words(n, "APT 4", p.pt(UP + 11.1, 5.09, 2.22), 0.1, Color(0.9, 0.86, 0.72))
+	_number(n, "APT 3", p.pt(UP + 8.49, 7.1, 1.75), 90.0)
+	_number(n, "APT 4", p.pt(UP + 11.1, 5.07, 1.55))          # (on the door itself: beside it, the flight on up would hide it)
 	In.mat(p, b, UP + 8.8, 7.95, 0.36, 0.8, Color(0.3, 0.26, 0.2))
 	In.mat(p, b, UP + 11.1, 5.42, 0.8, 0.36, Color(0.24, 0.3, 0.26))
 

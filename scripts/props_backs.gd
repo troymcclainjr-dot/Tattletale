@@ -23,8 +23,9 @@ const SPOOL := Color(0.58, 0.44, 0.28)
 const IRON := Color(0.24, 0.25, 0.28)
 const DOOR := Color(0.62, 0.6, 0.55)            # a roll-up door's galvanised slats, gone dull
 ## Rubbish bags: the kitchen's white, the yard's green, a grey (no dark ones: at
-## dusk a round dark bag tied at the top reads as a cartoon bomb).
-const BAGS := [Color(0.9, 0.9, 0.86), Color(0.38, 0.58, 0.36), Color(0.78, 0.8, 0.82)]
+## dusk a round dark bag tied at the top reads as a cartoon bomb; the green is a
+## light one for that reason).
+const BAGS := [Color(0.9, 0.9, 0.86), Color(0.52, 0.74, 0.5), Color(0.78, 0.8, 0.82)]
 
 
 ## A box on the plan: u0..u1, v0..v1, y0..y1.
@@ -73,46 +74,89 @@ static func boards(p: Node3D, n: Node3D, along_u: bool, at: float, from: float, 
 		p.block(at - 0.04, from, at + 0.04, to)
 
 
+## A yard's gate, shut, in place.gd's rails (`rail`, h high along u or v at
+## `at`) between their posts at a and b: a steel frame, a middle rail and a
+## brace corner to corner, hinge straps round the stile on the hinge side (a,
+## or b with `hinge_b`), a latch on the other (a slab alone read as a grey
+## board). Lay the rails as two runs, ending at a and at b. It takes its line
+## of floor.
+static func rail_gate(p: Node3D, n: Node3D, along_u: bool, at: float, a: float, b: float, h: float, look: Color, hinge_b := false) -> Node3D:
+	var w := b - a
+	var g := Kit.group(n, p.pt(a, at) if along_u else p.pt(at, a), Vector3(0, 0.0 if along_u else -90.0, 0))
+	var s := 0.045
+	var low := 0.1
+	var top := h - 0.05
+	for x: float in [0.065, w - 0.065]:                                   # the stiles
+		Kit.box(g, Vector3(s, top - low + s, s), Vector3(x, (low + top) * 0.5, 0), look)
+	for y: float in [low, 0.78, top]:                                     # bottom, middle and top rails
+		Kit.box(g, Vector3(w - 0.13 - s, s * 0.8, s * 0.8), Vector3(w * 0.5, y, 0), look)
+	var run := w - 0.13 - s
+	var rise := top - low
+	var hinge := w - 0.065 if hinge_b else 0.065
+	var brace := Kit.box(g, Vector3(sqrt(run * run + rise * rise) - 0.03, s * 0.7, s * 0.6), Vector3(w * 0.5, (low + top) * 0.5, 0), look)
+	brace.rotation_degrees = Vector3(0, 0, rad_to_deg(atan2(rise, run)) * (-1.0 if hinge_b else 1.0))      # from the foot of the hinge stile up to the latch
+	var dark := look.darkened(0.35)
+	var out := -1.0 if hinge_b else 1.0
+	for y: float in [0.3, h - 0.35]:                                      # the hinge straps, round the stile to the post
+		Kit.box(g, Vector3(0.16, 0.04, s + 0.03), Vector3(hinge - out * 0.035, y, 0), dark)
+	var latch := w - hinge
+	Kit.box(g, Vector3(0.12, 0.05, s + 0.024), Vector3(latch + out * 0.03, 0.98, 0), dark)        # the latch, over to the post
+	if along_u:
+		p.block(a, at - 0.045, b, at + 0.045)
+	else:
+		p.block(at - 0.045, a, at + 0.045, b)
+	return g
+
+
 ## Where a chain-link fence (place.gd's "chain", h high, along u or v at `at`)
 ## has been cut open from a to b: the mesh cut down the post at b and peeled
 ## back along the fence beyond it, out on the `side` side (-1: towards -v, or
-## -u), the free end drooping; with `rail`, the top rail still across the gap
-## (only where people pass under it). Decoration: the way through is the
-## fence's gap.
-static func torn(p: Node3D, n: Node3D, along_u: bool, at: float, a: float, b: float, h: float, side := -1.0, rail := false) -> void:
+## -u), swung `swing` degrees out of the fence's line, drooping, the rest of it
+## rolled up on itself in a leaning roll (swung only a little, the flap lies in
+## the fence's own mesh seen square on, and the gap does not read: a way
+## through wants it swung well out); with `rail`, the top rail still across
+## the gap (only where people pass under it); with `back`, cut down the post
+## at a and peeled back the other way (the same gap seen from its other side,
+## as the park sees the backs' one). Decoration: the way through is the
+## fence's gap; flap and roll reach out from the post on `side` (0.4 m at 15
+## degrees, 0.9 m at 55), so keep walkers off that if they could reach it.
+static func torn(p: Node3D, n: Node3D, along_u: bool, at: float, a: float, b: float, h: float, side := -1.0, rail := false, back := false, swing := 15.0) -> void:
 	if rail:
 		var mid := (a + b) * 0.5
 		Kit.cyl(n, 0.024, b - a + 0.1, p.pt(mid, at, h - 0.03) if along_u else p.pt(at, mid, h - 0.03), Color(0.55, 0.58, 0.6), Vector3(0, 0, 90) if along_u else Vector3(90, 0, 0), 8)
-	var yaw := -side * 15.0 if along_u else -90.0 + side * 15.0
-	var hinge := Kit.group(n, p.pt(b, at + side * 0.04, 0.0) if along_u else p.pt(at + side * 0.04, b, 0.0), Vector3(0, yaw, 0))
+	var yaw: float
+	if along_u:
+		yaw = 180.0 + side * swing if back else -side * swing
+	else:
+		yaw = 90.0 - side * swing if back else -90.0 + side * swing
+	var post := a if back else b
+	var hinge := Kit.group(n, p.pt(post, at + side * 0.04, 0.0) if along_u else p.pt(at + side * 0.04, post, 0.0), Vector3(0, yaw, 0))
 	var tall := h - 0.3
 	var sheet := MeshInstance3D.new()
 	var q := QuadMesh.new()
-	q.size = Vector2(0.95, tall)
+	q.size = Vector2(0.62, tall)
 	sheet.mesh = q
 	sheet.material_override = Outdoor.chain_link()
-	sheet.position = Vector3(0.5, 0.12 + tall * 0.5, 0.0)
-	sheet.rotation_degrees = Vector3(0, 0, -7)
+	sheet.position = Vector3(0.33, 0.12 + tall * 0.5, 0.0)
+	sheet.rotation_degrees = Vector3(0, 0, -5)
 	hinge.add_child(sheet)
-	var out := side if along_u else -side                # the hinge's local z that points out on `side`
-	var curl := MeshInstance3D.new()                      # its bottom corner curled out further
-	var c := QuadMesh.new()
-	c.size = Vector2(0.4, 0.45)
-	curl.mesh = c
-	curl.material_override = Outdoor.chain_link()
-	curl.position = Vector3(1.1, 0.3, out * 0.08)
-	curl.rotation_degrees = Vector3(0, -out * 35.0, -12)
-	hinge.add_child(curl)
+	var out := (side if along_u else -side) * (-1.0 if back else 1.0)     # the hinge's local z that points out on `side`
+	# The roll: two turns of mesh round each other, leaning back, its foot kicked out.
+	for r: Array in [[0.11, 0.0], [0.07, 0.025]]:
+		Kit.cyl(hinge, r[0], tall - 0.06, Vector3(0.74 + r[1], 0.13 + (tall - 0.06) * 0.5, out * (0.09 + r[1])), Outdoor.chain_link(), Vector3(0, 0, -7), 10, r[0] * 0.85)
 
 
-## A puddle r across at (u, v): a wet dark patch with the dusk sky in it (a
-## dark disc alone reads as a hole). Decoration: it takes no floor.
+## A puddle r across at (u, v): a wet sheen with the dusk sky in it and a glint
+## (any darker than the ground round it, a disc reads as a hole or a shadow).
+## Decoration: it takes no floor.
 static func puddle(p: Node3D, n: Node3D, u: float, v: float, r: float, turn := 0.0) -> void:
 	var g := Kit.group(n, p.pt(u, v, 0.0), Vector3(0, turn, 0))
-	var wet := Kit.cyl(g, r, 0.004, Vector3(0, 0.011, 0), Color(0.22, 0.22, 0.3, 0.55), Vector3.ZERO, 14)
+	var wet := Kit.cyl(g, r, 0.004, Vector3(0, 0.011, 0), Color(0.46, 0.46, 0.6, 0.45), Vector3.ZERO, 14)
 	wet.scale = Vector3(1.3, 1.0, 0.8)
-	var sky := Kit.cyl(g, r * 0.5, 0.004, Vector3(r * 0.2, 0.014, -r * 0.1), Color(0.66, 0.56, 0.8, 0.5), Vector3.ZERO, 12)
+	var sky := Kit.cyl(g, r * 0.55, 0.004, Vector3(r * 0.2, 0.014, -r * 0.1), Color(0.88, 0.68, 0.82, 0.55), Vector3.ZERO, 12)
 	sky.scale = Vector3(1.5, 1.0, 0.55)
+	var glint := Kit.cyl(g, r * 0.2, 0.004, Vector3(-r * 0.35, 0.017, r * 0.12), Color(0.97, 0.94, 0.98, 0.6), Vector3.ZERO, 10)
+	glint.scale = Vector3(1.8, 1.0, 0.35)
 
 
 # ------------------------------------------------------------- garages
@@ -285,8 +329,9 @@ static func broken_boards(p: Node3D, n: Node3D, at: float, runs: Array, fallen: 
 ## A fence of corrugated sheets nailed to posts, h high, along u (or v) at `at`
 ## from `from` to `to`: sheets about 0.9 wide overlapping, each leaning its own
 ## way a little, most rusted through, a few still galvanised; the ribs upright.
-## Posts and two rails behind (on the -v or -u side). It is kept clear of walkers.
-static func corrugated(p: Node3D, n: Node3D, along_u: bool, at: float, from: float, to: float, h: float, seed := 0.0) -> void:
+## Posts and two rails behind, on the `side` side (-1: -v or -u). It is kept
+## clear of walkers.
+static func corrugated(p: Node3D, n: Node3D, along_u: bool, at: float, from: float, to: float, h: float, seed := 0.0, side := -1.0) -> void:
 	var count := maxi(int(round((to - from) / 0.9)), 1)
 	var sw := (to - from) / float(count)
 	for i in count:
@@ -305,16 +350,20 @@ static func corrugated(p: Node3D, n: Node3D, along_u: bool, at: float, from: flo
 	var posts := maxi(int(round((to - from) / 2.4)), 1)
 	for i in posts + 1:
 		var w := from + (to - from) * float(i) / float(posts)
-		Kit.box(n, Vector3(0.08, h, 0.08), p.pt(w, at - 0.1, h * 0.5) if along_u else p.pt(at - 0.1, w, h * 0.5), post)
+		Kit.box(n, Vector3(0.08, h, 0.08), p.pt(w, at + side * 0.1, h * 0.5) if along_u else p.pt(at + side * 0.1, w, h * 0.5), post)
+	var r0 := at + minf(side * 0.13, side * 0.07)
+	var r1 := at + maxf(side * 0.13, side * 0.07)
 	for y: float in [h * 0.25, h * 0.8]:
 		if along_u:
-			_gb(p, n, from, to, at - 0.13, at - 0.07, y, y + 0.07, post.lightened(0.05))
+			_gb(p, n, from, to, r0, r1, y, y + 0.07, post.lightened(0.05))
 		else:
-			_gb(p, n, at - 0.13, at - 0.07, from, to, y, y + 0.07, post.lightened(0.05))
+			_gb(p, n, r0, r1, from, to, y, y + 0.07, post.lightened(0.05))
+	var k0 := at + minf(side * 0.16, -side * 0.06)
+	var k1 := at + maxf(side * 0.16, -side * 0.06)
 	if along_u:
-		p.block(from, at - 0.16, to, at + 0.06)
+		p.block(from, k0, to, k1)
 	else:
-		p.block(at - 0.16, from, at + 0.06, to)
+		p.block(k0, from, k1, to)
 
 
 ## A clothes line between posts at u0 and u1 along v, h high, and `pieces`
@@ -341,10 +390,10 @@ static func washing(p: Node3D, n: Node3D, u0: float, u1: float, v: float, h: flo
 
 ## Pen Lucy Park's restroom block, shut for the season: painted cinder block
 ## under a flat roof with a deep fascia; on its front (`yaw`) two steel doors
-## with a sign over them and a paper one taped across, a caged lamp over each;
-## round the back high glass-block windows, a vent, the downspout, tags. 5 by
-## 3.4. It keeps its floor clear.
-static func restroom(p: Node3D, b: int, u: float, v: float, yaw: float) -> Node3D:
+## with a sign over them and a paper one taped across, a caged lamp over each
+## (with `lit`, the right-hand one on); round the back high glass-block
+## windows, a vent, the downspout, tags. 5 by 3.4. It keeps its floor clear.
+static func restroom(p: Node3D, b: int, u: float, v: float, yaw: float, lit := false) -> Node3D:
 	var g: Node3D = p.prop(b, u, v, yaw, 5.0, 3.4)
 	var paint := Kit.tex("painted_block", 0.7, Color(0.71, 0.65, 0.54), false, Color(0.82, 0.86, 0.76))
 	var trim := Color(0.22, 0.36, 0.29)
@@ -365,8 +414,11 @@ static func restroom(p: Node3D, b: int, u: float, v: float, yaw: float) -> Node3
 		Kit.box(g, Vector3(0.1, 0.05, 0.03), Vector3(x + 0.3, 1.05, hd + 0.085), IRON)          # the hasp, the lock
 		Kit.box(g, Vector3(0.06, 0.08, 0.03), Vector3(x + 0.3, 0.98, hd + 0.1), Club.BRASS)
 		var lamp := Kit.group(g, Vector3(x, 2.38, hd + 0.03))
+		var on := lit and x > 0.0
 		Kit.box(lamp, Vector3(0.2, 0.2, 0.06), Vector3(0, 0, 0.0), IRON)
-		Kit.box(lamp, Vector3(0.14, 0.14, 0.1), Vector3(0, 0, 0.08), Color(0.78, 0.76, 0.66))
+		Kit.box(lamp, Vector3(0.14, 0.14, 0.1), Vector3(0, 0, 0.08), Kit.flat(Color(1.0, 0.86, 0.6), 1.4) if on else Color(0.78, 0.76, 0.66))
+		if on:
+			Kit.omni(g, Vector3(x, 2.2, hd + 0.6), Color(1.0, 0.82, 0.55), 1.6, 6.5)
 		for k in 3:
 			Kit.box(lamp, Vector3(0.012, 0.16, 0.012), Vector3(-0.05 + k * 0.05, 0, 0.135), IRON)
 	var board := Kit.group(g, Vector3(0, 2.45, hd + 0.02))

@@ -26,6 +26,7 @@ extends RefCounted
 const Props := preload("res://scripts/props.gd")
 const In := preload("res://scripts/props_in.gd")
 const Houses := preload("res://scripts/houses.gd")
+const Backs := preload("res://scripts/props_backs.gd")
 const UP := 40.0
 const STAIR_U := 0.6          # the middle of the flight, on both floors
 const STAIR_V := 9.15
@@ -98,7 +99,8 @@ static func build(p: Node3D) -> void:
 	var wire := Color(0.5, 0.52, 0.52)
 	p.rail(g4, false, 0.05, 0.05, 3.3, wire, 1.5)
 	p.rail(g4, false, 4.95, 0.05, 7.1, wire, 1.5)
-	p.rail(g4, true, 0.05, 0.1, 4.9, wire, 1.5)
+	p.rail(g4, true, 0.05, 0.1, 1.9, wire, 1.5)          # (either side of the gate: _ground)
+	p.rail(g4, true, 0.05, 2.9, 4.9, wire, 1.5)
 
 	# ---- upstairs walls
 	p.cross(h1, 15.8, UP, UP + 5, blue, [
@@ -240,7 +242,7 @@ static func _ground(p: Node3D, g1: int, g2: int, g3: int, g4: int) -> void:
 	Props.cans(p, g4, 4.3, 0.55, 2)
 	Props.bench(p, g4, 0.45, 1.6, 90.0, 1.4, Color(0.4, 0.3, 0.2))
 	var n: Node3D = p.node_of(g4)
-	p.slab(n, true, 0.05, 1.9, 2.9, 0.0, 1.7, 0.07, Color(0.36, 0.38, 0.4))
+	Backs.rail_gate(p, n, true, 0.05, 1.9, 2.9, 1.5, Color(0.36, 0.38, 0.4))      # (a steel gate in the rails, as the backs see it)
 	p.use_point(g4, "BACK GATE", 2.4, 0.6, "goto:backs", 1.0, 1.9)
 	Kit.box(n, Vector3(16.0, 0.3, 3.0), p.pt(2.5, -1.5, -0.2), Kit.tex("asphalt", 3.0, Color(0.2, 0.22, 0.27)))      # the alley
 	# Across the alley: the backs of the next row's garages.
@@ -300,6 +302,7 @@ static func _dress(p: Node3D, g1: int, g2: int, g3: int, h1: int, h2: int, h3: i
 	In.picture(p, g1, 0.64, 11.285, 0.0, 0.62, 0.5, "sea", gilt, 1.6)
 	In.picture(p, g1, 4.36, 11.285, 0.0, 0.62, 0.5, "flowers", gilt, 1.6)
 	In.mat(p, g1, 1.05, 15.38, 0.95, 0.55, Color(0.66, 0.5, 0.28), Color(0.36, 0.24, 0.14))
+	Kit.box(p.node_of(g1), Vector3(DOOR[1] - DOOR[0], 0.012, 0.19), p.pt((DOOR[0] + DOOR[1]) * 0.5, 15.8, 0.006), Houses.MARBLE)    # the front door's marble sill (its wall is always cut away: the sill and the mat show where it is)
 	Kit.box(p.node_of(g2), Vector3(2.0, 0.012, 0.19), p.pt(2.5, 11.2, 0.006), walnut)
 	# The dining room: white panelling to a dado rail, rose stripes over it; the
 	# stair wall in the paper alone. Both start at the boxed-in cupboard. A lamp

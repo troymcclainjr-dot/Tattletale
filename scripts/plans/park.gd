@@ -9,19 +9,28 @@ extends RefCounted
 ##   COURT: 40 x 21.4 m inside the fence. A full court (28 x 15 m) runs left
 ##     to right, broadside to the camera. Behind it, along the fence: four
 ##     floodlights, the bleachers, the two team benches, the park's name
-##     board and the scoreboard. The ends: a hoop each, a bench, the
-##     drinking fountain and a hopscotch on the left, a bench and the
-##     chalked list of who has next on the right. Along the near side, two
-##     backless benches and a bin; a fifth floodlight in the near left
-##     corner. Planted beds along the sides and the front (not walked on;
-##     trees only in the left one, so none ever stands between the camera
-##     and him).
+##     board and the scoreboard; behind the bleachers a strip to slip into
+##     between them and the fence (somebody sits back there). The ends: a
+##     hoop each, a bench, the drinking fountain and a hopscotch on the
+##     left, a bench and the chalked list of who has next on the right, and
+##     there a path through the bed to an opening in the fence. Along the
+##     near side, two backless benches and a bin; a fifth floodlight in the
+##     near left corner. Planted beds along the sides and the front (not
+##     walked on; trees only in the left one, so none ever stands between
+##     the camera and him).
+##   CORNER LOT, through the opening: the park's corner by the end of Rose
+##     Hill's row (504, plans/street.gd), grass with the restroom block in
+##     its far corner, shut, a path worn past it to where the chain-link
+##     along the alley has been cut open (E there: out into the alley
+##     behind the row, plans/backs.gd, whose TO THE PARK comes back in);
+##     a planted bed from there to the railing on the pavement.
 ##   ---- a low iron railing, the gate in the middle ----------------------
 ##   street: the pavement he arrives on, and the road
 ##
 ## The tall fence runs along the back and down both sides to the near
 ## sideline; on the camera side there is only the low railing. Outside the
-## fence there is lawn and trees both ways, and the row of houses runs on.
+## fence there is lawn and trees to the left, the corner lot and the end of
+## Rose Hill's row to the right, and the row of houses across the alley.
 ## Numbers are metres on the plan (see place.gd): u from the left fence, v
 ## from the alley's far edge (the houses' yards are behind it, v < 0); the
 ## railing is at v = 25.
@@ -30,11 +39,18 @@ extends RefCounted
 ## RECREATION AND PARKS", the scoreboard ("HOME", "GUEST", "18", "21", "GAME
 ## TO 21 / WIN BY 2"), the stencils "PARKS" and "TRASH" on the drum bins,
 ## the chalk "I GOT NEXT" with "DRE", "MOOK" and "LIL T", the hopscotch
-## numbers, and "NO DUMPING" in the alley.
+## numbers, and "NO DUMPING" in the alley; the homes worker's (15 Nov): the
+## use point "TO THE ALLEY", the room's name CORNER LOT, RELL and LIL and
+## their lines (talk_park_*.json); the restroom's words are props_backs.gd's.
 
 const Props := preload("res://scripts/props.gd")
 const Outdoor := preload("res://scripts/outdoor.gd")
 const Park := preload("res://scripts/props_park.gd")
+const Backs := preload("res://scripts/props_backs.gd")
+const Street := preload("res://scripts/props_street.gd")
+const Houses := preload("res://scripts/houses.gd")
+const Walk := preload("res://scripts/sidewalk.gd")
+const StreetPlan := preload("res://scripts/plans/street.gd")
 
 const W := 40.0               # the park, fence to fence
 const D := 25.0               # the alley's far edge (0) to the railing on the street
@@ -47,6 +63,12 @@ const CV0 := 7.0
 const CV1 := 22.0
 const PAD := [1.8, 23.4, 38.2]     # where the asphalt stops: the left bed, the front bed, the right bed
 const GATE := [19.2, 20.8]
+const OPENING := [8.0, 9.4]   # the way through the right-hand fence into the corner lot
+const HOUSE := 48.54          # 504's end wall (Rose Hill's ROW_END): the corner lot from W to here
+const CUT := [46.9, 48.2]     # where the chain-link along the alley is cut open (the backs' TO THE PARK)
+const LOT_BED := 12.6         # the corner lot's bed, from here to the railing
+## The bed's shrubs, low ones: u, v, kind, size, turn (plans/backs.gd draws them too).
+const LOT_SHRUBS := [[41.5, 15.4, "a", 1.0, 20.0], [47.3, 14.3, "d", 0.9, 140.0], [44.6, 18.2, "c", 0.85, 3.0], [42.6, 21.9, "d", 1.0, 260.0], [46.4, 22.6, "a", 0.9, 80.0]]
 
 
 static func build(p: Node3D) -> void:
@@ -59,6 +81,10 @@ static func build(p: Node3D) -> void:
 	# And west to Argonne Court, Large Fry's street (plans/fry.gd: TO THE PARK
 	# at its east end). (Placeholder: the label.)
 	p.use_point(st, "TO ARGONNE COURT", -5.3, 26.2, "goto:fry", 1.2, 1.9)
+	# And in the corner lot, the cut in the chain-link along the alley: out into
+	# Rose Hill's backs (plans/backs.gd: its TO THE PARK is on the other side).
+	# (Placeholder: the label.)
+	p.use_point(st, "TO THE ALLEY", (CUT[0] + CUT[1]) * 0.5, FENCE_V + 0.75, "goto:backs", 1.0, 1.9)
 	# Night: the floodlights lay pools on the court, the alley lights and the
 	# windows do the rest; a cool moon (_sky) stands in for main.gd's warm sun.
 	p.ambient = 0.11
@@ -67,7 +93,15 @@ static func build(p: Node3D) -> void:
 	p.person(st, "tre", 15.5, 15.2, {"name": "TRE", "face": "happy"})
 	p.person(st, "dee", 18.2, 13.6, {"name": "BIG DEE", "face": "smug"})
 	p.person(st, "chuy", 24.5, 16.4, {"name": "CHUY", "face": "content"})
+	# One sitting it out behind the bleachers, one at the shut restrooms
+	# (placeholder names and lines).
+	p.person(st, "rell", 23.25, 4.2, {"name": "RELL", "face": "suspicious", "talk": "talk_park_bleachers.json"})
+	p.person(st, "lil", 43.0, 7.85, {"name": "LIL", "face": "neutral", "talk": "talk_park_corner.json"})
 	p.room("COURT", st, 0.0, FENCE_V, W, D, null, {"street": true})
+	# The corner lot: walked from the court's fence to 504's and from the alley's
+	# to its bed; the camera kept off 504's end wall.
+	var lot: int = p.room("CORNER LOT", st, W, FENCE_V, HOUSE, D, null, {"street": true, "areas": [[W, FENCE_V, HOUSE, LOT_BED]]})
+	p.rooms[lot]["cam_max_x"] = p.pt(47.0, 0.0).x
 	_ground(p, st)
 	_fences(p, st)
 	var green := Color(0.2, 0.52, 0.4)
@@ -76,6 +110,7 @@ static func build(p: Node3D) -> void:
 	_court(p, st)
 	_beds(p, st)
 	_outside(p, st)
+	_corner(p, st)
 	_alley(p, st)
 	_houses(p, st)
 	_sky(p, st)
@@ -101,11 +136,12 @@ static func _ground(p: Node3D, st: int) -> void:
 		for depth: Array in [[FENCE_V, 13.5], [13.5, PAD[1]]]:
 			Kit.box(n, Vector3(half[1] - half[0], 0.2, depth[1] - depth[0]), p.pt((half[0] + half[1]) * 0.5, (depth[0] + depth[1]) * 0.5, -0.07), tar)
 	Kit.box(n, Vector3(GATE[1] - GATE[0], 0.2, D - PAD[1] - 0.01), p.pt(20.0, (PAD[1] + D - 0.01) * 0.5, -0.065), concrete)
-	# Outside the fence: lawn to both sides, and the dark ground running off beyond.
-	for side: Array in [[-34.0, 0.0], [W, 64.0]]:
+	# Outside the fence: lawn to the left, the corner lot's to the right (as far
+	# as 504's end wall), and the dark ground running off beyond.
+	for side: Array in [[-34.0, 0.0], [W, HOUSE]]:
 		Kit.box(n, Vector3(side[1] - side[0], 0.3, D - FENCE_V), p.pt((side[0] + side[1]) * 0.5, (FENCE_V + D) * 0.5, -0.15), lawn)
 	var dark := Outdoor.tex("out_grass", 3.6, Color(0.16, 0.2, 0.17), Color(0.6, 0.67, 0.64))
-	for side: Array in [[-110.0, -34.0], [64.0, 140.0]]:
+	for side: Array in [[-110.0, -34.0], [HOUSE, 140.0]]:
 		Kit.box(n, Vector3(side[1] - side[0], 0.3, 60.0), p.pt((side[0] + side[1]) * 0.5, D - 30.0, -0.155), dark)
 	# The street runs on out of sight both ways (place.gd lays the middle of it,
 	# u -14 .. 54): the same slabs, kerb, gutter, road and centre dashes.
@@ -133,12 +169,28 @@ static func _fences(p: Node3D, st: int) -> void:
 	var tall := CV1 + 0.6
 	p.fence(st, true, FENCE_V, 0.0, W, [], 3.6, "chain")
 	p.fence(st, false, 0.0, FENCE_V, tall, [], 3.6, "chain")
-	p.fence(st, false, W, FENCE_V, tall, [], 3.6, "chain")
+	p.fence(st, false, W, FENCE_V, tall, [OPENING], 3.6, "chain")
+	# Over the opening into the corner lot the chain-link goes on above a rail at
+	# head height, so it reads as a way in, not a hole.
+	var mid: float = (OPENING[0] + OPENING[1]) * 0.5
+	var span: float = OPENING[1] - OPENING[0]
+	for y: float in [2.2, 3.57]:
+		Kit.cyl(n, 0.024, span, p.pt(W, mid, y), Color(0.55, 0.58, 0.6), Vector3(90, 0, 0), 8)
+	var header := MeshInstance3D.new()
+	var q := QuadMesh.new()
+	q.size = Vector2(span - 0.04, 3.53 - 2.24)
+	header.mesh = q
+	header.material_override = Outdoor.chain_link()
+	header.position = p.pt(W, mid, (2.24 + 3.53) * 0.5)
+	header.rotation_degrees = Vector3(0, 90, 0)
+	n.add_child(header)
 	p.fence(st, false, 0.0, tall, D, [], 1.05, "rail", green)
 	p.fence(st, false, W, tall, D, [], 1.05, "rail", green)
 	p.fence(st, true, D, 0.0, W, [GATE], 1.05, "rail", green)
-	# A concrete kerb under the alley fence, all along.
-	Kit.box(n, Vector3(100.0, 0.16, 0.3), p.pt(15.0, FENCE_V, 0.0), Color(0.6, 0.6, 0.58))
+	# A concrete kerb under the alley fence, all along but where the worn path
+	# crosses it at the cut in the corner lot's (broken out there, _corner).
+	for run: Array in [[-35.0, CUT[0] + 0.16], [CUT[1] - 0.16, 65.0]]:
+		Kit.box(n, Vector3(run[1] - run[0], 0.16, 0.3), p.pt((run[0] + run[1]) * 0.5, FENCE_V, 0.0), Color(0.6, 0.6, 0.58))
 	# The gateposts, each with a globe lamp on it (the warm light at the way in,
 	# one lamp between them), and the gate, swung open into the park.
 	var globe := Kit.flat(Color(1.0, 0.86, 0.6), 1.2)
@@ -172,9 +224,14 @@ static func _court(p: Node3D, st: int) -> void:
 		Park.floodlight(p, st, l[0], 4.15, 0.0, 7.6, 2, 12.0, 6.5, true, l[1], 30.0)
 	Park.floodlight(p, st, 0.9, 23.9, 135.0, 7.6, 2, 9.0, 5.0, true, Vector2(8.5, 17.8), 30.0)
 	# Along the back: the bleachers, the team benches, the name board, the scoreboard.
-	var stands := Park.bleachers(p, st, 20.0, 4.95, 0.0, 6.0, 3)
+	# (The bleachers stand out from the fence far enough to get behind them.)
+	var stands := Park.bleachers(p, st, 20.0, 5.7, 0.0, 6.0, 3)
 	Props.boombox(stands, Vector3(1.7, 1.315, -0.73), 8.0)
 	Kit.box(stands, Vector3(0.42, 0.06, 0.32), Vector3(-1.9, 0.925, -0.11), Color(0.8, 0.2, 0.2), Vector3(0, 12, 0))   # somebody's jacket
+	# Behind them they would hide him from the camera: they fade while they do,
+	# as the parked cars on the street do (props_street.gd's CarFade).
+	var fade = Street.car_fade(p, st)
+	fade.add(stands)
 	Props.bench(p, st, 11.0, 6.1, 0.0, 3.0, Color(0.2, 0.46, 0.32))
 	Props.bench(p, st, 29.0, 6.1, 0.0, 3.0, Color(0.2, 0.46, 0.32))
 	var jug := Kit.group(n, p.pt(11.9, 6.1, 0.47))
@@ -209,6 +266,7 @@ static func _court(p: Node3D, st: int) -> void:
 	Park.litter(n, p.pt(18.5, 6.4, 0.03), 9.0, 4)
 	Park.litter(n, p.pt(36.8, 18.6, 0.03), 17.0, 3)
 	Park.litter(n, p.pt(3.4, 12.6, 0.03), 23.0, 2)
+	_behind_bleachers(p, n)
 	# Along the near side: two long benches for watching from, backless so the
 	# camera sees over them. The bin for the gate stands out on the pavement to
 	# its left, where it never comes between the camera and him (inside, right of
@@ -220,6 +278,29 @@ static func _court(p: Node3D, st: int) -> void:
 	Park.litter(n, p.pt(17.5, 25.75, 0.03), 31.0, 2)
 
 
+## Behind the bleachers, out of the light: a strip of the pad between them and
+## the fence, a crate, a flattened box, bottles and cans, paper; under them a
+## bag with a bottle in it. All of it loose: nothing here takes floor.
+static func _behind_bleachers(p: Node3D, n: Node3D) -> void:
+	var top := 0.03                                     # the pad's top
+	Park.crate(n, p.pt(18.85, 4.12, top), 24.0, Color(0.2, 0.42, 0.7))
+	Kit.box(n, Vector3(0.85, 0.012, 0.55), p.pt(20.55, 4.16, top + 0.006), Color(0.6, 0.47, 0.3), Vector3(0, 8, 0))       # a box, flattened to sit on
+	Kit.box(n, Vector3(0.5, 0.012, 0.36), p.pt(20.2, 4.3, top + 0.018), Color(0.66, 0.53, 0.36), Vector3(0, -21, 0))
+	for b: Array in [[19.6, 4.36, 70.0, Color(0.42, 0.26, 0.12)], [17.9, 4.18, -35.0, Color(0.7, 0.78, 0.74)], [22.1, 3.86, 15.0, Color(0.24, 0.42, 0.24)]]:
+		Kit.cyl(n, 0.035, 0.24, p.pt(b[0], b[1], top + 0.035), b[3], Vector3(0, b[2], 90), 8)        # bottles, lying
+	Kit.cyl(n, 0.035, 0.24, p.pt(21.35, 3.82, top + 0.12), Color(0.42, 0.26, 0.12), Vector3.ZERO, 8)
+	Kit.cyl(n, 0.014, 0.06, p.pt(21.35, 3.82, top + 0.27), Color(0.42, 0.26, 0.12), Vector3.ZERO, 6)
+	for c: Array in [[18.3, 4.42, Color(0.8, 0.16, 0.14), true], [21.7, 4.4, Color(0.75, 0.77, 0.8), false], [19.25, 3.84, Color(0.2, 0.36, 0.7), true]]:
+		if c[3]:
+			Kit.cyl(n, 0.033, 0.12, p.pt(c[0], c[1], top + 0.033), c[2], Vector3(0, 40.0 * c[0], 90), 8)        # cans, crushed and kicked about
+		else:
+			Kit.cyl(n, 0.033, 0.12, p.pt(c[0], c[1], top + 0.06), c[2], Vector3.ZERO, 8)
+	Park.litter(n, p.pt(20.4, 4.2, top), 61.0, 4)
+	var bag := Kit.group(n, p.pt(21.6, 5.55, top), Vector3(0, 30, 0))
+	Kit.box(bag, Vector3(0.16, 0.26, 0.11), Vector3(0, 0.13, 0), Color(0.62, 0.48, 0.32))
+	Kit.cyl(bag, 0.016, 0.12, Vector3(0.02, 0.3, 0), Color(0.42, 0.26, 0.12), Vector3.ZERO, 6)
+
+
 ## The planted beds along the sides and the front: earth and grass behind a low
 ## kerb, shrubs, two small trees on the left. Nobody walks in them, so nothing
 ## planted there ever stands between the camera and him.
@@ -227,13 +308,18 @@ static func _beds(p: Node3D, st: int) -> void:
 	var n: Node3D = p.node_of(st)
 	var kerb := Color(0.7, 0.69, 0.66)
 	p.block(0.0, FENCE_V, PAD[0], D)
-	p.block(PAD[2], FENCE_V, W, D)
+	p.block(PAD[2], FENCE_V, W, OPENING[0])
+	p.block(PAD[2], OPENING[1], W, D)
 	p.block(PAD[0], PAD[1], GATE[0], D)
 	p.block(GATE[1], PAD[1], PAD[2], D)
 	# (The side kerbs stop a centimetre short of the asphalt's edges, so no face of
 	# one lies in a face of the other.)
 	Kit.box(n, Vector3(0.12, 0.14, PAD[1] - FENCE_V - 0.02), p.pt(PAD[0] + 0.07, (FENCE_V + PAD[1]) * 0.5, 0.06), kerb)
-	Kit.box(n, Vector3(0.12, 0.14, PAD[1] - FENCE_V - 0.02), p.pt(PAD[2] - 0.07, (FENCE_V + PAD[1]) * 0.5, 0.06), kerb)
+	Kit.box(n, Vector3(0.12, 0.14, OPENING[0] - FENCE_V - 0.01), p.pt(PAD[2] - 0.07, (FENCE_V + 0.01 + OPENING[0]) * 0.5, 0.06), kerb)
+	Kit.box(n, Vector3(0.12, 0.14, PAD[1] - 0.01 - OPENING[1]), p.pt(PAD[2] - 0.07, (OPENING[1] + PAD[1] - 0.01) * 0.5, 0.06), kerb)
+	# The path through the right-hand bed to the opening, concrete as the gate's,
+	# on out into the corner lot (_corner wears the rest of the way).
+	Kit.box(n, Vector3(40.6 - PAD[2], 0.2, OPENING[1] - OPENING[0]), p.pt((PAD[2] + 40.6) * 0.5, (OPENING[0] + OPENING[1]) * 0.5, -0.065), Outdoor.pavement())
 	Kit.box(n, Vector3(GATE[0] - PAD[0] + 0.12, 0.14, 0.12), p.pt((PAD[0] + GATE[0]) * 0.5 - 0.06, PAD[1] + 0.06, 0.07), kerb)
 	Kit.box(n, Vector3(PAD[2] - GATE[1] + 0.12, 0.14, 0.12), p.pt((GATE[1] + PAD[2]) * 0.5 + 0.06, PAD[1] + 0.06, 0.07), kerb)
 	# Two trees in the left bed, clear of the floodlight in the corner. (The camera
@@ -252,7 +338,7 @@ static func _beds(p: Node3D, st: int) -> void:
 		Outdoor.shrub(p, st, 0.9, v, k, 0.85 + 0.2 * Props.rnd(v), (90.0 + 8.0 * (Props.rnd(v * 2.0) - 0.5)) if k == "c" else 40.0 * i)
 		i += 1
 	Outdoor.shrub(p, st, 39.1, 5.2, "b", 0.95, 10.0)
-	for v: float in [8.0, 11.2, 14.5, 17.4, 20.3, 22.8]:
+	for v: float in [6.7, 11.2, 14.5, 17.4, 20.3, 22.8]:          # (none on the path to the opening)
 		var k: String = low[i % 3]
 		Outdoor.shrub(p, st, 39.1, v, k, 0.7 + 0.15 * Props.rnd(v), (90.0 + 8.0 * (Props.rnd(v * 2.0) - 0.5)) if k == "c" else 55.0 * i)
 		i += 1
@@ -266,21 +352,101 @@ static func _beds(p: Node3D, st: int) -> void:
 		Kit.box(n, Vector3(0.05, 0.3 + 0.3 * Props.rnd(k * 2.1), 0.05), p.pt(u, FENCE_V + 0.12, 0.2), Color(0.3, 0.5, 0.24), Vector3(15.0 * (Props.rnd(k * 3.7) - 0.5), 30.0 * k, 20.0 * (Props.rnd(k * 5.3) - 0.5)))
 
 
-## Outside the fence: lawn and trees both ways, a lamp on the street.
+## Outside the fence: lawn and trees to the left, a lamp on the street. (To the
+## right the corner lot and 504: _corner. No tree there: it would stand where
+## the camera does, or between it and him.)
 static func _outside(p: Node3D, st: int) -> void:
 	var kinds := ["a", "b", "c", "d"]
 	# Each: u, v, kind, size. The big kind ("a", twelve metres at full size) only
 	# further off and cut down; the smaller ones near the fence.
 	var trees := [[-6.6, 7.6, "d", 1.0], [-10.0, 14.6, "b", 0.78], [-6.4, 21.0, "c", 0.9], [-15.5, 8.0, "a", 0.62],
-		[-19.5, 17.0, "b", 0.85], [-13.0, 22.6, "d", 1.1], [-25.5, 10.0, "a", 0.7], [-29.0, 19.5, "c", 1.0], [-22.5, 23.2, "d", 0.9],
-		[45.6, 7.2, "d", 1.0], [50.0, 13.6, "b", 0.82], [55.5, 8.0, "a", 0.66], [46.6, 20.8, "c", 0.9], [58.0, 18.0, "b", 0.8]]
+		[-19.5, 17.0, "b", 0.85], [-13.0, 22.6, "d", 1.1], [-25.5, 10.0, "a", 0.7], [-29.0, 19.5, "c", 1.0], [-22.5, 23.2, "d", 0.9]]
 	for i in trees.size():
 		var t: Array = trees[i]
 		Outdoor.tree(p, st, t[0], t[1], t[2], t[3], 47.0 * i)
-	for s: Array in [[-1.6, 12.0], [-3.0, 5.0], [-2.0, 23.4], [42.2, 9.0], [42.0, 16.5], [43.0, 23.5]]:
+	for s: Array in [[-1.6, 12.0], [-3.0, 5.0], [-2.0, 23.4]]:
 		Outdoor.shrub(p, st, s[0], s[1], kinds[int(s[1]) % 4], 1.1, s[0] * 10.0)
 	Props.street_lamp(p, st, -2.5, 27.1)
 	Props.hydrant(p, st, 44.0, 27.0)
+
+
+# -------------------------------------------------------------- the corner lot
+
+## The corner lot, right of the court (plans/backs.gd sees it from the alley,
+## turned round): the path worn from the opening to where the chain-link along
+## the alley has been cut open, the restroom block in the far corner with its
+## back to the alley, shut, the lamp over one door left on; south of the path a
+## bed behind a kerb to the railing on the pavement. Along its right side the
+## end of 504, the first of Rose Hill's row (plans/street.gd's): the corrugated
+## sheets round its yard, its back building over them, the end wall with its
+## windows, its front on the pavement.
+static func _corner(p: Node3D, st: int) -> void:
+	var n: Node3D = p.node_of(st)
+	var green := Color(0.13, 0.3, 0.22)
+	# The path, worn into the grass (the concrete one through the bed comes out to
+	# 40.6), on through the cut over the broken kerb and out into the alley.
+	var dirt := Outdoor.tex("out_dirt", 2.0, Color(0.36, 0.3, 0.22))
+	Kit.box(n, Vector3(47.3 - 40.6, 0.012, 0.9), p.pt((40.6 + 47.3) * 0.5, (OPENING[0] + OPENING[1]) * 0.5, 0.006), dirt)
+	Kit.box(n, Vector3(1.0, 0.016, 8.9 - FENCE_V + 0.5), p.pt((CUT[0] + CUT[1]) * 0.5, (FENCE_V - 0.5 + 8.9) * 0.5, 0.008), dirt)
+	# The bed: a kerb, low shrubs only (the camera stands over it).
+	Kit.box(n, Vector3(HOUSE - W - 0.06, 0.14, 0.12), p.pt((W + HOUSE) * 0.5, LOT_BED + 0.06, 0.06), Color(0.7, 0.69, 0.66))
+	for s: Array in LOT_SHRUBS:
+		Outdoor.shrub(p, st, s[0], s[1], s[2], s[3], s[4])
+	# The railing along the pavement goes on to 504; along the alley a lower
+	# chain-link than the court's, cut open, the mesh peeled back well out into
+	# the lot and the top rail still across (as the backs see it).
+	p.fence(st, true, D, W, HOUSE, [], 1.05, "rail", green)
+	p.fence(st, true, FENCE_V, W, HOUSE, [CUT], 1.8, "chain")
+	Backs.torn(p, n, true, FENCE_V, CUT[0], CUT[1], 1.8, 1.0, true, true, 55.0)
+	p.block(46.4, FENCE_V, CUT[0] + 0.02, 4.55)          # (the flap, and the roll of mesh it was peeled back into)
+	# The restroom block (props_backs.gd's), shut, the lamp over its right-hand door on.
+	Backs.restroom(p, st, 43.0, 5.5, 0.0, true)
+	# Where people stand about, round its corner: a crate to sit on, litter, a bottle.
+	Park.crate(n, p.pt(46.15, 6.7, 0.0), -12.0, Color(0.85, 0.2, 0.18))
+	p.block(45.95, 6.5, 46.35, 6.9)
+	Park.litter(n, p.pt(47.3, 4.7, 0.02), 125.0, 3)
+	Park.litter(n, p.pt(44.4, 8.1, 0.02), 131.0, 3)
+	Kit.cyl(n, 0.035, 0.24, p.pt(45.3, 8.4, 0.035), Color(0.24, 0.42, 0.24), Vector3(0, 125, 90), 8)
+	# 504's yard: corrugated sheets along the lot and the alley (posts on the
+	# yard's side: plans/backs.gd's, turned round), the gate in them; its back
+	# building over them, a lit window on its side.
+	var brick: Material = StreetPlan._brick(Color(0.9, 0.86, 0.9))
+	Backs.corrugated(p, n, false, HOUSE + 0.04, FENCE_V + 0.06, 10.2, 2.1, 3.0, 1.0)
+	Backs.corrugated(p, n, true, FENCE_V + 0.06, HOUSE + 0.03, 52.19, 2.1, 2.0, 1.0)
+	Backs.corrugated(p, n, true, FENCE_V + 0.06, 53.19, 54.91, 2.1, 1.0, 1.0)
+	var leaf := Kit.tex("in_ribbed", 0.5, Backs.RUST.lerp(Color(0.62, 0.64, 0.66), 0.3), false, Color(0.9, 0.86, 0.82))
+	Kit.box(n, Vector3(0.9, 1.94, 0.02), p.pt(52.69, 3.68, 1.01), leaf)
+	for y: float in [0.3, 1.6]:
+		Kit.box(n, Vector3(0.9, 0.07, 0.06), p.pt(52.69, 3.72, y + 0.035), Color(0.3, 0.26, 0.22))
+	Kit.box(n, Vector3(0.1, 0.06, 0.03), p.pt(52.37, 3.65, 1.03), Props.STEEL)
+	Kit.box(n, Vector3(3.0, 6.0, 3.2), p.pt(53.44, 8.6, 3.0), brick)
+	Kit.box(n, Vector3(3.0, 0.2, 0.34), p.pt(53.44, 7.11, 6.1), Park.COPING)
+	Houses.simple_window(Houses.face(p, st, 51.94, 7.0, 270.0), 1.6, 3.6, 0.95, 1.3, Street.WHITE, Houses.LIT, Color(0.95, 0.93, 0.86))
+	# 504 itself, as Rose Hill has it (plans/street.gd's row), its front 4 m back
+	# from the pavement as there: the main block runs back to the yard, its end
+	# windows down the lot's side; the paved strip from its porch to the pavement.
+	var front := D - 4.0
+	var deep := front - 10.2
+	var h504 := {"no": "504", "wall": brick, "trim": Street.WHITE, "door": Street.DOORS["blue"], "door_left": true, "bay": "white", "lintel": Color(0.72, 0.71, 0.68),
+		"height": 8.3, "chimney": true, "lit": "01001", "curtain": Color(0.95, 0.93, 0.86), "porch_light": true, "deep": deep}
+	var house: Node3D = Street.porch_house(p, st, HOUSE, front, 6.4, h504)
+	# Its end windows where Rose Hill has them (plans/street.gd's: from the front
+	# back 9 m), the dark ones with their blinds pulled down (a bare dark pane at
+	# night, close by the camera, read as a hole in the wall).
+	var ends: Node3D = Houses.end_windows(house, 6.4, 9.0, -1, Houses.F0, 8.3, Street.WHITE, 6.4)
+	var unlit := Kit.flat(Houses.PANE)
+	for c: Node in ends.get_children():
+		var pane := c as MeshInstance3D
+		if pane == null or pane.material_override != unlit:
+			continue
+		var size: Vector3 = (pane.mesh as BoxMesh).size
+		Kit.box(ends, Vector3(size.x - 0.06, size.y * 0.62, 0.006), pane.position + Vector3(0, size.y * 0.19, size.z * 0.5 + 0.003), Color(0.74, 0.7, 0.6))
+	var door := HOUSE + 0.9
+	Walk.front(p, n, HOUSE + Walk.WIDE * 0.5, HOUSE + 6.4 - Walk.WIDE * 0.5, front + 2.0, D - Walk.GAP * 0.5, door, "a", HOUSE)
+	Walk.footing(p, n, HOUSE, HOUSE + 6.4, front + 2.0, door, 1.25, 0.9)
+	# Rose Hill's yard trees behind it (plans/street.gd's, over the roofs).
+	Outdoor.tree(p, st, 59.4, 5.1, "a", 1.1, 300.0)
+	Outdoor.tree(p, st, 64.4, 5.4, "d", 1.1, 20.0)
 
 
 # ------------------------------------------------------------------- the alley

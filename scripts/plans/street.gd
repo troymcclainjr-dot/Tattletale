@@ -72,6 +72,7 @@ const Outdoor := preload("res://scripts/outdoor.gd")
 const Walk := preload("res://scripts/sidewalk.gd")
 const Houses := preload("res://scripts/houses.gd")
 const Park := preload("res://scripts/props_park.gd")
+const Backs := preload("res://scripts/props_backs.gd")
 const CribPlan := preload("res://scripts/plans/crib.gd")
 const BeaPlan := preload("res://scripts/plans/bea.gd")
 
@@ -411,8 +412,9 @@ static func _row(p: Node3D, st: int) -> Dictionary:
 
 ## West of 504, the row's end, Pen Lucy Park (plans/park.gd) comes up to the
 ## pavement: its lawn behind a low wall with an iron railing on it, trees, the
-## court further in behind its chain-link, a floodlight over it. He walks on
-## along the pavement by the railing to WEST; E there goes on to the park.
+## court further in behind its chain-link, a floodlight over it, and next to
+## 504 the park's corner lot with the restroom block. He walks on along the
+## pavement by the railing to WEST; E there goes on to the park.
 static func _park_end(p: Node3D, st: int) -> void:
 	var n: Node3D = p.node_of(st)
 	var grass := Kit.tex("stucco", 2.5, Color(0.3, 0.42, 0.24), true, Color(0.42, 0.66, 0.34))
@@ -426,7 +428,7 @@ static func _park_end(p: Node3D, st: int) -> void:
 	# The wall and its railing (sidewalk.gd gathers the pieces into a few meshes).
 	var iron := Color(0.14, 0.15, 0.17)
 	var at := PAVE - 0.3
-	var end := ROW_END - 0.9
+	var end := ROW_END - 0.06                 # (on to 504's end wall, as the park has its railing)
 	Walk.flat(p, n, far, end, at - 0.15, at + 0.15, 0.0, 0.32, Color(0.62, 0.6, 0.56))
 	for y: float in [0.42, 1.12]:
 		Walk.flat(p, n, far, end, at - 0.025, at + 0.025, y, y + 0.05, iron)
@@ -449,14 +451,42 @@ static func _park_end(p: Node3D, st: int) -> void:
 	_gb(p, n, -60.25, -60.15, -0.25, 4.75, 0.021, 0.024, line)
 	_gb(p, n, LEFT, -54.35, 7.05, 7.15, 0.015, 0.024, line)
 	Park.hoop(p, st, -53.5, 2.25, 270.0)
-	p.fence(st, false, -53.0, -3.5, 8.0, [], 3.6, "chain")
+	for run: Array in [[-4.0, 0.4], [1.8, 8.0]]:         # (two runs, not a gap: a gap is a way through, and no one walks in there from here)
+		p.fence(st, false, -53.0, run[0], run[1], [], 3.6, "chain")
 	p.fence(st, true, 8.0, LEFT, -53.0, [], 3.6, "chain")
-	p.fence(st, false, LEFT, -3.5, 8.0, [], 3.6, "chain")
+	p.fence(st, false, LEFT, -4.0, 8.0, [], 3.6, "chain")
+	p.fence(st, true, -4.0, LEFT, -53.0, [], 3.6, "chain")             # along the alley, the scoreboard on it (park.gd's)
+	Park.scoreboard(p, st, -60.6, -3.91, 0.0)
 	Park.floodlight(p, st, -55.0, 8.9, 180.0, 7.6, 2, 3.0, 4.5, false, Vector2(-59.0, 2.25))
-	Outdoor.tree(p, st, -50.5, 11.0, "a", 1.0, 40.0)
 	Outdoor.tree(p, st, -62.0, 11.6, "b", 1.15, 160.0)
 	Outdoor.tree(p, st, -73.5, 10.8, "d", 1.1, 260.0)
-	Outdoor.tree(p, st, -48.6, 2.5, "b", 1.2, 300.0)
+	# Between the court and 504 the park's corner lot (plans/park.gd's: its u, v
+	# are u + 93, v + 7.6 here; its bed is shorter here, the railing nearer): the
+	# opening in the court's fence with the chain-link over it, the path worn from
+	# it past the restroom block (shut, the lamp over one door on) to where the
+	# chain-link along the alley is cut open; the bed's kerb and low shrubs. No
+	# trees: the park keeps them out of the lot.
+	for y: float in [2.2, 3.57]:
+		Kit.cyl(n, 0.024, 1.4, p.pt(-53.0, 1.1, y), Color(0.55, 0.58, 0.6), Vector3(90, 0, 0), 8)
+	var header := MeshInstance3D.new()
+	var q := QuadMesh.new()
+	q.size = Vector2(1.36, 3.53 - 2.24)
+	header.mesh = q
+	header.material_override = Outdoor.chain_link()
+	header.position = p.pt(-53.0, 1.1, (2.24 + 3.53) * 0.5)
+	header.rotation_degrees = Vector3(0, 90, 0)
+	n.add_child(header)
+	Backs.restroom(p, st, -50.0, -2.1, 0.0, true)
+	var dirt := Outdoor.tex("out_dirt", 2.0, Color(0.36, 0.3, 0.22))
+	_gb(p, n, -52.4, -45.7, 0.65, 1.55, 0.0, 0.012, dirt)
+	_gb(p, n, -45.95, -44.95, -4.5, 1.3, 0.0, 0.016, dirt)            # (on through the cut into the alley)
+	_gb(p, n, -52.97, -44.49, 5.0, 5.12, -0.01, 0.13, Color(0.7, 0.69, 0.66))
+	for s: Array in [[-51.5, 7.8, "a", 1.0, 20.0], [-45.7, 6.7, "d", 0.9, 140.0], [-48.4, 10.6, "c", 0.85, 3.0]]:
+		Outdoor.shrub(p, st, s[0], s[1], s[2], s[3], s[4])
+	for run: Array in [[-53.0, -46.1], [-44.8, ROW_END]]:
+		p.fence(st, true, -4.0, run[0], run[1], [], 1.8, "chain")
+	Backs.torn(p, n, true, -4.0, -46.1, -44.8, 1.8, 1.0, true, true, 55.0)
+	Props.hydrant(p, st, -49.0, ROAD - 0.45)                          # (the park's, at the lot's front)
 
 
 # ---------------------------------------------------------------- kerbside
@@ -606,6 +636,18 @@ static func _context(p: Node3D, st: int) -> void:
 	while s < long - 1.0:
 		Street.sash(back, s, 1.2, 0.8, 1.4, Street.WHITE, Street.LIT if Props.rnd(k * 1.3) > 0.62 else null, Color(0.85, 0.75, 0.5))
 		Street.sash(back, s + 1.6, 4.3, 0.8, 1.4, Street.WHITE, Street.LIT if Props.rnd(k * 2.9) > 0.7 else null, Color(0.7, 0.8, 0.9))
+		s += 3.1
+		k += 1
+	# And on behind the park's court (the row across the park's alley,
+	# plans/park.gd's), a shade lower and 2 cm back, so the two never share a face.
+	var behind := Street.face(p, st, LEFT - 30.0, -7.52, 0.0)
+	var wide := ROW_END - 6.0 - (LEFT - 30.0)
+	Street.fb(behind, 0.0, wide, 0.0, 6.9, -10.0, 0.0, _brick(Color(0.6, 0.54, 0.58)))
+	Street.fb(behind, 0.0, wide, 6.9, 6.95, -10.0, -0.02, Street.TAR)
+	s = 1.2
+	while s < wide - 1.0:
+		Street.sash(behind, s, 1.2, 0.8, 1.4, Street.WHITE, Street.LIT if Props.rnd(k * 1.3) > 0.62 else null, Color(0.85, 0.75, 0.5))
+		Street.sash(behind, s + 1.6, 4.1, 0.8, 1.4, Street.WHITE, Street.LIT if Props.rnd(k * 2.9) > 0.7 else null, Color(0.7, 0.8, 0.9))
 		s += 3.1
 		k += 1
 	# Rose Hill's own back yards: a board fence along the alley, trees whose

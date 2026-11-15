@@ -27,7 +27,7 @@
 	"gang": {
 		"about": "At these places, each of `who` (a drawing's folder) carries a gun out of sight `odds` of the days, one of `weapons` (by weight). The dice are thrown for the place and the day, so a place is the same all day. A shot fired within `alert` of one of them, or passing within `pass` of him, or hitting him, and he draws and shoots back.",
 		"places": {
-			"park": {"who": ["tre", "dee", "chuy"], "odds": 0.45, "weapons": {"pistol": 3, "uzi": 1}},
+			"park": {"who": ["tre", "dee", "chuy", "rell"], "odds": 0.45, "weapons": {"pistol": 3, "uzi": 1}},
 			"alley": {"who": ["tre", "rell", "lil", "ronnie"], "odds": 0.55, "weapons": {"pistol": 3, "uzi": 2, "ak": 1}},
 			"club": {"who": ["dee", "snoozy", "chuy", "vic"], "odds": 0.3, "weapons": {"pistol": 3, "uzi": 1}},
 			"liquor": {"who": ["snoozy", "doc"], "odds": 0.2, "weapons": {"pistol": 1}},
