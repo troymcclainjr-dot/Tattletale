@@ -267,6 +267,7 @@ func _take_over(p: Person) -> void:
 		return
 	p.taken = true
 	var a := p.actor
+	a.use_reach = -1.0                    # frightened: nobody to talk to till he calms down
 	p.brain_was = p.member["brain"]
 	p.areas_was = a.areas.duplicate()
 	p.others_was = a.others.duplicate()
@@ -285,6 +286,7 @@ func _let_go(p: Person) -> void:
 	p.taken = false
 	var a := p.actor
 	p.member["brain"] = p.brain_was
+	a.use_reach = p.reach_was
 	a.areas = p.areas_was
 	a.others = p.others_was
 	a.sprinting = false

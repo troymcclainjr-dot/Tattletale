@@ -108,11 +108,14 @@ func _looks_metal(mi: MeshInstance3D) -> bool:
 	return d[1] <= 0.12
 
 
+## Shots go through it: faint (a ghost wall, a faded car) or a picture with holes in it (chain link).
 static func see_through(mi: MeshInstance3D) -> bool:
 	var mat := mi.get_active_material(0)
 	if mat is BaseMaterial3D:
 		var bm := mat as BaseMaterial3D
-		return bm.transparency != BaseMaterial3D.TRANSPARENCY_DISABLED and bm.albedo_color.a < 0.5
+		if bm.transparency == BaseMaterial3D.TRANSPARENCY_DISABLED:
+			return false
+		return bm.albedo_color.a < 0.5 or bm.albedo_texture != null      # faint, or a picture with holes (chain link)
 	return false
 
 

@@ -438,12 +438,37 @@ func _aim_on(target: Variant) -> void:
 	main._aim_at(main._camera.unproject_position(_point_of(target)))
 
 
-## Where to aim at a target: a point is itself; someone is aimed at in the middle of his chest.
+## Where to aim at a target: a point is itself; someone is aimed at in the middle of his chest, or higher (his
+## shoulders, his head) when the chest is hidden from the camera or from the lead (behind a counter, say).
 func _point_of(target: Variant) -> Vector3:
 	if target is Node3D:
 		var a: Node3D = target
+		for h: float in [0.6, 0.72, 0.84]:
+			var at := a.global_position + Vector3(0.0, a.height * h, 0.0)
+			if _clear(at):
+				return at
 		return a.global_position + Vector3(0.0, a.height * 0.6, 0.0)
 	return target
+
+
+## `at` can be shot at: on the screen, with nothing solid between it and the camera, or between it and where his
+## muzzle will be when he points at it (as far from his chest and as high as it is now, turned that way).
+func _clear(at: Vector3) -> bool:
+	var cam: Camera3D = main._camera
+	if not cam.is_position_in_frustum(at):
+		return false
+	var lead: Node3D = main._actor
+	var w := world_for(main._building)
+	var chest := lead.global_position + Vector3(0.0, lead.height * 0.62, 0.0)
+	var from := chest
+	var gp: Dictionary = lead.gun_points()
+	if gp.has("muzzle"):
+		var m: Vector3 = gp["muzzle"]
+		var flat := Vector3(at.x - chest.x, 0.0, at.z - chest.z).normalized()
+		from = Vector3(chest.x, m.y, chest.z) + flat * Vector2(m.x - chest.x, m.z - chest.z).length()
+		if bool(w.trace(chest, from)["hit"]):
+			return false
+	return not bool(w.trace(cam.global_position, at)["hit"]) and not bool(w.trace(from, at)["hit"])
 
 
 ## Something to aim at: someone (by name, or "someone": the nearest), "window" (a point on the nearest pane in
@@ -457,6 +482,7 @@ func _target_of(who: String) -> Variant:
 		var near := INF
 		var cam: Camera3D = main._camera
 		var w := world_for(main._building)
+		var chest := lead.global_position + Vector3(0.0, lead.height * 0.62, 0.0)
 		for e: RefCounted in w.glass():
 			var mi: MeshInstance3D = e.mi
 			if e.thin != (who != "car") or mi.has_meta("broken") or not mi.is_visible_in_tree():
@@ -467,8 +493,8 @@ func _target_of(who: String) -> Variant:
 				var look: Dictionary = w.trace(cam.global_position, c + (c - cam.global_position).normalized() * 0.05)
 				var panes: Array = look["panes"]
 				var seen: bool = (look["block"] and look["mi"] == mi) if who == "car" else (not panes.is_empty() and panes[0]["entry"].mi == mi)
-				if not seen:
-					continue
+				if not seen or not _reaches(w, chest, c, mi, who == "car"):
+					continue          # not seen, or seen but not to be shot from where he stands (bars, a frame)
 				var away := c.distance_to(lead.global_position)
 				if away < near:
 					near = away
@@ -489,6 +515,71 @@ func _target_of(who: String) -> Variant:
 				gap = d
 				nearest = a
 	return nearest
+
+
+## A shot from `from` at `c`, a point on `mi`, gets to `mi` before anything solid (or, for a car's glass, before
+## anything at all).
+static func _reaches(w: RefCounted, from: Vector3, c: Vector3, mi: MeshInstance3D, block: bool) -> bool:
+	var look: Dictionary = w.trace(from, c + (c - from).normalized() * 0.05)
+	var panes: Array = look["panes"]
+	if block:
+		return look["hit"] and look["block"] and look["mi"] == mi and (panes.is_empty() or float(panes[0]["t"]) > float(look["t"]))
+	return not panes.is_empty() and panes[0]["entry"].mi == mi and (not look["hit"] or float(look["t"]) > float(panes[0]["t"]))
+
+
+## Stand him 2 or 3 m from `p`, in the same room (on the camera's side of him first), until someone here (or with
+## `only`, `p` himself) can be shot at; who, or null.
+func _stand_near(p: RefCounted, only := false) -> RefCounted:
+	var lead: Node3D = main._actor
+	var at: Vector3 = p.actor.global_position
+	var back := main._camera.global_transform.basis.z as Vector3        # from the scene towards the camera
+	var to_cam := Vector2(back.x, back.z).normalized()
+	var b: Node3D = main._building
+	var room: int = b.room_at_pos(at, 0)
+	lead.areas = b.walk_areas()
+	var spots: Array = []
+	for i in 12:
+		for r: float in [2.0, 3.0]:
+			var way := Vector2.from_angle(TAU * float(i) / 12.0)
+			var s := Vector2(at.x, at.z) + way * r
+			if lead.can_stand(s) and b.room_at_pos(Vector3(s.x, at.y, s.y), 0) == room:      # in his room, not through a window
+				spots.append([way.dot(to_cam) - r * 0.1, s])
+	spots.sort_custom(func(x: Array, y: Array) -> bool: return float(x[0]) > float(y[0]))
+	for spot: Array in spots.slice(0, 6):
+		var s: Vector2 = spot[1]
+		main._teleport(Vector3(s.x, at.y, s.y), true)
+		for k in 6:
+			await get_tree().process_frame
+		var seen: RefCounted = await _can_shoot((p if _clear(_point_of(p.actor)) else null) if only else _in_sight())
+		if seen != null:
+			return seen
+	return null
+
+
+## He points at `p` (if anyone): `p` if nothing solid is then between his muzzle and the point he aims at, else null.
+func _can_shoot(p: RefCounted) -> RefCounted:
+	if p == null:
+		return null
+	await _aim_on(p.actor)
+	var gp: Dictionary = main._actor.gun_points()
+	if gp.is_empty():
+		return null
+	var hit: Dictionary = world_for(main._building).trace(gp["muzzle"], _point_of(p.actor))
+	return null if hit["hit"] else p
+
+
+## The nearest living person here who can be shot at from where he stands (see _clear), or null.
+func _in_sight() -> RefCounted:
+	var lead: Node3D = main._actor
+	var best: RefCounted = null
+	var gap := INF
+	for p: RefCounted in people.living_here():
+		var a: Node3D = p.actor
+		var d := a.global_position.distance_to(lead.global_position)
+		if d < gap and _clear(_point_of(a)):
+			gap = d
+			best = p
+	return best
 
 
 ## Points on a pane to aim at: its middle, then the middles of its quarters (a bar can cross the middle).
@@ -554,21 +645,37 @@ func _check() -> void:
 		print("[shot] check: window %s: %s (the shot: %s)" % [pane.name, "broken" if broken else "NOT BROKEN", _said(last)])
 		if not broken:
 			problems += 1
-	var victim: RefCounted = null
-	var gap := INF
-	for p: RefCounted in people.living_here():
-		var d: float = p.actor.global_position.distance_to(lead.global_position)
-		if d < gap:
-			gap = d
-			victim = p
+	var living: Array = people.living_here()
+	var victim: RefCounted = await _can_shoot(_in_sight())
+	if victim == null and not living.is_empty():          # nobody in a clear line: into the nearest one's room
+		var near: RefCounted = living[0]
+		for p: RefCounted in living:
+			if p.actor.global_position.distance_to(lead.global_position) < near.actor.global_position.distance_to(lead.global_position):
+				near = p
+		var b: Node3D = main._building
+		var room_name := String(b.rooms[b.room_at_pos(near.actor.global_position, 0)]["name"])
+		main._teleport(main._spot_in_room(room_name), true)
+		for i in 10:
+			await get_tree().process_frame
+		victim = await _can_shoot(_in_sight())
+		if victim == null:                                  # still nobody: near him, on the camera's side first
+			victim = await _stand_near(near)
+		print("[shot] check: nobody in a clear line from the street; he is put in %s" % room_name)
 	if victim == null:
-		print("[shot] check: nobody here to shoot")
+		print("[shot] check: nobody here to shoot" if living.is_empty() else "[shot] check: NOBODY IN A CLEAR LINE to shoot")
+		if not living.is_empty():
+			problems += 1
 	else:
 		var a: Node3D = victim.actor
 		var called: String = a.display_name if a.display_name != "" else String(a.name)
 		await _aim_on(a)
 		var shots := 0
+		var moved := 0
 		while victim.state != "dead" and shots < 14:
+			if not _clear(_point_of(a)) and moved < 2:      # he has run or cowered out of the line: go round to him
+				moved += 1
+				await _stand_near(victim, true)
+				await _aim_on(a)
 			if int(state.loaded[w]) == 0:
 				reload()
 				while _reload_left >= 0.0:

@@ -1478,10 +1478,10 @@ static func fridge_case(p: Node3D, b: int, u: float, v: float, yaw := 0.0, n := 
 ## A plexiglass screen standing on a counter: `w` long, from y0 up to y1, at z
 ## in the counter's group, with a slot in the middle to pass things through.
 static func screen(g: Node3D, w: float, z: float, y0 := 1.05, y1 := 2.2, slot := 0.5) -> void:
-	Kit.box(g, Vector3(w, y1 - y0 - 0.26, 0.03), Vector3(0, (y0 + 0.26 + y1) * 0.5, z), PLEXI)
+	Kit.pane(Kit.box(g, Vector3(w, y1 - y0 - 0.26, 0.03), Vector3(0, (y0 + 0.26 + y1) * 0.5, z), PLEXI))      # combat: a shot breaks it
 	var side := (w - slot) * 0.5
 	for x: float in [-(slot + side) * 0.5, (slot + side) * 0.5]:
-		Kit.box(g, Vector3(side, 0.26, 0.03), Vector3(x, y0 + 0.13, z), PLEXI)
+		Kit.pane(Kit.box(g, Vector3(side, 0.26, 0.03), Vector3(x, y0 + 0.13, z), PLEXI))
 	var n := maxi(int(w / 1.2), 1)
 	for i in n + 1:
 		var x := -w * 0.5 + w * float(i) / float(n)
