@@ -368,7 +368,14 @@ static func _cells(p: Node3D, b: int) -> void:
 	Kit.cyl(p.node_of(b), 0.09, 0.006, p.pt(10.6, 1.4, 0.003), Color(0.2, 0.2, 0.22), Vector3.ZERO, 10)        # the drain
 	Props.desk(p, b, 10.9, 4.45, 0.0, Props.OFFICE.darkened(0.2), 1, false, 1.4, 0.6)
 	Props.chair(p, b, 9.75, 4.45, 90.0)
-	Props.board(p, b, 0.08, 3.8, 90.0, 1.2, "notices")
+	Props.board(p, b, 0.08, 4.3, 90.0, 0.8, "notices", 1.0, 1.45)        # (narrower and lower than it was: beside the tunnel door, under the lamp)
+	# The steel door in the left wall, down to the prisoner tunnel under the
+	# street (plans/tunnel.gd: E goes down there; its POLICE STATION door comes
+	# back up here). Civic worker, 15 Nov; placeholder: the label.
+	var down := Kit.group(p.node_of(b), p.pt(0.084, 3.2), Vector3(0, 90, 0), "TunnelDoor")
+	Service.steel_door(down)
+	down.scale = Vector3(0.86, 1.0, 1.0)          # (0.95 wide: between the bars and the notices)
+	p.use_point(b, "PRISONER TUNNEL", 0.62, 3.2, "goto:tunnel", 1.0, 2.0)
 	p.person(b, "cop", 6.0, 3.9, {"face": "bored"})            # the turnkey
 	p.person(b, "cop", 15.0, 4.0)                             # waiting on the van (by its nose: out of the line from the camera to the back door)
 	# The sally port: the roll-up door is up and the prisoner van stands half

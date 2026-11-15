@@ -1,0 +1,14 @@
+{
+	"about": "The officer at the guard post's window halfway along the prisoner tunnel (plans/tunnel.gd). Placeholder lines written on 2026-11-15 by the civic worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "What is this place?", "face": "suspicious", "next": "place"},
+			{"say": "Can I go through?", "face": "smug", "next": "through"},
+			{"say": "Quiet down here?", "face": "happy", "next": "quiet"}
+		]},
+		"place": {"speaker": "npc", "face": "neutral", "line": "The walk. Cells to court and back, single file, on the line.", "next": ""},
+		"through": {"speaker": "npc", "face": "bored", "line": "Gates stay shut. You open one, you shut it behind you.", "next": ""},
+		"quiet": {"speaker": "npc", "face": "bored", "line": "Till the pipes start banging. Then everybody jumps.", "next": ""}
+	}
+}
