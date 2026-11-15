@@ -23,6 +23,8 @@ extends RefCounted
 ##   street      the pavement in front (u -1.5..33.5)
 ##   PLAYGROUND  u 0..10.6, v 0..8.6, inside its railing (gate on the front)
 ##   SQUARE      u 0..32, v 0..22, the rest; in through the front gate
+##   SIDE STREET the pavement up the right-hand side, in through a gap in the
+##               railing (plans/park2_corners.gd: the civic worker's corners)
 ## He arrives on the pavement outside the gate.
 ## Numbers are metres on the plan (see place.gd): u from the left railing, v
 ## from the back railing; the front railing is at v = 22.
@@ -36,6 +38,7 @@ const Park := preload("res://scripts/props_park2.gd")
 const Houses := preload("res://scripts/houses.gd")
 const Outdoor := preload("res://scripts/outdoor.gd")
 const CourtPlan := preload("res://scripts/plans/court.gd")      # its zebra crossing, painted at this end too
+const Corners := preload("res://scripts/plans/park2_corners.gd")  # the convenience, the shed, the gap, behind the bandstand
 
 const CU := 16.0          # the middle of the square: the bandstand
 const CV := 10.8
@@ -62,6 +65,7 @@ static func build(p: Node3D) -> void:
 	_streets(p, st)
 	_backdrop(p, st)
 	_sky(p, st)
+	Corners.build(p, st)
 
 
 ## The evening over the square: the sky's cool light from above, the last warm
@@ -127,6 +131,8 @@ static func _railings(p: Node3D, st: int) -> void:
 		Park.pier(p, st, u, 9.35)
 		Park.pier(p, st, u, 12.25)
 		for run: Array in [[0.3, 9.05], [12.55, 21.7]]:
+			if u == 32.0 and run[0] < 1.0:
+				continue          # (this one has a gap broken in it: plans/park2_corners.gd builds it)
 			p.fence(st, false, u, run[0], run[1], [], 1.05, "rail", iron)
 			Park.plinth(p, st, false, u, run[0], run[1])
 		Park.shut_gates(p, st, false, u, 9.71, 11.89)
@@ -134,7 +140,8 @@ static func _railings(p: Node3D, st: int) -> void:
 	Park.hedge(p, st, 0.45, 21.1, 13.65, 21.68, 0.8)
 	Park.hedge(p, st, 18.35, 21.1, 31.55, 21.68, 0.8)
 	Park.hedge(p, st, 30.95, 12.75, 31.55, 21.0, 0.8)
-	Park.hedge(p, st, 30.95, 0.55, 31.55, 8.85, 0.8)
+	Park.hedge(p, st, 30.95, 0.55, 31.55, 4.7, 0.8)          # (trodden through at the gap in the railing: plans/park2_corners.gd)
+	Park.hedge(p, st, 30.95, 6.7, 31.55, 8.85, 0.8)
 
 
 ## The bandstand in its brick ring, the lamps where the paths come in, the

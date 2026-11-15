@@ -1,0 +1,14 @@
+{
+	"about": "LIL, by the gap broken in Linden Square's right-hand railing (plans/park2_corners.gd). Placeholder lines written on 2026-11-15 by the civic worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "Who broke the railing?", "face": "neutral", "next": "broke"},
+			{"say": "Where's that go?", "face": "neutral", "next": "where"},
+			{"say": "You keeping watch?", "face": "smug", "next": "watch"}
+		]},
+		"broke": {"speaker": "npc", "face": "bored", "line": "A truck backed into it in the spring. City never came.", "next": ""},
+		"where": {"speaker": "npc", "face": "neutral", "line": "Side street. Quicker than the gate, and nobody sees you go.", "next": ""},
+		"watch": {"speaker": "npc", "face": "focused", "line": "Somebody has to. Keep walking.", "next": ""}
+	}
+}
