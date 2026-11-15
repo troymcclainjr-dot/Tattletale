@@ -204,7 +204,7 @@
 		"or": "OR",
 		"alarm": "WEE-OO",
 		"siren": "WOOP WOOP",
-		"take_keys": "W A S D  MOVES     LEFT RIGHT  STAY IN SHOT     ESC  WALK OFF SET",
+		"take_keys": "W A S D  MOVES     ARROWS  STAY IN SHOT     ESC  WALK OFF SET",
 		"walked_off": "WALKED OFF THE SET. NOTHING SPENT.",
 		"premiere": "WORLD PREMIERE",
 		"looks": "LOOKS",
