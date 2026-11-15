@@ -356,7 +356,7 @@
     "front": {
      "art": "wardrobe/hoodie_front.png",
      "arms": "wardrobe/hoodie_front_arms.png",
-     "arm_width": 139.1
+     "arm_width": 127.6
     },
     "side": {
      "art": "wardrobe/hoodie_side.png",
@@ -369,7 +369,7 @@
     "back": {
      "art": "wardrobe/hoodie_back.png",
      "arms": "wardrobe/hoodie_back_arms.png",
-     "arm_width": 147.6
+     "arm_width": 135.6
     }
    }
   },
@@ -407,7 +407,7 @@
     "front": {
      "art": "wardrobe/puffer_front.png",
      "arms": "wardrobe/puffer_front_arms.png",
-     "arm_width": 170.7
+     "arm_width": 149.9
     },
     "side": {
      "art": "wardrobe/puffer_side.png",
@@ -420,7 +420,7 @@
     "back": {
      "art": "wardrobe/puffer_back.png",
      "arms": "wardrobe/puffer_back_arms.png",
-     "arm_width": 178.2
+     "arm_width": 158.9
     }
    }
   },
@@ -458,7 +458,7 @@
     "front": {
      "art": "wardrobe/flannel_front.png",
      "arms": "wardrobe/flannel_front_arms.png",
-     "arm_width": 134.0
+     "arm_width": 122.9
     },
     "side": {
      "art": "wardrobe/flannel_side.png",
@@ -471,7 +471,7 @@
     "back": {
      "art": "wardrobe/flannel_back.png",
      "arms": "wardrobe/flannel_back_arms.png",
-     "arm_width": 141.2
+     "arm_width": 131.1
     }
    }
   },
@@ -514,7 +514,7 @@
     "front": {
      "art": "wardrobe/tee_front.png",
      "arms": "wardrobe/tee_front_arms.png",
-     "arm_width": 93.0
+     "arm_width": 78.2
     },
     "side": {
      "art": "wardrobe/tee_side.png",
@@ -527,7 +527,7 @@
     "back": {
      "art": "wardrobe/tee_back.png",
      "arms": "wardrobe/tee_back_arms.png",
-     "arm_width": 97.2
+     "arm_width": 80.1
     }
    }
   },

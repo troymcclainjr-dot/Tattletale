@@ -220,7 +220,7 @@
     "front": {
      "art": "wardrobe/hoodie_front.png",
      "arms": "wardrobe/hoodie_front_arms.png",
-     "arm_width": 271.1
+     "arm_width": 203.8
     }
    }
   },
@@ -258,7 +258,7 @@
     "front": {
      "art": "wardrobe/puffer_front.png",
      "arms": "wardrobe/puffer_front_arms.png",
-     "arm_width": 284.9
+     "arm_width": 230.0
     }
    }
   },
@@ -296,7 +296,7 @@
     "front": {
      "art": "wardrobe/flannel_front.png",
      "arms": "wardrobe/flannel_front_arms.png",
-     "arm_width": 270.2
+     "arm_width": 199.3
     }
    }
   },
@@ -339,7 +339,7 @@
     "front": {
      "art": "wardrobe/tee_front.png",
      "arms": "wardrobe/tee_front_arms.png",
-     "arm_width": 138.1
+     "arm_width": 141.0
     }
    }
   },
@@ -654,77 +654,6 @@
    "views": {
     "front": {
      "art": "wardrobe/chuy_sneakers_front.png"
-    }
-   }
-  },
-  "doc_jacket": {
-   "slot": "jacket",
-   "name": "ZIP JACKET",
-   "colour": [
-    48,
-    46,
-    48
-   ],
-   "colours": [
-    [
-     48,
-     46,
-     48
-    ],
-    [
-     196,
-     40,
-     40
-    ],
-    [
-     40,
-     70,
-     150
-    ],
-    [
-     110,
-     30,
-     30
-    ]
-   ],
-   "views": {
-    "front": {
-     "art": "wardrobe/doc_jacket_front.png",
-     "arms": "wardrobe/doc_jacket_front_arms.png",
-     "arm_width": 262.0
-    }
-   }
-  },
-  "doc_tee": {
-   "slot": "shirt",
-   "name": "CREW TEE",
-   "colour": [
-    253,
-    253,
-    253
-   ],
-   "colours": [
-    [
-     253,
-     253,
-     253
-    ],
-    [
-     40,
-     40,
-     44
-    ],
-    [
-     150,
-     150,
-     156
-    ]
-   ],
-   "views": {
-    "front": {
-     "art": "wardrobe/doc_tee_front.png",
-     "arms": "wardrobe/doc_tee_front_arms.png",
-     "arm_width": 140.0
     }
    }
   },

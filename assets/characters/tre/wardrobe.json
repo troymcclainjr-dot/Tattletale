@@ -296,7 +296,7 @@
     "front": {
      "art": "wardrobe/hoodie_front.png",
      "arms": "wardrobe/hoodie_front_arms.png",
-     "arm_width": 126.4
+     "arm_width": 112.8
     }
    }
   },
@@ -334,7 +334,7 @@
     "front": {
      "art": "wardrobe/puffer_front.png",
      "arms": "wardrobe/puffer_front_arms.png",
-     "arm_width": 142.6
+     "arm_width": 142.8
     }
    }
   },
@@ -372,7 +372,7 @@
     "front": {
      "art": "wardrobe/flannel_front.png",
      "arms": "wardrobe/flannel_front_arms.png",
-     "arm_width": 126.4
+     "arm_width": 108.2
     }
    }
   },
@@ -415,7 +415,7 @@
     "front": {
      "art": "wardrobe/tee_front.png",
      "arms": "wardrobe/tee_front_arms.png",
-     "arm_width": 75.5
+     "arm_width": 73.2
     }
    }
   },
@@ -635,42 +635,6 @@
     }
    }
   },
-  "bandana": {
-   "slot": "hat",
-   "name": "BANDANA",
-   "colour": [
-    0,
-    59,
-    254
-   ],
-   "colours": [
-    [
-     0,
-     59,
-     254
-    ],
-    [
-     196,
-     40,
-     40
-    ],
-    [
-     40,
-     40,
-     44
-    ],
-    [
-     230,
-     230,
-     226
-    ]
-   ],
-   "views": {
-    "front": {
-     "art": "wardrobe/bandana_front.png"
-    }
-   }
-  },
   "boots": {
    "slot": "shoes",
    "name": "BOOTS",
@@ -738,77 +702,6 @@
     }
    }
   },
-  "chuy_flannel": {
-   "slot": "jacket",
-   "name": "CHECKED OVERSHIRT",
-   "colour": [
-    245,
-    244,
-    244
-   ],
-   "colours": [
-    [
-     245,
-     244,
-     244
-    ],
-    [
-     196,
-     40,
-     40
-    ],
-    [
-     60,
-     110,
-     60
-    ],
-    [
-     70,
-     110,
-     170
-    ]
-   ],
-   "views": {
-    "front": {
-     "art": "wardrobe/chuy_flannel_front.png",
-     "arms": "wardrobe/chuy_flannel_front_arms.png",
-     "arm_width": 133.2
-    }
-   }
-  },
-  "chuy_tee": {
-   "slot": "shirt",
-   "name": "PLAIN TEE",
-   "colour": [
-    245,
-    244,
-    244
-   ],
-   "colours": [
-    [
-     245,
-     244,
-     244
-    ],
-    [
-     40,
-     40,
-     44
-    ],
-    [
-     150,
-     150,
-     156
-    ]
-   ],
-   "views": {
-    "front": {
-     "art": "wardrobe/chuy_tee_front.png",
-     "arms": "wardrobe/chuy_tee_front_arms.png",
-     "arm_width": 75.5
-    }
-   }
-  },
   "chuy_sneakers": {
    "slot": "shoes",
    "name": "SKATE SHOES",
@@ -840,42 +733,6 @@
     }
    }
   },
-  "doc_cap": {
-   "slot": "hat",
-   "name": "ROUND CAP",
-   "colour": [
-    31,
-    30,
-    30
-   ],
-   "colours": [
-    [
-     31,
-     30,
-     30
-    ],
-    [
-     196,
-     40,
-     40
-    ],
-    [
-     40,
-     70,
-     150
-    ],
-    [
-     230,
-     230,
-     226
-    ]
-   ],
-   "views": {
-    "front": {
-     "art": "wardrobe/doc_cap_front.png"
-    }
-   }
-  },
   "doc_sneakers": {
    "slot": "shoes",
    "name": "LOW SNEAKERS",
@@ -904,77 +761,6 @@
    "views": {
     "front": {
      "art": "wardrobe/doc_sneakers_front.png"
-    }
-   }
-  },
-  "huff_jacket": {
-   "slot": "jacket",
-   "name": "SUIT JACKET",
-   "colour": [
-    200,
-    199,
-    199
-   ],
-   "colours": [
-    [
-     200,
-     199,
-     199
-    ],
-    [
-     40,
-     40,
-     44
-    ],
-    [
-     110,
-     30,
-     30
-    ],
-    [
-     214,
-     160,
-     40
-    ]
-   ],
-   "views": {
-    "front": {
-     "art": "wardrobe/huff_jacket_front.png",
-     "arms": "wardrobe/huff_jacket_front_arms.png",
-     "arm_width": 117.0
-    }
-   }
-  },
-  "huff_shirt": {
-   "slot": "shirt",
-   "name": "UNDERSHIRT",
-   "colour": [
-    253,
-    253,
-    253
-   ],
-   "colours": [
-    [
-     253,
-     253,
-     253
-    ],
-    [
-     40,
-     40,
-     44
-    ],
-    [
-     150,
-     150,
-     156
-    ]
-   ],
-   "views": {
-    "front": {
-     "art": "wardrobe/huff_shirt_front.png",
-     "arms": "wardrobe/huff_shirt_front_arms.png",
-     "arm_width": 75.0
     }
    }
   },

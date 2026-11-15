@@ -329,7 +329,7 @@
     "front": {
      "art": "wardrobe/puffer_front.png",
      "arms": "wardrobe/puffer_front_arms.png",
-     "arm_width": 154.5
+     "arm_width": 154.7
     }
    }
   },
@@ -702,42 +702,6 @@
     }
    }
   },
-  "tre_beanie": {
-   "slot": "hat",
-   "name": "KNIT BEANIE",
-   "colour": [
-    28,
-    27,
-    27
-   ],
-   "colours": [
-    [
-     28,
-     27,
-     27
-    ],
-    [
-     196,
-     40,
-     40
-    ],
-    [
-     40,
-     70,
-     150
-    ],
-    [
-     120,
-     120,
-     124
-    ]
-   ],
-   "views": {
-    "front": {
-     "art": "wardrobe/tre_beanie_front.png"
-    }
-   }
-  },
   "tre_boots": {
    "slot": "shoes",
    "name": "WORK BOOTS",
@@ -797,77 +761,6 @@
    "views": {
     "front": {
      "art": "wardrobe/dee_hightops_front.png"
-    }
-   }
-  },
-  "chuy_flannel": {
-   "slot": "jacket",
-   "name": "CHECKED OVERSHIRT",
-   "colour": [
-    245,
-    244,
-    244
-   ],
-   "colours": [
-    [
-     245,
-     244,
-     244
-    ],
-    [
-     196,
-     40,
-     40
-    ],
-    [
-     60,
-     110,
-     60
-    ],
-    [
-     70,
-     110,
-     170
-    ]
-   ],
-   "views": {
-    "front": {
-     "art": "wardrobe/chuy_flannel_front.png",
-     "arms": "wardrobe/chuy_flannel_front_arms.png",
-     "arm_width": 150.0
-    }
-   }
-  },
-  "chuy_tee": {
-   "slot": "shirt",
-   "name": "PLAIN TEE",
-   "colour": [
-    245,
-    244,
-    244
-   ],
-   "colours": [
-    [
-     245,
-     244,
-     244
-    ],
-    [
-     40,
-     40,
-     44
-    ],
-    [
-     150,
-     150,
-     156
-    ]
-   ],
-   "views": {
-    "front": {
-     "art": "wardrobe/chuy_tee_front.png",
-     "arms": "wardrobe/chuy_tee_front_arms.png",
-     "arm_width": 101.8
     }
    }
   },

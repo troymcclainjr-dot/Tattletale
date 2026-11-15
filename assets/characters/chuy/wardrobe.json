@@ -292,7 +292,7 @@
     "front": {
      "art": "wardrobe/puffer_front.png",
      "arms": "wardrobe/puffer_front_arms.png",
-     "arm_width": 146.0
+     "arm_width": 146.3
     }
    }
   },
@@ -593,42 +593,6 @@
     }
    }
   },
-  "bandana": {
-   "slot": "hat",
-   "name": "BANDANA",
-   "colour": [
-    0,
-    59,
-    254
-   ],
-   "colours": [
-    [
-     0,
-     59,
-     254
-    ],
-    [
-     196,
-     40,
-     40
-    ],
-    [
-     40,
-     40,
-     44
-    ],
-    [
-     230,
-     230,
-     226
-    ]
-   ],
-   "views": {
-    "front": {
-     "art": "wardrobe/bandana_front.png"
-    }
-   }
-  },
   "boots": {
    "slot": "shoes",
    "name": "BOOTS",
@@ -662,118 +626,6 @@
    "views": {
     "front": {
      "art": "wardrobe/boots_front.png"
-    }
-   }
-  },
-  "tre_beanie": {
-   "slot": "hat",
-   "name": "KNIT BEANIE",
-   "colour": [
-    28,
-    27,
-    27
-   ],
-   "colours": [
-    [
-     28,
-     27,
-     27
-    ],
-    [
-     196,
-     40,
-     40
-    ],
-    [
-     40,
-     70,
-     150
-    ],
-    [
-     120,
-     120,
-     124
-    ]
-   ],
-   "views": {
-    "front": {
-     "art": "wardrobe/tre_beanie_front.png"
-    }
-   }
-  },
-  "tre_puffer": {
-   "slot": "jacket",
-   "name": "SHORT PUFFER",
-   "colour": [
-    253,
-    205,
-    3
-   ],
-   "colours": [
-    [
-     253,
-     205,
-     3
-    ],
-    [
-     196,
-     40,
-     40
-    ],
-    [
-     40,
-     40,
-     44
-    ],
-    [
-     60,
-     120,
-     70
-    ]
-   ],
-   "views": {
-    "front": {
-     "art": "wardrobe/tre_puffer_front.png",
-     "arms": "wardrobe/tre_puffer_front_arms.png",
-     "arm_width": 150.0
-    }
-   }
-  },
-  "tre_hoodie": {
-   "slot": "shirt",
-   "name": "PULLOVER HOODIE",
-   "colour": [
-    160,
-    158,
-    158
-   ],
-   "colours": [
-    [
-     160,
-     158,
-     158
-    ],
-    [
-     40,
-     40,
-     44
-    ],
-    [
-     196,
-     40,
-     40
-    ],
-    [
-     40,
-     70,
-     150
-    ]
-   ],
-   "views": {
-    "front": {
-     "art": "wardrobe/tre_hoodie_front.png",
-     "arms": "wardrobe/tre_hoodie_front_arms.png",
-     "arm_width": 112.8
     }
    }
   },
@@ -867,113 +719,6 @@
    "views": {
     "front": {
      "art": "wardrobe/snoozy_sneakers_front.png"
-    }
-   }
-  },
-  "doc_cap": {
-   "slot": "hat",
-   "name": "ROUND CAP",
-   "colour": [
-    31,
-    30,
-    30
-   ],
-   "colours": [
-    [
-     31,
-     30,
-     30
-    ],
-    [
-     196,
-     40,
-     40
-    ],
-    [
-     40,
-     70,
-     150
-    ],
-    [
-     230,
-     230,
-     226
-    ]
-   ],
-   "views": {
-    "front": {
-     "art": "wardrobe/doc_cap_front.png"
-    }
-   }
-  },
-  "doc_jacket": {
-   "slot": "jacket",
-   "name": "ZIP JACKET",
-   "colour": [
-    48,
-    46,
-    48
-   ],
-   "colours": [
-    [
-     48,
-     46,
-     48
-    ],
-    [
-     196,
-     40,
-     40
-    ],
-    [
-     40,
-     70,
-     150
-    ],
-    [
-     110,
-     30,
-     30
-    ]
-   ],
-   "views": {
-    "front": {
-     "art": "wardrobe/doc_jacket_front.png",
-     "arms": "wardrobe/doc_jacket_front_arms.png",
-     "arm_width": 168.6
-    }
-   }
-  },
-  "doc_tee": {
-   "slot": "shirt",
-   "name": "CREW TEE",
-   "colour": [
-    253,
-    253,
-    253
-   ],
-   "colours": [
-    [
-     253,
-     253,
-     253
-    ],
-    [
-     40,
-     40,
-     44
-    ],
-    [
-     150,
-     150,
-     156
-    ]
-   ],
-   "views": {
-    "front": {
-     "art": "wardrobe/doc_tee_front.png",
-     "arms": "wardrobe/doc_tee_front_arms.png",
-     "arm_width": 76.0
     }
    }
   },

@@ -593,42 +593,6 @@
     }
    }
   },
-  "bandana": {
-   "slot": "hat",
-   "name": "BANDANA",
-   "colour": [
-    0,
-    59,
-    254
-   ],
-   "colours": [
-    [
-     0,
-     59,
-     254
-    ],
-    [
-     196,
-     40,
-     40
-    ],
-    [
-     40,
-     40,
-     44
-    ],
-    [
-     230,
-     230,
-     226
-    ]
-   ],
-   "views": {
-    "front": {
-     "art": "wardrobe/bandana_front.png"
-    }
-   }
-  },
   "baggy": {
    "slot": "trousers",
    "name": "BAGGY JEANS",
@@ -701,42 +665,6 @@
     }
    }
   },
-  "tre_beanie": {
-   "slot": "hat",
-   "name": "KNIT BEANIE",
-   "colour": [
-    28,
-    27,
-    27
-   ],
-   "colours": [
-    [
-     28,
-     27,
-     27
-    ],
-    [
-     196,
-     40,
-     40
-    ],
-    [
-     40,
-     70,
-     150
-    ],
-    [
-     120,
-     120,
-     124
-    ]
-   ],
-   "views": {
-    "front": {
-     "art": "wardrobe/tre_beanie_front.png"
-    }
-   }
-  },
   "tre_puffer": {
    "slot": "jacket",
    "name": "SHORT PUFFER",
@@ -772,44 +700,6 @@
      "art": "wardrobe/tre_puffer_front.png",
      "arms": "wardrobe/tre_puffer_front_arms.png",
      "arm_width": 150.0
-    }
-   }
-  },
-  "tre_hoodie": {
-   "slot": "shirt",
-   "name": "PULLOVER HOODIE",
-   "colour": [
-    160,
-    158,
-    158
-   ],
-   "colours": [
-    [
-     160,
-     158,
-     158
-    ],
-    [
-     40,
-     40,
-     44
-    ],
-    [
-     196,
-     40,
-     40
-    ],
-    [
-     40,
-     70,
-     150
-    ]
-   ],
-   "views": {
-    "front": {
-     "art": "wardrobe/tre_hoodie_front.png",
-     "arms": "wardrobe/tre_hoodie_front_arms.png",
-     "arm_width": 112.8
     }
    }
   },
@@ -965,42 +855,6 @@
    "views": {
     "front": {
      "art": "wardrobe/chuy_sneakers_front.png"
-    }
-   }
-  },
-  "doc_cap": {
-   "slot": "hat",
-   "name": "ROUND CAP",
-   "colour": [
-    31,
-    30,
-    30
-   ],
-   "colours": [
-    [
-     31,
-     30,
-     30
-    ],
-    [
-     196,
-     40,
-     40
-    ],
-    [
-     40,
-     70,
-     150
-    ],
-    [
-     230,
-     230,
-     226
-    ]
-   ],
-   "views": {
-    "front": {
-     "art": "wardrobe/doc_cap_front.png"
     }
    }
   },

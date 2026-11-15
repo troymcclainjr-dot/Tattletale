@@ -157,8 +157,14 @@ vec4 leg(vec2 uv, float side, float lift, float swing, vec2 dx, vec2 dy) {
 	if (src.x < -1.0) {
 		return vec4(0.0);
 	}
-	vec4 c = textureGrad(art, src, dx, dy);
-	c.rgb = dress(c.rgb, src, regions);
+	vec4 c;
+	if (has_under && arms_drawn_here) {      // his legs come from the picture without his arms: a hand that hung over one stays out of it
+		c = textureGrad(under, src, dx, dy);
+		c.rgb = dress(c.rgb, src, under_regions);
+	} else {
+		c = textureGrad(art, src, dx, dy);
+		c.rgb = dress(c.rgb, src, regions);
+	}
 	if (leg_ink > 0.0 && c.a > 0.5) {
 		// Close to the other leg's side of the cut: this is the cut edge.
 		bool other = textureLod(legs, src - vec2(side * leg_ink / aspect, 0.0), 0.0).r > 0.5;
@@ -287,6 +293,11 @@ void fragment() {
 		}
 		if (has_limbs) {
 			vec4 rest = inside ? textureLod(limbs, uv, 0.0) : vec4(0.0);
+			if (has_under && arms_drawn_here && inside && uv.y <= hip_v && max(rest.r, rest.g) <= 0.5) {
+				// Off the arms, the picture without them: seen small, a hair of an arm's outline lies outside
+				// `limbs`, and it would be left as dots where the arm hung.
+				col = behind_arm(uv, dx, dy);
+			}
 			if (arms_drawn_here && max(rest.r, rest.g) > 0.5) {
 				// The arm has moved away from where it was drawn. Right at the shoulder
 				// the drawing is kept, like the disc at a paper puppet's joint: a bent
