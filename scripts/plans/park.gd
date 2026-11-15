@@ -53,6 +53,9 @@ static func build(p: Node3D) -> void:
 	p.setup("PEN LUCY PARK", W, D)
 	var st: int = p.street(-6.0, 46.0)
 	p.arrive = p.pt(20.0, 26.1)
+	# The pavement runs east to Rose Hill Terrace (plans/street.gd: its west end
+	# is the park's corner). (Placeholder: the label.)
+	p.use_point(st, "TO ROSE HILL", 45.3, 26.2, "goto:street", 1.2, 1.9)
 	# Night: the floodlights lay pools on the court, the alley lights and the
 	# windows do the rest; a cool moon (_sky) stands in for main.gd's warm sun.
 	p.ambient = 0.11

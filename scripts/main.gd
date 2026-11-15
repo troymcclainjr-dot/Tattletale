@@ -807,6 +807,11 @@ func _travel_to(id: String, instant := false) -> void:
 			known = true
 	if not known:
 		return
+	if _came_from == "" and not instant and PLANS.has(id):      # a home whose front door is on a street (its plan's OUTSIDE): to that door, out there
+		var outside: String = (load(PLANS[id]) as GDScript).get_script_constant_map().get("OUTSIDE", "")
+		if PLANS.has(outside):
+			_came_from = id
+			id = outside
 	var arrive := func() -> void:
 		_open_place(id)
 		_actor.show_face()

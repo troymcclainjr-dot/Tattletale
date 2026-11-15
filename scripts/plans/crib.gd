@@ -3,6 +3,12 @@ extends RefCounted
 ## original game's houses. No hallway: you step off the pavement into the
 ## living room, and the rooms run front to back in one line.
 ##
+## It is number 532 Rose Hill Terrace, the corner house at Old York Road. Its
+## front door opens onto Rose Hill (plans/street.gd): E by the door inside
+## takes him out of it there, and the travel list (OUTSIDE) puts him on Rose
+## Hill at the door. The front is drawn there, by `front` below, with the door
+## and the windows where these rooms have them. (Placeholder: the number.)
+##
 ##   ground floor:  living room | dining room (the stairs) | kitchen wing, side yard | back yard
 ##   upstairs:      his room | hall, bathroom | back bedroom
 ##
@@ -22,6 +28,11 @@ const UP := 40.0
 const STAIR_U := 0.6          # the middle of the flight, on both floors
 const STAIR_V := 9.15
 const STAIR_L := 2.2          # v 8.05 (the top) to 10.25 (the foot)
+const OUTSIDE := "street"     # the place his front door opens onto (main.gd's _travel_to puts him there, at the door)
+const NUMBER := "532"
+const W := 5.0
+const DOOR := [0.6, 1.5]      # the front door, from the left party wall: the living room's, and 532's on Rose Hill
+const WINDOW := [2.6, 4.5]    # the barred front window beside it
 
 
 static func build(p: Node3D) -> void:
@@ -38,7 +49,6 @@ static func build(p: Node3D) -> void:
 	var white_door := Color(0.82, 0.8, 0.72)
 	var trim := Color(0.7, 0.67, 0.58)             # door and window frames: a shade darker than the doors, so each door reads in its frame
 
-	var st: int = p.street(-5.0, 10.0)
 	var g1: int = p.band()
 	var g2: int = p.band()
 	var g3: int = p.band()
@@ -46,7 +56,7 @@ static func build(p: Node3D) -> void:
 	var h1: int = p.band(1)
 	var h2: int = p.band(1)
 	var h3: int = p.band(1)
-	p.arrive = p.pt(1.05, 16.9)
+	p.arrive = p.pt(1.05, 14.9)          # just inside the front door
 
 	p.room("LIVING ROOM", g1, 0, 11.2, 5, 15.8, boards, {"light": warm, "energy": 0.6})
 	p.room("DINING ROOM", g2, 0, 7.2, 5, 11.2, boards, {"light": warm})
@@ -60,10 +70,19 @@ static func build(p: Node3D) -> void:
 	p.room("BACK BEDROOM", h3, UP, 3.4, UP + 3.6, 7.2, boards, {"light": warm, "energy": 0.4})
 
 	# ---- ground floor walls
-	var front: Node3D = p.cross(g1, 15.8, 0, 5, brick, [
-		{"a": 0.6, "b": 1.5, "head": 2.1, "colour": Color(0.5, 0.14, 0.12), "frame": trim},
-		{"a": 2.6, "b": 4.5, "kind": "window", "sill": 0.8, "head": 2.2, "bars": true, "blinds": true, "frame": trim},
+	p.cross(g1, 15.8, 0, 5, brick, [
+		{"a": DOOR[0], "b": DOOR[1], "head": 2.1, "colour": Color(0.5, 0.14, 0.12), "frame": trim},
+		{"a": WINDOW[0], "b": WINDOW[1], "kind": "window", "sill": 0.8, "head": 2.2, "bars": true, "blinds": true, "frame": trim},
 	], {"h": 6.6})
+	# The front door's leaf is not drawn in here: its wall is always cut away (the
+	# camera looks in through it), so the leaf was only ever a ghost, and that
+	# stood over him as he came in. Rose Hill has the door (`front`); E in the
+	# doorway takes him out of it there. (usables() leaves out a door marked "mate".)
+	var front_door: Node3D = p.doors.back()
+	front_door.set_meta("mate", true)
+	for part: Node in front_door.leaf.get_children():
+		part.free()
+	p.use_point(g1, "FRONT DOOR", 1.05, 15.2, "goto:" + OUTSIDE, 1.0, 2.0)
 	p.side(g1, 0.0, 11.2, 15.8, paper)
 	p.side(g1, 5.0, 11.2, 15.8, paper)
 	p.cross(g2, 11.2, 0, 5, paper, [{"a": 1.5, "b": 3.5, "kind": "arch", "frame": trim}])
@@ -95,7 +114,6 @@ static func build(p: Node3D) -> void:
 	p.side(h3, UP, 3.4, 7.2, paper)
 	p.side(h3, UP + 3.6, 3.4, 7.2, paper)
 
-	_street(p, st, front)
 	_ground(p, g1, g2, g3, g4)
 	_upstairs(p, h1, h2, h3)
 	_dress(p, g1, g2, g3, h1, h2, h3)
@@ -112,79 +130,77 @@ static func _rose() -> StandardMaterial3D:
 	return Kit.tex("in_stripe", 1.0, Color(0.8, 0.52, 0.5), true, Color(0.97, 0.64, 0.62))
 
 
-static func _street(p: Node3D, st: int, front: Node3D) -> void:
-	var n: Node3D = p.node_of(st)
+## His front as Rose Hill Terrace shows it (street.gd builds it there, on
+## Rose Hill's place p, its left party wall at u0 on the row's front line d).
+## The door and the barred window are where the living room has them (DOOR,
+## WINDOW), the two sashes upstairs are his room's two windows, the number is
+## on the transom; on the row's 0.7 m floor over a base course with a barred
+## cellar window, the brick carried up to his green pressed-metal cornice,
+## marble lintels and sills, marble steps. Behind, the main block (back to the
+## dining room's wall) and the back building over the kitchen, lower, on the
+## left party wall, with the kitchen's side window over the side yard. The
+## steps take up floor. Returns {"door": u of the door's middle, "steps": v
+## their foot reaches}.
+static func front(p: Node3D, st: int, u0: float, d: float) -> Dictionary:
+	var g: Node3D = Houses.face(p, st, u0, d)
+	var f0 := Houses.F0
+	var height := 6.6 + 0.4 + f0                        # (the front wall's 6.6 m and the brick over it, on the row's floor)
 	var marble := Color(0.9, 0.9, 0.88)
 	var cream := Color(0.82, 0.8, 0.72)
-	var trim := Color(0.7, 0.67, 0.58)                  # the door's frame (build's trim)
-	var dark_glass := Color(0.16, 0.19, 0.28)
-	var f := 15.8 + In.T * 0.5                          # the street face of the fronts
-	# His own front, one of the row's: the upstairs sashes under white marble
-	# lintels, the brick carried up to the row's pressed-metal cornice (his in
-	# green), the house number on the transom over the door, marble lintels and
-	# sills downstairs, a barred cellar window at the pavement, one low marble step.
-	var face := Kit.group(front, p.pt(0.0, f))
-	Houses.fb(face, 0.0, 5.0, 6.6, 7.0, -0.15, 0.0, Houses.wall("brick"))
-	for u: float in [1.3, 3.7]:
-		var blind := Props.rnd(u + u * 1.7) > 0.5          # as before: a blind half down in one, red curtains in the other
-		Houses.sash(face, u, 3.75, 1.1, 1.5, cream, Houses.LIT, null if blind else Color(0.86, 0.3, 0.28), marble, blind)
-	Houses.cornice(face, 5.0, 7.0, Houses.GREEN, 1)
-	p.slab(front, true, f + 0.0025, 0.6, 1.5, 2.155, 2.5, 0.005, dark_glass)      # the transom: dark, so the number on it reads
-	for x: float in [0.545, 1.485]:
-		p.slab(front, true, f + 0.0075, x, x + 0.07, 2.155, 2.5, 0.015, trim)
-	p.slab(front, true, f + 0.0075, 0.545, 1.555, 2.5, 2.57, 0.015, trim)
-	p.slab(front, true, f + 0.035, 0.46, 1.64, 2.57, 2.74, 0.07, marble)
-	Props.words(front, "2409", p.pt(1.05, 15.885, 2.35), 0.14, cream)
-	p.slab(front, true, f + 0.035, 2.45, 4.65, 2.255, 2.43, 0.07, marble)        # the window's lintel
-	p.slab(front, true, f + 0.06, 2.42, 4.68, 0.62, 0.745, 0.12, marble)         # and its sill
-	p.slab(front, true, f + 0.005, 2.75, 3.65, 0.1, 0.44, 0.01, Color(0.08, 0.08, 0.1))     # the cellar window
+	var trim := Color(0.7, 0.67, 0.58)                  # the door's and the window's frames (build's trim)
+	var brick := Kit.tex("brick", 1.5, Color(0.5, 0.26, 0.2))
+	var main := 15.8 - 7.2                              # the living and dining rooms
+	var wing := 7.2 - 3.4                               # the kitchen
+	Houses.fb(g, 0.0, W, 0.0, height, -main, 0.0, brick)
+	Houses.fb(g, 0.0, W, height, height + 0.04, -main, -0.36, Houses.SILVER)
+	Houses.fb(g, 0.0, 3.6, 0.0, f0 + 5.8, -main - wing, -main, brick)
+	Houses.fb(g, 0.0, 3.6, f0 + 5.8, f0 + 5.84, -main - wing, -main, Houses.SILVER)
+	Houses.fb(g, 0.0, W, 0.0, f0 - 0.04, 0.0, 0.04, Houses.BASE)
+	# The door in its frame under a dark transom with the number on it, a
+	# marble lintel over; the knob away from the hinge (the hinge is on the
+	# right, as the living room has it); a lamp by it, lit; the steps.
+	var ds: float = (DOOR[0] + DOOR[1]) * 0.5
+	var leaf := Color(0.5, 0.14, 0.12)
+	Houses.fb(g, DOOR[0] - 0.055, DOOR[1] + 0.055, f0, f0 + 2.57, 0.0, 0.04, trim)
+	Houses.fb(g, DOOR[0], DOOR[1], f0, f0 + 2.1, 0.04, 0.07, leaf)
+	for y: float in [0.25, 1.2]:
+		Houses.fb(g, DOOR[0] + 0.12, DOOR[1] - 0.12, f0 + y, f0 + y + 0.72, 0.07, 0.085, leaf.lightened(0.12))
+	Houses.fb(g, DOOR[0] + 0.08, DOOR[0] + 0.16, f0 + 1.0, f0 + 1.08, 0.07, 0.11, Houses.GOLD)
+	Kit.pane(Houses.fb(g, DOOR[0], DOOR[1], f0 + 2.155, f0 + 2.5, 0.04, 0.05, Color(0.16, 0.19, 0.28)))
+	Props.words(g, NUMBER, Vector3(ds, f0 + 2.33, 0.06), 0.14, cream)
+	Houses.fb(g, DOOR[0] - 0.14, DOOR[1] + 0.14, f0 + 2.57, f0 + 2.74, 0.0, 0.07, marble)
+	Houses.fb(g, DOOR[1] + 0.26, DOOR[1] + 0.42, f0 + 2.0, f0 + 2.32, 0.0, 0.04, Houses.IRON)
+	Kit.box(g, Vector3(0.14, 0.24, 0.14), Vector3(DOOR[1] + 0.34, f0 + 2.1, 0.12), Kit.flat(Color(1.0, 0.86, 0.55), 1.6))
+	Kit.omni(g, Vector3(DOOR[1] + 0.34, f0 + 2.0, 0.8), Color(1.0, 0.84, 0.58), 2.0, 4.8)
+	var reach := Houses.stoop(g, ds, f0, 0.65)
+	p.block(u0 + ds - 0.65, d, u0 + ds + 0.65, d + reach)
+	# The window: a blind half down behind bars, a marble lintel.
+	var ws: float = (WINDOW[0] + WINDOW[1]) * 0.5
+	var ww: float = WINDOW[1] - WINDOW[0]
+	Houses.sash(g, ws, f0 + 0.8, ww, 1.4, trim, Houses.LIT, null, null, true)
+	Houses.fb(g, WINDOW[0] - 0.15, WINDOW[1] + 0.15, f0 + 2.255, f0 + 2.43, 0.0, 0.07, marble)
+	var bars := 10                    # (a bar every 19 cm: the glass's quarter points, where a shot is aimed, fall between them)
+	for k in range(1, bars):
+		Kit.cyl(g, 0.012, 1.38, Vector3(WINDOW[0] + ww * k / bars, f0 + 1.5, 0.12), Props.IRON, Vector3.ZERO, 5)
+	for y: float in [0.86, 2.12]:
+		Houses.fb(g, WINDOW[0] - 0.02, WINDOW[1] + 0.02, f0 + y, f0 + y + 0.04, 0.1, 0.14, Props.IRON)
+	# The cellar window in the base course, marble round it, barred.
+	Houses.fb(g, 2.75, 3.65, 0.1, 0.44, 0.04, 0.05, Houses.PANE)
 	for x: float in [2.67, 3.65]:
-		p.slab(front, true, f + 0.02, x, x + 0.08, 0.02, 0.52, 0.04, marble)
+		Houses.fb(g, x, x + 0.08, 0.02, 0.52, 0.0, 0.06, marble)
 	for y: float in [0.02, 0.44]:
-		p.slab(front, true, f + 0.02, 2.75, 3.65, y, y + 0.08, 0.04, marble)
+		Houses.fb(g, 2.75, 3.65, y, y + 0.08, 0.0, 0.06, marble)
 	for k in 5:
-		Kit.cyl(front, 0.011, 0.34, p.pt(2.9 + k * 0.15, f + 0.03, 0.27), Props.IRON, Vector3.ZERO, 5)
-	Kit.block(n, Vector3(1.3, 0.07, 0.6), p.pt(1.05, 16.18), marble)
-	Kit.block(n, Vector3(1.1, 0.05, 0.3), p.pt(1.05, 16.02, 0.07), marble)
-	# His roof, seen over the front from up the street (it goes when he is indoors).
-	var roof := Kit.group(front, p.pt(0.0, f))
-	Houses.fb(roof, 0.0, 5.0, 6.96, 7.0, -8.675, -0.36, Houses.SILVER)          # the main block, back to v 7.2
-	Houses.fb(roof, 0.0, 3.6, 6.5, 6.54, -12.4, -8.675, Houses.SILVER)          # the back building over the kitchen
-	# The row, the old Pen Lucy's stoop fronts (houses.gd): two marble steps to
-	# each door, the doors mirrored in pairs (his and his left neighbour's side
-	# by side), one pressed-metal cornice down the row. A boarded-up vacant on
-	# his left, a formstone front with a tin awning over its door on his right.
-	var looks := [Houses.wall("brick_2"), Houses.wall("brick_dark"), Houses.wall("formstone"), Houses.wall("brick_2")]
-	var starts := [-10.0, -5.0, 5.0, 10.0]
-	var heights := [7.0, 6.95, 7.1, 7.05]
-	for i in 4:
-		var u0: float = starts[i]
-		var o: Dictionary = Houses.style(31.0 + i * 7.3, "brick_2")
-		o["wall"] = looks[i]
-		o["door_left"] = i == 0 or i == 3
-		o["f0"] = 0.36
-		o["height"] = heights[i]
-		o["deep"] = 12.4
-		o["profile"] = 1
-		o["boarded"] = i == 1
-		o["lit"] = ["", "", "1010", "0100"][i]
-		o["oriel"] = i == 3
-		o["transom"] = i == 2
-		if i == 1:
-			o["door"] = Color(0.41, 0.31, 0.2)
-		if i == 2:
-			o["lintel"] = null
-			o["awning"] = null
-		var g := Kit.group(n, p.pt(u0, f))
-		var made: Dictionary = Houses.stoop_front(g, 5.0, o)
-		var ds: float = made["door"]
-		p.block(u0 + ds - 0.7, f, u0 + ds + 0.7, f + float(made["stoop"]))         # the steps take up floor
-		if i == 2:
-			Houses.tin_awning(g, ds, 0.36 + 2.78, 1.1, Houses.TIN[1])               # over the door
-	Props.words(n, "NO LOITERING", p.pt(-3.75, f + 0.13, 1.7), 0.12, Color(0.75, 0.15, 0.12))     # across the boards over the vacant's window
-	Props.street_lamp(p, st, 6.4, 18.05)
-	Props.cans(p, st, 4.3, 16.15, 2)
-	Props.hydrant(p, st, -2.2, 18.0)
+		Kit.cyl(g, 0.011, 0.34, Vector3(2.9 + k * 0.15, 0.27, 0.07), Props.IRON, Vector3.ZERO, 5)
+	# Upstairs: a blind half down in one sash, red curtains in the other; the cornice.
+	for s: float in [1.3, 3.7]:
+		var blind := Props.rnd(s + s * 1.7) > 0.5
+		Houses.sash(g, s, f0 + 3.75, 1.1, 1.5, cream, Houses.LIT, null if blind else Color(0.86, 0.3, 0.28), marble, blind)
+	Houses.cornice(g, W, height, Houses.GREEN, 1)
+	# The kitchen's window, its red curtains, over the side yard.
+	var side := Houses.sub_face(g, Vector2(3.6, -main), Vector2(3.6, -main - wing))
+	Houses.simple_window(side, 2.45, f0 + 1.0, 0.9, 1.0, trim, Houses.LIT, Color(0.9, 0.26, 0.22))
+	return {"door": u0 + ds, "steps": d + reach}
 
 
 static func _ground(p: Node3D, g1: int, g2: int, g3: int, g4: int) -> void:

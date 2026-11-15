@@ -1,25 +1,36 @@
 extends RefCounted
-## Rose Hill Terrace: a street to walk down. A short copy of the old Pen Lucy's
-## Rose Hill Terrace, the side street that runs one long block (166 m) west
-## from Old York Road to Greenmount Avenue. This is its east end: about 57 m of
-## the north side, 516 to 532, up to the corner of Old York Road, with 508 to
-## 514 running on to the left beyond where he can walk. Two-storey rowhouses
-## about 6.4 m wide, mirrored in pairs so the doors and the steps come two
-## together, each with an open porch on a solid grey deck, four steps down to a
-## paved strip, and the street's own mark: a three-sided sash bay upstairs
-## standing on the porch roof. 532 at the corner has no porch, only marble steps.
-## The road is 9.5 m kerb to kerb, two-way, parked along the north kerb only.
+## Rose Hill Terrace: a street to walk down, and where the homes are. A short
+## copy of the old Pen Lucy's Rose Hill Terrace, the side street that runs one
+## long block (166 m) west from Old York Road to Greenmount Avenue. This is its
+## east end: about 100 m of the north side, 504 to 532, from where the row
+## ends at Pen Lucy Park up to the corner of Old York Road. Two-storey
+## rowhouses about 6.4 m wide, mirrored in pairs so the doors and the steps
+## come two together, each with an open porch on a solid grey deck, four steps
+## down to a paved strip, and the street's own mark: a three-sided sash bay
+## upstairs standing on the porch roof. The road is 9.5 m kerb to kerb,
+## two-way, parked along the north kerb only.
+##
+## Two of the houses are homes he can go into, their fronts drawn by their own
+## plans so that outside and inside agree: 532 at the corner, a stoop front
+## with no porch, is his (plans/crib.gd); 510, the left end of the row (a
+## passage between it and 508's row), the widest house on the street, a picket
+## fence round a little front yard, is Miss Bea's (plans/bea.gd). E at the foot
+## of his steps or of hers goes in; leaving by the front door brings him out
+## there again.
 ##
 ## One band, all out of doors, so nothing is ever hidden. One room:
 ##
-##   ROSE HILL TERRACE   the paved strip in front of the porches, the north
-##                       pavement, the road, the corner, and Old York Road from
-##                       10 m up it across to a step onto its far pavement. The
-##                       cars, poles, lamps, steps and the rest stand in it.
+##   ROSE HILL TERRACE   the paved strips in front of the porches, Miss Bea's
+##                       yard, the north pavement, the road, the corner, and
+##                       Old York Road from 10 m up it across to a step onto its
+##                       far pavement. The cars, poles, lamps, steps and the
+##                       rest stand in it. West of the row only the pavement and
+##                       the road, along the park's railing: at its end E goes
+##                       on to the park (plans/park.gd).
 ##
 ## The camera stands on the near (south) side looking across, so only the far
-## side is built; the near pavement is bare. The houses have no insides and
-## their doors do not open.
+## side is built; the near pavement is bare. Only the two homes have insides;
+## the other doors do not open.
 ##
 ## Copied from the old game (pen_lucy_level.json, kits.py and the measured
 ## street): the house numbers, widths and heights, each house's wall, trim and
@@ -38,11 +49,16 @@ extends RefCounted
 ## ferns and pots, the mural on 532's end wall, the mailbox, the hydrant, the
 ## bus stop and its bench, and Old York Road (its width, houses and lamp) are
 ## the pop-up's own; the trees are only behind the houses, crowns over the roofs.
+## So are the homes' two fronts (510 is 9 m wide, not 6.54; 532 5 m, not 4.9),
+## the 2.4 m passage between 508 and 510 (0.7 m in the old game: 508's row is
+## moved 4.16 m left), 504 and 506 (the row run on to the park) and the park
+## at the street's west end.
 ## The old game's two residents here (Pearl Sutton, mid-block on the north
 ## pavement; Camille Porter across from her) are not added.
 ##
-## Invented words (placeholders): "BUS STOP", "MAIL". "STOP" is the road sign.
-## The house numbers are the old game's.
+## Invented words (placeholders): "BUS STOP", "MAIL", and the use points'
+## "HOME", "MISS BEA'S", "TO THE PARK". "STOP" is the road sign. The house
+## numbers are the old game's.
 ##
 ## Numbers are metres on the plan (see place.gd): u from the left end of 516,
 ## v from behind the houses. The fronts are on v = 10, the porches run to 12,
@@ -52,6 +68,10 @@ const Props := preload("res://scripts/props.gd")
 const Street := preload("res://scripts/props_street.gd")
 const Outdoor := preload("res://scripts/outdoor.gd")
 const Walk := preload("res://scripts/sidewalk.gd")
+const Houses := preload("res://scripts/houses.gd")
+const Park := preload("res://scripts/props_park.gd")
+const CribPlan := preload("res://scripts/plans/crib.gd")
+const BeaPlan := preload("res://scripts/plans/bea.gd")
 
 const NAME := "ROSE HILL TERRACE"
 const SIGN := "ROSE HILL TER"
@@ -69,14 +89,17 @@ const OY0 := 59.08        # Old York Road, kerb to kerb
 const OY1 := 68.58
 const OYE := 70.98        # the back of Old York's far pavement
 const EAST := 72.9        # the fronts across Old York Road
-const LEFT := -32.0       # how far the street is drawn to the left
+const LEFT := -80.0       # how far the street is drawn to the left
+const ROW_END := -44.46   # 504's end wall, the west end of the row; the park beyond
+const WEST := -48.0       # how far he may walk: the end of the park's railing, the way on to the park
+const PASSAGE := [-24.15, -21.75]       # between 508's row and Miss Bea's end wall
 const BACK := -60.0       # and up Old York Road (the yards behind the row)
 const NORTH := -170.0     # how far Old York Road itself runs on up, into the dusk
 const FRONT := 40.0       # and down it
 ## The party walls (and the ends of the rows), where the pavement has its expansion joints.
-const WALLS := [-27.5, -19.99, -19.29, -12.75, -6.38, 0.0, 6.33, 12.86, 19.24, 25.64, 32.02, 38.53, 45.0, 51.78]
-## What each house has between its steps and the pavement, 508 to 532 (sidewalk.gd's front()).
-const FRONTS := ["old", "yard", "brick", "a", "yard", "paint", "a", "old", "new", "yard", "brick", "new", "a"]
+const WALLS := [-44.46, -38.06, -31.66, -24.15, -21.75, -12.75, -6.38, 0.0, 6.33, 12.86, 19.24, 25.64, 32.02, 38.53, 45.0, 51.68]
+## What each house has between its steps and the pavement, 504 to 532 (sidewalk.gd's front()); 510's is her yard.
+const FRONTS := ["a", "brick", "old", "yard", "brick", "a", "yard", "paint", "a", "old", "new", "yard", "brick", "new", "a"]
 
 
 static func build(p: Node3D) -> void:
@@ -90,19 +113,25 @@ static func build(p: Node3D) -> void:
 	var right := OY1 + 1.0                                  # a step onto Old York's far pavement
 	# The camera stands back and low enough to see the cornices over him from
 	# the pavement; the parked cars it looks across fade while they are in the way.
-	var street: int = p.room(NAME, st, 0.0, 2.0, right, FAR, null, {
+	var street: int = p.room(NAME, st, WEST, 2.0, right, FAR, null, {
 		"street": true,
-		"areas": [[0.0, STRIP, right, FAR], [51.78, D, CORNER, PAVE], [CORNER, 2.0, right, PAVE]],
+		"areas": [[ROW_END, STRIP, right, FAR], [WEST, PAVE, ROW_END, FAR], [51.68, D, CORNER, PAVE], [CORNER, 2.0, right, PAVE]],
 		"cam_near": 1.9, "cam_y": 3.4, "look_y": 3.0})
 	p.rooms[street]["cam_max_x"] = p.pt(EAST - 2.6, 0.0).x  # never up against the houses across Old York Road
 	Walk.begin()                    # the ground's thousands of pieces, gathered into a few meshes
 	_ground(p, st)
-	_row(p, st)
+	var homes := _row(p, st)
+	_park_end(p, st)
 	Walk.end()
 	_kerbside(p, st)
 	_corner(p, st)
 	_context(p, st)
 	_sky(p, st)
+	# The homes' doors (E at the foot of the steps goes in: main.gd's "goto:"),
+	# and the way on to the park at the west end.
+	p.use_point(st, "HOME", homes["crib"]["door"], homes["crib"]["steps"] + 0.35, "goto:crib", 0.9, 2.4)
+	p.use_point(st, "MISS BEA'S", homes["bea"]["door"], homes["bea"]["steps"] + 0.4, "goto:bea", 0.9, 2.4)
+	p.use_point(st, "TO THE PARK", WEST + 0.75, PAVE + 1.2, "goto:park", 1.2, 1.9)
 
 
 ## A box on the plan: u0..u1, v0..v1, y0..y1.
@@ -144,7 +173,7 @@ static func _ground(p: Node3D, st: int) -> void:
 	var tar := Walk.asphalt()                                   # Rose Hill's and Old York's, worn grey
 	var alley := Outdoor.tex("out_asphalt", 4.8, Color(0.3, 0.3, 0.32))
 	var dirt := Color(0.28, 0.25, 0.21)
-	_gb(p, n, LEFT - 30.0, 120.0, NORTH - 20.0, FRONT + 10.0, -0.8, -0.5, Color(0.12, 0.13, 0.12))
+	_gb(p, n, LEFT - 120.0, 120.0, NORTH - 20.0, FRONT + 10.0, -0.8, -0.5, Color(0.12, 0.13, 0.12))
 	# Behind the row: the back yards, the alley, the next street's yards.
 	_gb(p, n, LEFT, CORNER, BACK, D, -0.3, -0.02, dirt)
 	_gb_run(p, n, LEFT, CORNER - 0.02, -7.5, -4.0, -0.3, -0.01, alley)
@@ -161,7 +190,8 @@ static func _ground(p: Node3D, st: int) -> void:
 	# Under the lamps gum, by the cans grease; tree pits long empty, a root's
 	# heave beside one; in front of 524 a run of slabs relaid every which way.
 	Walk.run(p, n, true, LEFT, CORNER, PAVE, KERB, WALLS, {
-		-30.5: "old", -24.0: "patch", -21.0: "crack", -19.6: "dirty", -18.4: "old", -15.0: "pit", -13.6: "heave",
+		-76.0: "old", -70.0: "crack", -63.0: "patch", -57.0: "stain", -51.0: "old", -46.5: "gum", -42.0: "crack",
+		-36.5: "stain", -34.0: "new", -30.5: "old", -24.0: "patch", -21.0: "crack", -19.6: "dirty", -18.4: "old", -15.0: "pit", -13.6: "heave",
 		-11.9: "stain", -10.4: "new", -8.5: "crack", -5.5: "old", -2.4: "gum", 2.4: "crack", 10.4: "stain",
 		14.6: "pit", 16.8: "heave", 18.4: "crack", 21.6: "old", 23.2: "stain", 26.4: "new", 28.0: "patch",
 		29.6: "brick", 31.2: "half", 34.5: "pit", 36.2: "lift", 37.7: "split", 39.3: "gum", 42.5: "stain",
@@ -217,6 +247,7 @@ static func _ground(p: Node3D, st: int) -> void:
 	Walk.tar_line(p, n, Walk.wander(Vector2(-14.5, 21.8), 0.0, 6, 1.5, 2.0, 6.0))
 	Walk.tar_line(p, n, Walk.wander(Vector2(19.0, 21.8), 0.0, 7, 1.4, 3.0, 6.0))
 	Walk.tar_line(p, n, Walk.wander(Vector2(-6.0, 24.2), 0.0, 8, 1.3, 4.0, 8.0))
+	Walk.tar_line(p, n, Walk.wander(Vector2(-66.0, 21.8), 0.0, 9, 1.5, 9.0, 6.0))
 	for at: Vector3 in [Vector3(9.5, 18.9, 91.0), Vector3(37.4, 19.3, 93.0), Vector3(-18.0, 19.2, 88.0)]:
 		Walk.tar_line(p, n, Walk.wander(Vector2(at.x, at.y), at.z, 4, 1.15, at.x, 10.0))
 	# Up Old York Road, two lengths down its east lane and one in the west, one across.
@@ -231,7 +262,7 @@ static func _ground(p: Node3D, st: int) -> void:
 	# to pieces; no lines along it. Old York Road's double yellow line stops
 	# either side of the crosswalk at the corner.
 	var yellow := Walk.YELLOW
-	var u := 3.0 - 24.0
+	var u := 3.0 - 144.0
 	while u < OY0 - 2.0:
 		for v: float in [MID - 0.15, MID + 0.15]:
 			Walk.paint(p, n, u - 0.6, u + 0.6, v - 0.09, v + 0.09, yellow, u + v, 0.3)
@@ -294,18 +325,23 @@ static func _near(x: float, marks: Array) -> float:
 # -------------------------------------------------------------------- the row
 
 ## The north side of Rose Hill Terrace as the old game builds it: 510 to 532
-## are one row (508 ends the next, 0.7 m along). Each house's width, height,
-## wall, trim and door colours, which side its door is on, the bay's cladding,
-## the lintels and the chimney are the old game's (kits.py style(), seeded by
-## its map id); the lit windows, curtains and porch things are the pop-up's.
-static func _row(p: Node3D, st: int) -> void:
+## are one row, and 508's the next, across a passage. Each house's width,
+## height, wall, trim and door colours, which side its door is on, the bay's
+## cladding, the lintels and the chimney are the old game's (kits.py style(),
+## seeded by its map id); the lit windows, curtains and porch things are the
+## pop-up's, and so are 504 and 506, the row run on to the park. 510 and 532 are
+## the homes, drawn by their own plans (`front`). Returns where the homes'
+## doors and the feet of their steps are: {"crib": {...}, "bea": {...}}.
+static func _row(p: Node3D, st: int) -> Dictionary:
 	var formstone := _formstone()
 	var tan := Kit.tex("painted_block", 0.7, Color(0.71, 0.65, 0.54), true, Color(0.8, 0.78, 0.98))
 	var stone := Color(0.72, 0.71, 0.68)          # the formstone lintels
 	var dc: Dictionary = Street.DOORS
 	var houses := [
-		[-27.5, 7.51, {"no": "508", "wall": formstone, "trim": Street.WHITE, "door": dc["white"], "door_left": true, "bay": "white", "height": 8.43, "chimney": true, "lit": "10100", "curtain": Color(0.9, 0.7, 0.2)}],
-		[-19.29, 6.54, {"no": "510", "wall": _brick(Color(0.92, 0.86, 0.86)), "trim": Street.CREAM, "door": dc["red"], "door_left": true, "bay": "grey", "lintel": Street.WHITE, "height": 8.22, "chimney": true, "lit": "00011", "curtain": Color(0.85, 0.3, 0.3), "porch_light": true}],
+		[-44.46, 6.4, {"no": "504", "wall": _brick(Color(0.9, 0.86, 0.9)), "trim": Street.WHITE, "door": dc["blue"], "door_left": true, "bay": "white", "lintel": stone, "height": 8.3, "chimney": true, "lit": "01001", "curtain": Color(0.95, 0.93, 0.86), "porch_light": true}],
+		[-38.06, 6.4, {"no": "506", "wall": tan, "trim": Street.BROWN, "door": dc["wood"], "door_left": false, "bay": "cream", "height": 8.36, "lit": "10010", "curtain": Color(0.85, 0.3, 0.3), "chairs": true}],
+		[-31.66, 7.51, {"no": "508", "wall": formstone, "trim": Street.WHITE, "door": dc["white"], "door_left": true, "bay": "white", "height": 8.43, "chimney": true, "lit": "10100", "curtain": Color(0.9, 0.7, 0.2)}],
+		[PASSAGE[1], BeaPlan.W, {"no": "510", "home": "bea"}],
 		[-12.75, 6.37, {"no": "512", "wall": _brick(Color(0.86, 0.82, 0.86)), "trim": Street.BROWN, "door": dc["black"], "door_left": false, "bay": "grey", "lintel": Street.WHITE, "height": 8.15, "chimney": true, "lit": "01100", "curtain": Color(0.4, 0.65, 0.4)}],
 		[-6.38, 6.38, {"no": "514", "wall": _brick(Color(0.95, 0.9, 0.92)), "trim": Street.WHITE, "door": dc["black"], "door_left": true, "bay": "white", "lintel": stone, "height": 8.01, "lit": "1t001", "curtain": Color(0.95, 0.93, 0.86), "porch_light": true, "chairs": true}],
 		[0.0, 6.33, {"no": "516", "wall": _brick(Color(0.84, 0.8, 0.84)), "trim": Street.RED, "door": dc["red"], "door_left": false, "bay": "grey", "lintel": Street.WHITE, "height": 8.02, "lit": "10010", "curtain": Color(0.9, 0.6, 0.3), "screens": true}],
@@ -315,42 +351,109 @@ static func _row(p: Node3D, st: int) -> void:
 		[25.64, 6.38, {"no": "524", "wall": tan, "trim": Street.WHITE, "door": dc["blue"], "door_left": false, "bay": "cream", "height": 7.83, "lit": "10110", "blinds": true, "curtain": Color(0.9, 0.88, 0.78), "pots": true, "porch_light": true}],
 		[32.02, 6.51, {"no": "526", "wall": _brick(Color(0.86, 0.8, 0.82)), "trim": Street.BROWN, "door": dc["red"], "door_left": true, "bay": "grey", "lintel": Street.WHITE, "height": 7.71, "chimney": true, "lit": "t1001", "curtain": Color(0.35, 0.6, 0.4), "chairs": true}],
 		[38.53, 6.47, {"no": "528", "wall": _brick(Color(1.0, 0.98, 0.96)), "trim": Street.BROWN, "door": dc["blue"], "door_left": false, "bay": "white", "lintel": stone, "height": 8.0, "chimney": true, "lit": "11011", "curtain": Color(0.92, 0.5, 0.62), "screens": true, "porch_light": true, "fern": true}],
-		[45.0, 6.78, {"no": "530", "wall": _brick(Color(0.9, 0.86, 0.86)), "trim": Street.CREAM, "door": dc["wood"], "door_left": true, "bay": "cream", "lintel": stone, "height": 8.41, "chimney": true, "lit": "10111", "curtain": Color(0.95, 0.93, 0.86), "pots": true, "porch_light": true}],
-		[51.78, 4.9, {"no": "532", "wall": formstone, "trim": Street.WHITE, "door": dc["green"], "door_left": false, "bay": "cream", "height": 8.27, "chimney": true, "porch": false, "lit": "10011", "curtain": Color(0.55, 0.32, 0.62), "porch_light": true}],
+		[45.0, 6.68, {"no": "530", "wall": _brick(Color(0.9, 0.86, 0.86)), "trim": Street.CREAM, "door": dc["wood"], "door_left": true, "bay": "cream", "lintel": stone, "height": 8.41, "chimney": true, "lit": "10111", "curtain": Color(0.95, 0.93, 0.86), "pots": true, "porch_light": true}],
+		[51.68, CribPlan.W, {"no": "532", "home": "crib", "porch": false}],
 	]
 	var n: Node3D = p.node_of(st)
+	var homes := {}
 	for i in houses.size():
 		var row: Array = houses[i]
 		var u0: float = row[0]
 		var w: float = row[1]
 		var h: Dictionary = row[2]
-		Street.porch_house(p, st, u0, D, w, h)
-		# The steps take up floor.
-		var door: float = u0 + (0.9 if h.get("door_left", true) else w - 0.9)
+		var home: String = h.get("home", "")
 		var porch: bool = h.get("porch", true)
-		if porch:
-			p.block(door - 0.625, STRIP, door + 0.625, STRIP + 0.9)
+		var door: float
+		if home == "crib":
+			homes[home] = CribPlan.front(p, st, u0, D)          # (its steps take up floor there)
+			door = homes[home]["door"]
+		elif home == "bea":
+			homes[home] = BeaPlan.front(p, st, u0, D, PAVE)
+			door = homes[home]["door"]
 		else:
-			p.block(door - 0.7, D, door + 0.7, D + 1.35)
+			var house: Node3D = Street.porch_house(p, st, u0, D, w, h)
+			door = u0 + (0.9 if h.get("door_left", true) else w - 0.9)
+			p.block(door - 0.625, STRIP, door + 0.625, STRIP + 0.9)          # the steps take up floor
+			if h["no"] == "504" or h["no"] == "508":                          # the ends of 508's row: windows down them
+				Houses.end_windows(house, w, 9.0, -1 if h["no"] == "504" else 1, Houses.F0, h["height"], h["trim"], w)
 		# Its own strip down to the pavement (sidewalk.gd), the porch or the
 		# stoop sitting on it, tar at the party wall; in the pavement its water
-		# meter's lid near the kerb, its gas valve in front of the steps.
+		# meter's lid near the kerb, its gas valve in front of the steps. (Miss
+		# Bea's is her yard: bea.gd.)
 		var v0 := STRIP if porch else D
-		Walk.front(p, n, u0 + Walk.WIDE * 0.5, u0 + w - Walk.WIDE * 0.5, v0, PAVE - Walk.GAP * 0.5, door, FRONTS[i], u0)
-		if porch:
-			Walk.footing(p, n, u0, u0 + w, STRIP, door, 1.25, 0.9)
-		else:
-			Walk.footing(p, n, door, door, D, door, 1.4, 1.35)
+		if home != "bea":
+			Walk.front(p, n, u0 + Walk.WIDE * 0.5, u0 + w - Walk.WIDE * 0.5, v0, PAVE - Walk.GAP * 0.5, door, FRONTS[i], u0)
+			if porch:
+				Walk.footing(p, n, u0, u0 + w, STRIP, door, 1.25, 0.9)
+			else:
+				Walk.footing(p, n, door, door, D, door, 1.4, 1.35)
 		Walk.piece(p, n, true, u0 - 0.009, u0 + 0.009, v0, PAVE - 0.007, -0.3, -0.006, Walk.FILL)
 		Walk.lid(p, n, u0 + 0.8, KERB - 0.5, "water")
 		Walk.lid(p, n, door, PAVE + 0.32, "gas")
-	# The gap between 508's row and 510's, dark; a slab of walk into it.
-	_gb(p, n, -19.99, -19.29, 1.0, D - 0.3, 0.0, 6.5, Color(0.08, 0.08, 0.1))
-	Walk.front(p, n, -19.99 + Walk.WIDE * 0.5, -19.29 - Walk.WIDE * 0.5, D, PAVE - Walk.GAP * 0.5, -19.64, "dirty", 7.0)
+	# The passage between 508's row and Miss Bea's: concrete back to the yards,
+	# a chain-link gate across it in line with the porches, shut; cans inside.
+	_gb(p, n, PASSAGE[0], PASSAGE[1], -4.0, STRIP, -0.3, -0.005, Color(0.5, 0.49, 0.47))
+	p.fence(st, true, STRIP, PASSAGE[0] + 0.02, PASSAGE[1] - 0.02, [], 1.6, "chain")
+	Walk.front(p, n, PASSAGE[0] + Walk.WIDE * 0.5, PASSAGE[1] - Walk.WIDE * 0.5, STRIP, PAVE - Walk.GAP * 0.5, (PASSAGE[0] + PASSAGE[1]) * 0.5, "dirty", 7.0)
+	Props.bin(p, st, PASSAGE[0] + 0.45, STRIP - 0.8)
+	Props.bin(p, st, PASSAGE[0] + 1.05, STRIP - 1.0)
 	# A power company's vault by the pole, sewer cleanouts.
 	Walk.lid(p, n, 21.95, KERB - 0.62, "vault")
 	Walk.lid(p, n, 9.0, PAVE + 0.25, "cleanout")
 	Walk.lid(p, n, 34.0, PAVE + 0.25, "cleanout")
+	return homes
+
+
+# ---------------------------------------------------------------- the park
+
+## West of 504, the row's end, Pen Lucy Park (plans/park.gd) comes up to the
+## pavement: its lawn behind a low wall with an iron railing on it, trees, the
+## court further in behind its chain-link, a floodlight over it. He walks on
+## along the pavement by the railing to WEST; E there goes on to the park.
+static func _park_end(p: Node3D, st: int) -> void:
+	var n: Node3D = p.node_of(st)
+	var grass := Kit.tex("stucco", 2.5, Color(0.3, 0.42, 0.24), true, Color(0.42, 0.66, 0.34))
+	var far := LEFT - 70.0                  # past LEFT the street runs on out of sight, plainer
+	_gb(p, n, far, ROW_END - 0.05, -4.0, PAVE, -0.29, 0.0, grass)
+	_gb(p, n, far, LEFT, PAVE, KERB, -0.3, 0.0, Outdoor.pavement())
+	_gb(p, n, far, LEFT, KERB, ROAD, -0.3, 0.0, Outdoor.KERB)
+	_gb(p, n, far, LEFT, ROAD, FAR, -0.36, -0.06, Walk.asphalt())
+	_gb(p, n, far, LEFT, FAR, FAR + 0.15, -0.3, 0.0, Outdoor.KERB)
+	_gb(p, n, far, LEFT, FAR + 0.15, NEAR, -0.3, 0.0, Outdoor.pavement())
+	# The wall and its railing (sidewalk.gd gathers the pieces into a few meshes).
+	var iron := Color(0.14, 0.15, 0.17)
+	var at := PAVE - 0.3
+	var end := ROW_END - 0.9
+	Walk.flat(p, n, far, end, at - 0.15, at + 0.15, 0.0, 0.32, Color(0.62, 0.6, 0.56))
+	for y: float in [0.42, 1.12]:
+		Walk.flat(p, n, far, end, at - 0.025, at + 0.025, y, y + 0.05, iron)
+	var u := end - 0.08
+	while u > far:
+		Walk.flat(p, n, u - 0.013, u + 0.013, at - 0.013, at + 0.013, 0.32, 1.17, iron)
+		u -= 0.16 if u > LEFT else 0.32
+	u = end
+	while u > far:
+		Walk.flat(p, n, u - 0.04, u + 0.04, at - 0.04, at + 0.04, 0.32, 1.3, iron)
+		u -= 2.4
+	# The court behind its fence (the park's green, a blue key, a hoop at its
+	# near end), a floodlight over it; trees on the lawn.
+	var green := Color(0.2, 0.52, 0.4)
+	var blue := Color(0.18, 0.36, 0.66)
+	var line := Color(0.92, 0.92, 0.88)
+	_gb(p, n, LEFT, -53.0, -3.5, 8.0, -0.29, 0.015, Outdoor.tex("out_court", 9.6, green, green))
+	_gb(p, n, -60.2, -54.4, -0.2, 4.7, 0.015, 0.021, Outdoor.tex("out_court", 9.6, blue, blue))
+	_gb(p, n, -54.45, -54.35, -2.6, 7.1, 0.015, 0.024, line)
+	_gb(p, n, -60.25, -60.15, -0.25, 4.75, 0.021, 0.024, line)
+	_gb(p, n, LEFT, -54.35, 7.05, 7.15, 0.015, 0.024, line)
+	Park.hoop(p, st, -53.5, 2.25, 270.0)
+	p.fence(st, false, -53.0, -3.5, 8.0, [], 3.6, "chain")
+	p.fence(st, true, 8.0, LEFT, -53.0, [], 3.6, "chain")
+	p.fence(st, false, LEFT, -3.5, 8.0, [], 3.6, "chain")
+	Park.floodlight(p, st, -55.0, 8.9, 180.0, 7.6, 2, 3.0, 4.5, false, Vector2(-59.0, 2.25))
+	Outdoor.tree(p, st, -50.5, 11.0, "a", 1.0, 40.0)
+	Outdoor.tree(p, st, -62.0, 11.6, "b", 1.15, 160.0)
+	Outdoor.tree(p, st, -73.5, 10.8, "d", 1.1, 260.0)
+	Outdoor.tree(p, st, -48.6, 2.5, "b", 1.2, 300.0)
 
 
 # ---------------------------------------------------------------- kerbside
@@ -358,23 +461,24 @@ static func _row(p: Node3D, st: int) -> void:
 static func _kerbside(p: Node3D, st: int) -> void:
 	var n: Node3D = p.node_of(st)
 	# The utility poles along the north kerb, 29 m apart, and their three wires.
-	var poles := [50.37, 21.37, -7.63]
+	var poles := [50.37, 21.37, -7.63, -36.63, -65.63, -94.63, -123.63]
 	for u: float in poles:
 		Street.utility_pole(p, st, u, ROAD - 0.42, u == 21.37)
 	var ends: Array = poles.duplicate()
-	ends.append(LEFT)
+	ends.append(LEFT - 70.0)
 	for i in range(ends.size() - 1):
 		for z: float in Street.WIRES:
 			_wire(n, p.pt(ends[i], ROAD - 0.42 + z, 9.2), p.pt(ends[i + 1], ROAD - 0.42 + z, 9.2), 0.65)
 	# The cobra-head lamps, 42 m apart.
 	Street.cobra_lamp(p, st, 39.46, ROAD - 0.65)
 	Street.cobra_lamp(p, st, -2.54, ROAD - 0.65)
+	Street.cobra_lamp(p, st, -44.54, ROAD - 0.65)
 	# Parked along the north kerb only, 8 m apart, facing west the way that
 	# lane goes; the old game's kinds and paints in turn. The camera looks
 	# across them at the pavement, so each fades while it is in the way.
 	var kinds := ["box_sedan", "compact", "minivan", "midsize", "hatchback", "long_sedan"]
 	var fade = Street.car_fade(p, st)
-	for i in 9:
+	for i in 12:
 		var kind: String = kinds[i % kinds.size()]
 		var w: float = Street.CAR_KINDS[kind][1]
 		fade.add(Street.parked_car(p, st, 45.46 - i * 8.0, ROAD + 0.22 + w * 0.5, 270.0, kind, Street.PAINT[(i * 5) % Street.PAINT.size()], -0.06))
@@ -418,15 +522,15 @@ static func _corner(p: Node3D, st: int) -> void:
 	Props.bench(p, st, CORNER + 0.55, 6.4, 90.0, 1.5, Color(0.3, 0.45, 0.32), true, 0.5)
 	Street.cobra_lamp(p, st, OY0 - 0.65, 1.2, 90.0)
 	_mural(p, st)
-	# 532's back yard along Old York Road: a board fence.
-	p.fence(st, false, CORNER - 0.08, -4.0, 1.0, [], 1.8, "wood")
+	# 532's back yard along Old York Road: a board fence (his side yard and the kitchen's window over it).
+	p.fence(st, false, CORNER - 0.08, -4.0, D - (15.8 - 7.2), [], 1.8, "wood")
 
 
 ## 532's end wall, along Old York Road: a sunset over the rooftops, and a rose.
 static func _mural(p: Node3D, st: int) -> void:
 	var g := Street.face(p, st, CORNER, D, 90.0)
 	var s0 := 1.0
-	var s1 := 8.7
+	var s1 := 8.3              # (his main block is 8.6 m deep)
 	Street.fb(g, s0 - 0.12, s1 + 0.12, 0.35, 6.75, 0.0, 0.012, Color(0.96, 0.95, 0.9))
 	var bands := [[0.45, 1.9, Color(1.0, 0.62, 0.22)], [1.9, 3.1, Color(0.98, 0.42, 0.38)], [3.1, 4.4, Color(0.78, 0.3, 0.55)], [4.4, 5.6, Color(0.45, 0.26, 0.6)], [5.6, 6.65, Color(0.2, 0.2, 0.48)]]
 	for band: Array in bands:
@@ -490,8 +594,8 @@ static func _context(p: Node3D, st: int) -> void:
 		v -= 4.6
 	_far_row(p, st, EAST, v, NORTH + 12.0, 270.0, 4)
 	# The backs of the next street's houses, across the alley.
-	var back := Street.face(p, st, LEFT, -7.5, 0.0)
-	var long := CORNER - 9.0 - LEFT
+	var back := Street.face(p, st, ROW_END - 6.0, -7.5, 0.0)
+	var long := CORNER - 9.0 - (ROW_END - 6.0)
 	Street.fb(back, 0.0, long, 0.0, 7.2, -10.0, 0.0, _brick(Color(0.66, 0.6, 0.62)))
 	Street.fb(back, 0.0, long, 7.2, 7.25, -10.0, -0.02, Street.TAR)
 	var s := 1.2
@@ -503,7 +607,8 @@ static func _context(p: Node3D, st: int) -> void:
 		k += 1
 	# Rose Hill's own back yards: a board fence along the alley, trees whose
 	# crowns stand over the roofs.
-	_gb(p, p.node_of(st), LEFT, CORNER - 0.13, -4.05, -3.95, 0.0, 1.8, Color(0.45, 0.33, 0.23))
+	_gb(p, p.node_of(st), ROW_END, CORNER - 0.13, -4.05, -3.95, 0.0, 1.8, Color(0.45, 0.33, 0.23))
+	Outdoor.tree(p, st, -35.5, -2.1, "a", 1.1, 120.0)
 	Outdoor.tree(p, st, 9.5, -1.6, "a", 1.15, 30.0)
 	Outdoor.tree(p, st, 30.5, -2.0, "b", 1.3, 140.0)
 	Outdoor.tree(p, st, 47.5, -1.4, "a", 1.0, 250.0)
