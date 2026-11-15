@@ -718,6 +718,52 @@
      "art": "wardrobe/huff_sneakers_front.png"
     }
    }
+  },
+  "jumpsuit": {
+   "slot": "shirt",
+   "name": "JUMPSUIT",
+   "colour": [
+    232,
+    112,
+    36
+   ],
+   "colours": [
+    [
+     232,
+     112,
+     36
+    ]
+   ],
+   "stocked": false,
+   "views": {
+    "front": {
+     "art": "wardrobe/jumpsuit_front.png",
+     "arms": "wardrobe/jumpsuit_front_arms.png",
+     "arm_width": 141.0
+    }
+   }
+  },
+  "jumpsuit_legs": {
+   "slot": "trousers",
+   "name": "JUMPSUIT",
+   "colour": [
+    232,
+    112,
+    36
+   ],
+   "colours": [
+    [
+     232,
+     112,
+     36
+    ]
+   ],
+   "stocked": false,
+   "views": {
+    "front": {
+     "art": "wardrobe/jumpsuit_legs_front.png"
+    }
+   }
   }
  }
 }
