@@ -12,8 +12,17 @@ extends RefCounted
 ##   cardboard, its bins; a van along the gun store's blank back with its back
 ##   doors open and the driver at it, and between the van and the wall a gap
 ##   that is half out of sight, a dumpster closing its far end; the studio's
-##   steel back door (E: into the vocal booth); the clothing store's (E: into
+##   steel back door (E: into the vocal booth) and the steel stair up its back
+##   wall to the roof (E at its foot: up); the clothing store's door (E: into
 ##   its stock room), roll cages of stock waiting, pallets, more bins.
+##
+## And up the stair, a band of its own (level 1, drawn ROOF_U to the right on
+## the plan), STUDIO ROOF: tar behind a low parapet, the gap in it where the
+## stair comes up (E there: down), the back of a sign on the front edge, the
+## condenser, vents, a skylight lit from under, crates where the band smokes;
+## the gun store's taller roof on one side and the clothing store's on the
+## other; over the front, the strip's street below, the shops across it and
+## their flats, and the city on the skyline at dusk.
 ##
 ## Numbers are metres on the plan (see place.gd): u along the alley from the
 ## cross street, v from the shops' back walls (0) across the alley; the camera
@@ -25,7 +34,8 @@ extends RefCounted
 ## BEHIND THE STRIP (main.gd's list); the use points' labels CORNER STORE,
 ## STUDIO, CLOTHING STORE; RECEIVING over the store's roll door; PEN LUCY
 ## WHOLESALE on the van; the tags (DRIZZO is the back lot's tagger); the
-## people's lines (talk_service_*.json).
+## people's lines (talk_service_*.json); the roof's name STUDIO ROOF and the
+## stair's labels UP TO THE ROOF and DOWN TO THE ALLEY.
 
 const Props := preload("res://scripts/props.gd")
 const In := preload("res://scripts/props_in.gd")
@@ -36,6 +46,7 @@ const Street := preload("res://scripts/props_street.gd")
 const Backs := preload("res://scripts/props_backs.gd")
 const Outdoor := preload("res://scripts/outdoor.gd")
 const Service := preload("res://scripts/props_service.gd")
+const Fry := preload("res://scripts/props_fry.gd")
 
 const NAME := "SERVICE ALLEY"
 const W := 42.0
@@ -51,11 +62,16 @@ const STUDIO_DOOR := 24.45   # the studio's back door: the booth's (building.gd'
 const CLOTHES_DOOR := 31.475   # the clothing store's: its stock room's (clothes.gd's u 7.525)
 const VAN := [15.6, 2.45]    # the van's middle; it is 5.2 long along u, 2.0 wide
 const PAINT := Color(0.75, 0.62, 0.15)
+const DECK := 4.1            # the studio's roof over the alley; its parapet that much higher:
+const PARAPET := 0.5
+const STAIR := [28.5, 24.0]  # the back stair: its bottom step's nose and its landing's edge (u); the landing is 1 m long
+const ROOF_U := 100.0        # the roof is drawn this far to the right on the plan (level 1)
 
 
 static func build(p: Node3D) -> void:
 	p.setup(NAME, W, D)
 	var st: int = p.band()
+	var top: int = p.band(1)
 	p.arrive = p.pt(20.0, 5.2)
 	# Dusk, as on Rose Hill: main.gd's sun off, the last of the sun and the sky's
 	# own light (_sky); the lamps over the back doors.
@@ -63,6 +79,10 @@ static func build(p: Node3D) -> void:
 	p.sun_energy = 0.0
 	var alley: int = p.room(NAME, st, MOUTH, 0.0, END, D, null, {"street": true})
 	p.rooms[alley]["cam_max_x"] = p.pt(END - 1.4, 0.0).x       # the camera stays this side of the far fence
+	var tar := Kit.tex("asphalt", 3.0, Fry.TAR, true, Color(0.62, 0.62, 0.66))
+	var roof: int = p.room("STUDIO ROOF", top, ROOF_U + STUDIO[0], -9.0, ROOF_U + STUDIO[1], 0.0, tar, {"street": true,
+		"areas": [[ROOF_U + STUDIO[0], -8.8, ROOF_U + STUDIO[1], -0.2]]})       # in from the parapets
+	p.rooms[roof]["cam_max_x"] = p.pt(ROOF_U + STUDIO[1] + 2.0, 0.0).x
 	_ground(p, st)
 	_backs(p, st)
 	_store(p, st)
@@ -70,8 +90,9 @@ static func build(p: Node3D) -> void:
 	_studio(p, st)
 	_clothes(p, st)
 	_ends(p, st)
-	_sky(p, st)
+	_sky(p, st, 0.0)
 	_people(p, st)
+	_roof(p, top)
 	# The ways in: the store's roll door, the studio's back door, the clothing
 	# store's (main.gd's "goto:"; each comes out of its shop's back door).
 	p.use_point(st, "CORNER STORE", STORE_DOOR, 0.65, "goto:store", 1.1, 2.35)
@@ -121,12 +142,18 @@ static func _backs(p: Node3D, st: int) -> void:
 	var stucco := Kit.tex("stucco", 2.0, Color(0.55, 0.5, 0.42), true, Color(0.85, 0.78, 0.66))
 	var dark_brick := Kit.tex("brick", 1.5, Color(0.3, 0.26, 0.28), true, Color(0.6, 0.55, 0.62))
 	# (The clothing store's block is drawn on to the block across the far end.)
-	for b: Array in [[STORE, 4.4, brick], [GUN, 4.9, block], [STUDIO, 4.1, stucco], [[CLOTHES[0], END], 4.5, dark_brick]]:
+	for b: Array in [[STORE, 4.4, brick], [GUN, 4.9, block], [[CLOTHES[0], END], 4.5, dark_brick]]:
 		var s: Array = b[0]
 		var h: float = b[1]
 		Service.gb(p, n, s[0], s[1], -9.0, 0.0, 0.0, h, b[2])
 		Service.gb(p, n, s[0] - 0.02, s[1] + 0.02, -0.25, 0.08, h, h + 0.16, Park.COPING)
 		Service.gb(p, n, s[0] + 0.02, s[1] - 0.02, -8.8, -0.25, h, h + 0.04, Park.TAR)
+	# The studio's roof is behind a parapet, with a gap in it where its back stair comes up.
+	Service.gb(p, n, STUDIO[0], STUDIO[1], -9.0, 0.0, 0.0, DECK, stucco)
+	for s: Array in [[STUDIO[0], STAIR[1] - 1.0], [STAIR[1], STUDIO[1]]]:
+		Service.gb(p, n, s[0], s[1], -0.25, 0.0, DECK, DECK + PARAPET, stucco)
+		Service.gb(p, n, s[0] - 0.02, s[1] + 0.02, -0.27, 0.1, DECK + PARAPET, DECK + PARAPET + 0.16, Park.COPING)
+	Service.gb(p, n, STUDIO[0] + 0.02, STUDIO[1] - 0.02, -8.8, -0.25, DECK, DECK + 0.04, Park.TAR)
 	# Downspouts between them, a meter, conduit.
 	for s: Array in [[10.3, 4.3], [20.7, 4.0], [28.8, 4.0], [39.6, 4.4]]:
 		Service.gb(p, n, s[0] - 0.05, s[0] + 0.05, 0.0, 0.1, 0.12, s[1], Color(0.32, 0.33, 0.34))
@@ -179,16 +206,21 @@ static func _gun(p: Node3D, st: int) -> void:
 
 
 ## The studio's back: its steel door (the booth's) under a lamp, the control
-## room's air conditioner, a crate by the door, tags.
+## room's air conditioner, a crate by the door, tags; the steel stair up the
+## wall to the roof, over the door (E at its foot: up; the floor under its low
+## end kept clear).
 static func _studio(p: Node3D, st: int) -> void:
 	var n: Node3D = p.node_of(st)
 	Alley.back_door(p, n, STUDIO_DOOR, 0.0, 0.0)
 	In.sconce(p, st, STUDIO_DOOR, 0.0, 0.0, "cage", 2.55, In.WARM, 0.9)
-	Service.ac_unit(p, n, 27.4, 0.0, 2.7)
+	Service.ac_unit(p, n, 21.6, 0.0, 3.05)
+	Service.back_stair(p, n, STAIR[0], STAIR[1], 0.12, 0.0, DECK)
+	p.block(26.2, 0.0, STAIR[0] + 0.25, 1.15)
+	p.portal(st, "UP TO THE ROOF", STAIR[0] + 0.45, 1.3, ROOF_U + STAIR[1] - 0.5, -0.9)
 	var crate: Node3D = p.prop(st, 22.6, 0.4, 0.0, 0.36, 0.36)
 	Park.crate(crate, Vector3.ZERO, 8.0, Color(0.15, 0.3, 0.6))
 	Club.tags(p, st, 21.7, 0.0, 0.0, [["DRIZZO", 0.0, 2.2, 0.3, 3.0]], 22.0)
-	Club.tags(p, st, 26.6, 0.0, 0.0, [["VEX 7", 0.0, 1.3, 0.24, -5.0]], 23.0)
+	Club.tags(p, st, 25.75, 0.0, 0.0, [["VEX 7", 0.0, 1.0, 0.24, -5.0]], 23.0)
 
 
 ## The clothing store's back: its steel door (the stock room's) under a lamp;
@@ -236,12 +268,119 @@ static func _ends(p: Node3D, st: int) -> void:
 
 # ------------------------------------------------------------------- the sky
 
-static func _sky(p: Node3D, st: int) -> void:
-	var n: Node3D = p.node_of(st)
+## Dusk: the sky's light, the last of the sun low in the west, the glow over the
+## city behind the shops. Each level has its own (only one is shown at a time);
+## `ground` is where the alley is under it.
+static func _sky(p: Node3D, b: int, ground: float, u := 21.0) -> void:
+	var n: Node3D = p.node_of(b)
 	Outdoor.moonlight(n, 0.22, Color(0.56, 0.6, 1.0))
 	var glow := Outdoor.moonlight(n, 0.32, Color(1.0, 0.6, 0.42))
 	glow.rotation_degrees = Vector3(-14, 64, 0)
-	Outdoor.backdrop(n, p.pt(21.0, -40.0), [Color(1.0, 0.62, 0.3), Color(0.93, 0.4, 0.42), Color(0.34, 0.22, 0.5)], Vector3.INF, 9.0, 900.0, Vector2(1.0, -0.05))
+	Outdoor.backdrop(n, p.pt(u, -40.0, ground), [Color(1.0, 0.62, 0.3), Color(0.93, 0.4, 0.42), Color(0.34, 0.22, 0.5)], Vector3.INF, 9.0, 900.0, Vector2(1.0, -0.05))
+
+
+# ------------------------------------------------------------------- the roof
+
+## The studio's roof (level 1, ROOF_U to the right; the alley is DECK under
+## it): tar behind its parapet, the gap where the stair comes up (E: down), the
+## back of the sign on the front edge, the condenser, vents, the skylight,
+## crates and a bucket of sand where the band smokes; the neighbours' roofs
+## either side (the gun store's higher, the clothing store's lower), the end
+## block; the stair itself outside the gap; over the front, the street below,
+## the shops across it, the sky.
+static func _roof(p: Node3D, top: int) -> void:
+	var n: Node3D = p.node_of(top)
+	var o := ROOF_U
+	var down := -DECK
+	var stucco := Kit.tex("stucco", 2.0, Color(0.55, 0.5, 0.42), true, Color(0.85, 0.78, 0.66))
+	# The studio under it; its parapet round, the gap at the back for the stair.
+	Service.gb(p, n, o + STUDIO[0], o + STUDIO[1], -9.0, 0.0, down, -0.3, stucco)
+	for s: Array in [[STUDIO[0], STAIR[1] - 1.0], [STAIR[1], STUDIO[1]]]:
+		Service.gb(p, n, o + s[0], o + s[1], -0.25, 0.0, 0.0, PARAPET, stucco)
+		Service.gb(p, n, o + s[0] - 0.02, o + s[1] + 0.02, -0.27, 0.1, PARAPET, PARAPET + 0.16, Park.COPING)
+	Service.gb(p, n, o + STUDIO[0], o + STUDIO[1], -9.0, -8.75, 0.0, PARAPET, stucco)
+	Service.gb(p, n, o + STUDIO[0] - 0.02, o + STUDIO[1] + 0.02, -9.08, -8.73, PARAPET, PARAPET + 0.16, Park.COPING)
+	for k in 7:
+		Service.gb(p, n, o + STUDIO[0] + 0.1, o + STUDIO[1] - 0.1, -8.0 + k * 1.1, -7.94 + k * 1.1, 0.001, 0.005, Fry.TAR.lightened(0.12))
+	p.portal(top, "DOWN TO THE ALLEY", o + STAIR[1] - 0.5, -0.45, STAIR[0] + 0.65, 1.95)
+	Service.back_stair(p, n, o + STAIR[0], o + STAIR[1], 0.12, down, DECK)
+	# On it.
+	Service.roof_sign(p, top, o + 24.5, o + 28.2, -8.55)
+	Service.condenser(p, top, o + 22.0, -6.9, 0.0)
+	Service.skylight(p, top, o + 25.4, -3.9)
+	Fry.vent(p, top, o + 21.8, -3.4, 0)
+	Fry.vent(p, top, o + 27.7, -5.2, 1)
+	Fry.vent(p, top, o + 23.4, -5.4, 0)
+	for c: Array in [[27.2, -1.1, 14.0, Color(0.15, 0.3, 0.6)], [27.85, -1.6, -25.0, Color(0.7, 0.16, 0.14)]]:
+		var crate: Node3D = p.prop(top, o + c[0], c[1], 0.0, 0.36, 0.36)
+		Park.crate(crate, Vector3.ZERO, c[2], c[3])
+	Kit.cyl(n, 0.07, 0.16, p.pt(o + 27.6, -0.62, 0.08), Color(0.62, 0.6, 0.55), Vector3.ZERO, 10)       # a can for the ends: loose, decorative
+	# Either side: the gun store's roof, higher; the corner store's past it; the
+	# clothing store's, lower; the block across the alley's end, and on.
+	var brick := Kit.tex("brick", 1.5, Color(0.42, 0.24, 0.2), true, Color(0.75, 0.62, 0.6))
+	var block := Kit.tex("painted_block", 1.2, Color(0.5, 0.52, 0.48), true, Color(0.66, 0.7, 0.64))
+	var dark_brick := Kit.tex("brick", 1.5, Color(0.3, 0.26, 0.28), true, Color(0.6, 0.55, 0.62))
+	var end_brick := Kit.tex("brick", 1.5, Color(0.36, 0.3, 0.3), true, Color(0.62, 0.56, 0.58))
+	var tar := Kit.tex("asphalt", 3.0, Fry.TAR, true, Color(0.86, 0.86, 0.9))
+	for b: Array in [[STORE, 0.3, brick, tar], [GUN, 0.8, block, Fry.SILVER], [[CLOTHES[0], END], 0.4, dark_brick, tar]]:
+		var s: Array = b[0]
+		var h: float = b[1]
+		Service.gb(p, n, o + s[0], o + s[1], -9.0, 0.0, down, h, b[2])
+		Service.gb(p, n, o + s[0] + 0.3, o + s[1] - 0.3, -8.8, -0.2, h, h + 0.03, b[3])
+		for e: Array in [[-9.06, -8.8], [-0.2, 0.06]]:
+			Service.gb(p, n, o + s[0] - 0.02, o + s[1] + 0.02, e[0], e[1], h, h + 0.14, Park.COPING)
+	Service.gb(p, n, o + GUN[1] - 0.26, o + GUN[1] + 0.02, -8.8, -0.2, 0.8, 0.95, Park.COPING)
+	Service.gb(p, n, o + CLOTHES[0] - 0.02, o + CLOTHES[0] + 0.24, -8.8, -0.2, 0.4, 0.55, Park.COPING)
+	Fry.vent(p, top, o + 15.0, -4.0, 1)
+	Service.condenser(p, top, o + 33.5, -5.5, 90.0)
+	Service.gb(p, n, o + END, o + END + 8.0, -9.0, 16.0, down, 2.5, end_brick)
+	Service.gb(p, n, o + END - 0.08, o + END + 8.08, -9.08, 16.08, 2.5, 2.66, Park.COPING)
+	Service.gb(p, n, o + END + 8.0, o + 90.0, -9.0, 0.0, down, 0.9, brick)
+	# Below: the alley behind, the strip's street in front.
+	Service.gb(p, n, o - 30.0, o + 90.0, 0.0, 16.0, down - 0.3, down, Outdoor.tex("out_asphalt_old", 4.0, Color(0.24, 0.24, 0.26), Color(0.62, 0.62, 0.68)))
+	_street_below(p, n, o, down)
+	_sky(p, top, down, o + 21.0)
+
+
+## The strip's street seen from the roof: its pavement, the kerbs, the road, a
+## lamp or two; across it the shops with their flats over them, their fronts to
+## us: shop windows lit or shuttered under a band of colour, the flats' windows
+## lit and dark.
+static func _street_below(p: Node3D, n: Node3D, o: float, down: float) -> void:
+	var kerb := Color(0.84, 0.82, 0.77)
+	for s: Array in [[-11.5, -9.0], [-24.0, -21.5]]:
+		Service.gb(p, n, o - 30.0, o + 90.0, s[0], s[1], down - 0.3, down, Outdoor.pavement())
+	for s: Array in [[-11.7, -11.5], [-21.5, -21.3]]:
+		Service.gb(p, n, o - 30.0, o + 90.0, s[0], s[1], down - 0.3, down + 0.02, kerb)
+	Service.gb(p, n, o - 30.0, o + 90.0, -21.3, -11.7, down - 0.44, down - 0.14, Outdoor.road())
+	for k in 34:
+		Service.gb(p, n, o - 28.0 + k * 3.4, o - 26.6 + k * 3.4, -16.56, -16.44, down - 0.14, down - 0.13, Color(0.85, 0.8, 0.55))
+	for at: Array in [[14.0, -11.25], [36.0, -11.25], [6.0, -21.75], [30.0, -21.75]]:
+		Props.street_lamp_on(Kit.group(n, p.pt(o + at[0], at[1], down), Vector3(0, 0.0 if at[1] > -15.0 else 180.0, 0)))
+	for r: Array in [[-30.0, 6.0, 7.2], [6.0, 24.0, 8.4], [24.0, 42.0, 6.6], [42.0, 90.0, 7.8]]:
+		Fry.roof_row(n, p, o + r[0], o + r[1], -36.0, -24.0, down + r[2], down, 3.0 + r[0], true)
+	var lit := Kit.flat(Color(1.0, 0.84, 0.55), 0.7)
+	var cool := Kit.flat(Color(0.72, 0.86, 1.0), 0.6)
+	var dark := Color(0.12, 0.13, 0.17)
+	var shutter := Color(0.42, 0.44, 0.47)
+	var bands := [Color(0.62, 0.16, 0.14), Color(0.16, 0.36, 0.3), Color(0.2, 0.26, 0.5), Color(0.66, 0.5, 0.16)]
+	for k in 20:
+		var u := o - 30.0 + k * 6.0
+		var r := Props.rnd(k * 1.7 + 0.4)
+		var shop: Variant = shutter
+		if r < 0.35:
+			shop = lit
+		elif r < 0.55:
+			shop = cool
+		Service.gb(p, n, u + 0.7, u + 4.2, -24.0, -23.97, down + 0.4, down + 2.5, shop)
+		Service.gb(p, n, u + 4.5, u + 5.4, -24.0, -23.97, down, down + 2.2, dark)
+		Service.gb(p, n, u + 0.5, u + 5.6, -24.0, -23.92, down + 2.7, down + 3.25, bands[k % bands.size()])
+		for x: float in [1.2, 3.7]:
+			var up: Variant = lit if Props.rnd(k * 2.3 + x) > 0.62 else dark
+			Service.gb(p, n, u + x, u + x + 1.1, -24.0, -23.97, down + 4.0, down + 5.5, up)
+			if u >= o + 6.0 and u < o + 24.0:          # the taller ones: a floor more
+				up = lit if Props.rnd(k * 3.1 + x) > 0.7 else dark
+				Service.gb(p, n, u + x, u + x + 1.1, -24.0, -23.97, down + 6.2, down + 7.5, up)
 
 
 # ------------------------------------------------------------------ the people

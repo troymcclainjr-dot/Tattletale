@@ -4,7 +4,9 @@ extends RefCounted
 ## pallets, roll cages of stock, a bale of cardboard, a hand truck, an air
 ## conditioner on its bracket, a chain-link gate, and the steel back door drawn
 ## on a wall from inside (the corner store's and the clothing store's stock
-## rooms, the studio's booth). Names and words on them are placeholders.
+## rooms, the studio's booth); the studio's back stair, and on its roof the back
+## of its sign, a condenser and a skylight. Names and words on them are
+## placeholders.
 
 const Props := preload("res://scripts/props.gd")
 const Outdoor := preload("res://scripts/outdoor.gd")
@@ -164,6 +166,118 @@ static func ac_unit(p: Node3D, n: Node3D, u: float, v: float, y: float) -> Node3
 	Kit.ring(g, 0.21, 0.025, Vector3(0.14, y, 0.44), Props.STEEL)
 	for x: float in [-0.34, 0.34]:
 		Kit.box(g, Vector3(0.06, 0.06, 0.44), Vector3(x, y - 0.34, 0.22), GALV)      # its brackets (grey: thin and black they read as cables)
+	return g
+
+
+## A galvanised steel stair up a back wall to its roof (the wall on v = 0 of the
+## plan; the stair stands v0 off it), rising toward -u from the ground at y0:
+## the bottom step's nose at u_foot, the flight up to a landing (u_top - 1.0 ..
+## u_top) `rise` up, level with the roof behind the gap left in its parapet.
+## Treads between two stringers, a guard rail along the open side and round the
+## landing's end, a handrail on the wall, a post under the flight, brackets
+## under the landing. Drawn into `n`, taking no floor: the plan keeps the floor
+## under its low end clear (the post stands in that).
+static func back_stair(p: Node3D, n: Node3D, u_foot: float, u_top: float, v0: float, y0: float, rise: float) -> void:
+	var w := 0.85                                  # between the stringers
+	var steps := maxi(roundi(rise / 0.19), 2)
+	var r := rise / float(steps)
+	var g := (u_foot - u_top) / float(steps - 1)
+	var foot := Vector2(u_foot + g, y0)            # the line of the noses (u, y), from the ground...
+	var head := Vector2(u_top, y0 + rise)          # ...to the landing's edge
+	var line := head - foot
+	var ang := rad_to_deg(atan2(line.y, -line.x))
+	var vo := v0 + 0.075 + w                       # the outer stringer's middle
+	var top := y0 + rise
+	var tread := GALV.darkened(0.2)
+	for k in range(1, steps):
+		var nose := u_foot - float(k - 1) * g
+		gb(p, n, nose - g - 0.015, nose, v0 + 0.05, v0 + 0.05 + w, y0 + k * r - 0.035, y0 + k * r, tread)
+	# The stringers, their tops 8 cm over the line of the noses.
+	var mid := foot.lerp(head, 0.5) + Vector2(-line.y, line.x).normalized() * 0.05
+	for v: float in [v0 + 0.025, vo]:
+		Kit.box(n, Vector3(line.length(), 0.26, 0.05), p.pt(mid.x, v, mid.y), GALV, Vector3(0, 0, -ang))
+	# The guard along the open side: posts, a rail 0.95 over the noses and one between.
+	for f: float in [0.06, 0.37, 0.68, 1.0]:
+		var at := foot.lerp(head, f)
+		Kit.box(n, Vector3(0.045, 0.95, 0.045), p.pt(at.x, vo, at.y + 0.475), GALV)
+	var low := foot.lerp(head, 0.06)
+	for hy: float in [0.95, 0.5]:
+		Kit.tube(n, p.pt(low.x, vo, low.y + hy), p.pt(head.x, vo, head.y + hy), 0.024, GALV)
+	# The handrail on the wall, on its brackets.
+	low = foot.lerp(head, 0.04)
+	Kit.tube(n, p.pt(low.x, v0 - 0.05, low.y + 0.9), p.pt(head.x, v0 - 0.05, head.y + 0.9), 0.022, GALV)
+	for f: float in [0.15, 0.55, 0.92]:
+		var at := foot.lerp(head, f)
+		Kit.box(n, Vector3(0.04, 0.04, v0 - 0.03), p.pt(at.x, (v0 - 0.03) * 0.5, at.y + 0.9), GALV)
+	# A post under the flight, on its plate.
+	var under := foot.lerp(head, 0.45)
+	gb(p, n, under.x - 0.12, under.x + 0.12, vo - 0.12, vo + 0.12, y0, y0 + 0.02, GALV.darkened(0.25))
+	gb(p, n, under.x - 0.045, under.x + 0.045, vo - 0.045, vo + 0.045, y0 + 0.02, under.y - 0.2, GALV)
+	# The landing: its deck level with the roof, edged; posts and rails round its
+	# open side and its end; brackets under it into the wall.
+	var u0 := u_top - 1.0
+	gb(p, n, u0, u_top, 0.0, vo - 0.03, top - 0.04, top, tread)
+	gb(p, n, u0, u_top, vo - 0.03, vo + 0.03, top - 0.2, top + 0.03, GALV)
+	gb(p, n, u0 - 0.06, u0, 0.0, vo + 0.03, top - 0.2, top + 0.03, GALV)
+	for v: float in [vo, 0.06]:
+		Kit.box(n, Vector3(0.045, 0.92, 0.045), p.pt(u0 - 0.03, v, top + 0.49), GALV)
+	for hy: float in [0.95, 0.5]:
+		Kit.tube(n, p.pt(u0 - 0.03, vo, top + hy), p.pt(u_top, vo, top + hy), 0.024, GALV)
+		Kit.tube(n, p.pt(u0 - 0.03, vo, top + hy - 0.01), p.pt(u0 - 0.03, 0.06, top + hy - 0.01), 0.023, GALV)
+	for u: float in [u0 + 0.12, u_top - 0.12]:
+		Kit.tube(n, p.pt(u, vo - 0.05, top - 0.2), p.pt(u, -0.02, top - 1.0), 0.03, GALV)
+
+
+## The back of a sign standing on a roof's front edge, its face to the street
+## (-v), the board's back on v: from the roof, the board's plain sheet, the
+## rails across it, its three posts braced back to the roof, and the lamps'
+## arms reaching over its top to light the face, their glow round its edges.
+## It takes the roof under it.
+static func roof_sign(p: Node3D, b: int, u0: float, u1: float, v: float, look := Color(0.44, 0.46, 0.47)) -> void:
+	var n: Node3D = p.node_of(b)
+	var rust := Color(0.44, 0.26, 0.18)
+	var mid := (u0 + u1) * 0.5
+	p.block(u0 - 0.15, v - 0.2, u1 + 0.15, v + 1.4)
+	gb(p, n, u0, u1, v - 0.06, v, 1.1, 2.6, look)
+	gb(p, n, u0 + 0.04, u1 - 0.04, v - 0.07, v - 0.06, 1.14, 2.56, Color(0.16, 0.2, 0.34))      # its face, the street's side
+	for y: float in [1.4, 2.25]:
+		gb(p, n, u0 + 0.05, u1 - 0.05, v, v + 0.05, y - 0.03, y + 0.03, rust)
+	for u: float in [u0 + 0.25, mid, u1 - 0.25]:
+		gb(p, n, u - 0.04, u + 0.04, v + 0.05, v + 0.13, 0.02, 2.75, rust)
+		gb(p, n, u - 0.13, u + 0.13, v - 0.04, v + 0.22, 0.0, 0.02, rust.darkened(0.2))
+		Kit.tube(n, p.pt(u, v + 0.13, 2.1), p.pt(u, v + 1.25, 0.02), 0.035, rust)
+		gb(p, n, u - 0.12, u + 0.12, v + 1.13, v + 1.37, 0.0, 0.02, rust.darkened(0.2))
+	for u: float in [u0 + 0.6, mid, u1 - 0.6]:
+		Kit.tube(n, p.pt(u, v + 0.09, 2.3), p.pt(u, v + 0.09, 2.95), 0.022, GALV)
+		Kit.tube(n, p.pt(u, v + 0.09, 2.95), p.pt(u, v - 0.55, 2.95), 0.022, GALV)
+		gb(p, n, u - 0.1, u + 0.1, v - 0.68, v - 0.5, 2.84, 2.96, Color(0.3, 0.31, 0.33))
+	Kit.omni(n, p.pt(mid, v - 1.1, 1.9), Color(1.0, 0.86, 0.62), 1.4, 4.5)
+
+
+## An air conditioner's condenser on a roof: a louvred cabinet on two rails,
+## the fan's grille on top.
+static func condenser(p: Node3D, b: int, u: float, v: float, yaw := 0.0) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, yaw, 1.1, 0.9)
+	var look := Color(0.8, 0.79, 0.74)
+	for z: float in [-0.3, 0.3]:
+		Kit.box(g, Vector3(1.04, 0.1, 0.1), Vector3(0, 0.05, z), Color(0.34, 0.35, 0.37))
+	Kit.bevel(g, Vector3(1.0, 0.78, 0.8), Vector3(0, 0.49, 0), look, 0.03)
+	for k in 6:
+		Kit.box(g, Vector3(0.86, 0.022, 0.012), Vector3(0, 0.22 + k * 0.1, 0.405), look.darkened(0.25))
+	Kit.cyl(g, 0.32, 0.012, Vector3(0, 0.886, 0), Color(0.24, 0.25, 0.27), Vector3.ZERO, 18)
+	Kit.ring(g, 0.32, 0.03, Vector3(0, 0.894, 0), Props.STEEL, Vector3(-90, 0, 0))
+	for a: float in [0.0, 60.0, 120.0]:
+		Kit.box(g, Vector3(0.6, 0.012, 0.03), Vector3(0, 0.898, 0), GALV, Vector3(0, a, 0))
+	return g
+
+
+## A skylight on its curb, lit from the room under it.
+static func skylight(p: Node3D, b: int, u: float, v: float, w := 1.0, d := 0.8) -> Node3D:
+	var g: Node3D = p.prop(b, u, v, 0.0, w + 0.2, d + 0.2)
+	Kit.box(g, Vector3(w + 0.16, 0.3, d + 0.16), Vector3(0, 0.15, 0), GALV.darkened(0.3))
+	Kit.box(g, Vector3(w, 0.03, d), Vector3(0, 0.315, 0), Kit.flat(Color(1.0, 0.85, 0.6), 0.75))
+	for x: float in [-w * 0.25, w * 0.25]:
+		Kit.box(g, Vector3(0.03, 0.02, d), Vector3(x, 0.34, 0), GALV)
 	return g
 
 
