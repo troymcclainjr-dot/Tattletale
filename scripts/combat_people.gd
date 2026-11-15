@@ -2,28 +2,53 @@ extends RefCounted
 ## People who are shot, and the people round them (combat.gd hands shots on to this).
 ##
 ## A person hit flinches and pulls a hurt face; with no health left he drops where he stands: his card goes
-## over and lies flat on the floor, face up, eyes shut (paper_actor.gd's `fallen`), and a pool of blood spreads
-## from under him and stays. The dead do not walk, talk, blink or stand in anyone's way.
+## over and lies flat on the floor, face up, his eyes crossed out and his tongue out (paper_face.gd's HELD "dead"),
+## and a pool of blood spreads from under him and stays. Nothing about the dead moves: they do not walk, dance,
+## blink, talk or stand in anyone's way, and nothing is left in their hands to twitch (_still).
 ##
-## Everyone near a shot is frightened: they turn to the shooter with a scared face, then run from him to the far
-## side of where they may walk (their room, or where they wander), facing the way they run, round props and
-## round each other. Someone drawn only from the front can only run towards the camera (the way he faces), and
-## someone with no legs drawn cannot run at all: they cower where they are. With no shot for CALM seconds they go
-## back to what they were doing; when he leaves a place, those who ran are back in their places.
+## Everyone near a shot is frightened: they turn to the shooter with a scared face, then each runs for a hiding
+## place out of his sight (people_cover.gd finds one from the place itself; people_flee.gd runs him there, facing
+## the way he goes, round props and round each other, opening a shut door on the way) and crouches there. If the shooter comes round to where he
+## can see someone hiding (for SEEN_FOR), that one runs for another place; a hiding place is never shared. Stopped
+## on his way by people in it, he gets down where he is if the shooter cannot see him there, or goes round them. With
+## nowhere to hide he runs as far from the shooter as he can get and cowers there (looking again every RETRY
+## seconds); with nowhere to run either, he cowers where he is. With no shot for CALM seconds and no gun pointed, they walk back to
+## where they were and go on with what they were doing; when he leaves a place, those who ran are back in their
+## places at once.
+##
+## Held at gunpoint: while he points a gun at someone close (HOLD_RANGE), in clear sight, who has not run yet,
+## with the red cross on him or near him (HOLD_NEAR pixels; pointing with Ctrl, which has no cross, the barrel
+## within HOLD_CONE of him), that one freezes with his hands up (someone with no arms drawn shrinks instead). When
+## the cross has been off him for RELEASE seconds, or a shot goes off, he runs for a hiding place.
+##
+## Someone `foe` (armed and shooting back: combat_foes.gd drives him) is not frightened, held or hidden here;
+## dead, he is dead like anyone.
 ##
 ## Placeholder rule: the dead stay dead (in the save, in the player state's flags) until he next sleeps.
 
 const PaperActor := preload("res://scripts/paper_actor.gd")
+const PaperFace := preload("res://scripts/paper_face.gd")
+const Cover := preload("res://scripts/people_cover.gd")
+const FleeBrain := preload("res://scripts/people_flee.gd")
+const PeopleBack := preload("res://scripts/people_back.gd")
 const HEALTH := 100              # a person's, placeholder
 const REACT := 18.0              # metres: people this near a shot are frightened by it
-const CALM := 12.0               # seconds with no shot before the frightened go back to what they were doing
+const CALM := 12.0               # seconds with no shot (and no gun pointed) before the frightened go back to what they were doing
 const FALL := 0.55               # seconds to go down
 const POOL_SECONDS := 4.0        # for the pool to spread
 const POOL_RADIUS := 0.95        # metres, about (the ring is 0.8 of it, wobbling): it shows round someone the size of the lead
-const FLEE_CONE := 0.7           # radians: drawn only from the front, he runs no further than this from straight at the camera
-const TURN := 0.22               # seconds to turn round before running a new way (paper_actor.gd's flip, and a little)
-const GRID := 0.25               # metres: the squares a runner's way is found on
 const HURT_FACE := 0.6           # seconds of the hurt face before the scared one
+const CROUCH_TIME := 0.25        # seconds to crouch down, or stand up
+const LOOK_EVERY := 0.25         # seconds between looks from a hiding place: can the shooter see him there?
+const SEEN_FOR := 0.9            # seconds in the shooter's sight before someone hiding runs for another place
+const RETRY := 2.0               # seconds between tries to find a hiding place, cowering in the shooter's sight
+const TRIES := 3                 # ways that come to nothing (someone in the way) before he cowers where he is
+const CROWD := 1.0               # metres: held up on his way, his next way goes round whoever is this near him
+const HOLD_RANGE := 6.5          # metres: he holds up people this near at gunpoint
+const HOLD_NEAR := 60.0          # pixels: the red cross this near someone's drawing is on him
+const HOLD_CONE := 0.2           # radians: pointing with no cross (Ctrl), the barrel this near the line to someone
+const RELEASE := 0.4             # seconds of the cross off him before someone held up runs
+const HANDS_TIME := 0.2          # seconds to get his hands up, or down
 
 
 class Person:
@@ -32,88 +57,38 @@ class Person:
 	var place := ""
 	var index := 0
 	var health := HEALTH
-	var state := "calm"          # "calm", "alarmed", "fleeing", "cowering", "dead"
+	var state := "calm"          # "calm", "alarmed", "held", "fleeing", "hiding", "cowering", "returning", "dead"
 	var wait := 0.0
 	var quiet := 0.0
 	var taken := false
 	var brain_was: Variant = null
 	var areas_was: Array = []
 	var others_was: Array = []
+	var obstacles_was: Array = []
 	var face_was := "neutral"
 	var reach_was := 1.6
+	var performing_was := false
+	var parent_was: Node         # the node he stood in (a band of the place): back into it when he is calm
 	var home := Vector3.ZERO
 	var hurt_t := 0.0
 	var fall_t := -1.0
 	var pool: MeshInstance3D
-	var flee                     # his Flee while he is frightened
+	var flee                     # his people_flee.gd while he is frightened
 	var foe := false             # armed and shooting back (combat_foes.gd drives him): a shot does not frighten him
-
-
-## Stands in for someone's brain in main.gd's cast while he is frightened: main.gd calls tick() each frame.
-class Flee:
-	var frozen := false
-	var person:                  # the Person it moves (held weakly: the Person holds this Flee)
-		get:
-			return _person.get_ref() if _person else null
-		set(value):
-			_person = weakref(value)
-	var _person: WeakRef
-	var to_screen: Callable
-	var path := PackedVector2Array()
-	var at := 0
-	var turning := 0.0
-	var stuck := 0.0
-
-	func tick(delta: float) -> void:
-		if person == null:
-			return
-		var a: Node3D = person.actor
-		if frozen or person.state != "fleeing":
-			a.sprinting = false
-			a.walk(Vector2.ZERO, Vector2.ZERO, delta)
-			return
-		if turning > 0.0:
-			turning -= delta
-			a.walk(Vector2.ZERO, Vector2.ZERO, delta)
-			return
-		var here := Vector2(a.position.x, a.position.z)
-		while at < path.size() and here.distance_to(path[at]) < 0.14:
-			at += 1
-			if at < path.size() and _turn_for(path[at] - here):
-				a.walk(Vector2.ZERO, Vector2.ZERO, delta)
-				return
-		if at >= path.size():
-			person.state = "cowering"
-			a.sprinting = false
-			a.walk(Vector2.ZERO, Vector2.ZERO, delta)
-			return
-		var dir := (path[at] - here).normalized()
-		a.sprinting = true
-		a.walk(dir, to_screen.call(dir), delta)
-		var moved := Vector2(a.position.x, a.position.z).distance_to(here)
-		stuck = stuck + delta if moved < PaperActor.WALK_SPEED * float(a.speed) * delta * 0.3 else 0.0
-		if stuck > 0.4:              # someone or something in the way: he stays where he is
-			person.state = "cowering"
-			a.sprinting = false
-
-	## Before he runs a new way he turns to face it, standing (the house rule). True while he does.
-	func _turn_for(way: Vector2) -> bool:
-		var a: Node3D = person.actor
-		var screen: Vector2 = to_screen.call(way.normalized())
-		var view := "front"
-		var mirrored := false
-		if a._views.has("side") and absf(screen.x) >= absf(screen.y) * 0.7:
-			view = "side"
-			mirrored = screen.x < 0.0
-		elif a._views.has("back") and screen.y < 0.0:
-			view = "back"
-		elif a._views.size() == 1:
-			mirrored = screen.x < -0.1 if absf(screen.x) > 0.1 else a._want_yaw > 1.0
-		if a.view == view and is_equal_approx(a._want_yaw, PI if mirrored else 0.0):
-			return false
-		a.face_way(view, mirrored)
-		turning = TURN
-		return true
+	var crouch := 0.0            # 0 standing .. 1 crouched as low as he goes (people_flee.gd draws it)
+	var hands := 0.0             # 0 .. 1 his hands up
+	var search: RefCounted       # people_cover.gd's Search while he looks for somewhere to go
+	var spot := Vector2.INF      # the hiding place he has taken: nobody else hides this near it
+	var running_off := false     # nowhere hides him: he runs as far from the lead as he can, and cowers there
+	var avoid: Array = []        # hiding places he has been found in, this fright
+	var in_sight := false        # hiding: the shooter could see him, the last time he looked
+	var seen_t := 0.0
+	var look_t := 0.0
+	var retry_t := 0.0
+	var off_t := 0.0             # held up: seconds the cross has been off him
+	var tries := 0
+	var spent := 0               # microseconds his searches have taken, this fright (for hidecheck)
+	var looked := 0              # spots he has looked at from the shooter's eyes, this fright
 
 
 var main: Node
@@ -160,6 +135,11 @@ func living_here() -> Array:
 	return out
 
 
+## How tall someone is now: crouched, less.
+func _tall(p: Person) -> float:
+	return float(p.actor.height) * lerpf(1.0, FleeBrain.crouched(p.actor), p.crouch)
+
+
 ## Whoever's drawing is under a ray from the camera (the cross): {"person", "dist", "point"}, or {}.
 func pick(from: Vector3, dir: Vector3) -> Dictionary:
 	var best := {}
@@ -177,7 +157,7 @@ func pick(from: Vector3, dir: Vector3) -> Dictionary:
 		var on := from + dir * t
 		var u := (on - a.global_position).dot(across)
 		var v := on.y - a.global_position.y
-		var h: float = a.height
+		var h := _tall(p)
 		var wide: float = a.reach / 0.4
 		var half := (0.13 if v > h * 0.82 else (0.25 if v > h * 0.45 else 0.17)) * wide
 		if v < 0.0 or v > h * 1.02 or absf(u) > half:
@@ -209,7 +189,8 @@ func along(from: Vector3, to: Vector3) -> Dictionary:
 		var y := from.y + d.y * t0
 		var y1 := from.y + d.y * t
 		var foot: float = a.global_position.y
-		if (y < foot or y > foot + a.height) and (y1 < foot or y1 > foot + a.height):
+		var top := foot + _tall(p)
+		if (y < foot or y > top) and (y1 < foot or y1 > top):
 			continue
 		if t0 < first:
 			first = t0
@@ -235,34 +216,52 @@ func hit(p: Person, point: Vector3, dir: Vector3, damage: int) -> String:
 	p.hurt_t = HURT_FACE
 	if a.face:
 		a.face.set_expression("hurt", true)
-	_frighten(p, main._actor.global_position)
+	if p.state in ["hiding", "cowering"] and not p.foe:
+		p.quiet = 0.0
+		_run(p, true)                            # found: he runs for somewhere else
+	else:
+		_frighten(p, main._actor.global_position)
 	return "hit"
 
 
-## A shot was fired from `at`: everyone near it is frightened.
+## A shot was fired from `at`: everyone near it is frightened (those out of sight in a part of the place the camera
+## has cut away too: they hear it).
 func alarm(at: Vector3) -> void:
-	for p: Person in living_here():
-		if p.actor.global_position.distance_to(at) <= REACT:
+	for p: Person in here():
+		if p.state != "dead" and p.actor.global_position.distance_to(at) <= REACT:
 			_frighten(p, at)
 
 
 func _frighten(p: Person, at: Vector3) -> void:
 	p.quiet = 0.0
-	if p.state != "calm" or p.foe:
+	if p.foe:
 		return
-	_take_over(p)
-	p.state = "alarmed"
-	p.wait = _rng.randf_range(0.15, 0.45)
+	match p.state:
+		"calm":
+			_take_over(p)
+			p.state = "alarmed"
+			p.wait = _rng.randf_range(0.15, 0.45)
+			_look_at(p, at)
+			if p.actor.face and p.hurt_t <= 0.0:
+				p.actor.face.set_expression("scared", true)
+		"held", "returning":
+			_run(p)
+
+
+## He turns to look at `at` (as far as he can turn) and his eyes go that way.
+func _look_at(p: Person, at: Vector3) -> void:
 	var a := p.actor
-	var across: float = main._screen_dir(Vector2(at.x - a.position.x, at.z - a.position.z)).x
-	a.face_side(across)          # he turns to look (if he can turn)
+	var way := Vector2(at.x - a.global_position.x, at.z - a.global_position.z)
+	var across: float = main._screen_dir(way).x
+	if PeopleBack.turns(a):
+		p.flee.look_way = way
+	else:
+		a.face_side(across)
 	if a.face:
-		if p.hurt_t <= 0.0:
-			a.face.set_expression("scared", true)
 		a.face.look(signf(across) * (1.0 if not a._views.has("side") else 0.0))
 
 
-## From now on this person is moved by a Flee, not by what moved him before (put back by _let_go).
+## From now on this person is moved by people_flee.gd, not by what moved him before (put back by _let_go).
 func _take_over(p: Person) -> void:
 	if p.taken:
 		return
@@ -272,12 +271,21 @@ func _take_over(p: Person) -> void:
 	p.brain_was = p.member["brain"]
 	p.areas_was = a.areas.duplicate()
 	p.others_was = a.others.duplicate()
+	p.obstacles_was = a.obstacles
 	p.face_was = a.face.expression if a.face else "neutral"
-	var flee := Flee.new()
-	flee.person = p
-	flee.to_screen = Callable(main, "_screen_dir")
-	p.flee = flee
-	p.member["brain"] = flee
+	p.performing_was = a.performing
+	p.parent_was = a.get_parent()
+	a.performing = false                  # the dancing stops
+	p.avoid = []
+	p.tries = 0
+	p.spent = 0
+	p.looked = 0
+	var brain := FleeBrain.new()
+	brain.person = p
+	brain.main = main
+	brain.hidden_at = _hidden_there
+	p.flee = brain
+	p.member["brain"] = brain
 
 
 ## Back to what he was doing.
@@ -287,131 +295,307 @@ func _let_go(p: Person) -> void:
 	p.taken = false
 	var a := p.actor
 	p.member["brain"] = p.brain_was
+	p.search = null
+	p.spot = Vector2.INF
+	p.running_off = false
+	p.crouch = 0.0
+	p.hands = 0.0
 	a.use_reach = p.reach_was
 	a.areas = p.areas_was
 	a.others = p.others_was
+	a.obstacles = p.obstacles_was
 	a.sprinting = false
 	a.cower = 0.0
 	a.flinch = 0.0
+	if not a._pivot.top_level:
+		a._pivot.scale = Vector3.ONE          # people_flee.gd's crouch
+	a.performing = p.performing_was
+	PeopleBack.front_again(a)
+	a._yaw = wrapf(a._yaw, -PI, PI)
+	a._want_yaw = 0.0
+	if p.parent_was and is_instance_valid(p.parent_was) and a.get_parent() != p.parent_was:
+		a.reparent(p.parent_was, true)
 	if a.face:
 		a.face.set_expression(p.face_was if p.face_was != "" else "neutral")
 		a.face.look(0.0)
 	p.state = "calm"
 
 
-## Where he may run: his wandering ground, or the room he stands in.
-func _ground(p: Person) -> Array:
-	var brain: Variant = p.brain_was
-	if brain != null and "home" in brain and (brain.home as Rect2).has_area():
-		return [brain.home]
-	var b: Node3D = main._building
-	var room: Dictionary = b.rooms[b.room_at_pos(p.actor.global_position, 0)]
-	if room.has("areas"):
-		return room["areas"]
-	return [(room["area"] as Rect2).grow_individual(-0.4, -0.26, -0.4, -0.26)]
-
-
-## Find a way to run from `from`, and start him on it (or he cowers where he is).
-func _run_from(p: Person, from: Vector3) -> void:
-	var a := p.actor
-	var flee: Flee = p.flee
-	a.areas = _ground(p)
-	a.others = [main._actor]
-	for q: Person in living_here():
-		if q != p:
-			a.others.append(q.actor)
-	var view: Dictionary = a._views.get("front", {})
-	if view.get("limbs") == null:             # no legs drawn to run on
-		p.state = "cowering"
-		return
-	var start := Vector2(a.position.x, a.position.z)
-	var shooter := Vector2(from.x, from.z)
-	var path := PackedVector2Array()
-	if a._views.has("side") and a._views.has("back"):
-		path = _way_out(a, start, shooter)
-	else:
-		path = _straight_out(a, start, shooter)
-	if path.is_empty():
-		p.state = "cowering"
-		return
-	flee.path = path
-	flee.at = 0
-	flee.stuck = 0.0
+## He runs for a hiding place (`found`: he has been found where he was, and keeps away from there now; `crowded`:
+## people in his way stopped him, and he goes round them).
+func _run(p: Person, found := false, crowded := false) -> void:
+	if found:
+		p.tries = 0                           # seen where he is: a new run, with its own TRIES
+	if found and p.spot != Vector2.INF:
+		p.avoid.append(p.spot)
+	elif found:
+		p.avoid.append(Vector2(p.actor.position.x, p.actor.position.z))
+	p.spot = Vector2.INF
+	p.running_off = false
 	p.state = "fleeing"
-	flee._turn_for(path[0] - start)
+	p.seen_t = 0.0
+	p.in_sight = false
+	p.flee.go(PackedVector2Array(), [])        # he stands while he looks about for somewhere
+	p.flee.face_front = false
+	if p.actor.face and p.hurt_t <= 0.0:
+		p.actor.face.set_expression("scared", true)
+		p.actor.face.look(0.0)
+	p.search = _new_search(p, Vector2.INF, crowded)
+	if p.search == null:
+		_cower(p)
 
 
-## Someone who can face any way: the floor he can reach, on a grid, and the far side of it from the shooter.
-func _way_out(a: Node3D, start: Vector2, shooter: Vector2) -> PackedVector2Array:
-	var from := Vector2i(roundi(start.x / GRID), roundi(start.y / GRID))
-	var seen := {from: from}
-	var queue: Array = [from]
-	var best := from
-	var best_score := start.distance_to(shooter)
-	var head := 0
-	while head < queue.size() and queue.size() < 1600:
-		var cell: Vector2i = queue[head]
-		head += 1
-		for step: Vector2i in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
-			var next: Vector2i = cell + step
-			if seen.has(next):
-				continue
-			var spot := Vector2(next) * GRID
-			if not a.can_stand(spot):
-				continue
-			seen[next] = cell
-			queue.append(next)
-			var score := spot.distance_to(shooter) - 0.15 * spot.distance_to(start)
-			if score > best_score + 0.01:
-				best_score = score
-				best = next
-	if best == from or Vector2(best).distance_to(Vector2(from)) * GRID < 0.6:
-		return PackedVector2Array()
-	var cells: Array = []
-	var back: Vector2i = best
-	while back != from:
-		cells.push_front(back)
-		back = seen[back]
-	# Straighten it: from each point, on to the furthest one that can be walked to in a straight line.
-	var out := PackedVector2Array()
-	var at := start
-	var i := 0
-	while i < cells.size():
-		var j := cells.size() - 1
-		while j > i and not _clear_line(a, at, Vector2(cells[j]) * GRID):
-			j -= 1
-		at = Vector2(cells[j]) * GRID
-		out.append(at)
-		i = j + 1
-	return out
-
-
-## Someone drawn only from the front runs towards the camera, within FLEE_CONE of straight at it.
-func _straight_out(a: Node3D, start: Vector2, shooter: Vector2) -> PackedVector2Array:
-	var near: Vector2 = main._floor_dir(Vector2(0.0, 1.0)).normalized()
-	var best := PackedVector2Array()
-	var best_score := 0.25
-	for i in 9:
-		var way := near.rotated(lerpf(-FLEE_CONE, FLEE_CONE, float(i) / 8.0))
-		var length := 0.0
-		while length < 6.0 and a.can_stand(start + way * (length + 0.1)):
-			length += 0.1
-		if length < 0.6:
+## A search for somewhere to hide from the lead (goal INF), or for the way to `goal` (`crowded`: not through
+## anyone within CROWD of him).
+func _new_search(p: Person, goal: Vector2, crowded := false) -> RefCounted:
+	var a := p.actor
+	var b := _site_of(p)
+	a.areas = b.walk_areas()
+	a.obstacles = p.obstacles_was
+	a.others = [main._actor]
+	for q: Person in here():
+		if q != p and q.state != "dead":
+			a.others.append(q.actor)
+	var g: RefCounted = Cover.grid(b, a.reach)
+	var at := Vector2(a.position.x, a.position.z)
+	var start := _way_in(p, g, at)
+	if start < 0:
+		return null
+	var s: RefCounted = Cover.Search.new()
+	s.g = g
+	s.start = start
+	s.from_spot = at
+	var lead: Node3D = main._actor
+	s.shooter = Vector2(lead.global_position.x, lead.global_position.z)
+	s.eye = Cover.eye_of(lead)
+	s.keep_off = p.avoid.duplicate()
+	for q: Person in here():
+		if q != p and q.spot != Vector2.INF:
+			s.keep_off.append(q.spot)
+		if q == p or q.state == "dead" or goal != Vector2.INF:
 			continue
-		var end := start + way * length
-		var score := end.distance_to(shooter) - start.distance_to(shooter) + 0.05 * length
-		if score > best_score:
-			best_score = score
-			best = PackedVector2Array([end])
+		var there := Vector2(q.actor.position.x, q.actor.position.z)
+		if q.state in ["hiding", "cowering", "held"] or (crowded and there.distance_to(at) < CROWD):
+			s.blocked.append(there)          # no way through someone crouched in a doorway, or who stopped him
+	s.tall = float(a.height) * FleeBrain.crouched(a)
+	s.floor_y = a.global_position.y
+	s.world = world_of.call(b)
+	for door: Node3D in (b.get("doors") if b.get("doors") is Array else []):
+		s.doors[door] = true
+		if door.get("mate"):
+			s.doors[door.mate] = true
+	s.shown = func(ri: int) -> bool: return Cover.node_of_room(b, ri).is_visible_in_tree()
+	if goal != Vector2.INF:
+		s.goal = g.nearest(goal)
+		if s.goal < 0:
+			return null
+	return s
+
+
+## The square his way starts from. Someone standing where nobody may walk (behind a counter, too near it) first
+## goes straight to the nearest square he can get to without going through what is there: props do not stop
+## him till he is out (people_flee.gd's escape). -1 if there is none.
+func _way_in(p: Person, g: RefCounted, at: Vector2) -> int:
+	var a := p.actor
+	p.flee.escape = false
+	if a.can_stand(at):
+		return g.nearest(at)
+	var b := _site_of(p)
+	var near: Array = []
+	for dz in range(-6, 7):
+		for dx in range(-6, 7):
+			var i: int = g.at(at + Vector2(dx, dz) * Cover.CELL)
+			if g.is_open(i):
+				near.append(Vector2((g.middle(i) as Vector2).distance_to(at), i))
+	near.sort()
+	var best := -1
+	for each: Vector2 in near.slice(0, 12):
+		if _no_prop_between(b, at, g.middle(int(each.y))):
+			best = int(each.y)
+			break
+	if best >= 0:
+		a.areas.append(Rect2(at, Vector2.ZERO).expand(g.middle(best)).grow(0.12))
+		a.obstacles = []
+		p.flee.escape = true
 	return best
 
 
-func _clear_line(a: Node3D, from: Vector2, to: Vector2) -> bool:
-	var n := int(ceil(from.distance_to(to) / 0.1))
-	for k in range(1, n + 1):
-		if not a.can_stand(from.lerp(to, float(k) / float(n))):
-			return false
+static func _no_prop_between(b: Node3D, from: Vector2, to: Vector2) -> bool:
+	var n := maxi(int(ceil(from.distance_to(to) / 0.05)), 1)
+	var box := Rect2(from, Vector2.ZERO).expand(to)
+	for prop: Rect2 in b.obstacles:
+		if not prop.intersects(box, true):
+			continue
+		for k in n + 1:
+			if prop.has_point(from.lerp(to, float(k) / float(n))):
+				return false
 	return true
+
+
+## His search is done: off he goes (or he cowers where he is; or, going home, he is let go where he is).
+func _search_done(p: Person) -> void:
+	var s: RefCounted = p.search
+	p.search = null
+	p.spent += int(s.usec)
+	p.looked += int(s.tried)
+	var exact: Array = []
+	var doors: Array = []                # the door each point is in the doorway of (he opens it if it is shut)
+	for point: Vector2 in s.path:
+		exact.append(s.g.snap.has(s.g.at(point)))
+		doors.append(s.g.door_at.get(s.g.at(point)))
+	if p.state == "fleeing":
+		if s.found < 0:
+			_cower(p)
+			return
+		if _claimed(p, s.g.middle(s.found)):
+			p.search = _new_search(p, Vector2.INF)       # someone else took it while he looked: he looks again
+			if p.search == null:
+				_cower(p)
+			return
+		p.spot = s.g.middle(s.found)
+		p.running_off = s.fled
+		if s.path.is_empty():
+			_settle(p)
+			return
+		p.flee.go(s.path, exact, doors)
+	elif p.state == "returning":
+		if s.found < 0:
+			_let_go(p)                   # no way back: he stays where he is
+			return
+		var way: PackedVector2Array = s.path
+		way.append(Vector2(p.home.x, p.home.z))
+		exact.append(true)
+		doors.append(null)
+		p.flee.go(way, exact, doors)
+
+
+## Has someone else here taken a hiding place this near `spot`?
+func _claimed(p: Person, spot: Vector2) -> bool:
+	for q: Person in here():
+		if q != p and q.spot != Vector2.INF and q.spot.distance_to(spot) < Cover.CLAIM:
+			return true
+	return false
+
+
+## Held up on his way: may he stop where he is and hide there (out of the shooter's sight already, standing as
+## he is, in a room, not a doorway, and not close to the shooter)?
+func _may_stop_here(p: Person) -> bool:
+	var a := p.actor
+	var here := Vector2(a.position.x, a.position.z)
+	if Cover.room_of(_site_of(p), here) < 0 or a.global_position.distance_to(main._actor.global_position) < Cover.NEAR_SHOOTER:
+		return false
+	return not _seen_now(p)
+
+
+## There: down in his hiding place, or (nowhere hid him) cowering as far from the lead as he could get.
+func _settle(p: Person) -> void:
+	if p.running_off:
+		_cower(p)
+	else:
+		_hide(p)
+
+
+func _hide(p: Person) -> void:
+	p.state = "hiding"
+	p.flee.go(PackedVector2Array(), [])
+	p.flee.face_front = true
+	p.look_t = LOOK_EVERY
+	p.seen_t = 0.0
+	p.in_sight = false
+
+
+## Nowhere to go: down where he is.
+func _cower(p: Person) -> void:
+	p.state = "cowering"
+	p.flee.go(PackedVector2Array(), [])
+	p.flee.face_front = true
+	p.retry_t = RETRY
+	p.look_t = 0.0
+	p.seen_t = 0.0
+
+
+## Calm again: he walks back to where he was.
+func _go_home(p: Person) -> void:
+	p.state = "returning"
+	p.spot = Vector2.INF
+	p.running_off = false
+	p.tries = 0
+	p.flee.go(PackedVector2Array(), [])
+	p.flee.face_front = false
+	if p.actor.face:
+		p.actor.face.set_expression(p.face_was if p.face_was != "" else "neutral")
+		p.actor.face.look(0.0)
+	p.search = _new_search(p, Vector2(p.home.x, p.home.z))
+	if p.search == null:
+		_let_go(p)
+
+
+## Running for his hiding place: crouched at `at`, would he be out of the lead's sight? (people_flee.gd asks, near
+## the end of his way: someone drawn from the front only may stop a little short of the spot that was tried.)
+func _hidden_there(p: Person, at: Vector2) -> bool:
+	var a := p.actor
+	if p.state != "fleeing" or not a.is_visible_in_tree():
+		return true
+	return not Cover.seen(world_of.call(_site_of(p)), Cover.eye_of(main._actor), at, a.global_position.y,
+			float(a.height) * FleeBrain.crouched(a))
+
+
+## Can the lead see him where he is (crouched as he is)?
+func _seen_now(p: Person) -> bool:
+	var a := p.actor
+	if not a.is_visible_in_tree():
+		return false             # in a part of the place the camera has cut away: there are walls between (people_cover.gd)
+	return Cover.seen(world_of.call(_site_of(p)), Cover.eye_of(main._actor), Vector2(a.global_position.x, a.global_position.z),
+			a.global_position.y, _tall(p))
+
+
+# ------------------------------------------------------------ held up
+
+## Is the lead holding him up: pointing a gun at him (the cross on him or near), close, in clear sight?
+func _held_up(p: Person) -> bool:
+	var lead: Node3D = main._actor
+	if p.foe or lead.weapon == "" or not lead.aiming or lead.lowered:
+		return false
+	var a := p.actor
+	if not a.is_visible_in_tree() or a.global_position.distance_to(lead.global_position) > HOLD_RANGE:
+		return false
+	if not _aimed_at(p):
+		return false
+	var chest := a.global_position + Vector3(0.0, a.height * 0.6, 0.0)
+	var w = world_of.call(_site_of(p))
+	return w == null or not w.trace(Cover.eye_of(lead), chest)["hit"]
+
+
+## Is the red cross on his drawing or near it (or, with no cross, the barrel pointed at him)?
+func _aimed_at(p: Person) -> bool:
+	var a := p.actor
+	if main._cross.visible:
+		var cam: Camera3D = main._camera
+		var foot: Vector3 = a.global_position
+		var head := foot + Vector3(0.0, _tall(p) * 0.95, 0.0)
+		if cam.is_position_behind(foot) or cam.is_position_behind(head):
+			return false
+		var s0 := cam.unproject_position(foot)
+		var s1 := cam.unproject_position(head)
+		var at: Vector2 = main._cross.at
+		var gap := at.distance_to(Geometry2D.get_closest_point_to_segment(at, s0, s1))
+		return gap <= s0.distance_to(s1) * 0.15 * a.reach / 0.4 + HOLD_NEAR
+	var gp: Dictionary = main._actor.gun_points()
+	if gp.is_empty():
+		return false
+	var to: Vector3 = a.global_position + Vector3(0.0, a.height * 0.6, 0.0) - (gp["muzzle"] as Vector3)
+	return (gp["dir"] as Vector3).angle_to(to) < HOLD_CONE
+
+
+func _hold_up(p: Person) -> void:
+	_take_over(p)
+	p.state = "held"
+	p.off_t = 0.0
+	p.flee.go(PackedVector2Array(), [])
+	p.flee.face_front = false
+	_look_at(p, main._actor.global_position)
+	if p.actor.face:
+		p.actor.face.set_expression("scared", true)
 
 
 # ------------------------------------------------------------ down
@@ -421,24 +605,58 @@ func _die(p: Person, dir: Vector3, lay := Vector3.ZERO, write := true) -> void:
 	p.state = "dead"
 	p.health = 0
 	p.member["brain"] = null              # nothing walks him now; main.gd only keeps his drawing posed
+	p.search = null
+	p.spot = Vector2.INF
+	p.crouch = 0.0
+	p.hands = 0.0
 	var a := p.actor
-	a.weapon = ""
-	a.aiming = false
-	a.sprinting = false
-	a.cower = 0.0
-	a.flinch = 0.0
+	_still(a)
 	a.use_reach = -1.0                    # nobody to talk to
 	if a.face:
-		a.face.hold = true                         # shut for good: a moment otherwise settles into open eyes (paper_face.gd)
-		a.face.set_expression("preachy", true)     # eyes shut
-		a.face.hold_mouth("mouth_oh")
+		a.face.talking = false
+		a.face.hold = true                # for good: nothing on his face moves now (paper_face.gd's HELD)
+		a.face.set_expression("dead", true)
+		a.face.hold_mouth(String(PaperFace.HELD["dead"]["mouth"]))
 		a.face.look(0.0)
 	a.fall_to = lay if lay != Vector3.ZERO else _fall_way(p, dir)
 	a.fall_lift = _floor_under(p) - a.global_position.y
 	p.fall_t = 0.0
 	_out_of_the_way(p)
+	_settle_in_room(p)
 	if write:
 		_remember(p)
+
+
+## Nothing about him moves from now on: no dance, no step, no bob, no turn, nothing in his hands. He goes down
+## from his front drawing, square to the camera, so that it is his face that ends up looking up.
+static func _still(a: Node3D) -> void:
+	a.weapon = ""
+	a.aiming = false
+	a.lowered = false
+	a.recoil = 0.0
+	a.sprinting = false
+	a.performing = false
+	a.cower = 0.0
+	a.flinch = 0.0
+	a._groove = 0.0
+	a._beat = 0.0
+	a._gait = 0.0
+	a._phase = 0.0
+	a._run = 0.0
+	a._armed = 0.0
+	a._aim = 0.0
+	PeopleBack.front_again(a)
+	if a.view != "front" and a._views.has("front"):
+		a._show("front")
+	a._want_view = a.view
+	a._want_yaw = 0.0
+	a._yaw = 0.0
+	if not a._pivot.top_level:
+		a._pivot.rotation = Vector3.ZERO
+		a._pivot.scale = Vector3.ONE
+	a._card.position.y = 0.0
+	a._card.rotation.z = 0.0
+	a.walk(Vector2.ZERO, Vector2.ZERO, 0.0)          # posed so at once
 
 
 ## The way his head goes as he falls: across the screen, away from the shot, where there is floor for him.
@@ -547,11 +765,29 @@ func left(place: String) -> void:
 	for key: String in _people:
 		var p: Person = _people[key]
 		if p.place == place and p.state != "dead" and p.taken:
-			p.actor.position = p.home
-			p.actor.face_way("front")
+			var a := p.actor
+			a.position = p.home
+			PeopleBack.front_again(a)
+			if a.view != "front" and a._views.has("front"):
+				a._show("front")
+			a._want_view = a.view
+			a._yaw = 0.0
+			a._want_yaw = 0.0
 			p.hurt_t = 0.0
 			p.health = HEALTH
 			_let_go(p)
+
+
+## Someone who has run into another room goes into its node, so that he is shown and hidden with it.
+func _settle_in_room(p: Person) -> void:
+	var a := p.actor
+	var b := _site_of(p)
+	var ri := Cover.room_of(b, Vector2(a.position.x, a.position.z))
+	if ri < 0:
+		return
+	var node := Cover.node_of_room(b, ri)
+	if node and a.get_parent() != node and a.get_parent() != main:
+		a.reparent(node, true)
 
 
 func _pool_for(p: Person, seconds: float) -> void:
@@ -596,6 +832,9 @@ func _node_for(at: Vector3, site: Node3D = null) -> Node3D:
 # ------------------------------------------------------------ each frame
 
 func tick(delta: float) -> void:
+	var until := Time.get_ticks_usec() + Cover.BUDGET
+	var lead: Node3D = main._actor
+	var pointing: bool = lead.weapon != "" and lead.aiming and not lead.lowered
 	for p: Person in here():
 		var a := p.actor
 		if p.state == "dead":
@@ -609,19 +848,73 @@ func tick(delta: float) -> void:
 			a.flinch = move_toward(a.flinch, 0.0, delta * 1.4)
 		if p.hurt_t > 0.0:
 			p.hurt_t -= delta
-			if p.hurt_t <= 0.0 and a.face and p.state != "calm":
+			if p.hurt_t <= 0.0 and a.face and p.state != "calm" and p.state != "returning":
 				a.face.set_expression("scared", true)
-		a.cower = move_toward(a.cower, 1.0 if p.state == "cowering" else 0.0, delta * 4.0)
+		if p.search != null and Time.get_ticks_usec() < until:
+			while not p.search.step(until) and Time.get_ticks_usec() < until:
+				pass
+			if p.search.done:
+				_search_done(p)
 		match p.state:
+			"calm":
+				if pointing and _held_up(p):
+					_hold_up(p)
 			"alarmed":
-				p.wait -= delta
-				if p.wait <= 0.0:
-					_run_from(p, main._actor.global_position)
-			"fleeing", "cowering":
-				p.quiet += delta
-				if p.state == "cowering" and p.quiet > CALM:
-					p.health = maxi(p.health, int(HEALTH * 0.5))
-					_let_go(p)
+				if pointing and _held_up(p):
+					_hold_up(p)
+				else:
+					p.wait -= delta
+					if p.wait <= 0.0:
+						_run(p)
+			"held":
+				p.off_t = 0.0 if pointing and _held_up(p) else p.off_t + delta
+				if p.off_t >= RELEASE:
+					_run(p)
+			"fleeing":
+				if p.search == null and p.flee.stuck:
+					if _may_stop_here(p):
+						p.spot = Vector2(a.position.x, a.position.z)
+						_hide(p)                         # out of his sight already: down where he is
+					else:
+						p.tries += 1
+						if p.tries < TRIES:
+							_run(p, false, true)         # round whoever stopped him
+						else:
+							_cower(p)
+				elif p.search == null and p.flee.arrived:
+					_settle(p)
+			"hiding", "cowering":
+				p.look_t -= delta
+				if p.look_t <= 0.0:
+					p.look_t = LOOK_EVERY
+					p.in_sight = _seen_now(p)
+				p.seen_t = p.seen_t + delta if p.in_sight else 0.0
+				p.quiet = 0.0 if pointing else p.quiet + delta
+				if p.quiet > CALM:
+					_go_home(p)
+				elif p.state == "hiding" and p.seen_t >= SEEN_FOR:
+					_run(p, true)
+				elif p.state == "cowering":
+					p.retry_t -= delta
+					if p.retry_t <= 0.0 and p.in_sight:
+						p.retry_t = RETRY
+						_run(p, true)
+			"returning":
+				if p.search == null and p.flee.stuck:
+					p.tries += 1
+					if p.tries < TRIES:
+						_go_home(p)
+					else:
+						_let_go(p)
+				elif p.search == null and p.flee.arrived:
+					p.flee.face_front = true
+					if absf(wrapf(a._yaw, -PI, PI)) < 0.05 and a.view == "front":
+						_let_go(p)
+		if p.taken:
+			p.crouch = move_toward(p.crouch, 1.0 if p.state in ["hiding", "cowering"] else 0.0, delta / CROUCH_TIME)
+			p.hands = move_toward(p.hands, 1.0 if p.state == "held" else 0.0, delta / HANDS_TIME)
+			if p.state in ["fleeing", "returning"]:
+				_settle_in_room(p)
 
 
 ## For the check: is this person down, and is there a pool under him?

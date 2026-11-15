@@ -67,6 +67,10 @@ extends Node3D
 ##   eye:x:y:z:x:y:z[:fov] (later pictures from there; eye: alone, back to following him), place:id, at:x:z,
 ##   room:NAME (stand him there), beat:n (hold the dancers at that beat), stats (draw calls and frame time),
 ##   check (--check-walk and --check-faces for the place he is in now).
+##   people_steps.gd's: hidecheck (a shot into the air; where everyone hid, and whether he can see them there;
+##   hidecheck:here fires where he stands), runcover, hidden, gunpoint (each a picture, :name: someone running for
+##   cover, someone hidden, someone held up), deadrow (every character with the dead face, standing and lying),
+##   deadcheck (everyone here put down at once: does anything about them move?).
 
 const Building := preload("res://scripts/building.gd")
 const Place := preload("res://scripts/place.gd")
@@ -89,6 +93,7 @@ const PLANS := {
 }
 const FlickerCheck := preload("res://scripts/flicker_check.gd")
 const ShotSteps := preload("res://scripts/shot_steps.gd")      # more --do steps: snap, eye, place, at, room, beat, stats, check
+const PeopleSteps := preload("res://scripts/people_steps.gd")  # --do steps for the people: hidecheck, runcover, hidden, gunpoint, deadrow, deadcheck
 const PaperActor := preload("res://scripts/paper_actor.gd")
 const Wanderer := preload("res://scripts/wanderer.gd")
 const TalkBox := preload("res://scripts/talk_box.gd")
@@ -1594,6 +1599,8 @@ func _take_shot() -> void:
 				print("[shot] fry walked to %.2f, %.2f" % [_fry.position.x, _fry.position.z])
 			"snap", "eye", "place", "at", "room", "beat", "stats", "check":     # shot_steps.gd: many pictures in one run, from anywhere
 				await ShotSteps.step(self, bits)
+			"hidecheck", "runcover", "hidden", "gunpoint", "deadrow", "deadcheck":     # people_steps.gd: the dead, the frightened, the held up
+				await PeopleSteps.step(self, bits)
 			_:              # fire, reload, hurt, shoot, aimon, hud, freeze, combatcheck
 				await _combat.step(bits)
 	if _shot_talk > 0.0 and _actor.face:
