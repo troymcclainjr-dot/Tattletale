@@ -114,10 +114,10 @@ func _facade() -> void:
 		Kit.box(facade, Vector3(ww + 0.11, 0.07, t + 0.06), Vector3(wx, y, zc), WOOD_DARK)
 	for x in [WINDOW[0] - 0.02, WINDOW[1] + 0.02, wx]:
 		Kit.box(facade, Vector3(0.07, wh + 0.11, t + 0.06), Vector3(x, wy, zc), WOOD_DARK)
-	Kit.box(facade, Vector3(ww, wh, 0.02), Vector3(wx, wy, zc), Color(0.75, 0.85, 0.7, 0.2))
+	var shop_pane := Kit.pane(Kit.box(facade, Vector3(ww, wh, 0.02), Vector3(wx, wy, zc), Color(0.75, 0.85, 0.7, 0.2)))      # combat: a shot breaks it
 	for i in 9:
 		Kit.box(facade, Vector3(ww, 0.05, 0.012), Vector3(wx, WINDOW[3] - 0.06 - i * 0.075, zc - 0.03), Color(0.9, 0.88, 0.8))
-	Kit.box(facade, Vector3(0.16, wh + 0.3, 0.005), Vector3(wx - 0.6, wy, zc + 0.02), Color(1, 1, 1, 0.18), Vector3(0, 0, -30))
+	Kit.pane(shop_pane, [Kit.box(facade, Vector3(0.16, wh + 0.3, 0.005), Vector3(wx - 0.6, wy, zc + 0.02), Color(1, 1, 1, 0.18), Vector3(0, 0, -30))])
 	Kit.bevel(facade, Vector3(ww + 0.32, 0.08, 0.16), Vector3(wx, WINDOW[2] - 0.095, WALL_Z1 + 0.04), STONE, 0.02)
 	Kit.box(facade, Vector3(ww + 0.24, 0.16, 0.035), Vector3(wx, WINDOW[3] + 0.135, WALL_Z1 + 0.0175), Color(0.4, 0.17, 0.13))
 
@@ -130,7 +130,7 @@ func _facade() -> void:
 	door.position = Vector3(DOOR[1] - 0.01, 0, zc)
 	get_parent().add_child(door)
 	door.build_leaf(DOOR[1] - DOOR[0] - 0.02, 2.086, Color(0.2, 0.3, 0.26), true, 0.1)
-	Kit.box(door.leaf, Vector3(0.36, 0.5, 0.12), Vector3(-0.47, 1.55, 0), Color(0.75, 0.85, 0.7, 0.35))    # a small pane
+	Kit.pane(Kit.box(door.leaf, Vector3(0.36, 0.5, 0.12), Vector3(-0.47, 1.55, 0), Color(0.75, 0.85, 0.7, 0.35)))    # a small pane
 	Kit.box(door.leaf, Vector3(0.8, 0.22, 0.106), Vector3(-0.47, 0.13, 0), STEEL)                          # kick plate
 	Kit.box(door.leaf, Vector3(0.1, 0.3, 0.114), Vector3(-0.8, 1.05, 0), STEEL)                            # push plate
 	Kit.block(facade, Vector3(0.1, 0.16, 0.03), Vector3(DOOR[1] + 0.22, 1.25, WALL_Z1 + 0.015), STEEL)

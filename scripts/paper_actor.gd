@@ -331,6 +331,7 @@ func walk(dir: Vector2, screen: Vector2, delta: float) -> void:
 	# Pointing what he holds: side-on, if he has a side drawing, and not while he
 	# walks towards the camera or away from it (he faces the way he walks).
 	var pointing := aiming and weapon != "" and not performing
+	pointing = pointing and not lowered      # combat: reloading, it comes down
 	var point_view := "side"
 	if aim_way == "toward" and _views.has("front"):
 		point_view = "front"
@@ -358,6 +359,7 @@ func walk(dir: Vector2, screen: Vector2, delta: float) -> void:
 	if view != _want_view and is_equal_approx(_yaw, PI * 0.5):
 		_show(_want_view)
 	_pivot.rotation.y = _yaw
+	_hurt_pose()      # combat: shot (a flinch), cowering, or down
 	if face:
 		face.set_side(1.0 if cos(_yaw) >= 0.0 else -1.0)
 	_pose()
@@ -1001,6 +1003,7 @@ func _hold() -> void:
 	var curl := lerpf(carry.get("curl", 0.0), point.get("curl", 0.0), a) * thin
 	var pitch := aim_pitch * a if view == "side" else 0.0        # side-on he points it up or down at what the cross is on
 	dip -= rad_to_deg(pitch)
+	dip -= KICK_TIP * recoil if art == "" else 0.0      # combat: a shot tips it up
 	if wide and info.has("fore") and not pose.get("under", false):
 		dip *= ELBOW_FLAT
 
@@ -1014,6 +1017,7 @@ func _hold() -> void:
 	var want := _grip(carry, hangs, wrist).lerp(_grip(point, hangs, wrist), a)
 	want += Vector2(0.03 * sin(_phase), 0.02 * absf(sin(_phase))) * wrist * _gait * (1.0 - a)      # it moves a little as he walks
 	want = want.rotated(-pitch)
+	want = _kicked(want, wrist, art)      # combat: and kicks it back
 	var elbow := Vector2.ZERO                                                 # which arms bend at the elbow, for the card
 	if lanky:
 		elbow = Vector2.ONE
@@ -1161,3 +1165,78 @@ func _take(held: String, info: Dictionary, unit: float) -> void:
 	(_gun.material_override as ShaderMaterial).set_shader_parameter("art", load(WEAPONS + String(info["file"])))
 	(_fist.material_override as ShaderMaterial).set_shader_parameter("art", load(WEAPONS + String(info["hands"])))
 	(_fist.material_override as ShaderMaterial).set_shader_parameter("tint", skin())
+
+
+# ------------------------------------------- shot at, and shooting (combat.gd sets these)
+
+const KICK_TIP := 9.0           # degrees: a shot tips what he holds up this far (side-on) before it settles
+const KICK_BACK := 0.14         # ...and pushes his hand back towards his shoulder by this much of his arm
+const KICK_UP := 0.06           # ...and up
+
+var recoil := 0.0               # 0 .. 1: a shot this moment; combat.gd lets it die away
+var lowered := false            # reloading: what he holds comes down and he does not point it
+var flinch := 0.0               # just shot: his card tips this many radians (above zero, its top to the left of the screen)
+var cower := 0.0                # 0 .. 1: frightened, he shrinks down and shakes
+var fallen := 0.0               # 0 standing .. 1 lying on the floor face up, his head towards `fall_to`
+var fall_to := Vector3.RIGHT    # a direction on the floor
+
+
+## Where the muzzle and the ejection port of what he holds are in the world, for the pose he is in, from its
+## drawing's points (assets/weapons/weapons.json): {"muzzle", "eject": Vector3, "dir": the way it points,
+## "art": "" side-on, "toward" or "away"}. Empty when nothing is in his hands or it is not up yet.
+func gun_points() -> Dictionary:
+	if _held_name == "" or not _held.visible or not is_inside_tree():
+		return {}
+	var all: Dictionary = weapons().get("weapons", {}).get(_held_name, {})
+	var info: Dictionary = all.get(_held_art, {}) if _held_art != "" else all
+	if not info.has("muzzle") or not info.has("w"):
+		return {}
+	var unit := (_gun.mesh as QuadMesh).size.x / float(info["w"])
+	var grip := Vector2(float(info["grip"][0]), float(info["grip"][1]))
+	var to_world := func(p: Array) -> Vector3:
+		return _gun.global_transform * Vector3((float(p[0]) - grip.x) * unit, (grip.y - float(p[1])) * unit, 0.0)
+	var eject: Array = info.get("eject", info["muzzle"])
+	if _held_art == "away" and all.has("eject"):       # the drawing from behind is the side one made short
+		eject = [float(all["eject"][0]) * float(info["muzzle"][0]) / float(all["muzzle"][0]), all["eject"][1]]
+	var at: Vector3 = to_world.call(info["muzzle"])
+	var along: Vector3 = (at - to_world.call(info.get("butt", info["grip"]))).normalized()
+	var eye := get_viewport().get_camera_3d()
+	var dir := along
+	if eye and _held_art == "toward":
+		dir = (eye.global_position - at).normalized()
+	elif eye and _held_art == "away":
+		dir = ((at - eye.global_position).normalized() + along * 0.35).normalized()
+	return {"muzzle": at, "eject": to_world.call(eject), "dir": dir, "art": _held_art}
+
+
+## A shot kicks what he holds back towards his shoulder and up (`recoil`). `want` is where his hand goes, from
+## his shoulder, in pixels of his drawing; `wrist` how long his arm is to the wrist.
+func _kicked(want: Vector2, wrist: float, art: String) -> Vector2:
+	if recoil <= 0.0:
+		return want
+	var back := want.normalized() * KICK_BACK * wrist * recoil if art == "" else Vector2.ZERO
+	return want - back + Vector2(0.0, -KICK_UP * wrist * recoil * (1.0 if art == "" else 1.6))
+
+
+## Shot, frightened or down: each frame from walk(), once the card has turned to the way he faces.
+func _hurt_pose() -> void:
+	if fallen <= 0.0:
+		if _pivot.top_level:            # back on his feet
+			_pivot.top_level = false
+			_pivot.transform = Transform3D(Basis(Vector3.UP, _yaw), Vector3.ZERO)
+			get_child(0).visible = true                    # his shadow
+		if flinch == 0.0 and cower == 0.0 and _pivot.rotation.z == 0.0:
+			return
+		_pivot.rotation.z = (flinch + sin(float(Engine.get_process_frames()) * 1.7) * 0.014 * cower) * (1.0 if cos(_yaw) >= 0.0 else -1.0)
+		_pivot.scale = Vector3(1.0 + 0.05 * cower, 1.0 - 0.1 * cower, 1.0)
+		return
+	if not _pivot.top_level:
+		_pivot.top_level = true
+		_pivot.scale = Vector3.ONE
+	get_child(0).visible = false
+	var k := fallen * fallen        # he goes over slowly, then fast
+	var stand := Basis(Vector3.UP, global_rotation.y + _yaw)
+	var head := Vector3(fall_to.x, 0.0, fall_to.z).normalized()
+	var lie := Basis(head.cross(Vector3.UP), head, Vector3.UP)
+	var turn := stand.get_rotation_quaternion().slerp(lie.get_rotation_quaternion(), k)
+	_pivot.global_transform = Transform3D(Basis(turn), global_position + Vector3(0.0, 0.022 * k, 0.0))

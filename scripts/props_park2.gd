@@ -673,7 +673,7 @@ static func sedan(parent: Node3D, at: Vector3, yaw: float, paint: Color, kind :=
 ## face of the wall it is in.
 static func window(g: Node3D, x: float, y0: float, ww: float, wh: float, z: float, lit: bool, key: float, stone := STONE) -> void:
 	Kit.box(g, Vector3(ww + 0.18, wh + 0.18, 0.05), Vector3(x, y0 + wh * 0.5, z + 0.025), stone)
-	Kit.box(g, Vector3(ww, wh, 0.03), Vector3(x, y0 + wh * 0.5, z + 0.055), Kit.flat(LIT, 0.55) if lit else DARK_GLASS)
+	Kit.pane(Kit.box(g, Vector3(ww, wh, 0.03), Vector3(x, y0 + wh * 0.5, z + 0.055), Kit.flat(LIT, 0.55) if lit else DARK_GLASS))
 	if lit and Props.rnd(key * 1.7 + 0.3) > 0.35:
 		var cloth: Color = CURTAINS[int(Props.rnd(key * 3.1) * CURTAINS.size()) % CURTAINS.size()]
 		for s: float in [-1.0, 1.0]:

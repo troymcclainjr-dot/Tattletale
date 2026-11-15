@@ -125,6 +125,7 @@ func _shell() -> void:
 	keep.append(Kit.box(wall_to_booth, Vector3(2.6, 1.0, 0.02), Vector3(-0.3, 1.5, zc), Color(0.6, 0.8, 0.9, 0.16)))
 	keep.append(Kit.box(wall_to_booth, Vector3(0.16, 1.3, 0.005), Vector3(-1.0, 1.5, zc + 0.02), Color(1, 1, 1, 0.22), Vector3(0, 0, -32)))
 	keep.append(Kit.box(wall_to_booth, Vector3(0.06, 1.3, 0.005), Vector3(-0.78, 1.5, zc + 0.02), Color(1, 1, 1, 0.22), Vector3(0, 0, -32)))
+	Kit.pane(keep[keep.size() - 3], [keep[keep.size() - 2], keep[keep.size() - 1]])      # combat: the glass breaks, its glare goes with it
 
 	# Booth door: frame, a leaf that swings into the booth (door.gd), and the warning light.
 	for x in [1.78, 2.72]:

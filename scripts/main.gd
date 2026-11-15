@@ -16,6 +16,7 @@ extends Node3D
 ##   Space (hold)   move his mouth          F       close-up on / off
 ##   F8             save a PNG to user://shots
 ##   M              the travel list: pick a place and he arrives on the street outside it
+##   Left mouse     while he points it: fire (combat.gd)     R   reload
 ##
 ## It opens on the title screen (title_screen.gd): NEW GAME goes to the choice
 ## between the angel and the devil (choose_screen.gd) and then to the street
@@ -48,6 +49,11 @@ extends Node3D
 ##   face:front|side|back|left (turn him without walking; left is side-on, mirrored),
 ##   wear:piece:colour (wear:hat:#cc2222; wear: alone puts his own clothes back),
 ##   arm:who:weapon[:aim] (give someone else here a weapon: arm:TRE:ak:aim), day:n (make it day n).
+##   combat.gd's: fire or fire:n (he brings it up and pulls the trigger n times, as fast as the gun goes), reload,
+##   hurt:n (he takes n of his health), shoot:who or shoot:who:n (the cross on someone, by name, or someone: the
+##   nearest; or window: a pane in sight; or car: a car's glass; then fire n), aimon:who (the cross on it, no
+##   shot), hud:0 / hud:1, freeze (what is flying stops where it is), combatcheck (a window, someone put down,
+##   the rounds and the HUD checked; it prints its problems). In --lineup an x in a pose catches him firing.
 
 const Building := preload("res://scripts/building.gd")
 const Place := preload("res://scripts/place.gd")
@@ -74,6 +80,7 @@ const TravelMenu := preload("res://scripts/travel_menu.gd")
 const TitleScreen := preload("res://scripts/title_screen.gd")
 const ChooseScreen := preload("res://scripts/choose_screen.gd")
 const FONT := preload("res://assets/fonts/Bungee-Regular.ttf")   # Pen Lucy's display font
+const Combat := preload("res://scripts/combat.gd")
 
 ## The follow camera keeps this far from him, off to the right. It may not go
 ## past the right wall of the room he is in (each room says how far) or rise to
@@ -192,6 +199,7 @@ var _picks := {}               # which colour of WARDROBE each of those is: piec
 var _day := 0                  # days since the game began; he sleeps in his own bed to end one
 var _state := PlayerState.new()     # his cash, health, rounds, songs and videos (player_state.gd): kept in the save
 var _shot_lineup := ""         # screenshot mode: --lineup's weapon:rig:poses
+var _combat: Node             # shooting, and the health, cash and rounds in the bottom-left corner (combat.gd)
 
 
 func _ready() -> void:
@@ -281,6 +289,8 @@ func _ready() -> void:
 	_hint.offset_bottom = -30.0
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	layer.add_child(_hint)
+	_combat = Combat.new()
+	add_child(_combat)
 
 	# The black bars of a performance, under everything else on the screen.
 	var cinema := CanvasLayer.new()
@@ -1362,6 +1372,7 @@ func _lineup(spec: String) -> void:
 			for f in (47 if pose.contains("w") else 38):
 				who.walk(dir, dir, 1.0 / 60.0)
 		who.position = spot
+		_combat.lineup(who, pose)
 	_camera.fov = 24.0
 	var wide := poses.size() * gap
 	var far := maxf(wide / (16.0 / 9.0), tall) * 0.5 / tan(deg_to_rad(12.0))
@@ -1510,6 +1521,8 @@ func _take_shot() -> void:
 				for i in int(float(bits[3]) * 60.0):
 					_fry.walk(_floor_dir(way), way, 1.0 / 60.0)
 				print("[shot] fry walked to %.2f, %.2f" % [_fry.position.x, _fry.position.z])
+			_:              # fire, reload, hurt, shoot, aimon, hud, freeze, combatcheck
+				await _combat.step(bits)
 	if _shot_talk > 0.0 and _actor.face:
 		_actor.face.talking = true
 		var shapes := {}

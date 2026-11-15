@@ -202,7 +202,7 @@ static func awning(parent: Node3D, w: float, out: float, drop: float, pos: Vecto
 static func window(parent: Node3D, w: float, h: float, pos: Vector3, frame: Color, glass: Variant, bars := 1, stone: Variant = null, rot_deg := Vector3.ZERO) -> Node3D:
 	var g := group(parent, pos, rot_deg)
 	var trim: Color = stone if stone is Color else frame.lightened(0.1)
-	box(g, Vector3(w, h, 0.02), Vector3(0, 0, 0.01), glass)
+	pane(box(g, Vector3(w, h, 0.02), Vector3(0, 0, 0.01), glass))
 	for x: float in [-w * 0.5 - 0.035, w * 0.5 + 0.035]:
 		box(g, Vector3(0.07, h + 0.14, 0.05), Vector3(x, 0, 0.025), frame)
 	for y: float in [-h * 0.5 - 0.035, h * 0.5 + 0.035]:
@@ -215,6 +215,16 @@ static func window(parent: Node3D, w: float, h: float, pos: Vector3, frame: Colo
 	bevel(g, Vector3(w + 0.3, 0.09, 0.14), Vector3(0, -h * 0.5 - 0.115, 0.07), trim, 0.02)
 	bevel(g, Vector3(w + 0.34, 0.16, 0.09), Vector3(0, h * 0.5 + 0.15, 0.045), trim, 0.02)
 	return g
+
+
+## A pane of glass that a shot can break (combat_glass.gd): marks the mesh, and anything drawn on the glass that
+## goes when it does (a glare streak). Returns the mesh.
+static func pane(mi: MeshInstance3D, extras: Array = []) -> MeshInstance3D:
+	var paths: Array = mi.get_meta("glass", [])
+	for extra: Node in extras:
+		paths.append(mi.get_path_to(extra))
+	mi.set_meta("glass", paths)
+	return mi
 
 
 static func _bevel_mesh(size: Vector3, edge: float) -> Mesh:

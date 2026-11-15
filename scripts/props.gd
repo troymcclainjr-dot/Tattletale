@@ -717,18 +717,18 @@ static func car(p: Node3D, b: int, u: float, v: float, yaw := 0.0, kind := "crui
 	var red := Kit.flat(Color(0.95, 0.15, 0.12), 0.7)
 	if van:
 		Kit.bevel_block(g, Vector3(w, 1.55, l), Vector3(0, 0.32, 0), paint, 0.12)
-		Kit.box(g, Vector3(w - 0.3, 0.55, 0.02), Vector3(0, 1.45, l * 0.5 + 0.005), glass)
+		Kit.pane(Kit.box(g, Vector3(w - 0.3, 0.55, 0.02), Vector3(0, 1.45, l * 0.5 + 0.005), glass))
 		_band(g, w, l, 0.75, 0.2, 0.13, Color(0.9, 0.45, 0.1) if amb else Color(0.9, 0.9, 0.86))
 		Kit.box(g, Vector3(w * 0.42, 0.14, 0.02), Vector3(0, 0.52, l * 0.5 + 0.008), DARK)
 		for side in [-1.0, 1.0]:
 			words(g, "AMBULANCE" if amb else "POLICE", Vector3(side * (w * 0.5 + 0.012), 1.3, -0.3), 0.2 if amb else 0.3, Color(0.75, 0.12, 0.1) if amb else Color(0.92, 0.9, 0.8), 90.0 * side)
-			Kit.box(g, Vector3(0.02, 0.4, 0.7), Vector3(side * (w * 0.5 + 0.005), 1.42, 1.5), glass)
+			Kit.pane(Kit.box(g, Vector3(0.02, 0.4, 0.7), Vector3(side * (w * 0.5 + 0.005), 1.42, 1.5), glass))
 			Kit.box(g, Vector3(0.012, 1.0, 0.02), Vector3(side * (w * 0.5 + 0.004), 1.0, 0.95), paint.darkened(0.4))      # the side door's seam
 		if amb:       # the light bars, and the back doors with their windows
 			for z: float in [l * 0.5 - 0.5, -l * 0.5 + 0.3]:
 				Kit.bevel(g, Vector3(w - 0.3, 0.12, 0.24), Vector3(0, 1.93, z), red, 0.04)
 			for x: float in [-0.42, 0.42]:
-				Kit.box(g, Vector3(0.6, 0.45, 0.02), Vector3(x, 1.42, -l * 0.5 - 0.004), glass)
+				Kit.pane(Kit.box(g, Vector3(0.6, 0.45, 0.02), Vector3(x, 1.42, -l * 0.5 - 0.004), glass))
 			Kit.box(g, Vector3(0.02, 1.3, 0.02), Vector3(0, 1.1, -l * 0.5 - 0.004), IRON)
 			words(g, "AMBULANCE", Vector3(0, 1.0, -l * 0.5 - 0.02), 0.16, Color(0.75, 0.12, 0.1), 180.0)
 		else:         # the police van's light bar
@@ -741,9 +741,9 @@ static func car(p: Node3D, b: int, u: float, v: float, yaw := 0.0, kind := "crui
 		var gz := -0.2
 		var gw := w - 0.24
 		Kit.bevel_block(g, Vector3(w, 0.56, l), Vector3(0, 0.28, 0), paint, 0.09)
-		Kit.box(g, Vector3(gw, 0.44, 1.2), Vector3(0, 1.06, gz), glass)
-		Kit.prism(g, Vector3(0.62, 0.44, gw), Vector3(0, 1.06, gz + 0.91), glass, Vector3(0, 90, 0), 1.0)
-		Kit.prism(g, Vector3(0.5, 0.44, gw), Vector3(0, 1.06, gz - 0.85), glass, Vector3(0, 90, 0), 0.0)
+		Kit.pane(Kit.box(g, Vector3(gw, 0.44, 1.2), Vector3(0, 1.06, gz), glass))
+		Kit.pane(Kit.prism(g, Vector3(0.62, 0.44, gw), Vector3(0, 1.06, gz + 0.91), glass, Vector3(0, 90, 0), 1.0))
+		Kit.pane(Kit.prism(g, Vector3(0.5, 0.44, gw), Vector3(0, 1.06, gz - 0.85), glass, Vector3(0, 90, 0), 0.0))
 		Kit.bevel(g, Vector3(w - 0.2, 0.07, 1.3), Vector3(0, 1.31, gz), paint, 0.025)
 		for side in [-1.0, 1.0]:
 			Kit.box(g, Vector3(0.02, 0.44, 0.12), Vector3(side * (gw * 0.5 + 0.008), 1.06, gz), paint)
