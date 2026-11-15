@@ -1,0 +1,14 @@
+{
+	"about": "Ronnie, who drives the tow truck, waiting on his paperwork outside the impound pen in the police yard (plans/yard.gd). Placeholder lines written on 2026-11-15 by the civic worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "You tow all these?", "face": "happy", "next": "tow"},
+			{"say": "What happened to the red one?", "face": "suspicious", "next": "red"},
+			{"say": "Who gets them back?", "face": "focused", "next": "back"}
+		]},
+		"tow": {"speaker": "npc", "face": "neutral", "line": "Towed it, chained it, signed for it. Now I wait on the paperwork.", "next": ""},
+		"red": {"speaker": "npc", "face": "neutral", "line": "Came in like that. Somebody got to the good parts before we did.", "next": ""},
+		"back": {"speaker": "npc", "face": "neutral", "line": "Anybody with the fee and the papers. Most of them never come.", "next": ""}
+	}
+}
