@@ -513,6 +513,8 @@ func _site(id: String) -> Node3D:
 		add_child(site)
 		site.build()
 		site.mic.used.connect(_start_perform)
+		for point: Node3D in site.use_points:      # its street's ends and back door (building.gd, strip)
+			point.used.connect(_use_point)
 	else:
 		site = Place.new()
 		add_child(site)

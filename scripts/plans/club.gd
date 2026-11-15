@@ -77,6 +77,10 @@ static func build(p: Node3D) -> void:
 	_back(p, b2)
 	_dress(p, b1, b2)
 	_people(p, st, b1, b2)
+	# The pavement's ends go on along the strip (main.gd's "goto:"): left to the
+	# liquor store (its stock room backs on the back lot), right to the clothing store.
+	p.use_point(st, "TO THE LIQUOR STORE", -3.25, 17.3, "goto:liquor", 1.2, 1.9)
+	p.use_point(st, "TO THE CLOTHING STORE", 15.25, 17.3, "goto:clothes", 1.2, 1.9)
 
 
 ## The front: black brick with the dead sign over the door, a caged lamp, the

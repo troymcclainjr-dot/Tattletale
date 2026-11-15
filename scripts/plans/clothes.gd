@@ -80,6 +80,10 @@ static func build(p: Node3D) -> void:
 	_floor(p, b1)
 	_back(p, b2)
 	_dress(p, b1, b2)
+	# The pavement's ends go on along the strip (main.gd's "goto:"): left past the
+	# check-cashing place to the club, right past the row to the studio.
+	p.use_point(st, "TO THE CLUB", -3.25, 12.2, "goto:club", 1.2, 1.9)
+	p.use_point(st, "TO THE STUDIO", 13.25, 12.2, "goto:studio", 1.2, 1.9)
 
 
 ## The shop door is mostly glass, with a push bar: added to the plain leaf

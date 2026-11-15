@@ -84,6 +84,10 @@ static func build(p: Node3D) -> void:
 	_back(p, b2)
 	_range(p, b3, shop)
 	_dress(p, b1, b2, b3)
+	# The pavement's ends go on along the strip (main.gd's "goto:"): left past the
+	# pawn shop to the studio, right past the row to the corner store.
+	p.use_point(st, "TO THE STUDIO", -3.25, 17.2, "goto:studio", 1.2, 1.9)
+	p.use_point(st, "TO THE CORNER STORE", 13.25, 17.2, "goto:store", 1.2, 1.9)
 
 
 ## The steel front door gets a small window of wired glass, barred on the street side (place.gd made the plain

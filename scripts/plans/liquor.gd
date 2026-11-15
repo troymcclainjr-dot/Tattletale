@@ -64,6 +64,8 @@ static func build(p: Node3D) -> void:
 	_counter(p, b2)
 	_back(p, b3)
 	_dress(p, b1, b2, b3)
+	# The pavement's right end goes on along the strip to the club (main.gd's "goto:").
+	p.use_point(st, "TO THE CLUB", 13.25, 13.2, "goto:club", 1.2, 1.9)
 
 
 static func _street(p: Node3D, st: int, front: Node3D, black_brick: Variant) -> void:

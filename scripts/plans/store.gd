@@ -56,6 +56,10 @@ static func build(p: Node3D) -> void:
 	_shop(p, b1)
 	_back(p, b2)
 	_dress(p, b1, b2)
+	# The pavement's ends go on (main.gd's "goto:"): left along the strip to the
+	# gun store, right round the corner to Rose Hill Terrace (plans/street.gd).
+	p.use_point(st, "TO THE GUN STORE", -3.25, 12.2, "goto:gunstore", 1.2, 1.9)
+	p.use_point(st, "TO ROSE HILL", 10.45, 12.1, "goto:street", 1.2, 1.9)
 
 
 static func _street(p: Node3D, st: int, front: Node3D, brick: Variant) -> void:
