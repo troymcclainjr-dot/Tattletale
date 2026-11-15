@@ -14,6 +14,7 @@ extends RefCounted
 
 const Props := preload("res://scripts/props.gd")
 const In := preload("res://scripts/props_in.gd")
+const Alley := preload("res://scripts/props_alley.gd")      # the roll-up door in the stock room's back wall
 const F := 12.075            # the shop's street face
 
 
@@ -165,8 +166,12 @@ static func _back(p: Node3D, b: int) -> void:
 	Props.files(p, b, 3.2, 0.4, 0.0, 2)
 	Props.couch(p, b, 1.6, 3.69, 180.0, 1.8, Color(0.36, 0.3, 0.22))
 	Props.poster(p, b, 3.2, 0.08, 0.0, 0.45, 0.6, Color(0.6, 0.12, 0.1), "", 1.8)
-	# The stock room: shelves of boxes, cases by the stack, kegs.
-	Props.shelves(p, b, 7.3, 0.31, 0.0, 4.6)
+	# The stock room: shelves of boxes, cases by the stack, kegs, and the roll-up
+	# door in the back wall out to the back lot behind the club (plans/alley.gd:
+	# the DELIVERIES door on its alley; E goes out there and in again).
+	Props.shelves(p, b, 5.45, 0.31, 0.0, 2.3)
+	Alley.loading_door(p, p.node_of(b), 8.1, 0.09, 0.0, 2.4, 2.3, "", false)
+	p.use_point(b, "BACK LOT", 8.1, 0.65, "goto:alley", 1.0, 2.0)
 	Props.case_stack(p, b, 5.6, 3.2, 0.0, 3, 3, Color(0.8, 0.62, 0.15))
 	Props.case_stack(p, b, 7.0, 3.2, 0.0, 3, 2, Color(0.15, 0.3, 0.6))
 	var kegs: Node3D = p.prop(b, 9.45, 2.4, 0.0, 0.62, 1.25)
@@ -225,7 +230,7 @@ static func _dress(p: Node3D, b1: int, b2: int, b3: int) -> void:
 	var stock := {"lower": Kit.tex("painted_block", 1.2, Color(0.4, 0.55, 0.45), true, Color(0.56, 0.74, 0.6)),
 			"dado": black, "dado_y": 1.2, "skirt": black, "skirt_h": 0.1, "surround": black}
 	In.room_walls(p, b3, 4.0, 0.0, 10.0, 4.2, stock, [], [{"a": 1.6, "b": 2.5}], [])
-	In.wall_strip(p, b3, 7.3, 0.075, 0.0, 3.0, 2.42)
+	In.wall_strip(p, b3, 5.45, 0.075, 0.0, 2.0, 2.42)
 	In.sconce(p, b3, 4.075, 2.05, 90.0, "cage", 2.4)
 	In.extinguisher(p, b3, 4.075, 3.3, 90.0, 0.55)
 	var yellow := Color(0.98, 0.8, 0.15)

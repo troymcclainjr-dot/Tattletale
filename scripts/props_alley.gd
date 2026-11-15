@@ -88,8 +88,8 @@ static func back_door(p: Node3D, n: Node3D, u: float, v: float, yaw: float) -> N
 
 ## A roll-up loading door in a wall facing `yaw`, w wide and h high round (u, v)
 ## on its face: the housing over it, the rails, ribbed slats to the ground with
-## a padlock at the foot, the stencil on the housing.
-static func loading_door(p: Node3D, n: Node3D, u: float, v: float, yaw: float, w := 2.6, h := 2.6) -> Node3D:
+## a padlock at the foot (unless `locked` is false), the stencil (`words`) on the housing.
+static func loading_door(p: Node3D, n: Node3D, u: float, v: float, yaw: float, w := 2.6, h := 2.6, words := "DELIVERIES", locked := true) -> Node3D:
 	var g := Kit.group(n, p.pt(u, v), Vector3(0, yaw, 0))
 	var slats := Kit.tex("in_ribbed", 0.5, Color(0.48, 0.5, 0.52), false, Color(0.52, 0.54, 0.58))
 	var iron := Color(0.24, 0.25, 0.28)
@@ -98,8 +98,10 @@ static func loading_door(p: Node3D, n: Node3D, u: float, v: float, yaw: float, w
 		Kit.box(g, Vector3(0.1, h, 0.1), Vector3(s * (w * 0.5 + 0.05), h * 0.5, 0.05), iron)
 	Kit.box(g, Vector3(w, h, 0.04), Vector3(0, h * 0.5, 0.05), slats)
 	Kit.box(g, Vector3(w - 0.02, 0.08, 0.07), Vector3(0, 0.04, 0.06), iron.darkened(0.3))      # the bottom bar, its ends in the rails
-	Kit.box(g, Vector3(0.07, 0.1, 0.03), Vector3(w * 0.3, 0.13, 0.11), Props.STEEL)
-	Props.words(g, "DELIVERIES", Vector3(0, h + 0.21, 0.31), 0.12, Color(0.95, 0.85, 0.2))
+	if locked:
+		Kit.box(g, Vector3(0.07, 0.1, 0.03), Vector3(w * 0.3, 0.13, 0.11), Props.STEEL)
+	if words != "":
+		Props.words(g, words, Vector3(0, h + 0.21, 0.31), 0.12, Color(0.95, 0.85, 0.2))
 	return g
 
 
