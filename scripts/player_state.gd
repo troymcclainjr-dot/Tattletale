@@ -63,6 +63,18 @@ func heal(amount: int) -> void:
 	changed.emit()
 
 
+## A song recorded at the booth microphone (video_shoot.gd).
+func record_song() -> void:
+	songs += 1
+	changed.emit()
+
+
+## A music video shot: how it went (video_shoot.gd's record).
+func add_video(video: Dictionary) -> void:
+	videos.append(video)
+	changed.emit()
+
+
 ## Say that something set directly (a round fired, a flag) has changed.
 func touch() -> void:
 	changed.emit()

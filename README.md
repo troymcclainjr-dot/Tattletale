@@ -49,6 +49,8 @@ The game opens on a title screen: **NEW GAME**, **CONTINUE** and **SETTINGS**. P
 
 At the microphone (E beside it, in the booth): black bars slide in top and bottom, the camera watches him through the control-room window and drifts slowly from side to side, and he performs: his mouth goes, his knees dip on the beat, he rocks from foot to foot and his arms work. There is no sound yet. Esc steps away.
 
+Sixteen beats at the microphone is a song recorded (a REC mark in the top corner counts them in; one song for each turn at the mic). A recorded song can have a music video: see **Music videos** below.
+
 In a conversation: the box opens out from a thin line, then the things he can say are listed; the one under the mouse turns yellow. Click it, or press its number. E, Space, Enter or a click (on the box, its text, or anywhere else) finishes a line that is still typing, then moves on.
 
 ## Running, weapons, clothes and days
@@ -98,6 +100,27 @@ Walking is relative to the screen. A character shows a different drawing for eac
 The game view is `follow`: off to the right and turned about 30 degrees, a fixed step from him. In a conversation it eases in on the two of them. `angle` is the same side standing still, with the whole room in frame.
 
 The names `TATTLETALE` and `LARGE FRY` are working names, and the lines in `assets/data/talk_fry.json` are placeholders. So are the names of the six street characters: `TRE`, `BIG DEE` and `CHUY`, and three parody rappers, `SNOOZY D`, `DOC DRAY` and `HUFF DADDY`, who are parodies of a type and of an era's clothes, not drawings of anyone. The lead no longer wears a whistle; his chain stays.
+
+## Music videos
+
+A song recorded at the booth microphone can have a music video. The camcorder on its tripod in the control room's front right corner starts one (E; with no song waiting it says to record one first). Everything a video says and every number it uses is in `assets/data/video.json`; the names, lines, captions and comments in it are placeholders.
+
+- **Plan.** A board of cards, a row each for the location, the entourage, the bling, the cars, cash to throw and a smoke machine. Up and down choose a row, left and right a card (or click one); Enter shoots it; Esc leaves with nothing spent. The total is set against his cash, and the production meter shows how much the picks add to the look. Nothing is paid until the take is over.
+- **Shoot.** He is taken to the location with what was bought around him (the entourage in matching hoodies, the cars parked, the bling on him) and Large Fry on camera. After a count-in the song runs for about 45 seconds: moves slide along the lane at the bottom, and pressing a move's key as it reaches the ring hits it on the beat: J point at the lens, K arms wide, L lean back, U flash the chain, I throw the cash, O throw it up, H aim at the lens. A move only comes up if he has what it needs (U bought bling with a chain in it, I cash to throw, H a weapon in his hand). Hits fill SWAGGER and the entourage copies him; on a miss they look lost. Large Fry's camera drifts, and A and D walk him along to stay in the frame. Two or three times a take something goes wrong: a homie walks into the lens, a car alarm goes off, Miss Bea comes out, the police drive by, the smoke machine takes over, the chain comes off. E in time deals with it (shove him out, kick the car, stop and take it, put it away or act natural, fan it, catch it) and keeps the take clean; let it go and it costs polish but adds CHAOS. Esc walks off the set: back to the studio, nothing spent. At CUT the whole plan is paid for.
+- **Premiere.** Back in the studio: up to four moments caught during the take, each with a caption, then the stars, the views counting up, the comments and the pay. Enter goes on, Esc goes straight to the end; either way he is paid and the video is kept in the save (`player_state.gd`'s `videos`). The next song can have its own.
+
+How it adds up (`video_score.gd`): the picks give **production**; **looks** is production, never more than his swagger, times polish; **buzz** is mostly looks, some swagger and some chaos; the views come from buzz through the `payout` table, give or take a little luck, and he is paid for each thousand views. Money buys the look and only the performance sells it: a free video outside the studio earns a few dollars, the dearest one performed well about twice what it cost, and performed badly almost nothing.
+
+To add to it (all in `video.json`):
+
+- **A location**: a card in the `location` row: `place` (an id from `PLACES` in `main.gd`), `price`, `adds` (to production) and `mark` (x, z: where he stands); and, from the mark, `camera` (x, height, z: the lens), `crew` (x, z each: where the entourage stand, as many as the biggest entourage) and `cars` (x, z and a heading in degrees each: where the cars park); `police` (the z the police car drives along) and `police_stop` (how far to his right it pulls up); `car_areas` if the cars or the entourage need floor nobody walks on, such as the road (x, z, x, z each). Then shoot a take there at a few seeds and look: as the camera drifts he walks along x, so keep lamp posts and benches off that line.
+- **A move**: a row in `moves`: `id`, `name`, `key`, `face` (an expression), `arms` (shoulder turn and bow of each arm), `lean`, and optionally `beats` (how long it is held) and `needs` (`chain`, `rain`, `weapon`). Give it a caption, `"move:<id>"`, for the premiere.
+- **A mishap**: a row in `mishaps` using one of the effects the take knows (`lens_hog`, `car_alarm`, `neighbour`, `police`, `smoke`, `chain_drop`), what it `needs` (`entourage`, `cars`, `chain`, `smoke`, `weapon`, `no weapon`, or nothing), its `name`, its `answer` (the key, what the prompt says, the polish and chaos it costs, the line said) and its `miss` (the same, if it is let go); and captions `"<id>:handled"` and `"<id>:missed"`. A new kind of trouble is code: its effect in `video_take.gd` (`_begin`, `_end_mishap`, and `LEAD`, how long it takes to come on).
+- **A comment**: a row in `comments`: `who`, `text`, and `when`, tags that must all fit (none: any video). The tags: `looks:low`, `looks:high`, and the same for `swagger` and `chaos` (under and at or over `payout.levels`); `broke` and `rich` (spent up to `payout.broke`, at least `payout.rich`); `at:<location>`; `entourage:<choice>`, `bling:<choice>`, `cars:<choice>`; `rain`; `smoke`; `<mishap>:handled` and `<mishap>:missed`. Five are shown, the ones with the most tags first.
+
+Steps for `--do=` (listed at the top of `video_shoot.gd`): `video:song`, `video:cash:9000`, `video:spot`, `video:plan`, `video:buy:dear` (or `cheap`, or `location=court+entourage=few`), `video:mishaps:police+car_alarm`, `video:seed:3`, `video:shoot`, `video:auto:0.9` (the take plays itself at that skill, 0 to 1), `video:key:J`, `video:walk:1`, `video:until:12` (a beat), `video:prompt`, `video:at:police`, `video:for:2`, `video:premiere`, `video:next`, `video:results`, `video:done`, `video:esc`, `video:snap:name` (a picture saved beside the shot), `video:state`. The dearest video, played well, to its premiere:
+
+    python tools/shot.py out.png "--do=video:song,video:cash:9000,video:spot,video:plan,video:buy:dear,video:shoot,video:auto:1,video:premiere,wait:2"
 
 ## Files
 
