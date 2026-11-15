@@ -22,6 +22,7 @@ var owned: Array = []      # the weapons he has (Q goes round these): he starts 
 var songs := 0              # songs recorded at the booth microphone
 var videos: Array = []      # each music video he has shot: a Dictionary of how it went
 var flags := {}             # anything else worth keeping: name to a value JSON can hold
+var deeds := {}             # what he has done, name to how many times ("shot_fired", "arrested" ...): what his bars may be about
 
 
 func _init() -> void:
@@ -38,6 +39,7 @@ func reset() -> void:
 	songs = 0
 	videos = []
 	flags = {}
+	deeds = {}
 	changed.emit()
 
 
@@ -68,6 +70,17 @@ func disarm() -> void:
 	changed.emit()
 
 
+## He did something worth a bar: `name` is counted (see the song system: bars are unlocked by deeds).
+func deed(name: String, n := 1) -> void:
+	deeds[name] = int(deeds.get(name, 0)) + maxi(n, 0)
+	changed.emit()
+
+
+## How many times he has done it.
+func done(name: String) -> int:
+	return int(deeds.get(name, 0))
+
+
 func hurt(amount: int) -> void:
 	health = clampi(health - maxi(amount, 0), 0, MAX_HEALTH)
 	changed.emit()
@@ -96,7 +109,7 @@ func touch() -> void:
 
 
 func to_save() -> Dictionary:
-	return {"cash": cash, "health": health, "loaded": loaded, "spare": spare, "owned": owned, "songs": songs, "videos": videos, "flags": flags}
+	return {"cash": cash, "health": health, "loaded": loaded, "spare": spare, "owned": owned, "songs": songs, "videos": videos, "flags": flags, "deeds": deeds}
 
 
 ## From a save. Anything the save does not have keeps its new-game value, so an older save still loads.
@@ -112,6 +125,7 @@ func from_save(data: Dictionary) -> void:
 	if typeof(data.get("videos")) == TYPE_ARRAY:
 		videos = data["videos"]
 	flags = _dict(data.get("flags"))
+	deeds = _dict(data.get("deeds"))
 	changed.emit()
 
 
