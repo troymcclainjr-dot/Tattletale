@@ -20,6 +20,7 @@ var loaded := {}            # weapon: rounds in its magazine
 var spare := {}             # weapon: rounds he carries besides
 var owned: Array = []      # the weapons he has (Q goes round these): he starts with the pistol; the gun store sells the rest
 var songs := 0              # songs recorded at the booth microphone
+var song_beats: Array = []  # the beat each song was recorded on (assets/beats ids; "" if none was playing), in order
 var videos: Array = []      # each music video he has shot: a Dictionary of how it went
 var flags := {}             # anything else worth keeping: name to a value JSON can hold
 var deeds := {}             # what he has done, name to how many times ("shot_fired", "arrested" ...): what his bars may be about
@@ -37,6 +38,7 @@ func reset() -> void:
 	spare = START_SPARE.duplicate()
 	owned = ["pistol"]
 	songs = 0
+	song_beats = []
 	videos = []
 	flags = {}
 	deeds = {}
@@ -91,9 +93,12 @@ func heal(amount: int) -> void:
 	changed.emit()
 
 
-## A song recorded at the booth microphone (video_shoot.gd).
-func record_song() -> void:
+## A song recorded at the booth microphone (video_shoot.gd), on that beat.
+func record_song(beat_id := "") -> void:
 	songs += 1
+	while song_beats.size() < songs - 1:     # songs from a save older than song_beats: no beat known
+		song_beats.append("")
+	song_beats.append(beat_id)
 	changed.emit()
 
 
@@ -109,7 +114,7 @@ func touch() -> void:
 
 
 func to_save() -> Dictionary:
-	return {"cash": cash, "health": health, "loaded": loaded, "spare": spare, "owned": owned, "songs": songs, "videos": videos, "flags": flags, "deeds": deeds}
+	return {"cash": cash, "health": health, "loaded": loaded, "spare": spare, "owned": owned, "songs": songs, "song_beats": song_beats, "videos": videos, "flags": flags, "deeds": deeds}
 
 
 ## From a save. Anything the save does not have keeps its new-game value, so an older save still loads.
@@ -122,6 +127,8 @@ func from_save(data: Dictionary) -> void:
 		spare[weapon] = int(_dict(data.get("spare")).get(weapon, spare[weapon]))
 	owned = (data["owned"] as Array).duplicate() if typeof(data.get("owned")) == TYPE_ARRAY else CLIP.keys()      # a save from before the gun store had all three
 	songs = int(data.get("songs", 0))
+	if typeof(data.get("song_beats")) == TYPE_ARRAY:
+		song_beats = (data["song_beats"] as Array).map(func(b: Variant) -> String: return String(b) if typeof(b) == TYPE_STRING else "")
 	if typeof(data.get("videos")) == TYPE_ARRAY:
 		videos = data["videos"]
 	flags = _dict(data.get("flags"))

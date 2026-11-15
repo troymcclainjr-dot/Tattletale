@@ -4,7 +4,9 @@ extends CanvasLayer
 ## frame he must stay in (white while he is in it, red when he is not); the
 ## SWAGGER and CHAOS meters; the lane along the bottom where the moves come in
 ## from the right, each a key in a circle, to be pressed as it reaches the ring
-## on the left; how each press went; the mishap card (what is going wrong, and
+## on the left (a mark on the lane for every beat of the music, a longer one on
+## each bar, comes in with them; the next move is the brightest; through the
+## count-in the ring counts the bar, 1 2 3 4); how each press went; the mishap card (what is going wrong, and
 ## the key that deals with it); the voice of someone off the picture; and the
 ## big words of the count-in and the wrap. video_take.gd tells it what to show.
 
@@ -27,7 +29,11 @@ var frame := 0.24              # the part of the frame he must stay in: this muc
 var swagger := 0.0
 var chaos := 0.0
 var rec_on := 1.0              # the red dot by REC, blinking
+var pulse := 0.0               # 1 on each beat of the music, falling away: the ring swells with it
+var count := 0                 # through the count-in, which beat of it (1 .. 4), shown in the ring; 0: none
+var grid_end := 1.0e6          # the take's last beat of music: no beat marks past it
 var words := {}
+var _now := 0.0                # the take's beat, for the beat marks
 
 var _draw_node: Control
 var _rec: Label
@@ -222,7 +228,12 @@ func judge(text: String, colour: Color) -> void:
 ## The moves on their way in: each {"beat", "key", "name", "state"} ("due",
 ## "hit" or "miss"), drawn where they are at beat `now`.
 func lane(prompts: Array, now: float) -> void:
+	_now = now
 	var used := 0
+	var next := INF                # the nearest move still to press: it is the brightest
+	for p: Dictionary in prompts:
+		if p["state"] == "due" and float(p["beat"]) - now >= -0.7:
+			next = minf(next, float(p["beat"]))
 	var bottom := get_viewport().get_visible_rect().size.y - LANE_Y
 	for p: Dictionary in prompts:
 		var ahead: float = float(p["beat"]) - now
@@ -242,7 +253,7 @@ func lane(prompts: Array, now: float) -> void:
 		(slot["name"] as Label).text = String(p["name"])
 		var look: StyleBoxFlat = slot["look"]
 		look.bg_color = TICKET if p["state"] == "hit" else (Color(0.45, 0.45, 0.5) if p["state"] == "miss" else PAPER)
-		box.modulate.a = 1.0 if p["state"] != "miss" else 0.6
+		box.modulate.a = 0.6 if p["state"] == "miss" else (0.72 if p["state"] == "due" and float(p["beat"]) > next else 1.0)
 	for i in range(used, _prompts.size()):
 		(_prompts[i]["box"] as Panel).visible = false
 
@@ -371,5 +382,18 @@ class Finder extends Control:
 		var y := s.y - LANE_Y
 		draw_rect(Rect2(Vector2(0, y - 48), Vector2(s.x, 96)), Color(0.02, 0.02, 0.05, 0.45))
 		draw_line(Vector2(0, y - 48), Vector2(s.x, y - 48), Color(1, 1, 1, 0.18), 2.0)
-		draw_arc(Vector2(HIT_X, y), 42.0, 0.0, TAU, 40, TICKET, 5.0)
-		draw_arc(Vector2(HIT_X, y), 48.0, 0.0, TAU, 40, Color(0, 0, 0, 0.6), 2.0)
+		# The music's beats coming in along it with the moves (each reaches the ring as it sounds), a longer mark on each bar.
+		var now: float = ui._now
+		for k in range(maxi(ceili(now - 0.8), 0), mini(floori(now + 5.0), floori(ui.grid_end)) + 1):
+			var x := HIT_X + (float(k) - now) * PER_BEAT
+			var bar := posmod(k, 4) == 0
+			var h := 30.0 if bar else 14.0
+			draw_line(Vector2(x, y - h), Vector2(x, y + h), Color(1, 1, 1, 0.42 if bar else 0.26), 3.0 if bar else 2.0)
+		var swell := 6.0 * float(ui.pulse)
+		draw_arc(Vector2(HIT_X, y), 42.0 + swell, 0.0, TAU, 40, TICKET, 5.0 + 0.5 * swell)
+		draw_arc(Vector2(HIT_X, y), 48.0 + swell, 0.0, TAU, 40, Color(0, 0, 0, 0.6), 2.0)
+		if int(ui.count) > 0:
+			var pt := 40 + int(10.0 * float(ui.pulse))
+			var spot := Vector2(HIT_X - 60.0, y + 0.36 * pt)
+			draw_string_outline(FONT, spot, str(ui.count), HORIZONTAL_ALIGNMENT_CENTER, 120, pt, 8, Color.BLACK)
+			draw_string(FONT, spot, str(ui.count), HORIZONTAL_ALIGNMENT_CENTER, 120, pt, TICKET)

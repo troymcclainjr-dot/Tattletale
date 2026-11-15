@@ -1,7 +1,13 @@
 extends Node
-## One take of a music video, from QUIET ON SET to CUT. It runs on the beat he
-## performs to at the microphone (paper_actor.gd's BEAT) and is driven by
-## `tick`, so a --do step can run it at any speed and stop it at any moment.
+## One take of a music video, from QUIET ON SET to CUT. It runs on the song's
+## beat and is driven by `tick`, so a --do step can run it at any speed and stop
+## it at any moment. `use_clock` has the beat clock (conductor.gd) play the
+## song's beat from QUIET ON SET (the count-in is its first bar) and makes BEAT
+## that beat's; while it plays, in play, the take's time is the clock's, so the
+## moves, the count-in and the auto player are on the music. A --do step running
+## the take on (video_shoot.gd's run_to) or a stepped picture run counts its own
+## time, a tick at a time, and the same seed then gives the same take; at CUT the
+## music fades out.
 ##
 ## The song is four sections (video.json's "take": "sections"); each "x" of a
 ## section's pattern is a beat on which a move is asked for. It comes in along
@@ -32,7 +38,7 @@ extends Node
 signal wrapped
 
 const PaperActor := preload("res://scripts/paper_actor.gd")
-const BEAT := PaperActor.BEAT
+var BEAT: float = PaperActor.BEAT   # seconds a beat: the song's beat's (use_clock), else the microphone's
 const MOODS := ["focused", "smug", "shout", "sly"]
 const BASE_MOVES := ["point", "wide", "lean", "sign"]      # always to hand: what a move he can no longer do becomes
 const SLOTS := [9.0, 24.0, 40.0, 53.0]       # beats into the song where a mishap may begin
@@ -55,6 +61,13 @@ var in_shot := true
 var kept := {}                   # once it is over
 var stills: Array = []           # moments wanted, waiting to be caught: {"key", "beat"} (the shoot catches them)
 var done := false
+var clock: Node                  # the beat clock (conductor.gd), once use_clock has given it
+var beat_id := ""                # the song's beat, playing on it
+var fast := false                # run on by a --do step: its own time, not the clock's
+
+var _t0 := 0.0                   # the clock's time when this take's was 0
+var _own := true                 # the last tick counted its own time
+var _cut := false                # the music has been told to fade out
 
 var _take := {}
 var _moves := {}                 # id: its row
@@ -147,6 +160,34 @@ func setup(main_node: Node3D, stage_node: Node3D, ui_node: CanvasLayer, video: D
 	if lead.face:
 		lead.face.set_expression("focused")
 	_camera(0.0)
+
+
+## The song's beat, on the beat clock, from QUIET ON SET: its tempo is the
+## take's from now on (everything worked out in setup is in beats).
+func use_clock(c: Node, id: String) -> void:
+	if c == null or id == "" or not c.play(id, 0):
+		return
+	clock = c
+	beat_id = id
+	BEAT = float(c.spb)
+	_t0 = float(c.time) - time
+	_own = false
+
+
+## The take's time: the clock's while it plays the song's beat from the audio,
+## else its own (a --do step running it on, a stepped picture run, after the
+## music has stopped). Back on the clock after counting its own, it carries on
+## from where it is, kept on the music's beats.
+func _advance(delta: float) -> void:
+	var follow: bool = clock != null and is_instance_valid(clock) and clock.playing and clock.id == beat_id and not clock.stepped and not fast
+	if not follow:
+		time += delta
+		_own = true
+		return
+	if _own:
+		_t0 = roundf((float(clock.time) - time) / BEAT) * BEAT
+		_own = false
+	time = maxf(time, float(clock.time) - _t0)
 
 
 ## A move for a prompt: any he can do now, not the same one twice running;
@@ -358,7 +399,7 @@ func _retire(id: String) -> void:
 func tick(delta: float) -> void:
 	if done:
 		return
-	time += delta
+	_advance(delta)
 	var b := beat()
 	_camera(delta)
 	if auto >= 0.0:
@@ -384,8 +425,17 @@ func tick(delta: float) -> void:
 	if song and not in_shot:
 		_polish -= float(_take.get("out_of_shot", 2.0)) * delta / BEAT
 	_show(b)
+	if not _cut and b >= _song_end + 0.3:
+		_cut = true
+		_music_off(2.0)
 	if b >= _end:
 		_finish()
+
+
+## Fade the song's beat out over that many beats (if it is still the one playing).
+func _music_off(fade_beats: float) -> void:
+	if clock != null and is_instance_valid(clock) and clock.id == beat_id:
+		clock.stop(fade_beats)
 
 
 ## The camera: behind Large Fry during the count-in, pushing in to his
@@ -503,7 +553,7 @@ func _lead(b: float, delta: float) -> void:
 	lead.aiming = aiming_now
 	lead.aim_way = "toward" if aiming_now else ""
 	if lead.performing:
-		lead._beat = maxf(b - delta / BEAT, 0.0)
+		lead._beat = maxf(b - delta / PaperActor.BEAT, 0.0)      # (walk adds delta / its own BEAT)
 	if moving:
 		lead.walk(dir, dir, delta)       # the camera looks along -z: right on the screen is +x
 	else:
@@ -575,7 +625,7 @@ func _entourage(b: float, delta: float) -> void:
 		var lost := b - float(c["lost"]) < 1.2
 		npc.performing = not lost and b < _song_end + 0.5 and not c["wave"]
 		if npc.performing:
-			npc._beat = maxf(b - delta / BEAT, 0.0)
+			npc._beat = maxf(b - delta / PaperActor.BEAT, 0.0)
 		npc.walk(Vector2.ZERO, Vector2.ZERO, delta)
 		if npc.face:
 			var want := "confused" if lost else ("grin" if not (c["move"] as Dictionary).is_empty() else "happy")
@@ -839,6 +889,9 @@ func _auto_play(b: float) -> void:
 func _show(b: float) -> void:
 	var words: Dictionary = data["words"]
 	ui.finder = smoothstep(3.2, 3.8, b) * (1.0 - smoothstep(_song_end + 0.8, _song_end + 1.6, b))
+	ui.pulse = pow(1.0 - fposmod(b, 1.0), 3.0) if b >= 0.0 and b < _song_end + 0.5 else 0.0      # the ring beats with the music
+	ui.count = int(b) + 1 if b >= 0.0 and b < _count_in else 0                                   # the count-in, in the ring: 1 2 3 4
+	ui.grid_end = _song_end
 	ui.in_shot = in_shot
 	ui.frame = float(_take.get("frame", 0.24))
 	ui.swagger = swagger()
@@ -919,4 +972,5 @@ func _finish() -> void:
 	kept = {"swagger": roundi(swagger()), "polish": clampf(_polish, 0.0, 100.0), "chaos": clampf(_chaos, 0.0, 100.0),
 		"mishaps": outcome, "hits": hits, "perfect": perfect, "missed": missed, "flubs": _flubs, "moves": prompts.size()}
 	main._actor.weapon = _weapon
+	_music_off(1.0)
 	wrapped.emit()
