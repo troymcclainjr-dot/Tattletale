@@ -95,7 +95,7 @@ static func build(p: Node3D) -> void:
 	_roof(p, top)
 	# The ways in: the store's roll door, the studio's back door, the clothing
 	# store's (main.gd's "goto:"; each comes out of its shop's back door).
-	p.use_point(st, "CORNER STORE", STORE_DOOR, 0.65, "goto:store", 1.1, 2.35)
+	p.use_point(st, "CORNER STORE", STORE_DOOR, 0.65, "goto:store", 1.1, 2.9)
 	p.use_point(st, "STUDIO", STUDIO_DOOR, 0.65, "goto:studio", 1.0, 2.0)
 	p.use_point(st, "CLOTHING STORE", CLOTHES_DOOR, 0.65, "goto:clothes", 1.0, 2.0)
 
@@ -163,21 +163,19 @@ static func _backs(p: Node3D, st: int) -> void:
 	Kit.cyl(n, 0.03, 1.9, p.pt(9.3, 0.06, 2.75), Props.IRON, Vector3.ZERO, 6)
 
 
-## The corner store's back: the roll door with its bay painted in front, the
-## bumpers, a lamp; crates, the bale, its bins and bags.
+## The corner store's back: the roll door with its bay painted in front, a
+## lamp; cases, the bale, its bins and bags.
 static func _store(p: Node3D, st: int) -> void:
 	var n: Node3D = p.node_of(st)
 	Alley.loading_door(p, n, STORE_DOOR, 0.0, 0.0, 2.0, 2.2, "RECEIVING", false)
 	In.sconce(p, st, STORE_DOOR + 1.55, 0.0, 0.0, "cage", 2.55, In.WARM, 0.9)
-	for s: float in [-1.0, 1.0]:
-		Service.gb(p, n, STORE_DOOR + s * 1.32 - 0.11, STORE_DOOR + s * 1.32 + 0.11, 0.0, 0.14, 0.32, 0.72, Service.RUBBER)
 	for k in 6:
 		Service.gb(p, n, 3.5, 5.5, 0.9 + 0.42 * k, 0.9 + 0.42 * k + 0.12, 0.0, 0.006, PAINT)
 	for u: float in [3.3, 5.7]:
 		Service.gb(p, n, u - 0.04, u + 0.04, 0.3, 3.6, 0.0, 0.006, PAINT)
 	Service.gb(p, n, 3.3, 5.7, 3.56, 3.64, 0.0, 0.006, PAINT)
 	Park.ground_words(n, "NO PARKING", p.pt(STORE_DOOR, 4.0, 0.012), 0.26, Color(0.82, 0.7, 0.2), 0.0)
-	Props.case_stack(p, st, 7.2, 0.45, 0.0, 2, 3, Color(0.2, 0.45, 0.25))
+	Props.case_stack(p, st, 7.2, 0.45, 0.0, 2, 3, Color(0.2, 0.3, 0.62))         # not green: green and white read as bundles of cash
 	Service.bale(p, st, 8.5, 0.5, 0.0)
 	Service.wheelie_bin(p, st, 9.75, 0.45, 0.0, Color(0.18, 0.36, 0.22))
 	Service.wheelie_bin(p, st, 2.3, 0.45, 0.0, Color(0.32, 0.34, 0.37))
@@ -216,7 +214,7 @@ static func _studio(p: Node3D, st: int) -> void:
 	Service.ac_unit(p, n, 21.6, 0.0, 3.05)
 	Service.back_stair(p, n, STAIR[0], STAIR[1], 0.12, 0.0, DECK)
 	p.block(26.2, 0.0, STAIR[0] + 0.25, 1.15)
-	p.portal(st, "UP TO THE ROOF", STAIR[0] + 0.45, 1.3, ROOF_U + STAIR[1] - 0.5, -0.9)
+	p.portal(st, "UP TO THE ROOF", STAIR[0] + 0.45, 1.3, ROOF_U + STAIR[1] - 0.5, -2.4)      # clear of the parapet and the stair head (his feet showed over them)
 	var crate: Node3D = p.prop(st, 22.6, 0.4, 0.0, 0.36, 0.36)
 	Park.crate(crate, Vector3.ZERO, 8.0, Color(0.15, 0.3, 0.6))
 	Club.tags(p, st, 21.7, 0.0, 0.0, [["DRIZZO", 0.0, 2.2, 0.3, 3.0]], 22.0)
@@ -225,8 +223,8 @@ static func _studio(p: Node3D, st: int) -> void:
 
 ## The clothing store's back: its steel door (the stock room's) under a lamp;
 ## pallets, two roll cages of stock waiting to go in, the bale, a dumpster at
-## the end (somewhere to hide at this end too), a bin, bags, a bucket of sand
-## for the smokers.
+## the end (somewhere to hide at this end too), a bin, bags, a mop bucket by
+## the door (left of it: where KESHA stands it showed through her).
 static func _clothes(p: Node3D, st: int) -> void:
 	var n: Node3D = p.node_of(st)
 	Alley.back_door(p, n, CLOTHES_DOOR, 0.0, 0.0)
@@ -238,7 +236,7 @@ static func _clothes(p: Node3D, st: int) -> void:
 	Alley.dumpster(p, st, 37.7, 0.62, 0.0, Color(0.22, 0.38, 0.26), true, [], 6.0)
 	Service.wheelie_bin(p, st, 39.25, 0.45, 0.0, Color(0.2, 0.3, 0.6))
 	Alley.bags(p, st, 35.5, 1.35, 3, 9.0)
-	Props.bucket(p, st, 32.75, 0.35)
+	Props.bucket(p, st, 30.72, 0.3)
 	Club.tags(p, st, 37.0, 0.0, 0.0, [["RATTZ", 0.0, 2.3, 0.26, 4.0]], 24.0)
 
 
@@ -276,7 +274,11 @@ static func _sky(p: Node3D, b: int, ground: float, u := 21.0) -> void:
 	Outdoor.moonlight(n, 0.22, Color(0.56, 0.6, 1.0))
 	var glow := Outdoor.moonlight(n, 0.32, Color(1.0, 0.6, 0.42))
 	glow.rotation_degrees = Vector3(-14, 64, 0)
-	Outdoor.backdrop(n, p.pt(u, -40.0, ground), [Color(1.0, 0.62, 0.3), Color(0.93, 0.4, 0.42), Color(0.34, 0.22, 0.5)], Vector3.INF, 9.0, 900.0, Vector2(1.0, -0.05))
+	var sky := Outdoor.backdrop(n, p.pt(u, -40.0, ground), [Color(1.0, 0.62, 0.3), Color(0.93, 0.4, 0.42), Color(0.34, 0.22, 0.5)], Vector3.INF, 9.0, 900.0, Vector2(1.0, -0.05))
+	# Out of the shooting: combat_world.gd sorts the sky's 4 km ground and its
+	# ring into 2 m and 0.3 m squares (falling bits test a hidden band's too),
+	# which with two skies here ran a shot's first frames past a minute.
+	sky.set_meta("combat_fx", true)
 
 
 # ------------------------------------------------------------------- the roof
@@ -284,10 +286,11 @@ static func _sky(p: Node3D, b: int, ground: float, u := 21.0) -> void:
 ## The studio's roof (level 1, ROOF_U to the right; the alley is DECK under
 ## it): tar behind its parapet, the gap where the stair comes up (E: down), the
 ## back of the sign on the front edge, the condenser, vents, the skylight,
-## crates and a bucket of sand where the band smokes; the neighbours' roofs
-## either side (the gun store's higher, the clothing store's lower), the end
-## block; the stair itself outside the gap; over the front, the street below,
-## the shops across it, the sky.
+## crates and a can for the ends where the band smokes; the neighbours' roofs
+## either side, seamed (the gun store's higher, with a hatch; the clothing
+## store's lower, with a condenser), the end block; the stair itself outside
+## the gap; over the front, the street below (its lamps across the road), the
+## shops across it, the sky. He comes up clear of the parapet (-2.4).
 static func _roof(p: Node3D, top: int) -> void:
 	var n: Node3D = p.node_of(top)
 	var o := ROOF_U
@@ -327,12 +330,17 @@ static func _roof(p: Node3D, top: int) -> void:
 		var h: float = b[1]
 		Service.gb(p, n, o + s[0], o + s[1], -9.0, 0.0, down, h, b[2])
 		Service.gb(p, n, o + s[0] + 0.3, o + s[1] - 0.3, -8.8, -0.2, h, h + 0.03, b[3])
+		var seam: Color = Fry.SILVER.darkened(0.14) if b[3] is Color else Fry.TAR.lightened(0.12)
+		for k in 7:                                   # its seams, as on the studio's
+			Service.gb(p, n, o + s[0] + 0.45, o + s[1] - 0.45, -7.7 + k * 1.1, -7.64 + k * 1.1, h + 0.031, h + 0.035, seam)
 		for e: Array in [[-9.06, -8.8], [-0.2, 0.06]]:
 			Service.gb(p, n, o + s[0] - 0.02, o + s[1] + 0.02, e[0], e[1], h, h + 0.14, Park.COPING)
 	Service.gb(p, n, o + GUN[1] - 0.26, o + GUN[1] + 0.02, -8.8, -0.2, 0.8, 0.95, Park.COPING)
 	Service.gb(p, n, o + CLOTHES[0] - 0.02, o + CLOTHES[0] + 0.24, -8.8, -0.2, 0.4, 0.55, Park.COPING)
-	Fry.vent(p, top, o + 15.0, -4.0, 1)
-	Service.condenser(p, top, o + 33.5, -5.5, 90.0)
+	Service.gb(p, n, o + 14.5, o + 15.4, -4.6, -3.7, 0.836, 1.08, Service.GALV.darkened(0.2))       # a hatch on the gun store's
+	Kit.cyl(n, 0.07, 0.6, p.pt(o + 16.4, -5.3, 1.14), Props.STEEL, Vector3.ZERO, 10)
+	var unit := Service.condenser(p, top, o + 33.5, -5.5, 90.0)                              # on the clothing store's
+	unit.position.y += 0.436                                 # over its seams
 	Service.gb(p, n, o + END, o + END + 8.0, -9.0, 16.0, down, 2.5, end_brick)
 	Service.gb(p, n, o + END - 0.08, o + END + 8.08, -9.08, 16.08, 2.5, 2.66, Park.COPING)
 	Service.gb(p, n, o + END + 8.0, o + 90.0, -9.0, 0.0, down, 0.9, brick)
@@ -355,7 +363,7 @@ static func _street_below(p: Node3D, n: Node3D, o: float, down: float) -> void:
 	Service.gb(p, n, o - 30.0, o + 90.0, -21.3, -11.7, down - 0.44, down - 0.14, Outdoor.road())
 	for k in 34:
 		Service.gb(p, n, o - 28.0 + k * 3.4, o - 26.6 + k * 3.4, -16.56, -16.44, down - 0.14, down - 0.13, Color(0.85, 0.8, 0.55))
-	for at: Array in [[14.0, -11.25], [36.0, -11.25], [6.0, -21.75], [30.0, -21.75]]:
+	for at: Array in [[6.0, -21.75], [18.0, -21.75], [30.0, -21.75], [42.0, -21.75]]:      # across the road (this side, their heads stood up over the parapet)
 		Props.street_lamp_on(Kit.group(n, p.pt(o + at[0], at[1], down), Vector3(0, 0.0 if at[1] > -15.0 else 180.0, 0)))
 	for r: Array in [[-30.0, 6.0, 7.2], [6.0, 24.0, 8.4], [24.0, 42.0, 6.6], [42.0, 90.0, 7.8]]:
 		Fry.roof_row(n, p, o + r[0], o + r[1], -36.0, -24.0, down + r[2], down, 3.0 + r[0], true)

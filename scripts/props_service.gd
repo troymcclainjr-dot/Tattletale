@@ -66,9 +66,9 @@ static func van(p: Node3D, b: int, u: float, v: float, yaw: float, paint: Color,
 	# The wheels: a dark well behind each, the tyre, the hub.
 	for x: float in [-0.92, 0.92]:
 		for z: float in [-1.7, 1.75]:
-			Kit.cyl(g, 0.46, 0.03, Vector3(signf(x) * 1.004, 0.42, z), RUBBER, Vector3(0, 0, 90), 12)
-			Kit.cyl(g, 0.37, 0.26, Vector3(x, 0.37, z), RUBBER, Vector3(0, 0, 90), 12)
-			Kit.cyl(g, 0.16, 0.27, Vector3(x, 0.37, z), Props.STEEL, Vector3(0, 0, 90), 8)
+			Kit.cyl(g, 0.46, 0.03, Vector3(signf(x) * 1.004, 0.42, z), RUBBER, Vector3(0, 0, 90), 20)
+			Kit.cyl(g, 0.37, 0.26, Vector3(x, 0.37, z), RUBBER, Vector3(0, 0, 90), 20)
+			Kit.cyl(g, 0.16, 0.27, Vector3(x, 0.37, z), Props.STEEL, Vector3(0, 0, 90), 12)
 	# The back: the right-hand door shut, the left-hand one swung out from its
 	# corner (the floor it stands on is the plan's to keep), the load space seen
 	# through the half it opened, boxes in it.
@@ -77,6 +77,8 @@ static func van(p: Node3D, b: int, u: float, v: float, yaw: float, paint: Color,
 	Kit.box(g, Vector3(0.8, 1.7, 0.01), Vector3(-0.45, 1.3, -2.59), Color(0.06, 0.06, 0.07))
 	for box: Array in [[-0.62, 0.64, 0.4, 0.46], [-0.3, 0.62, 0.3, 0.42], [-0.5, 1.08, 0.5, 0.4]]:
 		Kit.box(g, Vector3(box[2], box[3], 0.03), Vector3(box[0], box[1], -2.62), CARD.darkened(0.25))
+	for y: float in [0.79, 1.89]:                  # its hinges, at the corner it swung from
+		Kit.box(g, Vector3(0.05, 0.13, 0.07), Vector3(-0.875, y, -2.613), DARK)
 	var leaf := Kit.group(g, Vector3(-0.86, 0.44, -2.6), Vector3(0, 100.0, 0))
 	Kit.box(leaf, Vector3(0.84, 1.78, 0.04), Vector3(0.42, 0.9, -0.02), paint)
 	Kit.box(leaf, Vector3(0.56, 0.42, 0.012), Vector3(0.42, 1.4, -0.045), glass)
@@ -242,6 +244,12 @@ static func roof_sign(p: Node3D, b: int, u0: float, u1: float, v: float, look :=
 	gb(p, n, u0 + 0.04, u1 - 0.04, v - 0.07, v - 0.06, 1.14, 2.56, Color(0.16, 0.2, 0.34))      # its face, the street's side
 	for y: float in [1.4, 2.25]:
 		gb(p, n, u0 + 0.05, u1 - 0.05, v, v + 0.05, y - 0.03, y + 0.03, rust)
+	var k := 1
+	while u0 + k * 0.62 < u1 - 0.3:                 # the sheet's seams, and the box its lamps are wired from
+		gb(p, n, u0 + k * 0.62 - 0.0125, u0 + k * 0.62 + 0.0125, v + 0.001, v + 0.013, 1.12, 2.58, look.darkened(0.25))
+		k += 1
+	gb(p, n, mid + 0.9, mid + 1.15, v + 0.001, v + 0.12, 1.55, 1.8, Color(0.34, 0.35, 0.36))
+	Kit.tube(n, p.pt(mid + 1.02, v + 0.06, 1.55), p.pt(mid + 1.02, v + 0.06, 0.02), 0.018, GALV)
 	for u: float in [u0 + 0.25, mid, u1 - 0.25]:
 		gb(p, n, u - 0.04, u + 0.04, v + 0.05, v + 0.13, 0.02, 2.75, rust)
 		gb(p, n, u - 0.13, u + 0.13, v - 0.04, v + 0.22, 0.0, 0.02, rust.darkened(0.2))

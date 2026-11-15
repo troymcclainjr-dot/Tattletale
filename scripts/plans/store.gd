@@ -135,7 +135,7 @@ static func _street(p: Node3D, st: int, front: Node3D, brick: Variant) -> void:
 	Props.payphone(p, st, 8.45, 11.08)
 	Props.bin(p, st, 6.4, 11.45)
 	Props.street_lamp(p, st, 2.6, 13.05)
-	Props.hydrant(p, st, 5.4, 13.0)
+	Props.hydrant(p, st, 7.4, 13.0)          # off the cellar doors (strip: it stood in front of them, and of him on them)
 
 
 ## A piece standing `d` proud of the shop's street face, its back 1 cm into the wall.

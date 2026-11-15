@@ -20,7 +20,6 @@ extends RefCounted
 const Props := preload("res://scripts/props.gd")
 const In := preload("res://scripts/props_in.gd")
 const Outdoor := preload("res://scripts/outdoor.gd")
-const Backs := preload("res://scripts/props_backs.gd")
 const Service := preload("res://scripts/props_service.gd")
 
 const CU := 40.0                            # the cellar is drawn this far to the right on the plan
@@ -122,7 +121,7 @@ static func _cellar(p: Node3D, b: int) -> void:
 	Kit.tube(n, p.pt(CU + 7.3, 0.12, 2.25), p.pt(CU + 7.3, 0.12, 1.2), 0.026, copper)
 	Kit.tube(n, p.pt(CU + 7.3, 0.12, 1.2), p.pt(CU + 7.38, 0.36, 1.2), 0.026, copper)
 	# Down the left.
-	Props.case_stack(p, b, CU + 0.45, 2.6, 90.0, 3, 4, Color(0.2, 0.42, 0.25))
+	Props.case_stack(p, b, CU + 0.45, 2.6, 90.0, 3, 4, Color(0.85, 0.52, 0.12))       # not green: green and white read as bundles of cash
 	Props.case_stack(p, b, CU + 0.45, 4.2, 90.0, 2, 2, Color(0.75, 0.16, 0.14))
 	Props.chest_freezer(p, b, CU + 0.5, 6.4, 90.0, 1.3, "", Color(0.5, 0.5, 0.52))
 	Props.boxes(p, b, CU + 0.62, 8.6, 4)
@@ -134,8 +133,18 @@ static func _cellar(p: Node3D, b: int) -> void:
 	In.pegboard(p, b, CU + 8.925, 3.4, 270.0, 1.2, 0.7, 1.55, "tools")
 	Props.shelves(p, b, CU + 8.69, 6.6, 270.0, 2.0, "boxes")
 	# In the middle: the damp, the mop and its bucket, a hand truck left standing.
-	Backs.puddle(p, n, CU + 4.4, 6.2, 0.6, 15.0)
+	_wet(p, n, CU + 4.4, 6.2, 0.6, 15.0)
 	Props.bucket(p, b, CU + 5.3, 6.9)
 	Service.hand_truck(p, b, CU + 3.0, 8.4, 30.0, Color(0.62, 0.48, 0.3))
 	In.pendant(p, b, CU + 2.6, 3.6, 2.0, Props.DARK, "bulb", In.WARM, 0.35, LOW)
 	In.pendant(p, b, CU + 6.2, 7.2, 2.0, Props.DARK, "bulb", In.WARM, 0.3, LOW)
+
+
+## Wet on the concrete: a darker patch with the bulb in it (no sky down here, so
+## not the yards' puddle, which shows a dusk sky).
+static func _wet(p: Node3D, n: Node3D, u: float, v: float, r: float, turn := 0.0) -> void:
+	var g := Kit.group(n, p.pt(u, v, 0.0), Vector3(0, turn, 0))
+	var wet := Kit.cyl(g, r, 0.004, Vector3(0, 0.011, 0), Color(0.2, 0.2, 0.21, 0.6), Vector3.ZERO, 16)
+	wet.scale = Vector3(1.3, 1.0, 0.8)
+	var glint := Kit.cyl(g, r * 0.22, 0.004, Vector3(r * 0.25, 0.015, -r * 0.1), Color(1.0, 0.86, 0.6, 0.45), Vector3.ZERO, 12)
+	glint.scale = Vector3(1.6, 1.0, 0.5)
