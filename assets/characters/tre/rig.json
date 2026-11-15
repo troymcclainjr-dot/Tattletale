@@ -363,6 +363,16 @@
    "file": "parts/fx_vein.png",
    "w": 57.5,
    "h": 57.5
+  },
+  "eye_x": {
+   "file": "parts/eye_x.png",
+   "w": 51.0,
+   "h": 63.1
+  },
+  "eye_x_pale": {
+   "file": "parts/eye_x_pale.png",
+   "w": 51.0,
+   "h": 63.1
   }
  },
  "skin": [
@@ -390,6 +400,14 @@
    241.0,
    169.0,
    48.0
+  ]
+ },
+ "back": {
+  "mask": "back_mask.png",
+  "hair": [
+   40,
+   32,
+   30
   ]
  }
 }

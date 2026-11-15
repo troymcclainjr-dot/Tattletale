@@ -62,6 +62,13 @@ const EXPRESSIONS := {
 	"smitten": {"eyes": "eye_shine", "mouth": "mouth_smile", "brows": "brow_arched", "l": [0.08, -8.0], "r": [0.08, -8.0], "fx": ["blush"], "talk": "happy"},
 	"wince": {"eyes": "eye_squint", "mouth": "mouth_grit", "brows": "brow_worried", "l": [-0.08, -20.0], "r": [-0.08, -20.0], "fx": ["sweat"], "talk": "angry"},
 }
+## Faces put on someone for good, kept out of EXPRESSIONS (the faces people stand about in, which
+## `--check-faces` and Z/X go through). Asked for with set_expression like the rest; hold them (`hold`,
+## hold_mouth) and nothing on them moves. "dead": the eyes crossed out (over dark glasses, where rig.json's
+## "dead" row says: _cross_glasses), the tongue out.
+const HELD := {
+	"dead": {"eyes": "eye_x", "mouth": "mouth_bleh", "brows": "brow_straight", "l": [0.06, -6.0], "r": [0.06, -6.0]},
+}
 ## The mouths a face flaps between while talking, by the feeling it talks with.
 ## Every set opens and shuts; an angry face talks through its teeth, a sad one
 ## through a frown.
@@ -196,7 +203,7 @@ func shown_mouth() -> String:
 
 
 func set_expression(wanted: String, snap := false) -> void:
-	if not EXPRESSIONS.has(wanted):
+	if not EXPRESSIONS.has(wanted) and not HELD.has(wanted):
 		push_warning("No expression called %s" % wanted)
 		return
 	asked = wanted
@@ -206,7 +213,7 @@ func set_expression(wanted: String, snap := false) -> void:
 
 ## Can both eyes of this expression blink? If not it is a moment (see EXPRESSIONS).
 static func blinks(name: String) -> bool:
-	var e: Dictionary = EXPRESSIONS.get(name, EXPRESSIONS["neutral"])
+	var e: Dictionary = EXPRESSIONS.get(name, HELD.get(name, EXPRESSIONS["neutral"]))
 	return e.get("eye_l", e["eyes"]) in BLINKING_EYES and e.get("eye_r", e["eyes"]) in BLINKING_EYES
 
 
@@ -234,7 +241,7 @@ func _settle() -> void:
 
 func _apply(wanted: String, snap: bool) -> void:
 	expression = wanted
-	var e: Dictionary = EXPRESSIONS[wanted]
+	var e: Dictionary = EXPRESSIONS[wanted] if EXPRESSIONS.has(wanted) else HELD[wanted]
 	_eyes = [e.get("eye_l", e["eyes"]), e.get("eye_r", e["eyes"])]
 	_mouth = e["mouth"]
 	_talk_set = TALK.get(e.get("talk", "plain"), TALK["plain"])
@@ -281,6 +288,7 @@ func set_layout(layout: Dictionary, drawing: Texture2D = null) -> void:
 		_show_mouth(_mouth_now)
 	_place_brows()
 	_place_fx()
+	_show_eyes()          # crossed-out glasses come and go with the drawing (_cross_glasses)
 
 
 ## Which face of the body card the camera sees: 1 as drawn, -1 mirrored. The
@@ -300,7 +308,7 @@ func _process(delta: float) -> void:
 		_place_fx()
 
 	# A moment (eyes that cannot blink) left on someone who is not talking settles into its open-eyed rest.
-	if talking or hold or not EXPRESSIONS[expression].has("rest"):
+	if talking or hold or not EXPRESSIONS.get(expression, {}).has("rest"):
 		_still = 0.0
 	else:
 		_still += delta
@@ -354,6 +362,13 @@ func _show_eyes() -> void:
 	for i in 2:
 		var slot: String = ["eye_l", "eye_r"][i]
 		var part: String = _eyes[i]
+		if _cross_glasses(i, part):
+			continue
+		if _was_crossed(slot):              # back from crossed-out glasses
+			_nodes[slot].set_meta("crossed", false)
+			_nodes[slot].set_meta("clip", true)
+			_nodes[slot].rotation.z = _tilt
+			_nodes[slot].visible = not slot in _hidden
 		if _look != 0.0 and part in BLINKING_EYES:
 			part = "eye_side" if part in LIDDED or not _rig["parts"].has("eye_look") else "eye_look"
 		if _blink_stage == 2 and part in BLINKING_EYES:
@@ -368,6 +383,35 @@ func _show_eyes() -> void:
 			var mirrored: bool = i == 1 and _rig["parts"][part].get("mirror", true)
 			_nodes[slot].scale.x = -1.0 if mirrored else 1.0
 		_clip(_nodes[slot])
+
+
+## Crossed-out eyes on someone whose drawing hides his eyes behind dark glasses: the pale X on each lens, where
+## rig.json's "dead" row says (pixels of the front drawing; true only while the front drawing is on, which has
+## no anchors or mouths of its own). True if eye `i` is shown that way.
+func _cross_glasses(i: int, part: String) -> bool:
+	var slot: String = ["eye_l", "eye_r"][i]
+	var dead: Dictionary = _rig.get("dead", {})
+	if part != "eye_x" or not slot in _hidden or dead.is_empty() or not _rig["parts"].has("eye_x_pale") \
+			or _layout.has("anchors") or _layout.has("mouth_prefix"):
+		return false
+	var node: MeshInstance3D = _nodes[slot]
+	node.set_meta("part", "")
+	_put(slot, "eye_x_pale")
+	(node.mesh as QuadMesh).size = Vector2(float(dead["w"]), float(dead["h"])) * _m
+	var at: Array = dead[slot]
+	node.position.x = (float(at[0]) - _body.x * 0.5) * _m
+	node.position.y = (_body.y - float(at[1])) * _m
+	node.rotation.z = 0.0
+	node.scale.x = -1.0 if i == 1 else 1.0
+	node.set_meta("crossed", true)
+	node.set_meta("clip", false)           # it lies on the glasses, not on skin
+	node.visible = true
+	_clip(node)
+	return true
+
+
+func _was_crossed(slot: String) -> bool:
+	return _nodes[slot].get_meta("crossed", false)
 
 
 func _show_mouth(part: String) -> void:

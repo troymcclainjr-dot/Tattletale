@@ -81,6 +81,10 @@ extends Node3D
 ##   list:size:w:h (the window that size), list:click:i (a real click on row i).
 ##   The jail (prison_rules.gd): arrest:why (_arrest: to booking in the jumpsuit, held), release (let out at once,
 ##   in his own clothes, at the front gate); stand:prison:bunk then use is the night in his cell that lets him out.
+##   people_steps.gd's: hidecheck (a shot into the air; where everyone hid, and whether he can see them there;
+##   hidecheck:here fires where he stands), runcover, hidden, gunpoint (each a picture, :name: someone running for
+##   cover, someone hidden, someone held up), deadrow (every character with the dead face, standing and lying),
+##   deadcheck (everyone here put down at once: does anything about them move?).
 
 const Building := preload("res://scripts/building.gd")
 const Place := preload("res://scripts/place.gd")
@@ -106,6 +110,7 @@ const PLANS := {
 const FlickerCheck := preload("res://scripts/flicker_check.gd")
 const ShotSteps := preload("res://scripts/shot_steps.gd")      # more --do steps: snap, eye, place, at, room, beat, stats, check
 const ShopSteps := preload("res://scripts/shop_steps.gd")      # --do steps for the gun store (shop:...) and the travel list (list:...)
+const PeopleSteps := preload("res://scripts/people_steps.gd")  # --do steps for the people: hidecheck, runcover, hidden, gunpoint, deadrow, deadcheck
 const PaperActor := preload("res://scripts/paper_actor.gd")
 const Wanderer := preload("res://scripts/wanderer.gd")
 const TalkBox := preload("res://scripts/talk_box.gd")
@@ -1621,6 +1626,8 @@ func _take_shot() -> void:
 				await ShotSteps.step(self, bits)
 			"shop", "list":     # shop_steps.gd: the gun store's counter and range; the travel list filled with made-up rows
 				await ShopSteps.step(self, bits)
+			"hidecheck", "runcover", "hidden", "gunpoint", "deadrow", "deadcheck":     # people_steps.gd: the dead, the frightened, the held up
+				await PeopleSteps.step(self, bits)
 			_:              # fire, reload, hurt, shoot, aimon, hud, freeze, combatcheck
 				await _combat.step(bits)
 	if _shot_talk > 0.0 and _actor.face:
