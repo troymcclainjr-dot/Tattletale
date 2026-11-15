@@ -198,6 +198,10 @@ static func _street(p: Node3D, st: int, front: Node3D, panel: Variant) -> void:
 	Kit.box(board, Vector3(0.6, 0.6, 0.03), Vector3(0, 2.3, 0), Color(0.12, 0.3, 0.7))
 	Props.words(board, "H", Vector3(0, 2.3, 0.02), 0.4, Color(0.95, 0.95, 0.92))
 	Props.car(p, st, 3.6, 21.95, 90.0, "ambulance", false)
+	# The pavement's left end goes back along the civic row, past the old block,
+	# to the courthouse (main.gd's "goto:"; plans/court.gd's TO THE HOSPITAL).
+	# (Placeholder: the label.)
+	p.use_point(st, "TO THE COURTHOUSE", -3.25, 19.2, "goto:court", 1.2, 1.9)
 
 
 static func _front_rooms(p: Node3D, b: int) -> void:

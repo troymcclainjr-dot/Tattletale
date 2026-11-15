@@ -35,6 +35,7 @@ const Props := preload("res://scripts/props.gd")
 const Park := preload("res://scripts/props_park2.gd")
 const Houses := preload("res://scripts/houses.gd")
 const Outdoor := preload("res://scripts/outdoor.gd")
+const CourtPlan := preload("res://scripts/plans/court.gd")      # its zebra crossing, painted at this end too
 
 const CU := 16.0          # the middle of the square: the bandstand
 const CV := 10.8
@@ -260,6 +261,15 @@ static func _streets(p: Node3D, st: int) -> void:
 	Props.street_lamp(p, st, 26.5, 24.25)
 	Props.hydrant(p, st, 11.4, 24.2)
 	Park.basket(p, st, 13.3, 22.75)
+	# The ways on (main.gd's "goto:"): over the zebra crossing to the courthouse
+	# (it faces the square: plans/court.gd's TO LINDEN SQUARE is its end of the
+	# crossing), the pavement's left end over the side street to Pen Lucy Park,
+	# its right end round to the shops at the liquor store (plans/park.gd and
+	# plans/liquor.gd each have the far end). (Placeholders: the labels.)
+	p.use_point(st, "TO THE COURTHOUSE", 21.6, 24.1, "goto:court", 1.1, 1.9)
+	CourtPlan.zebra(p, st, 21.6)
+	p.use_point(st, "TO PEN LUCY PARK", -0.75, 23.25, "goto:park", 1.2, 1.9)
+	p.use_point(st, "TO THE LIQUOR STORE", 32.75, 23.25, "goto:liquor", 1.2, 1.9)
 	# the lamps on the back street
 	Park.lamp_post(p, st, -3.4, -9.45)
 	Park.lamp_post(p, st, 22.0, -9.45)

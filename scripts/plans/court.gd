@@ -323,6 +323,25 @@ static func _street(p: Node3D, st: int, front: Node3D) -> void:
 	Props.bin(p, st, 7.6, 22.95)
 	Props.street_lamp(p, st, -1.6, 24.75)
 	Props.hydrant(p, st, 12.5, 24.7)
+	# The civic row (main.gd's "goto:"): the pavement's left end goes on to the
+	# police station, its right end to the hospital; and across the road from
+	# the doors is Linden Square (plans/park2.gd), over a zebra crossing.
+	# (Placeholders: the labels.)
+	p.use_point(st, "TO THE POLICE STATION", -3.25, 23.7, "goto:police", 1.2, 1.9)
+	p.use_point(st, "TO THE HOSPITAL", 21.25, 23.7, "goto:hospital", 1.2, 1.9)
+	p.use_point(st, "TO LINDEN SQUARE", 10.6, 24.55, "goto:park2", 1.1, 1.9)
+	zebra(p, st, 10.6)
+
+
+## A zebra crossing on the stock road in front of the pavement (place.gd's
+## street(): its kerb on depth + 2.5, 7 m of road beyond), centred on u. The
+## stripes stand a few millimetres over the road's centre line, which they
+## break. (plans/park2.gd paints its end of the same crossing with this.)
+static func zebra(p: Node3D, st: int, u: float) -> void:
+	var n: Node3D = p.node_of(st)
+	var kerb: float = p.depth + 2.5
+	for k in 7:
+		Kit.box(n, Vector3(2.4, 0.01, 0.45), p.pt(u, kerb + 0.9 + k * 0.9, -0.127), Color(0.84, 0.83, 0.78))
 
 
 static func _lobby(p: Node3D, b: int) -> void:

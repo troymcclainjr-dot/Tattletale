@@ -247,6 +247,10 @@ static func _street(p: Node3D, st: int, front: Node3D) -> void:
 	Props.street_lamp(p, st, -1.4, 24.25)
 	Props.hydrant(p, st, 9.6, 24.2)
 	Props.car(p, st, 12.6, 25.95, 90.0, "cruiser", false)
+	# The pavement's right end goes on along the civic row, past the bail
+	# bondsman, to the courthouse (main.gd's "goto:"; plans/court.gd's TO THE
+	# POLICE STATION comes back). (Placeholder: the label.)
+	p.use_point(st, "TO THE COURTHOUSE", 19.25, 23.2, "goto:court", 1.2, 1.9)
 
 
 static func _lobby(p: Node3D, b: int) -> void:
