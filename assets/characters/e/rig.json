@@ -693,6 +693,16 @@
     734.8,
     550.8
    ]
+  },
+  "eye_x": {
+   "file": "parts/eye_x.png",
+   "w": 55.0,
+   "h": 68.0
+  },
+  "eye_x_pale": {
+   "file": "parts/eye_x_pale.png",
+   "w": 55.0,
+   "h": 68.0
   }
  }
 }
