@@ -1,0 +1,19 @@
+{
+	"id": "bounce",
+	"name": "CORNER BOUNCE",
+	"bpm": 96,
+	"bars": 4,
+	"file": "bounce.wav",
+	"swing": 0.55,
+	"sections": [
+		{
+			"name": "verse",
+			"bar": 0
+		},
+		{
+			"name": "hook",
+			"bar": 0
+		}
+	],
+	"mood": "playful"
+}

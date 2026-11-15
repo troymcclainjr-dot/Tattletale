@@ -1,0 +1,19 @@
+{
+	"id": "sunday",
+	"name": "SUNDAY PORCH",
+	"bpm": 88,
+	"bars": 8,
+	"file": "sunday.wav",
+	"swing": 0.45,
+	"sections": [
+		{
+			"name": "verse",
+			"bar": 0
+		},
+		{
+			"name": "hook",
+			"bar": 4
+		}
+	],
+	"mood": "mellow"
+}

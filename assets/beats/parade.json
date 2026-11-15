@@ -1,0 +1,19 @@
+{
+	"id": "parade",
+	"name": "PARADE ROUTE",
+	"bpm": 94,
+	"bars": 8,
+	"file": "parade.wav",
+	"swing": 0.1,
+	"sections": [
+		{
+			"name": "verse",
+			"bar": 0
+		},
+		{
+			"name": "hook",
+			"bar": 4
+		}
+	],
+	"mood": "triumphant"
+}

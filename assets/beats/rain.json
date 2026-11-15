@@ -1,0 +1,19 @@
+{
+	"id": "rain",
+	"name": "RAINY STOOP",
+	"bpm": 90,
+	"bars": 8,
+	"file": "rain.wav",
+	"swing": 0.35,
+	"sections": [
+		{
+			"name": "verse",
+			"bar": 0
+		},
+		{
+			"name": "hook",
+			"bar": 4
+		}
+	],
+	"mood": "melancholy"
+}
