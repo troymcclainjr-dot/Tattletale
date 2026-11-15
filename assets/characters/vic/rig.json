@@ -1,0 +1,372 @@
+{
+ "about": "Positions and sizes are pixels of body.png (x right, y down). Built by build_npc.py (see the README).",
+ "name": "VIC",
+ "height_m": 1.74,
+ "tilt_deg": 0.0,
+ "views": {
+  "front": {
+   "art": "body.png",
+   "face": {
+    "hide": [
+     "stache_l",
+     "stache_r",
+     "goatee"
+    ]
+   },
+   "limbs": "limbs.png",
+   "arm_l": [
+    272.0,
+    692.0
+   ],
+   "arm_r": [
+    518.0,
+    691.0
+   ],
+   "arms": {
+    "l": {
+     "pivot": [
+      272.0,
+      692.0
+     ],
+     "len": 413.5,
+     "wrist_r": 292.0,
+     "wrist": [
+      165.0,
+      961.6
+     ],
+     "width": 101.5
+    },
+    "r": {
+     "pivot": [
+      518.0,
+      691.0
+     ],
+     "len": 413.6,
+     "wrist_r": 296.0,
+     "wrist": [
+      624.2,
+      965.0
+     ],
+     "width": 102.0
+    }
+   },
+   "legs": "legs.png",
+   "hip": 1092.0,
+   "knee": 1265.2
+  }
+ },
+ "anchors": {
+  "eye_l": [
+   363.4,
+   340.9
+  ],
+  "eye_r": [
+   429.6,
+   340.9
+  ],
+  "brow_l": [
+   361.7,
+   260.7
+  ],
+  "brow_r": [
+   431.3,
+   260.7
+  ],
+  "mouth": [
+   396.5,
+   456.5
+  ],
+  "stache_l": [
+   396.5,
+   456.5
+  ],
+  "stache_r": [
+   396.5,
+   456.5
+  ],
+  "goatee": [
+   396.5,
+   456.5
+  ]
+ },
+ "parts": {
+  "eye_open": {
+   "file": "parts/eye_open.png",
+   "w": 61.0,
+   "h": 121.5
+  },
+  "mouth_grin": {
+   "file": "parts/mouth_grin.png",
+   "w": 252.1,
+   "h": 116.3,
+   "lip": 37.5
+  },
+  "stache_l": {
+   "file": "parts/stache_l.png",
+   "w": 136.0,
+   "h": 66.0
+  },
+  "stache_r": {
+   "file": "parts/stache_r.png",
+   "w": 136.0,
+   "h": 42.0
+  },
+  "goatee": {
+   "file": "parts/goatee.png",
+   "w": 92.0,
+   "h": 67.0
+  },
+  "eye_half": {
+   "file": "parts/eye_half.png",
+   "w": 75.0,
+   "h": 116.0
+  },
+  "eye_sleepy": {
+   "file": "parts/eye_sleepy.png",
+   "w": 87.0,
+   "h": 116.0
+  },
+  "eye_glare": {
+   "file": "parts/eye_glare.png",
+   "w": 58.0,
+   "h": 109.0
+  },
+  "eye_squint": {
+   "file": "parts/eye_squint.png",
+   "w": 77.0,
+   "h": 40.0
+  },
+  "eye_shut": {
+   "file": "parts/eye_shut.png",
+   "w": 77.0,
+   "h": 55.0
+  },
+  "eye_happy": {
+   "file": "parts/eye_happy.png",
+   "w": 79.0,
+   "h": 44.0
+  },
+  "eye_pinch": {
+   "file": "parts/eye_pinch.png",
+   "w": 67.0,
+   "h": 80.0
+  },
+  "eye_wide": {
+   "file": "parts/eye_wide.png",
+   "w": 89.0,
+   "h": 127.0
+  },
+  "eye_fear": {
+   "file": "parts/eye_fear.png",
+   "w": 87.0,
+   "h": 129.0
+  },
+  "eye_look": {
+   "file": "parts/eye_look.png",
+   "w": 91.0,
+   "h": 128.0,
+   "mirror": false
+  },
+  "eye_side": {
+   "file": "parts/eye_side.png",
+   "w": 112.0,
+   "h": 84.0,
+   "mirror": false
+  },
+  "eye_shine": {
+   "file": "parts/eye_shine.png",
+   "w": 70.0,
+   "h": 144.0,
+   "mirror": false
+  },
+  "eye_spiral": {
+   "file": "parts/eye_spiral.png",
+   "w": 92.0,
+   "h": 102.0
+  },
+  "eye_heart": {
+   "file": "parts/eye_heart.png",
+   "w": 89.0,
+   "h": 103.0,
+   "mirror": false
+  },
+  "brow_straight": {
+   "file": "parts/brow_straight.png",
+   "w": 72.0,
+   "h": 26.0
+  },
+  "brow_arched": {
+   "file": "parts/brow_arched.png",
+   "w": 70.0,
+   "h": 31.0
+  },
+  "brow_tapered": {
+   "file": "parts/brow_tapered.png",
+   "w": 76.0,
+   "h": 29.0
+  },
+  "brow_worried": {
+   "file": "parts/brow_worried.png",
+   "w": 72.0,
+   "h": 37.0
+  },
+  "mouth_neutral": {
+   "file": "parts/mouth_neutral.png",
+   "w": 136.0,
+   "h": 22.0,
+   "lip": 11.0
+  },
+  "mouth_smile": {
+   "file": "parts/mouth_smile.png",
+   "w": 156.0,
+   "h": 49.0,
+   "lip": 24.0
+  },
+  "mouth_frown": {
+   "file": "parts/mouth_frown.png",
+   "w": 143.0,
+   "h": 45.0,
+   "lip": 23.0
+  },
+  "mouth_smirk": {
+   "file": "parts/mouth_smirk.png",
+   "w": 151.0,
+   "h": 45.0,
+   "lip": 30.0
+  },
+  "mouth_firm": {
+   "file": "parts/mouth_firm.png",
+   "w": 98.0,
+   "h": 25.0,
+   "lip": 12.5
+  },
+  "mouth_wavy": {
+   "file": "parts/mouth_wavy.png",
+   "w": 143.0,
+   "h": 34.0,
+   "lip": 17.0
+  },
+  "mouth_skew": {
+   "file": "parts/mouth_skew.png",
+   "w": 123.0,
+   "h": 40.5,
+   "lip": 18.0
+  },
+  "mouth_wobble": {
+   "file": "parts/mouth_wobble.png",
+   "w": 100.0,
+   "h": 37.0,
+   "lip": 19.0
+  },
+  "mouth_grit": {
+   "file": "parts/mouth_grit.png",
+   "w": 214.0,
+   "h": 78.0,
+   "lip": 19.0
+  },
+  "mouth_yikes": {
+   "file": "parts/mouth_yikes.png",
+   "w": 220.0,
+   "h": 74.5,
+   "lip": 16.0
+  },
+  "mouth_eek": {
+   "file": "parts/mouth_eek.png",
+   "w": 192.0,
+   "h": 75.5,
+   "lip": 23.0
+  },
+  "mouth_snarl": {
+   "file": "parts/mouth_snarl.png",
+   "w": 180.8,
+   "h": 94.4,
+   "lip": 15.7
+  },
+  "mouth_ah": {
+   "file": "parts/mouth_ah.png",
+   "w": 100.5,
+   "h": 85.6,
+   "lip": 6.8
+  },
+  "mouth_oh": {
+   "file": "parts/mouth_oh.png",
+   "w": 78.0,
+   "h": 94.5,
+   "lip": 16.5
+  },
+  "mouth_ee": {
+   "file": "parts/mouth_ee.png",
+   "w": 192.0,
+   "h": 62.5,
+   "lip": 7.5
+  },
+  "mouth_small": {
+   "file": "parts/mouth_small.png",
+   "w": 101.0,
+   "h": 65.5,
+   "lip": 13.5
+  },
+  "mouth_ff": {
+   "file": "parts/mouth_ff.png",
+   "w": 144.0,
+   "h": 33.5,
+   "lip": 10.5
+  },
+  "mouth_shout": {
+   "file": "parts/mouth_shout.png",
+   "w": 182.6,
+   "h": 93.5,
+   "lip": 14.8
+  },
+  "mouth_laugh": {
+   "file": "parts/mouth_laugh.png",
+   "w": 176.0,
+   "h": 97.3,
+   "lip": 18.5
+  },
+  "mouth_wail": {
+   "file": "parts/mouth_wail.png",
+   "w": 139.7,
+   "h": 94.7,
+   "lip": 15.9
+  },
+  "mouth_bleh": {
+   "file": "parts/mouth_bleh.png",
+   "w": 126.0,
+   "h": 77.0,
+   "lip": 14.5
+  },
+  "mouth_whistle": {
+   "file": "parts/mouth_whistle.png",
+   "w": 84.0,
+   "h": 64.5,
+   "lip": 21.0
+  },
+  "fx_sweat": {
+   "file": "parts/fx_sweat.png",
+   "w": 50.0,
+   "h": 69.0,
+   "mirror": false
+  },
+  "fx_tear": {
+   "file": "parts/fx_tear.png",
+   "w": 64.0,
+   "h": 233.0
+  },
+  "fx_blush": {
+   "file": "parts/fx_blush.png",
+   "w": 72.0,
+   "h": 38.0
+  },
+  "fx_vein": {
+   "file": "parts/fx_vein.png",
+   "w": 62.0,
+   "h": 62.0
+  }
+ },
+ "skin": [
+  112.0,
+  48.0,
+  12.0
+ ]
+}
