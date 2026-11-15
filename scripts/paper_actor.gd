@@ -25,6 +25,11 @@ const BEAT := 60.0 / 92.0     # seconds: the tempo he performs to at a microphon
 const ARM_ROOM := 0.45        # the card is this much wider than the drawing at each side, so a raised arm is not cut off
 const RUN := 1.8              # sprinting covers the ground this many times faster than walking
 const RUN_STEPS := 1.38       # and the steps come this much faster; the rest of the speed is a longer stride
+const RUN_SWING := 0.15       # sprinting side-on, the arm swings this much further each way than walking, radians
+const RUN_CURL := 0.6         # ...and bows this much at the elbow; its hand turns as one piece (the card's arm_l_hand)
+const RUN_PUMP := 0.6         # from the front or the back, a pumping arm bows in at the elbow this much at most
+const RUN_BEND := 0.07        # sprinting, an arm has turned all the way this far from its shoulder (about its elbow)
+const SpeedLines := preload("res://scripts/speed_lines.gd")
 const SLOT_ID := {"hat": 1, "jacket": 2, "shirt": 3, "trousers": 4, "shoes": 5}      # a wardrobe slot's number on the card (REGIONS)
 const REGIONS := ["", "hat", "jacket", "shirt", "trousers", "shoes", "sleeve"]     # the clothes a drawing can have (outfit.py), by number
 const ARM_BEND := 0.1            # an arm swinging at his side has turned all the way this far from its shoulder (paper_card.gdshader's arm_reach)
@@ -161,6 +166,7 @@ var _fist: MeshInstance3D
 var _held_art := ""          # which drawing of it is on the cards: "" the side-on one, or "toward"
 var _held_name := ""        # the thing those two drawings show now
 var _bend := ARM_BEND       # how far from the shoulder his arms have turned all the way, now
+var _speed: Node3D          # speed lines and dust at a sprint (speed_lines.gd)
 
 
 func _init() -> void:
@@ -201,6 +207,8 @@ func _init() -> void:
 	_card.add_child(_held)
 	_gun = _prop_card(0.03)
 	_fist = _prop_card(FIST_NEAR)
+	_speed = SpeedLines.new()
+	add_child(_speed)
 
 
 ## A drawing laid on the card: the thing he holds, or the fists on it.
@@ -361,6 +369,7 @@ func walk(dir: Vector2, screen: Vector2, delta: float) -> void:
 	if face:
 		face.set_side(1.0 if cos(_yaw) >= 0.0 else -1.0)
 	_pose()
+	_speed.tick(delta, _run * _gait, view, _yaw, dir, screen, _phase, height)
 
 
 ## Where the limbs are at this point of the walk cycle.
@@ -391,9 +400,9 @@ func _pose() -> void:
 		_put("near_leg_right", far_goes != passed)
 		_put("far_leg_shade", 1.0)
 		_put("leg_ink", 0.006 * g)
-		# The arm swings against the legs; running, it swings twice as far and bends at the elbow.
-		_put("arm_l_angle", _arm_rest - (0.5 + 0.55 * r) * cos(_phase) * g - 0.25 * r)
-		_put("arm_l_curl", 0.95 * r)
+		# The arm swings against the legs; running, a little further, bent at the elbow.
+		_put("arm_l_angle", _arm_rest - (0.5 + RUN_SWING * r) * cos(_phase) * g)
+		_put("arm_l_curl", RUN_CURL * r)
 		_put("arm_r_angle", 0.0)
 		_put("arm_r_curl", 0.0)
 		_card.position.y = 0.035 * together * (1.0 - _run) + 0.075 * apart     # walking he is highest as the legs pass; running, in mid-stride
@@ -410,8 +419,8 @@ func _pose() -> void:
 		# elbow and its fist comes up in front of him as the other goes down.
 		_put("arm_l_angle", 0.2 * s * g - 0.12 * r)
 		_put("arm_r_angle", 0.2 * s * g + 0.12 * r)
-		_put("arm_l_curl", (0.5 + 0.5 * s) * r)
-		_put("arm_r_curl", -(0.5 - 0.5 * s) * r)
+		_put("arm_l_curl", RUN_PUMP * (0.5 + 0.5 * s) * r)
+		_put("arm_r_curl", -RUN_PUMP * (0.5 - 0.5 * s) * r)
 		_card.position.y = (0.045 + 0.04 * r) * absf(s) * g
 		_card.rotation.z = (0.045 + 0.03 * r) * s * g
 		if _groove > 0.0:
@@ -928,8 +937,10 @@ func _hold() -> void:
 		_held.visible = false
 		_over.visible = false
 		_mat.set_shader_parameter("layer", 0)
-		_bend = ARM_BEND
+		_bend = lerpf(ARM_BEND, RUN_BEND, _run * _gait)
 		_put("arm_reach", _bend)
+		for side: String in ["l", "r"]:        # an empty hand keeps its drawn shape however the arm bows
+			_put("arm_%s_hand" % side, maxf(float(_arms[side]["wrist_r"]) / _px.y, _bend + 0.02) if _arms.has(side) else 9.0)
 		_put("arm_joint", ARM_JOINT)
 		_put("rim_ink", 0.0)
 		_put("joint_half", false)
@@ -948,6 +959,8 @@ func _hold() -> void:
 	var m := height / _px.y                                   # metres to a pixel of his drawing
 	_bend = lerpf(ARM_BEND, ARM_BEND_HELD, k)
 	_put("arm_reach", _bend)
+	_put("arm_l_hand", 9.0)                                   # holding, the arm is placed as it always was (_reach_for)
+	_put("arm_r_hand", 9.0)
 	var arm: Dictionary = _arms[key]
 	# A wide sleeve (a jersey, a puffer jacket) cannot turn at the shoulder like a hose: its cut edge would swing
 	# out as a shard. It bends at the elbow: the sleeve above stays as drawn and the forearm goes to the fist.

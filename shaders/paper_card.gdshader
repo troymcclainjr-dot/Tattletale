@@ -66,6 +66,8 @@ uniform float arm_r_stretch = 1.0;
 uniform vec2 arm_from = vec2(0.0);     // nothing of an arm is drawn nearer its shoulder than this (x the left-hand arm, y the right): its root, when it goes behind him
 uniform float arm_l_cut = 9.0;         // nothing drawn further than this along the arm (the wrist, when a fist takes over)
 uniform float arm_r_cut = 9.0;
+uniform float arm_l_hand = 9.0;        // past this far along the arm (its wrist) the hand turns as one piece with it, keeping
+uniform float arm_r_hand = 9.0;        // its drawn shape, and a bow is all done by the wrist (9: off, as for a held arm)
 uniform vec2 arm_l_axis = vec2(0.0, 1.0);   // the way each arm runs as drawn, shoulder to hand (a unit vector, y down)
 uniform vec2 arm_r_axis = vec2(0.0, 1.0);
 uniform float arm_len = 0.21;          // shoulder to fingertips, for the bow
@@ -187,10 +189,12 @@ vec4 behind_arm(vec2 uv, vec2 dx, vec2 dy) {
 }
 
 // Where in arm_art the pixel at uv comes from, for an arm that has turned, bowed and stretched.
-vec2 arm_source(vec2 uv, vec2 pivot, float angle, float curl, float stretch, vec2 axis) {
+// Past `hand` (the wrist, or 9 for none) the turn stops growing: the hand goes round as one piece.
+vec2 arm_source(vec2 uv, vec2 pivot, float angle, float curl, float stretch, vec2 axis, float hand) {
 	vec2 d = (uv - pivot) * vec2(aspect, 1.0);
 	float r = length(d) / stretch;               // how far along the arm this was drawn (near enough: the arm is thin)
-	float turn = angle * smoothstep(0.0, arm_reach, r) + curl * clamp((r - arm_reach) / max(arm_len - arm_reach, 0.01), 0.0, 1.2);
+	float rt = min(r, hand);
+	float turn = angle * smoothstep(0.0, arm_reach, rt) + curl * clamp((rt - arm_reach) / max(min(hand, arm_len) - arm_reach, 0.01), 0.0, 1.2);
 	float c = cos(turn);
 	float s = sin(turn);
 	d = vec2(d.x * c - d.y * s, d.x * s + d.y * c);
@@ -256,7 +260,7 @@ vec4 near_arm(vec2 uv, vec2 dx, vec2 dy) {
 	if (uv.y < arm_l_top && uv.x > arm_l_top_x.x && uv.x < arm_l_top_x.y) {
 		return vec4(0.0);
 	}
-	vec2 src = arm_source(uv - arm_l_shift, arm_l_pivot, arm_l_angle, arm_l_curl, arm_l_stretch, arm_l_axis);
+	vec2 src = arm_source(uv - arm_l_shift, arm_l_pivot, arm_l_angle, arm_l_curl, arm_l_stretch, arm_l_axis, arm_l_hand);
 	return forearm(arm(src, arm_l_pivot, arm_l_cut, 1.0, true, dx, dy), uv, src, arm_l_pivot, arm_l_axis, arm_elbow.x, true);
 }
 
@@ -331,13 +335,13 @@ void fragment() {
 				// Behind him: it shows only where his body does not.
 				if (!body_here) {
 					vec2 from = arm_l_shift + far_arm_shift;
-					vec4 a = arm(arm_source(uv - from, arm_l_pivot, arm_r_angle, arm_r_curl, arm_r_stretch, arm_l_axis), arm_l_pivot, arm_r_cut, 1.0, true, dx, dy);
+					vec4 a = arm(arm_source(uv - from, arm_l_pivot, arm_r_angle, arm_r_curl, arm_r_stretch, arm_l_axis, arm_r_hand), arm_l_pivot, arm_r_cut, 1.0, true, dx, dy);
 					if (a.a > 0.5) {
 						col = a;
 					}
 				}
 			} else if (!far_arm_hidden && !(arms_under && body_here)) {
-				vec2 src = arm_source(uv, arm_r_pivot, arm_r_angle, arm_r_curl, arm_r_stretch, arm_r_axis);
+				vec2 src = arm_source(uv, arm_r_pivot, arm_r_angle, arm_r_curl, arm_r_stretch, arm_r_axis, arm_r_hand);
 				vec4 a = forearm(arm(src, arm_r_pivot, arm_r_cut, -1.0, false, dx, dy), uv, src, arm_r_pivot, arm_r_axis, arm_elbow.y, false);
 				if (a.a > 0.5) {
 					col = a;

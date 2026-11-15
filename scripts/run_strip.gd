@@ -15,7 +15,7 @@ extends RefCounted
 const PaperActor := preload("res://scripts/paper_actor.gd")
 const ORIGIN := Vector3(0, 900, 0)    # far above the places, out of everything's way
 const TALL := 1.8                      # metres of picture, from just under his feet
-const WIDE := 2.0                      # metres across each frame: his lean, his arms and what trails behind him
+const WIDE := 2.8                      # metres across each frame: his lean, his arms and what trails behind him
 const FOV := 24.0
 const VIEWS := {"s": ["side", false, Vector2(1, 0)], "m": ["side", true, Vector2(-1, 0)], "f": ["front", false, Vector2(0, 1)], "b": ["back", false, Vector2(0, -1)]}
 
@@ -29,11 +29,11 @@ static func shoot(host: Node3D, camera: Camera3D, spec: String, out: String, out
 	var grey := StandardMaterial3D.new()
 	grey.albedo_color = Color(0.56, 0.6, 0.66)
 	grey.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	Kit.box(host, Vector3(60, 30, 0.1), ORIGIN + Vector3(0, 0, -1.2), grey)
+	var back := Kit.box(host, Vector3(60, 30, 0.1), ORIGIN + Vector3(0, 0, -3.0), grey)
 	var floor_look := StandardMaterial3D.new()
 	floor_look.albedo_color = Color(0.44, 0.47, 0.52)
 	floor_look.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	Kit.box(host, Vector3(60, 0.1, 6), ORIGIN + Vector3(0, -0.05, 0), floor_look)
+	var ground := Kit.box(host, Vector3(60, 0.1, 6), ORIGIN + Vector3(0, -0.05, 0), floor_look)
 	camera.fov = FOV
 	var far := TALL * 0.5 / tan(deg_to_rad(FOV * 0.5))
 	var mid := ORIGIN + Vector3(0, TALL * 0.5 - 0.06, 0)
@@ -72,7 +72,11 @@ static func shoot(host: Node3D, camera: Camera3D, spec: String, out: String, out
 				for k in frames:
 					if k > 0:
 						who.walk(dir, dir, TAU / rate / frames)
-					who.position = ORIGIN
+					# He runs on, and what he kicks up stays where it was, as in the game: the camera and the backdrop go with him.
+					var off := Vector3(who.position.x - ORIGIN.x, 0.0, who.position.z - ORIGIN.z)
+					back.position = ORIGIN + Vector3(0, 0, -3.0) + off
+					ground.position = ORIGIN + Vector3(0, -0.05, 0) + off
+					camera.look_at_from_position(mid + off + Vector3(0, 0, far), mid + off)
 					for i in 3:
 						await host.get_tree().process_frame
 					await RenderingServer.frame_post_draw
