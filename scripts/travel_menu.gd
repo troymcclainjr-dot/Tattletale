@@ -21,8 +21,9 @@ const FONT := preload("res://assets/fonts/Bungee-Regular.ttf")
 const KEYS := "1234567890ABCDFGHIJKLNOPQRSTUVWXYZ"      # the key for each row, top to bottom and then the next column (M and Esc close the list; E is left alone)
 const PAPER := Color("#f6f1e3")
 const TICKET := Color("#f2d24a")
-const FAINT := Color(0.96, 0.94, 0.89, 0.34)
-const SHADE := Color(14 / 255.0, 20 / 255.0, 40 / 255.0, 0.92)
+const FAINT := Color(0.96, 0.94, 0.89, 0.5)
+const SHADE := Color(14 / 255.0, 20 / 255.0, 40 / 255.0, 0.98)
+const BAND := Color(0.95, 0.82, 0.29, 0.13)      # behind the lit row
 const ONE_COLUMN := 8          # this many places or fewer: one column
 const TALL := 15               # rows a column shows; more than that and the columns scroll
 const ROW_H := 36.0            # each row's height on the 1600 x 900 canvas (the window is that, scaled)
@@ -35,7 +36,9 @@ var _here := ""                # the id of the place he is in now
 var _scroll: ScrollContainer
 var _columns: HBoxContainer
 var _count: Label
-var _rows: Array = []          # each row's box, in list order
+var _rows: Array = []          # each row's band (the row in it), in list order
+var _plain: StyleBoxFlat       # a band: clear, or lit with a yellow edge
+var _lit_band: StyleBoxFlat
 var _names: Array = []         # the name label of each row
 var _keys: Array = []          # the key label of each row
 var _lit := -1                 # the row lit by the mouse or the arrows
@@ -88,6 +91,14 @@ func _init() -> void:
 	foot.text = "CLICK, A KEY, OR THE ARROWS AND ENTER     M OR ESC  CLOSE"
 	foot.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	column.add_child(foot)
+	_plain = StyleBoxFlat.new()                      # no margins: a band is its row's size (the scroll's sums count on it)
+	_plain.bg_color = Color(0, 0, 0, 0)
+	_plain.set_corner_radius_all(6)
+	_plain.set_content_margin_all(0.0)
+	_lit_band = _plain.duplicate()
+	_lit_band.bg_color = BAND
+	_lit_band.border_width_left = 4
+	_lit_band.border_color = TICKET
 	visible = false
 
 
@@ -129,10 +140,14 @@ func open(here := "") -> void:
 func _row(i: int) -> Control:
 	var place: Dictionary = _places[i]
 	var can_go: bool = place.get("built", true)
+	var band := PanelContainer.new()
+	band.add_theme_stylebox_override("panel", _plain)
+	band.mouse_filter = Control.MOUSE_FILTER_PASS         # a click is the row's; the wheel goes on to the scroll
 	var row := HBoxContainer.new()
 	row.custom_minimum_size = Vector2(COL_W, ROW_H)
 	row.add_theme_constant_override("separation", 14)
-	row.mouse_filter = Control.MOUSE_FILTER_PASS          # a click is the row's; the wheel goes on to the scroll
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	band.add_child(row)
 	var key := _label(22, TICKET if can_go else FAINT)
 	key.text = KEYS[i] if i < KEYS.length() else ""
 	key.custom_minimum_size = Vector2(34, 0)
@@ -145,34 +160,36 @@ func _row(i: int) -> Control:
 	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	row.add_child(label)
 	var here: bool = place["id"] == _here
-	var note := _label(14, TICKET if here else FAINT)
+	var note := _label(15, TICKET if here else FAINT)
 	note.text = "YOU ARE HERE" if here else String(place.get("note", ""))
 	note.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	note.custom_minimum_size = Vector2(0, 0)
 	row.add_child(note)
 	if can_go:
-		row.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		row.mouse_entered.connect(hover.bind(i))
-		row.mouse_exited.connect(func() -> void:
+		band.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		band.mouse_entered.connect(hover.bind(i))
+		band.mouse_exited.connect(func() -> void:
 			if _lit == i:
 				hover(-1))
-		row.gui_input.connect(_on_row_input.bind(i))
-	_rows.append(row)
+		band.gui_input.connect(_on_row_input.bind(i))
+	_rows.append(band)
 	_names.append(label)
 	_keys.append(key)
-	return row
+	return band
 
 
 func close() -> void:
 	visible = false
 
 
-## Light row i, as the one under the mouse or the arrows (-1: none), and scroll it into sight.
+## Light row i, as the one under the mouse or the arrows (-1: none): its name yellow, a band behind it. And
+## scroll it into sight.
 func hover(i: int) -> void:
 	_lit = i
 	for n in _names.size():
 		if _places[n].get("built", true):
 			(_names[n] as Label).add_theme_color_override("font_color", TICKET if n == i else PAPER)
+			(_rows[n] as PanelContainer).add_theme_stylebox_override("panel", _lit_band if n == i else _plain)
 	if i >= 0 and i < _rows.size() and visible:
 		_scroll.ensure_control_visible(_rows[i])
 
