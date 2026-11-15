@@ -15,6 +15,7 @@ extends RefCounted
 const Props := preload("res://scripts/props.gd")
 const In := preload("res://scripts/props_in.gd")
 const Alley := preload("res://scripts/props_alley.gd")      # the roll-up door in the stock room's back wall
+const Cellar := preload("res://scripts/plans/store_cellar.gd")      # the cellar under it, down from the pavement (strip)
 const F := 11.075            # the shop's street face
 
 
@@ -57,6 +58,9 @@ static func build(p: Node3D) -> void:
 	_shop(p, b1)
 	_back(p, b2)
 	_dress(p, b1, b2)
+	# The cellar under it (plans/store_cellar.gd): doors in the pavement, down.
+	Cellar.pavement_doors(p, st)
+	Cellar.build(p)
 	# The pavement's ends go on (main.gd's "goto:"): left along the strip to the
 	# gun store, right round the corner to Rose Hill Terrace (plans/street.gd).
 	p.use_point(st, "TO THE GUN STORE", -3.25, 12.2, "goto:gunstore", 1.2, 1.9)
