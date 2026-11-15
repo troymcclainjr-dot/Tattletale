@@ -11,6 +11,9 @@ extends RefCounted
 const PaperActor := preload("res://scripts/paper_actor.gd")
 const CELL := 2.0               # metres: the grid's squares
 const MANY_FACES := 4000        # a mesh with more triangles than this is hit on its box
+const FINE := 0.5               # metres: the squares a falling bit (fall_hit) looks things up in
+const BUCKET := 0.3             # a mesh's triangles are sorted into squares this big (in its own measure) ...
+const BUCKETED := 32            # ... for falling bits, if it has more triangles than this
 
 
 class Entry:
@@ -30,6 +33,8 @@ var _dyn: Array = []
 var _grid := {}                 # Vector2i: Array of Entry
 var _stamp := 0
 var _faces := {}                # a mesh's instance id: its triangles
+var _fine := {}                 # Vector2i: Array of Entry, what a falling bit can meet there (made as asked for)
+var _buckets := {}              # a mesh's instance id: {Vector2i: Array of where its triangles start}
 
 
 ## Gather the place under `root`. `doors` are nodes whose meshes move.
@@ -264,3 +269,132 @@ func _cells(from: Vector3, to: Vector3) -> Array:
 func floor_at(p: Vector3, fallback := 0.0) -> float:
 	var hit := trace(p + Vector3(0.0, 0.5, 0.0), p - Vector3(0.0, 3.0, 0.0))
 	return (hit["pos"] as Vector3).y if hit["hit"] else fallback
+
+
+# ------------------------------------------------------------ falling bits
+
+## Something falling (a spent case, a piece of glass) moves from `from` to `to`, a frame's move: the first thing
+## it meets, {"t": 0..1 along the move, "pos", "normal" (facing back along the move)}, or {} if nothing. A pane of
+## glass does not catch it (a piece falls out through what is left of its own window), nor what is see-through or
+## switched off; what is hidden with its band of rooms does (it is still there, and shows again). Starting inside
+## something, it is let out.
+func fall_hit(from: Vector3, to: Vector3) -> Dictionary:
+	_stamp += 1
+	var best := {}
+	var best_t := 2.0
+	for e: Entry in _dyn:
+		var hit := _fall_test(e, from, to)
+		if not hit.is_empty() and float(hit["t"]) < best_t:
+			best_t = float(hit["t"])
+			best = hit
+	var lo := Vector2i(floori(minf(from.x, to.x) / FINE), floori(minf(from.z, to.z) / FINE))
+	var hi := Vector2i(floori(maxf(from.x, to.x) / FINE), floori(maxf(from.z, to.z) / FINE))
+	hi = hi.min(lo + Vector2i(6, 6))
+	for x in range(lo.x, hi.x + 1):
+		for z in range(lo.y, hi.y + 1):
+			for e: Entry in _fine_cell(Vector2i(x, z)):
+				if e.stamp == _stamp:
+					continue
+				e.stamp = _stamp
+				var hit := _fall_test(e, from, to)
+				if not hit.is_empty() and float(hit["t"]) < best_t:
+					best_t = float(hit["t"])
+					best = hit
+	return best
+
+
+## What stands in one square of FINE (from the grid's square it is in), but panes of glass.
+func _fine_cell(key: Vector2i) -> Array:
+	if _fine.has(key):
+		return _fine[key]
+	var rect := Rect2(Vector2(key) * FINE, Vector2(FINE, FINE)).grow(0.02)
+	var out: Array = []
+	for e: Entry in _grid.get(Vector2i(floori(float(key.x) * FINE / CELL), floori(float(key.y) * FINE / CELL)), []):
+		if e.glass and e.thin:
+			continue
+		if Rect2(e.aabb.position.x, e.aabb.position.z, e.aabb.size.x, e.aabb.size.z).intersects(rect, true):
+			out.append(e)
+	_fine[key] = out
+	return out
+
+
+func _fall_test(e: Entry, from: Vector3, to: Vector3) -> Dictionary:
+	var mi := e.mi
+	if not is_instance_valid(mi) or not mi.visible or (e.glass and e.thin):
+		return {}
+	var aabb := e.aabb if not e.dyn else mi.global_transform * mi.get_aabb()
+	if aabb.grow(0.01).intersects_segment(from, to) == null or see_through(mi):
+		return {}
+	var xf := mi.global_transform
+	var inv := xf.affine_inverse()
+	var a := inv * from
+	var b := inv * to
+	var ab := b - a
+	if ab.length_squared() < 1e-12:
+		return {}
+	var at: Variant = null
+	var n := Vector3.ZERO
+	if e.box:
+		var local := mi.get_aabb()
+		if local.has_point(a):
+			return {}                              # inside it: let out
+		at = local.intersects_segment(a, b)
+		if at == null:
+			return {}
+		var rel: Vector3 = ((at as Vector3) - local.get_center()) / (local.size * 0.5).max(Vector3(1e-4, 1e-4, 1e-4))
+		var axis := rel.abs().max_axis_index()
+		n[axis] = signf(rel[axis])
+	else:
+		var faces := _faces_of(mi.mesh)
+		var best_t := INF
+		var starts: Array = []
+		if faces.size() > BUCKETED * 3:
+			var map := _bucket_of(mi.mesh)
+			var b0 := Vector2i(floori(minf(a.x, b.x) / BUCKET), floori(minf(a.z, b.z) / BUCKET))
+			var b1 := Vector2i(floori(maxf(a.x, b.x) / BUCKET), floori(maxf(a.z, b.z) / BUCKET))
+			b1 = b1.min(b0 + Vector2i(4, 4))
+			for x in range(b0.x, b1.x + 1):
+				for z in range(b0.y, b1.y + 1):
+					starts.append_array(map.get(Vector2i(x, z), []))
+		else:
+			starts = range(0, faces.size(), 3)
+		for i: int in starts:
+			var p: Variant = Geometry3D.segment_intersects_triangle(a, b, faces[i], faces[i + 1], faces[i + 2])
+			if p == null:
+				continue
+			var along := ((p as Vector3) - a).dot(ab) / ab.length_squared()
+			if along < best_t and along > 1e-5:
+				best_t = along
+				at = p
+				n = (faces[i + 1] - faces[i]).cross(faces[i + 2] - faces[i])
+		if at == null:
+			return {}
+		if n.dot(ab) > 0.0:
+			n = -n
+	var t: float = clampf(((at as Vector3) - a).dot(ab) / ab.length_squared(), 0.0, 1.0)
+	return {"t": t, "pos": from.lerp(to, t), "normal": (xf.basis.inverse().transposed() * n).normalized()}
+
+
+## A mesh's triangles sorted into squares of BUCKET on its own floor plan (x, z).
+func _bucket_of(mesh: Mesh) -> Dictionary:
+	var id := mesh.get_instance_id()
+	if _buckets.has(id):
+		return _buckets[id]
+	var faces := _faces_of(mesh)
+	var map := {}
+	for i in range(0, faces.size(), 3):
+		var p0 := faces[i]
+		var p1 := faces[i + 1]
+		var p2 := faces[i + 2]
+		var x0 := floori(minf(p0.x, minf(p1.x, p2.x)) / BUCKET)
+		var x1 := floori(maxf(p0.x, maxf(p1.x, p2.x)) / BUCKET)
+		var z0 := floori(minf(p0.z, minf(p1.z, p2.z)) / BUCKET)
+		var z1 := floori(maxf(p0.z, maxf(p1.z, p2.z)) / BUCKET)
+		for x in range(x0, x1 + 1):
+			for z in range(z0, z1 + 1):
+				var key := Vector2i(x, z)
+				if not map.has(key):
+					map[key] = []
+				(map[key] as Array).append(i)
+	_buckets[id] = map
+	return map

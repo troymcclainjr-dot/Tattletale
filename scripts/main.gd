@@ -68,6 +68,8 @@ extends Node3D
 ##   the police can see him), foe:hitme[:n], foe:putaway, foe:stash, foe:through[:red|green[:in]] (through the
 ##   courthouse's metal detector), foe:search[:seconds], foe:go:x:z[:run], foe:run:seconds,
 ##   foe:until:shot|hit|draw|down[:seconds] (on until the next one), foecheck (what happened, and its problems).
+##   Tracers and glass (combat_fx_steps.gd says more): tracers:every|some|none, glassseed:n, panes, pane:near|x:y:z|i,
+##   hitpane:spot[:n], paneeye[:dist], panestrip:name:n[:spot], otherside[:dist], fireat:x:y:z[:n], glasscheck.
 ##   More in shot_steps.gd, for many pictures in one run: snap:name (a picture now, beside the --shot file),
 ##   eye:x:y:z:x:y:z[:fov] (later pictures from there; eye: alone, back to following him), place:id, at:x:z,
 ##   room:NAME (stand him there), beat:n (hold the dancers at that beat), stats (draw calls and frame time),
