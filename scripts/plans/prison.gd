@@ -52,6 +52,7 @@ const RUBBER := Color(0.15, 0.15, 0.17)
 const TUBE := Color(0.96, 0.98, 0.94)
 const RED := Color(0.78, 0.14, 0.12)
 const SIGN := Color(0.92, 0.92, 0.88)
+const INK := Color(0.12, 0.18, 0.24)       # words painted on a light wall
 
 
 static func build(p: Node3D) -> void:
@@ -87,6 +88,11 @@ static func build(p: Node3D) -> void:
 	p.room("CORRIDOR", b2, 4, 27, 19, 33, null, {"areas": [[4, 27, 19, 31], [4, 27, 10, 33]]})      # round the inmates' side, up to the gate
 	Kit.box(p.node_of(b2), Vector3(15.0, 0.3, 4.0), p.pt(11.5, 29.0, -0.15), lino)
 	Kit.box(p.node_of(b2), Vector3(6.0, 0.3, 2.0), p.pt(7.0, 32.0, -0.15), lino)
+	# Floor 2 cm under the cut-away bands in front (the inmates' side, the lobby, the visiting room), so
+	# the camera looking over their stubs sees floor, not the void; under their own floors when they show.
+	Kit.box(p.node_of(b2), Vector3(8.98, 0.3, 1.98), p.pt(14.5, 32.0, -0.17), lino_dark)
+	Kit.box(p.node_of(b2), Vector3(5.98, 0.3, 1.98), p.pt(7.0, 34.0, -0.17), terrazzo)
+	Kit.box(p.node_of(bi), Vector3(8.98, 0.3, 2.98), p.pt(14.5, 34.5, -0.17), lino)
 	p.room("BOOKING", b2, 19, 27, 28, 33, lino_dark, {"light": TUBE, "energy": 0.45})
 	p.room("HOLDING", b2, 28, 27, 32, 33, concrete)
 	p.room("MESS HALL", b3, 0, 21, 11, 27, lino, {"light": Color(1.0, 0.94, 0.8), "energy": 0.4})
@@ -110,12 +116,12 @@ static func build(p: Node3D) -> void:
 
 	# ---- walls. Each `cross` is the wall in FRONT of its band; the openings are kept by name: the paint stops at each.
 	var ops := {
-		"front": [
-			{"a": 1.0, "b": 2.2, "kind": "window", "sill": 1.1, "head": 2.5, "bars": true, "frame": DARK_FRAME},
+		"front": [           # (the public rooms' windows: no bars, or a visitor in them reads as an inmate)
+			{"a": 1.0, "b": 2.2, "kind": "window", "sill": 1.1, "head": 2.5, "frame": DARK_FRAME},
 			{"a": 3.6, "b": 5.4, "kind": "double", "head": 2.3, "colour": Color(0.22, 0.3, 0.42), "frame": DARK_FRAME},
-			{"a": 7.0, "b": 8.2, "kind": "window", "sill": 1.1, "head": 2.5, "bars": true, "frame": DARK_FRAME},
-			{"a": 11.9, "b": 13.1, "kind": "window", "sill": 1.1, "head": 2.5, "bars": true, "frame": DARK_FRAME},
-			{"a": 16.4, "b": 17.4, "kind": "window", "sill": 1.1, "head": 2.5, "bars": true, "frame": DARK_FRAME},
+			{"a": 7.0, "b": 8.2, "kind": "window", "sill": 1.1, "head": 2.5, "frame": DARK_FRAME},
+			{"a": 11.9, "b": 13.1, "kind": "window", "sill": 1.1, "head": 2.5, "frame": DARK_FRAME},
+			{"a": 16.4, "b": 17.4, "kind": "window", "sill": 1.1, "head": 2.5, "frame": DARK_FRAME},
 		],
 		"lobby": [{"a": 37.0, "b": 37.9, "colour": STEEL_DOOR, "hinge": "a", "swing": 1}],
 		"b2l": [
@@ -262,7 +268,7 @@ static func _walls(p: Node3D, b1: int, bi: int, b2: int, b3: int, b4: int, ops: 
 	# Floors: a mat in at the front doors, the line to stand behind at the gate, the
 	# corridor's yellow walking line along its back wall.
 	In.border(p, b1, 0, 33, 10, 39, Color(0.36, 0.38, 0.42), 0.25)
-	In.mat(p, b1, 4.5, 38.38, 2.2, 0.9, Color(0.13, 0.13, 0.14), Color(0.24, 0.24, 0.26))
+	In.mat(p, b1, 4.5, 38.38, 2.2, 0.9, Color(0.3, 0.34, 0.4), Color(0.2, 0.22, 0.26))      # (blue-grey: a black mat reads as a hole)
 	In.hatch(p, b2, 11.5, 27.72, 1, 14.3, 0.08, 0.0, Jail.SAFETY)
 	In.hatch(p, b2, 6.42, 32.3, 7, 0.1, 0.6, 0.06, RED)
 	Park.ground_words(p.node_of(b2), "STOP", p.pt(6.9, 31.72, 0.006), 0.28, RED)
@@ -343,7 +349,7 @@ static func _street(p: Node3D, st: int) -> void:
 	Outdoor.tree(p, st, -2.4, 35.6, "c", 0.9, 110.0)
 	Outdoor.tree(p, st, 35.2, 41.8, "b", 1.05, 200.0)
 	Outdoor.shrub(p, st, 1.2, 39.9, "a", 0.8, 0.0)
-	Outdoor.shrub(p, st, 7.2, 39.9, "b", 0.8, 40.0)
+	Outdoor.shrub(p, st, 7.75, 39.9, "b", 0.8, 40.0)      # (clear of the bin)
 	Jail.flagpole(p, st, 10.2, 41.5)
 	Jail.name_wall(p, st, 14.4, 42.9, 0.0, "COUNTY JAIL")
 	Park.park_bench(p, st, 15.6, 39.55, 0.0, 1.9)
@@ -370,7 +376,7 @@ static func _facade(p: Node3D, front: Node3D) -> void:
 		Kit.cyl(front, 0.06, 2.75, p.pt(u, 40.5, 1.375), Color(0.3, 0.33, 0.38), Vector3.ZERO, 8)
 		p.block(u - 0.08, 40.42, u + 0.08, 40.58)
 	Props.words(front, "VISITOR ENTRANCE", p.pt(4.5, 40.7, 2.82), 0.11, SIGN)
-	Props.words(front, "COUNTY JAIL", p.pt(4.5, f + 0.03, 3.55), 0.42, Color(0.14, 0.18, 0.28))
+	Props.words(front, "COUNTY JAIL", p.pt(4.5, f + 0.03, 4.12), 0.42, Color(0.14, 0.18, 0.28))      # (over the wire on the fence, seen from the street)
 	Props.words(front, "SALLY PORT", p.pt(25.5, f + 0.03, 4.25), 0.3, Color(0.14, 0.18, 0.28))
 	Jail.rollup(p, front, 39.0, 1.0, 21.5, 29.5, 3.6)
 	for u: float in [1.6, 7.6, 12.5, 16.9]:
@@ -409,7 +415,7 @@ static func _visiting(p: Node3D, b: int, inside: int, glass: Node3D) -> void:
 	Props.words(n, "NO ADMITTANCE", p.pt(6.9, 33.09, 2.28), 0.1, RED)
 	Jail.intercom(p, b, 5.95, 33.08, 0.0, 1.35)
 	Props.plant(p, b, 9.5, 38.5)
-	p.person(b, "nia", 6.6, 37.2, {"face": "nervous"})
+	p.person(b, "nia", 3.0, 35.3, {"face": "nervous"})          # waiting to check in (off the line from the door to the gate)
 	# The visiting room: three booths along the glass at its back, a handset in
 	# each, seats for those waiting, the officer by the door.
 	Jail.booths(p, n, 33.0, 1.0, 10.2, 18.8, BOOTHS, 0.2, true)
@@ -424,6 +430,7 @@ static func _visiting(p: Node3D, b: int, inside: int, glass: Node3D) -> void:
 	p.person(inside, "chuy", 17.5, 32.5, {"face": "happy", "wear": JUMPSUIT})
 	# The sally port: the van backed up to the booking door, the gun lockers, bollards and cones.
 	Props.car(p, b, 27.6, 35.4, 90.0, "van")
+	p.block(25.25, 34.3, 29.95, 36.5)          # (a margin round the van: its bumpers stand out past its own floor space)
 	Jail.gun_lockers(p, b, 19.08, 36.8, 90.0)
 	p.block(19.075, 36.35, 19.4, 37.25)
 	Jail.bollard(p, b, 19.9, 33.55)
@@ -442,12 +449,12 @@ static func _intake(p: Node3D, b: int) -> void:
 	Props.radio(p, b, 1.8, 29.9, 0.0)
 	Props.chair(p, b, 1.8, 30.85, 180.0, Color(0.2, 0.22, 0.26))
 	Jail.monitors(p, b, 2.0, 27.08, 0.0, 3, 2, 1.45)
-	p.person(b, "cop", 2.0, 32.55, {"name": "DESK OFFICER", "talk": "talk_prison_desk.json", "face": "bored"})
+	p.person(b, "cop", 1.2, 32.55, {"name": "DESK OFFICER", "talk": "talk_prison_desk.json", "face": "bored"})
 	# The corridor: a trusty mopping, an officer, the doors marked.
 	Jail.mop_bucket(p, b, 8.7, 29.7)
 	Jail.wet_floor(p, b, 9.4, 31.4, 20.0)
 	p.person(b, "snoozy", 7.8, 29.4, {"face": "bored", "wear": JUMPSUIT})
-	p.person(b, "cop", 14.8, 28.1, {"face": "suspicious"})
+	p.person(b, "cop", 14.8, 28.1, {"face": "focused"})
 	Props.words(n, "MESS HALL", p.pt(8.45, 27.09, 2.3), 0.12, Color(0.12, 0.14, 0.2))
 	Props.words(n, "MEDICAL", p.pt(15.95, 27.09, 2.3), 0.12, Color(0.12, 0.14, 0.2))
 	Props.words(n, "UNIT A", p.pt(12.5, 27.09, 2.65), 0.16, Jail.SAFETY)
@@ -465,8 +472,8 @@ static func _intake(p: Node3D, b: int) -> void:
 	Kit.block(counter, Vector3(0.2, 0.06, 0.16), Vector3(-1.1, 1.05, 0.05), Props.DARK)        # the print scanner
 	var ledge := Props.counter(p, b, 23.0, 27.33, 0.0, 1.7, 0.36, 0.98, Props.OFFICE.darkened(0.15))
 	Kit.box(ledge, Vector3(0.3, 0.06, 0.22), Vector3(0.3, 1.01, 0.0), Color(0.86, 0.84, 0.78))
-	Props.words(n, "PROPERTY", p.pt(23.0, 27.09, 2.2), 0.13, SIGN)
-	Props.words(n, "BOOKING", p.pt(25.4, 27.09, 2.22), 0.16, SIGN)
+	Props.words(n, "PROPERTY", p.pt(23.0, 27.09, 2.2), 0.13, INK)
+	Props.words(n, "BOOKING", p.pt(25.4, 27.09, 2.22), 0.16, INK)
 	var cuffs := Props.bench(p, b, 19.4, 31.4, 90.0, 1.8, Props.IRON)
 	Kit.box(cuffs, Vector3(1.8, 0.04, 0.04), Vector3(0, 0.75, -0.2), Props.STEEL)
 	p.person(b, "cop", 25.0, 29.7, {"name": "BOOKING OFFICER", "talk": "talk_prison_booking.json", "face": "focused"})
@@ -474,9 +481,9 @@ static func _intake(p: Node3D, b: int) -> void:
 	Props.bench(p, b, 30.0, 27.4, 0.0, 3.0, Props.IRON)
 	Props.bench(p, b, 31.6, 30.4, 270.0, 2.0, Props.IRON)
 	Props.cell_toilet(p, b, 31.6, 32.45, 270.0)
-	Props.words(n, "HOLDING", p.pt(30.0, 27.09, 2.25), 0.16, SIGN)
+	Props.words(n, "HOLDING", p.pt(30.0, 27.09, 2.25), 0.16, INK)
 	p.person(b, "ronnie", 29.2, 29.6, {"face": "angry"})
-	p.person(b, "rell", 30.4, 31.9, {"face": "sad"})
+	p.person(b, "rell", 31.0, 28.1, {"face": "sad"})          # (at the back: at the front he stands between the camera and anyone in here)
 
 
 # ------------------------------------------------------- behind the corridor
@@ -493,8 +500,8 @@ static func _services(p: Node3D, b: int) -> void:
 	Props.board(p, b, 8.4, 21.08, 0.0, 1.4, "notices")
 	Props.words(n, "MENU", p.pt(8.4, 21.09, 2.22), 0.13, Color(0.4, 0.2, 0.08))
 	Props.clock(p, b, 6.4, 21.08, 0.0, 2.35)
-	p.person(b, "huff", 5.6, 26.3, {"face": "bored", "wear": JUMPSUIT})
-	p.person(b, "cop", 10.2, 22.4, {"face": "suspicious"})
+	p.person(b, "huff", 1.8, 23.6, {"face": "bored", "wear": JUMPSUIT})        # in line at the serving counter (left of the server, or they stack)
+	p.person(b, "cop", 10.2, 22.4, {"face": "focused"})
 	# The block gate: barred both ends, a call box.
 	Jail.intercom(p, b, 11.08, 24.0, 90.0, 1.35)
 	# Treatment: the trolley bed, a sink, gloves and sharps on the wall, the emergency trolley.
@@ -504,22 +511,22 @@ static func _services(p: Node3D, b: int) -> void:
 	In.sharps(p, b, 14.08, 24.0, 90.0, 1.35)
 	Props.crash_cart(p, b, 17.55, 25.8, 270.0)
 	Props.iv_stand(p, b, 17.5, 22.7)
-	p.person(b, "nurse", 15.6, 24.6, {"face": "neutral"})
-	# The change room: issue shelving (jumpsuits, towels, sandals), the bench, the laundry cart.
+	p.person(b, "nurse", 14.9, 22.9, {"face": "neutral"})       # by the bed (not in the middle of the floor, where he would stand)
+	# The change room: issue shelving (jumpsuits, towels, sandals), the bench along the wall, the laundry cart.
 	Jail.issue_shelf(p, b, 20.0, 21.33, 0.0, 1.6)
-	Props.bench(p, b, 20.0, 24.3, 0.0, 1.8, Props.IRON)
+	Props.bench(p, b, 21.6, 24.0, 270.0, 1.8, Props.IRON)
 	Jail.cart(p, b, 18.8, 25.9, 90.0)
 	Props.words(n, "ISSUE", p.pt(20.0, 21.09, 2.22), 0.12, Color(0.14, 0.16, 0.2))
 	# Property: his own clothes and everyone else's, bagged and tagged.
 	Jail.property_shelf(p, b, 23.0, 21.33, 0.0, 1.8)
 	Jail.property_shelf(p, b, 23.68, 24.0, 270.0, 2.6)
-	p.person(b, "clerk", 22.9, 22.0, {"face": "bored"})
-	# Segregation: the officer's desk, a red line on the floor, the steel door to the hole.
-	Props.desk(p, b, 25.9, 25.8, 0.0, Props.OFFICE.darkened(0.2), 1, false, 1.4, 0.7)
+	p.person(b, "clerk", 22.6, 22.0, {"face": "bored"})
+	# Segregation: the officer at his desk by the steel door to the hole, a red line on the floor.
+	Props.desk(p, b, 26.9, 25.9, 0.0, Props.OFFICE.darkened(0.2), 1, false, 1.4, 0.7)
 	In.hatch(p, b, 26.0, 22.0, 1, 3.7, 0.08, 0.0, RED)
 	Park.ground_words(n, "NO INMATES BEYOND THIS LINE", p.pt(26.0, 22.42, 0.006), 0.16, RED)
-	Props.words(n, "SEGREGATION", p.pt(26.0, 21.09, 2.3), 0.13, SIGN)
-	p.person(b, "cop", 25.9, 24.9, {"name": "SEG OFFICER", "talk": "talk_prison_seg.json", "face": "suspicious"})
+	Props.words(n, "SEGREGATION", p.pt(26.0, 21.09, 2.3), 0.13, INK)
+	p.person(b, "cop", 26.9, 25.0, {"name": "SEG OFFICER", "talk": "talk_prison_seg.json", "face": "focused"})
 	# The hole: a slab bed and a steel toilet, and nothing else.
 	Jail.slab_bed(p, b, 30.4, 21.6, 0.0)
 	Props.cell_toilet(p, b, 31.6, 24.6, 270.0)
@@ -547,13 +554,13 @@ static func _unit(p: Node3D, b: int) -> void:
 	p.person(b, "dee", 22.6, 19.6, {"name": "BIG DEE", "talk": "talk_prison_dayroom.json", "face": "smug", "wear": JUMPSUIT})
 	p.person(b, "chuy", 8.4, 17.75, {"face": "neutral", "wear": JUMPSUIT})
 	p.person(b, "huff", 12.2, 17.75, {"face": "content", "wear": JUMPSUIT})
-	p.person(b, "cop", 21.2, 11.4, {"face": "bored"})
+	p.person(b, "cop", 21.4, 13.5, {"face": "bored"})          # by the yard hall's gate, outside it
 	# The showers: four heads along the back wall with tiled half walls between, a bench.
 	for i in 4:
 		Jail.shower(p, b, 26.8 + i * 1.5, 10.08, 0.0)
 	for i in 3:
 		Jail.shower_wall(p, b, 27.55 + i * 1.5, 10.64, 0.0, 1.1, 1.8)
-	Props.bench(p, b, 29.0, 16.0, 0.0, 2.4, Props.IRON)
+	Props.bench(p, b, 31.6, 17.5, 270.0, 2.4, Props.IRON)
 	for i in 4:
 		Kit.cyl(n, 0.07, 0.006, p.pt(26.8 + i * 1.5, 11.0, 0.003), Props.DARK, Vector3.ZERO, 10)      # the drains
 
@@ -567,14 +574,15 @@ static func _box_line(p: Node3D, b: int, u0: float, v0: float, u1: float, v1: fl
 
 
 ## In each cell of the lower tier: the bunk along its right wall, the steel toilet
-## at the back, its number over the door; his own bunk is the one E is used on.
+## at the back, its number on the catwalk's yellow edge over its door; his own
+## bunk is the one E is used on.
 static func _cells(p: Node3D, b: int) -> void:
 	var n: Node3D = p.node_of(b)
 	for k in 8:
 		var a := k * 2.5
 		Props.bunk(p, b, a + 2.0, 11.05, 90.0)
 		Props.cell_toilet(p, b, a + 0.45, 10.4)
-		Props.words(n, str(101 + k), p.pt(a + 0.8, 12.66, 2.45), 0.12, SIGN)
+		Props.words(n, str(101 + k), p.pt(a + 0.8, 14.42, (DECK + TIER) * 0.5), 0.14, INK)
 	p.use_point(b, "SLEEP", 9.45, 11.3, "prison:bunk", 1.1, 1.0)
 	# days scratched on the wall of his cell
 	for k in 9:
@@ -608,7 +616,7 @@ static func _upper_seen(p: Node3D, b: int, block: Variant) -> void:
 	p.slab(n, true, 12.6, 20.075, 25.925, 2.4, 5.5, 0.15, block)
 	for k in 8:
 		var a := k * 2.5
-		Props.words(n, str(201 + k), p.pt(a + 0.8, 12.69, 5.75), 0.12, Jail.SAFETY)
+		Props.words(n, str(201 + k), p.pt(a + 0.8, 12.69, 5.75), 0.14, INK)
 		Kit.box(n, Vector3(0.8, 0.07, 1.9), p.pt(a + 2.0, 11.05, TIER + 0.42), Props.IRON)
 		Kit.box(n, Vector3(0.7, 0.08, 1.8), p.pt(a + 2.0, 11.05, TIER + 0.495), Color(0.6, 0.62, 0.55))
 
@@ -636,7 +644,7 @@ static func _upper(p: Node3D, b: int, block: Variant, sealed: Variant) -> void:
 		In.room_walls(p, b, a, 10, a + 2.5, 12.6, cell, [], [], [])
 		Props.bunk(p, b, a + 2.0, 11.05, 90.0)
 		Props.cell_toilet(p, b, a + 0.45, 10.4)
-		Props.words(n, str(201 + k), p.pt(a + 0.8, 12.69, 2.85), 0.12, Jail.SAFETY)
+		Props.words(n, str(201 + k), p.pt(a + 0.8, 12.69, 2.85), 0.14, INK)
 		In.sconce(p, b, a + 1.25, 10.08, 0.0, "cage", 2.3)
 	In.wall_strip(p, b, UP + 6.9, 12.68, 0.0, 1.2, 2.85)
 	In.wall_strip(p, b, UP + 14.4, 12.68, 0.0, 1.2, 2.85)
@@ -644,12 +652,20 @@ static func _upper(p: Node3D, b: int, block: Variant, sealed: Variant) -> void:
 	p.portal(b, "GO DOWNSTAIRS", UP + 0.6, 14.0, 0.75, 18.6)
 	var stair: Node3D = Jail.stairs(p, b, UP + 0.6, 16.23, 0.0, 0.95, 3.6, TIER)
 	stair.position.y -= TIER
-	# Below the rail: the dayroom's floor, its walls, its tables, the station.
-	Kit.box(n, Vector3(26.0, 0.3, 6.6), p.pt(UP + 13.0, 17.7, -TIER - 0.15), sealed)
+	# Below the rail: the dayroom's floor (in under the catwalk too), its walls, its tables, the station;
+	# under the catwalk, seen over its edge, its yellow edge and the lower tier's barred fronts (a dim
+	# cell behind each, the walls between), or the gap under it is a hole into nothing.
+	Kit.box(n, Vector3(26.0, 0.3, 8.4), p.pt(UP + 13.0, 16.8, -TIER - 0.15), sealed)
+	p.slab(n, true, 14.405, UP + 0.075, UP + 19.925, DECK - TIER + 0.02, -0.02, 0.01, Jail.SAFETY)
+	Jail.bar_screen(p, n, 12.6, UP + 0.075, UP + 19.98, -TIER, DECK - TIER, 2.5, -0.075)       # (short of the floors' ends at UP + 20)
+	p.slab(n, true, 11.2, UP + 0.075, UP + 19.925, -TIER, DECK - TIER, 0.1, Color(0.36, 0.42, 0.5))
+	for k in range(1, 8):
+		p.slab(n, false, UP + k * 2.5, 11.25, 12.55, -TIER, DECK - TIER, 0.15, block)
+	p.slab(n, false, UP, 11.25, 21.0, -TIER, -0.02, 0.15, block)       # the end wall below, its top under the floors' (no face shared)
 	Kit.box(n, Vector3(5.85, 0.3, 2.45), p.pt(UP + 23.0, 11.3, -0.15), Color(0.5, 0.52, 0.55))     # over the yard hall (up to the wall over its gate)
 	p.slab(n, true, 12.6, UP + 20.075, UP + 25.925, -0.5, 0.0, 0.15, block)
 	Jail.bar_screen(p, n, 12.6, UP + 20.075, UP + 25.925, -TIER, -0.5, 99.0, 2.125)       # (its door where the yard hall's gate is)
-	p.slab(n, false, UP, 14.4, 21.0, -TIER, HIGH - TIER, 0.15, block)
+	p.slab(n, false, UP, 14.4, 21.0, -0.02, HIGH - TIER, 0.15, block)
 	p.slab(n, false, UP + 26.0, 10.0, 21.0, -TIER, HIGH - TIER, 0.15, block)
 	for row: float in [16.3, 19.2]:
 		for u: float in [4.6, 8.4, 12.2]:
@@ -657,7 +673,7 @@ static func _upper(p: Node3D, b: int, block: Variant, sealed: Variant) -> void:
 			t.position.y -= TIER
 	var desk: Node3D = Jail.station(p, b, UP + 17.6, 18.6, 0.0, 2.2, "A")
 	desk.position.y -= TIER
-	p.person(b, "dee", UP + 5.6, 11.4, {"face": "content", "wear": JUMPSUIT})
+	p.person(b, "dee", UP + 3.55, 11.6, {"face": "content", "wear": JUMPSUIT})        # in CELL 202 (not where he would stand in 203)
 	p.person(b, "cop", UP + 14.0, 13.5, {"face": "bored"})
 
 
@@ -685,7 +701,8 @@ static func _yard(p: Node3D, b: int) -> void:
 	Jail.wire_on(p, n, true, -4.0, -6.0, 38.0, [], 3.6)
 	Jail.razor(n, p.pt(-5.5, -2.0, 0.24), p.pt(37.5, -2.0, 0.24), 0.26)
 	Jail.tower(p, n, -3.0, -7.6, 7.0)
-	Outdoor.backdrop(n, p.pt(16.0, -40.0), [Color(1.0, 0.72, 0.42), Color(0.88, 0.48, 0.56), Color(0.3, 0.25, 0.54)], Vector3.INF, 6.0, 900.0, Vector2(-0.85, -0.5))
+	var sky: Node3D = Outdoor.backdrop(n, p.pt(16.0, -40.0), [Color(1.0, 0.72, 0.42), Color(0.88, 0.48, 0.56), Color(0.3, 0.25, 0.54)], Vector3.INF, 6.0, 900.0, Vector2(-0.85, -0.5))
+	Jail.sky_outside(p, b, sky, 10.0, 39.0)          # (from inside, no open sky over the walls)
 	# Half a court painted on the concrete, the hoop's pole at the back fence (its
 	# rim 2.475 m out from the pole, the baseline 0.9 m), the key, the free-throw
 	# circle and a three-point line cut short to fit the yard.

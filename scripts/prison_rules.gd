@@ -77,11 +77,11 @@ static func may_go(main: Node, id: String) -> bool:
 	return false
 
 
-## May the travel list open? Not while he is held.
+## May the travel list open? Not while he is held (and he is told the way out).
 static func can_travel(main: Node) -> bool:
 	if not held(main):
 		return true
-	_caption(main, "HELD: NO TRAVEL")
+	_caption(main, "HELD: SLEEP IT OFF IN CELL 104")
 	print("[prison] held: the travel list stays shut")
 	return false
 

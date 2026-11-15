@@ -623,3 +623,45 @@ static func bar_screen(p: Node3D, n: Node3D, v: float, u0: float, u1: float, y0:
 		p.slab(n, true, v + 0.014, k + 0.33, k + 1.27, (y0 + y1) * 0.5 - 0.03, (y0 + y1) * 0.5 + 0.03, 0.06, Props.IRON)
 		p.slab(n, true, v + 0.03, k + 1.12, k + 1.24, y0 + 0.95, y0 + 1.15, 0.08, Color(0.2, 0.21, 0.24))
 		k += every
+
+
+# ------------------------------------------------------------------ the sky
+
+## The watcher (see SkyWatch) for the sky and far city behind the yard (`what`, from
+## outdoor.gd's backdrop): it shows only while he is outside the building, which
+## runs from v0 to v1 on the plan.
+static func sky_outside(p: Node3D, b: int, what: Node3D, v0: float, v1: float) -> SkyWatch:
+	var s := SkyWatch.new()
+	s.name = "SkyOutside"
+	s.what = what
+	s.z0 = p.pt(0.0, v0).z
+	s.z1 = p.pt(0.0, v1).z
+	p.node_of(b).add_child(s)
+	p.watchers.append(s)
+	return s
+
+
+## No roof is drawn, so from inside the jail the open sky behind the yard showed
+## over the tops of the walls. While he is inside (the yard's wall to the street
+## front) it is put away and the walls stand against the dark, as in every other
+## place; out in the yard or out front it is shown. The place tells it where he is
+## (place.watchers), or it finds him (main.gd's "Player").
+class SkyWatch extends Node3D:
+	var what: Node3D = null
+	var z0 := 0.0                    # world z: inside from here ...
+	var z1 := 0.0                    # ... to here
+	var _at := Vector3.INF
+	var _lead: Node3D = null
+
+	func watch(at: Vector3, _delta: float) -> void:
+		_at = at
+
+	func _process(_delta: float) -> void:
+		if what == null:
+			return
+		if _lead == null and get_tree().current_scene:
+			_lead = get_tree().current_scene.get_node_or_null("Player") as Node3D
+		if _lead:
+			_at = _lead.global_position
+		if _at != Vector3.INF:
+			what.visible = _at.z < z0 or _at.z > z1
