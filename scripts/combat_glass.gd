@@ -13,25 +13,30 @@ extends RefCounted
 ## does more, and so do rounds close together in a burst: POWER, `heat`) and on the pane (a big shop window cracks
 ## in long runs and keeps its big pieces; a small sash comes apart sooner). By an edge or in a corner the pieces
 ## between the hit and the frame are small, and go. A round that comes in at a slant makes a longer hole and rings,
-## stretched the way it went (SLANT). A big piece that comes away breaks up as it falls (MOST). The same pane hit
-## the same way breaks the same way every time (the dice are seeded from where the pane is and where it was hit;
-## --do=glassseed:n for another way), and no two panes break alike.
+## stretched the way it went (SLANT). A big piece that comes away breaks up as it falls (MOST); a sliver left in
+## falls out (SLIVER). Bars on the glass (a sash's meeting rail, a shop window's mullions, a cross bar) part it into
+## lights, and each light breaks on its own: cracks stop at the bars. The same pane hit the same way breaks the same
+## way every time (the dice are seeded from where the pane is and where it was hit; --do=glassseed:n for another
+## way), and no two panes break alike.
 ##
 ## What is left is drawn in the pane's own material in place of its box (hidden), with a line along each crack (ink,
-## or light on a pane drawn dark), an ink edge with a light rim round each hole, and, on a pane drawn dark or lit,
-## a dark void behind the holes. The pieces that come away are handed back for combat_fx.gd to drop. A block of
-## glass (a car's glasshouse) is not broken through: it gets a dark hole with cracks where it is hit. It all stays
-## broken while the place is loaded (going away and coming back too), until mend() (a new day).
+## or light on a pane drawn dark), an ink edge with a light rim round each hole, and, behind the holes of a pane drawn
+## dark, a dark room (on a lit one, its light, dimmer). Words painted on the glass (a house number) go when most of
+## the glass under them has. The pieces that come away are handed back for combat_fx.gd to drop. A block of glass (a
+## car's glasshouse) is not broken through: it gets a dark hole with cracks where it is hit, kept to the face it was
+## hit on. It all stays broken
+## while the place is loaded (going away and coming back too), until mend() (a new day).
 
 const INK := Color(0.03, 0.02, 0.05)
 const VOID := Color(0.035, 0.03, 0.05)
 const CRACK := Color(0.86, 0.92, 0.97)        # cracks on dark glass are light
 const GLINT := Color(0.84, 0.93, 1.0)         # crushed glass: a light rim inside the ink of a hole (shows on clear glass)
 const BAND := 0.012                           # metres: the ink round a hole
-const GLINT_W := 0.016                        # metres: its light rim
+const GLINT_W := 0.008                        # metres: its light rim
 const CRACK_W := 0.007                        # a crack (half of it drawn on the piece either side)
 const LIFT := 0.0012                          # lines stand this far proud of the glass
 const DUST := 0.00015                         # square metres: a piece smaller than this (about 12 mm across) is dust
+const SLIVER := 0.0012                        # square metres: a broken piece smaller than this (about 35 mm across) falls out
 const MOST := 0.025                           # square metres: a bigger piece that comes away breaks up as it goes
 const SLANT := 0.9                            # a round at a slant stretches the break along its way (by this, side-on)
 const GRID := 0.1                             # metres: the squares for finding which piece a point is on
@@ -75,6 +80,9 @@ class State:
 	var pieces: Array = []                    # of Piece: the glass left
 	var panes: Array = []                     # the panes showing this glass: one, and its twins
 	var grid := {}                            # Vector2i: Array of Piece
+	var bars: Array = []                      # Vector2(0, x): a bar up the glass at x; Vector2(1, y): one across it at y
+	var lights: Array = []                    # Rect2: the glass between the bars, each breaking on its own
+	var hole := VOID                          # what a hole shows on a pane drawn dark or lit (the room behind)
 
 
 static func _mat(color: Color) -> StandardMaterial3D:
@@ -160,6 +168,24 @@ static func _piece_at(st: State, p: Vector2, skip: Piece = null, slack := 0.0) -
 	return best
 
 
+## The pieces a round at `p` (in the plane) strikes: the one it is on, and any with an edge within `slack` of it (a
+## round on a crack, or at the edge of a hole, takes the glass either side). The one it is on first.
+static func _struck(st: State, p: Vector2, slack: float) -> Array:
+	var out: Array = []
+	for pc: Piece in st.grid.get(Vector2i(floori(p.x / GRID), floori(p.y / GRID)), []):
+		if not pc.box.grow(slack).has_point(p):
+			continue
+		if Geometry2D.is_point_in_polygon(p, pc.poly):
+			out.push_front(pc)
+			continue
+		var n := pc.poly.size()
+		for i in n:
+			if Geometry2D.get_closest_point_to_segment(p, pc.poly[i], pc.poly[(i + 1) % n]).distance_to(p) < slack:
+				out.append(pc)
+				break
+	return out
+
+
 static func _index(st: State) -> void:
 	st.grid = {}
 	for pc: Piece in st.pieces:
@@ -177,6 +203,56 @@ static func _index(st: State) -> void:
 static func _on_frame(a: Vector2, b: Vector2, half: Vector2) -> bool:
 	return (absf(a.x - half.x) < ON_FRAME and absf(b.x - half.x) < ON_FRAME) or (absf(a.x + half.x) < ON_FRAME and absf(b.x + half.x) < ON_FRAME) \
 			or (absf(a.y - half.y) < ON_FRAME and absf(b.y - half.y) < ON_FRAME) or (absf(a.y + half.y) < ON_FRAME and absf(b.y + half.y) < ON_FRAME)
+
+
+## a-b is in the frame or under a bar across the glass: the glass there is held, and no edge is drawn along it.
+static func _held_edge(st: State, a: Vector2, b: Vector2) -> bool:
+	if _on_frame(a, b, st.half):
+		return true
+	for bar: Vector2 in st.bars:
+		var axis := int(bar.x)
+		if absf(a[axis] - bar.y) < ON_FRAME and absf(b[axis] - bar.y) < ON_FRAME:
+			return true
+	return false
+
+
+## Bars across the glass (a sash's meeting rail, a shop window's mullions, a window's cross bar): boxes beside the
+## pane, square to it, lying on its glass (not a blind a little behind it), running all or nearly all the way up or
+## across it, and narrow. The glass either side of a bar is a separate light. In the pane's plane: Vector2(0, x) a
+## bar up it at x, Vector2(1, y) a bar across it at y.
+static func _bars(mi: MeshInstance3D, st: State) -> Array:
+	var out: Array = []
+	var parent := mi.get_parent()
+	if parent == null:
+		return out
+	var inv := mi.transform.affine_inverse()
+	for sib in parent.get_children():
+		if sib == mi or not sib is MeshInstance3D or not (sib as MeshInstance3D).mesh is BoxMesh:
+			continue
+		var xf := inv * (sib as MeshInstance3D).transform       # the box in the pane's own space
+		var size: Vector3 = ((sib as MeshInstance3D).mesh as BoxMesh).size
+		var ext := Vector3.ZERO                                 # its half size along the pane's axes
+		var square := true
+		for c in 3:
+			var axis := (xf.basis[c] * size[c] * 0.5).abs()
+			var m := axis.max_axis_index()
+			if axis[m] < 1e-6:
+				continue
+			if axis[(m + 1) % 3] + axis[(m + 2) % 3] > axis[m] * 0.03:
+				square = false                                  # turned in the plane (a glare streak)
+				break
+			ext[m] += axis[m]
+		if not square or absf(xf.origin[st.k]) - ext[st.k] > st.d * 0.5 + 0.004:
+			continue
+		var u := xf.origin[st.ia]
+		var v := xf.origin[st.ja]
+		var along_v := minf(v + ext[st.ja], st.half.y) - maxf(v - ext[st.ja], -st.half.y)    # how much of the glass it runs over
+		var along_u := minf(u + ext[st.ia], st.half.x) - maxf(u - ext[st.ia], -st.half.x)
+		if ext[st.ia] <= 0.06 and along_v >= st.half.y * 1.7 and absf(u) < st.half.x - 0.03:
+			out.append(Vector2(0, u))
+		elif ext[st.ja] <= 0.06 and along_u >= st.half.x * 1.7 and absf(v) < st.half.y - 0.03:
+			out.append(Vector2(1, v))
+	return out
 
 
 ## A piece of that outline (made anticlockwise), or null if it is dust.
@@ -199,7 +275,7 @@ static func _piece(poly: PackedVector2Array, st: State) -> Piece:
 	for i in n:
 		lo = lo.min(poly[i])
 		hi = hi.max(poly[i])
-		if _on_frame(poly[i], poly[(i + 1) % n], st.half):
+		if _held_edge(st, poly[i], poly[(i + 1) % n]):
 			pc.held += poly[i].distance_to(poly[(i + 1) % n])
 	pc.box = Rect2(lo, hi - lo)
 	return pc
@@ -240,8 +316,31 @@ static func _begin(mi: MeshInstance3D, twins: Array) -> State:
 		st.dark = _dark(mi)
 		var g := mi.global_position
 		st.seed = hash([Vector3i(roundi(g.x * 1000.0), roundi(g.y * 1000.0), roundi(g.z * 1000.0)), Vector2i(roundi(st.half.x * 1000.0), roundi(st.half.y * 1000.0))])
-		var h := st.half
-		st.pieces = [_piece(PackedVector2Array([Vector2(-h.x, -h.y), Vector2(h.x, -h.y), Vector2(h.x, h.y), Vector2(-h.x, h.y)]), st)]
+		var mat := mi.get_active_material(0)
+		if not st.clear and not st.dark and mat is BaseMaterial3D:       # lit: a hole shows the lit room, dimmer
+			st.hole = (mat as BaseMaterial3D).albedo_color.darkened(0.45)
+			st.hole.a = 1.0
+		# Each light (the glass between the bars) is a piece of its own, so it breaks on its own.
+		st.bars = _bars(mi, st)
+		st.lights = [Rect2(-st.half, st.half * 2.0)]
+		for bar: Vector2 in st.bars:
+			var axis := int(bar.x)
+			var cut: Array = []
+			for r: Rect2 in st.lights:
+				if bar.y > r.position[axis] + 0.02 and bar.y < r.end[axis] - 0.02:
+					var a := r
+					var b := r
+					a.size[axis] = bar.y - r.position[axis]
+					b.position[axis] = bar.y
+					b.size[axis] = r.end[axis] - bar.y
+					cut.append_array([a, b])
+				else:
+					cut.append(r)
+			st.lights = cut
+		for r: Rect2 in st.lights:
+			var pc := _piece(PackedVector2Array([r.position, Vector2(r.end.x, r.position.y), r.end, Vector2(r.position.x, r.end.y)]), st)
+			if pc:
+				st.pieces.append(pc)
 		_index(st)
 	for pane: MeshInstance3D in [mi] + twins:
 		if not st.panes.has(pane):
@@ -261,8 +360,8 @@ static func _begin(mi: MeshInstance3D, twins: Array) -> State:
 static func shatter(mi: MeshInstance3D, hit: Vector3, dir: Vector3, power := 1.0, twins: Array = []) -> Dictionary:
 	var st := _begin(mi, twins)
 	var p := _plane(st, mi, hit)
-	var q := _piece_at(st, p, null, 0.004)
-	if q == null:
+	var struck := _struck(st, p, 0.004)
+	if struck.is_empty():
 		return {}
 	for pane: MeshInstance3D in st.panes:
 		var keep: Dictionary = pane.get_meta("broken", {})
@@ -279,7 +378,9 @@ static func shatter(mi: MeshInstance3D, hit: Vector3, dir: Vector3, power := 1.0
 	var flat := Vector2(ld[st.ia], ld[st.ja])
 	var slant := flat.length() / maxf(ld.length(), 1e-6)
 	var lean := flat.normalized() * SLANT * slant * slant if flat.length() > 1e-6 else Vector2.ZERO
-	var fallen: Array = _fracture(st, q, p.clamp(-st.half, st.half), e, rng, lean)
+	var fallen: Array = []
+	for q: Piece in struck:                   # on a crack: the glass both sides of it breaks
+		fallen.append_array(_fracture(st, q, p.clamp(-st.half, st.half), e, rng, lean))
 	_index(st)
 	fallen.append_array(_settle(st, rng, e))
 	for pc: Piece in st.pieces:               # what lay against what came away has a new edge to draw
@@ -315,16 +416,21 @@ static func shatter(mi: MeshInstance3D, hit: Vector3, dir: Vector3, power := 1.0
 ## that came away (st.pieces has q's pieces that stay in its place). `lean`: the way the round went across the
 ## pane, as long as the break is stretched that way (1 + its length).
 static func _fracture(st: State, q: Piece, p: Vector2, e: float, rng: RandomNumberGenerator, lean := Vector2.ZERO) -> Array:
-	var short := minf(st.half.x, st.half.y) * 2.0
-	var big := st.whole > 1.5                              # a shop window
-	var sash := st.whole < 0.8 and short < 0.9             # a small pane
+	var light := Rect2(-st.half, st.half * 2.0)            # the sheet of glass hit: the light between the bars
+	for r: Rect2 in st.lights:
+		if r.grow(0.002).has_point(p):
+			light = r
+			break
+	var short := minf(light.size.x, light.size.y)
+	var big := light.get_area() > 1.5                      # a shop window
+	var sash := light.get_area() < 0.8 and short < 0.9     # a small pane
 	var r1 := clampf((0.03 + 0.026 * e) * rng.randf_range(0.8, 1.2), 0.018, short * 0.28)
 	var n_rings := 2 + (1 if e > 1.35 else 0) + (1 if big else 0)
 	var rings := PackedFloat32Array([r1])
 	for i in range(1, n_rings):
 		rings.append(rings[i - 1] * rng.randf_range(1.7, 2.35) * (1.15 if big else 1.0))
-	var far := 0.0                                         # the furthest corner of the pane from p
-	for c: Vector2 in [st.half, -st.half, Vector2(st.half.x, -st.half.y), Vector2(-st.half.x, st.half.y)]:
+	var far := 0.0                                         # the furthest corner of the light from p
+	for c: Vector2 in [light.position, light.end, Vector2(light.end.x, light.position.y), Vector2(light.position.x, light.end.y)]:
 		far = maxf(far, c.distance_to(p))
 	var reach := far * 1.6 + 0.5                           # the far ring: outside the whole pane
 	# The cracks out from the hit: their way, and the outermost band of the rings each one cuts (n_rings: on to
@@ -363,7 +469,7 @@ static func _fracture(st: State, q: Piece, p: Vector2, e: float, rng: RandomNumb
 				wob = clampf(wob + rng.randf_range(-0.14, 0.14), -lim, lim)
 				var rr := lerpf(r_was, rings[b], float(s) / float(steps))
 				if s == steps:
-					rr *= rng.randf_range(0.92, 1.08)
+					rr *= rng.randf_range(0.75, 1.15) if b == 0 else rng.randf_range(0.92, 1.08)     # the hole: ragged, not round (inside ring 1)
 				pts.append(p + _lean(Vector2.from_angle(angles[i] + wob) * rr, lean))
 			m.append(pts.size() - 1)
 			r_was = rings[b]
@@ -386,7 +492,7 @@ static func _fracture(st: State, q: Piece, p: Vector2, e: float, rng: RandomNumb
 			var j := (i + 1) % n
 			var from: Vector2 = (rad[i] as PackedVector2Array)[(marks[i] as PackedInt32Array)[b]]
 			var to: Vector2 = (rad[j] as PackedVector2Array)[(marks[j] as PackedInt32Array)[b]]
-			row.append(_arc(p, from, to, 0.0 if b == n_rings else 0.1, rng))
+			row.append(_arc(p, from, to, 0.0 if b == n_rings else (0.2 if b == 0 else 0.1), rng))
 		arcs.append(row)
 	# The blocks between two cracks and two rings; the hole in the middle.
 	var blocks := {}
@@ -602,6 +708,13 @@ static func _area(poly: PackedVector2Array) -> float:
 	return absf(a2) * 0.5
 
 
+static func _perimeter(poly: PackedVector2Array) -> float:
+	var length := 0.0
+	for i in poly.size():
+		length += poly[i].distance_to(poly[(i + 1) % poly.size()])
+	return length
+
+
 ## A piece that comes away bigger than `most` breaks up as it goes: it is cut across its long way, along a jagged
 ## line somewhere near its middle, and so on until no part is bigger than about `most`.
 static func _split(poly: PackedVector2Array, most: float, rng: RandomNumberGenerator) -> Array:
@@ -658,18 +771,20 @@ static func _scratch(pc: Piece, line: PackedVector2Array) -> void:
 
 
 ## Pieces held by nothing (not in the frame) with little or no glass under them fall, and what they held may then
-## fall too. Returns those that fell.
+## fall too; so do slivers (a broken piece smaller than SLIVER), held or not. Returns those that fell.
 static func _settle(st: State, rng: RandomNumberGenerator, e: float) -> Array:
 	var gone: Array = []
 	for pass_i in 5:
 		var fell := false
 		for pc: Piece in st.pieces.duplicate():
-			if pc.held > 0.02 or (pc.held > 0.004 and pc.area < 0.02):
-				continue
-			var under := _support(st, pc)
-			var drop := under < 0.3 or (under < 0.6 and pc.area > 0.03 and rng.randf() < 0.35 * e)
-			if pc.area < DUST * 4.0 and under < 0.9:
-				drop = true
+			var drop := pc.area < SLIVER and pc.held < _perimeter(pc.poly) * 0.75     # (not a little light still whole)
+			if not drop:
+				if pc.held > 0.02 or (pc.held > 0.004 and pc.area < 0.02):
+					continue
+				var under := _support(st, pc)
+				drop = under < 0.3 or (under < 0.6 and pc.area > 0.03 and rng.randf() < 0.35 * e)
+				if pc.area < DUST * 4.0 and under < 0.9:
+					drop = true
 			if drop:
 				st.pieces.erase(pc)
 				gone.append(pc)
@@ -732,7 +847,7 @@ static func _draw(st: State) -> void:
 		_add(mesh, ink, PackedVector3Array(), _mat(INK))
 		_add(mesh, lit, PackedVector3Array(), _mat(GLINT))
 		_add(mesh, thin, PackedVector3Array(), _mat(CRACK if st.dark else INK))
-		_add(mesh, void_quad, PackedVector3Array(), _mat(VOID))
+		_add(mesh, void_quad, PackedVector3Array(), _mat(st.hole))
 		var keep: Dictionary = pane.get_meta("broken", {})
 		var node: MeshInstance3D = keep.get("node", null)
 		if node == null or not is_instance_valid(node):
@@ -748,9 +863,43 @@ static func _draw(st: State) -> void:
 		pane.visible = false
 		if not keep.has("extras"):
 			keep["extras"] = _extras(pane, st)
+			keep["paint"] = _paint(pane, st)
 		for extra in keep["extras"]:
 			if is_instance_valid(extra):
 				(extra as Node3D).visible = false
+		for label in keep.get("paint", []):
+			if is_instance_valid(label):
+				(label as Label3D).visible = _paint_left(st, pane, label)
+
+
+## Paint on the glass (a house number on a transom, words on a shop window): words beside the pane, lying on its
+## face, inside its edges.
+static func _paint(pane: MeshInstance3D, st: State) -> Array:
+	var out: Array = []
+	var inv := pane.transform.affine_inverse()
+	for sib in pane.get_parent().get_children():
+		if sib is Label3D and (sib as Label3D).visible:
+			var at: Vector3 = inv * (sib as Label3D).position
+			if absf(at[st.ia]) < st.half.x and absf(at[st.ja]) < st.half.y and absf(at[st.k]) <= st.d * 0.5 + 0.02:
+				out.append(sib)
+	return out
+
+
+## Is most of the glass under these words still there? (They go with it.)
+static func _paint_left(st: State, pane: MeshInstance3D, label: Label3D) -> bool:
+	var box := label.get_aabb()
+	var c := box.get_center()
+	var e := box.size * 0.32
+	var on := 0
+	var gone := 0
+	for off: Vector3 in [Vector3.ZERO, Vector3(e.x, e.y, 0.0), Vector3(-e.x, e.y, 0.0), Vector3(e.x, -e.y, 0.0), Vector3(-e.x, -e.y, 0.0)]:
+		var p := _plane(st, pane, label.global_transform * (c + off))
+		if absf(p.x) > st.half.x or absf(p.y) > st.half.y:
+			continue
+		on += 1
+		if _piece_at(st, p) == null:
+			gone += 1
+	return gone * 2 <= on
 
 
 ## What is drawn on a pane's glass (Kit.pane's extras: a glare). A copy of a pane (a ghost wall's) has copies of
@@ -796,27 +945,25 @@ static func _prepare(st: State, pc: Piece) -> void:
 	var hz := st.d * 0.5
 	pc.fill = PackedVector3Array()
 	pc.fill_n = PackedVector3Array()
-	var tris := Geometry2D.triangulate_polygon(pc.poly)
-	if tris.is_empty():                       # a crooked outline: as a fan from its middle
-		var c := _centroid(pc.poly)
-		var fan := PackedVector2Array([c])
-		fan.append_array(pc.poly)
-		var poly := fan
-		for i in pc.poly.size():
-			tris.append_array(PackedInt32Array([0, i + 1, (i + 1) % pc.poly.size() + 1]))
-		_fill(pc, poly, tris, hz)
-	else:
-		_fill(pc, pc.poly, tris, hz)
+	for part: Array in triangles(pc.poly):
+		_fill(pc, part[0], part[1], hz)
 	pc.ink = PackedVector3Array()
 	pc.lit = PackedVector3Array()
 	pc.thin = PackedVector3Array()
 	var band := minf(BAND, sqrt(pc.area) * 0.22)
 	var rim := minf(GLINT_W, sqrt(pc.area) * 0.12)
 	var n := pc.poly.size()
+	# Inwards from each corner, mitred, so the edge of a hole is one unbroken band round its corners.
+	var corner := PackedVector2Array()
+	for i in n:
+		var n0 := _inward(pc.poly[(i - 1 + n) % n], pc.poly[i])
+		var n1 := _inward(pc.poly[i], pc.poly[(i + 1) % n])
+		var m := (n0 + n1).normalized() if (n0 + n1).length_squared() > 1e-6 else (n1 if n1 != Vector2.ZERO else n0)
+		corner.append(m / maxf(m.dot(n1 if n1 != Vector2.ZERO else n0), 0.4))
 	for i in n:
 		var a := pc.poly[i]
 		var b := pc.poly[(i + 1) % n]
-		if _on_frame(a, b, st.half):
+		if _held_edge(st, a, b):
 			continue
 		var length := a.distance_to(b)
 		if length < 1e-5:
@@ -825,16 +972,20 @@ static func _prepare(st: State, pc: Piece) -> void:
 		var inn := -out
 		var steps := maxi(ceili(length / 0.04), 1)
 		for s in steps:
-			var s0 := a.lerp(b, float(s) / float(steps))
-			var s1 := a.lerp(b, float(s + 1) / float(steps))
+			var t0 := float(s) / float(steps)
+			var t1 := float(s + 1) / float(steps)
+			var s0 := a.lerp(b, t0)
+			var s1 := a.lerp(b, t1)
 			var probe := (s0 + s1) * 0.5 + out * 0.004
 			if absf(probe.x) > st.half.x or absf(probe.y) > st.half.y:
 				continue
 			if _piece_at(st, probe, pc) != null:
 				_strip(pc.thin, s0, s1, inn, CRACK_W * 0.5, hz + LIFT)
 			else:
-				_strip(pc.ink, s0, s1, inn, band, hz + LIFT)
-				_strip(pc.lit, s0 + inn * band, s1 + inn * band, inn, rim, hz + LIFT * 0.6)
+				var i0 := corner[i].lerp(corner[(i + 1) % n], t0)
+				var i1 := corner[i].lerp(corner[(i + 1) % n], t1)
+				_quad(pc.ink, s0, s1, s1 + i1 * band, s0 + i0 * band, hz + LIFT)
+				_quad(pc.lit, s0 + i0 * band, s1 + i1 * band, s1 + i1 * (band + rim), s0 + i0 * (band + rim), hz + LIFT * 0.6)
 	for i in range(0, pc.lines.size(), 2):
 		var a := pc.lines[i]
 		var b := pc.lines[i + 1]
@@ -842,6 +993,41 @@ static func _prepare(st: State, pc: Piece) -> void:
 			continue
 		var side := (b - a).normalized().orthogonal()
 		_strip(pc.thin, a - side * CRACK_W * 0.5, b - side * CRACK_W * 0.5, side, CRACK_W, hz + LIFT)
+
+
+## An outline as triangles: [[outline, indices into it], ...]. One the triangulator cannot take (two corners on one
+## point, three in a line) is cleaned up, or else cut into convex parts; it is never drawn as a fan over glass that
+## is not there (a piece curled round a hole would hide the hole).
+static func triangles(poly: PackedVector2Array) -> Array:
+	var tris := Geometry2D.triangulate_polygon(poly)
+	if not tris.is_empty():
+		return [[poly, tris]]
+	var clean := PackedVector2Array()
+	for v: Vector2 in poly:
+		if clean.is_empty() or clean[clean.size() - 1].distance_to(v) > 1e-5:
+			clean.append(v)
+	if clean.size() > 1 and clean[0].distance_to(clean[clean.size() - 1]) <= 1e-5:
+		clean.remove_at(clean.size() - 1)
+	var i := 0
+	while clean.size() > 3 and i < clean.size():
+		var a := clean[(i - 1 + clean.size()) % clean.size()]
+		var c := clean[(i + 1) % clean.size()]
+		if absf((clean[i] - a).cross(c - clean[i])) < 1e-10:
+			clean.remove_at(i)
+		else:
+			i += 1
+	if clean.size() < 3:
+		return []
+	tris = Geometry2D.triangulate_polygon(clean)
+	if not tris.is_empty():
+		return [[clean, tris]]
+	var out: Array = []
+	for part: PackedVector2Array in Geometry2D.decompose_polygon_in_convex(clean):
+		var fan := PackedInt32Array()
+		for k in range(1, part.size() - 1):
+			fan.append_array(PackedInt32Array([0, k, k + 1]))
+		out.append([part, fan])
+	return out
 
 
 static func _fill(pc: Piece, poly: PackedVector2Array, tris: PackedInt32Array, hz: float) -> void:
@@ -861,11 +1047,20 @@ static func _fill(pc: Piece, poly: PackedVector2Array, tris: PackedInt32Array, h
 
 ## A strip along a-b, w wide towards `inn`, on both faces (z and -z).
 static func _strip(out: PackedVector3Array, a: Vector2, b: Vector2, inn: Vector2, w: float, z: float) -> void:
-	var c := b + inn * w
-	var d := a + inn * w
+	_quad(out, a, b, b + inn * w, a + inn * w, z)
+
+
+## The four-cornered shape a, b, c, d on both faces (z and -z).
+static func _quad(out: PackedVector3Array, a: Vector2, b: Vector2, c: Vector2, d: Vector2, z: float) -> void:
 	for zz: float in [z, -z]:
 		out.append_array(PackedVector3Array([Vector3(a.x, a.y, zz), Vector3(b.x, b.y, zz), Vector3(c.x, c.y, zz),
 				Vector3(a.x, a.y, zz), Vector3(c.x, c.y, zz), Vector3(d.x, d.y, zz)]))
+
+
+## Into an anticlockwise outline from its edge a-b, one long (ZERO if a and b are one point).
+static func _inward(a: Vector2, b: Vector2) -> Vector2:
+	var length := a.distance_to(b)
+	return Vector2(a.y - b.y, b.x - a.x) / length if length > 1e-5 else Vector2.ZERO
 
 
 # ------------------------------------------------------------------ asking about a pane
@@ -914,9 +1109,48 @@ static func describe(mi: MeshInstance3D) -> String:
 	return "%d hits, %d pieces, %d%% of the glass left" % [st.hits, st.pieces.size(), roundi(left(mi) * 100.0)]
 
 
+## A point on a crack of the pane (in the world), with glass on both sides of it for a few centimetres and away from
+## the frame, or null (for the checks: a round there must break the glass either side).
+static func crack_point(mi: MeshInstance3D) -> Variant:
+	var st := _state(mi)
+	if st == null:
+		return null
+	for pc: Piece in st.pieces:
+		var n := pc.poly.size()
+		for i in n:
+			var a := pc.poly[i]
+			var b := pc.poly[(i + 1) % n]
+			if a.distance_to(b) < 0.03 or _held_edge(st, a, b):
+				continue
+			var m := (a + b) * 0.5
+			var across := _inward(a, b)
+			if absf(m.x) > st.half.x - 0.06 or absf(m.y) > st.half.y - 0.06:
+				continue
+			var other := _piece_at(st, m - across * 0.003)
+			if other != null and other != pc and _piece_at(st, m + across * 0.02) == pc and _piece_at(st, m - across * 0.02) == other:
+				return _to_world(st, mi) * Vector3(m.x, m.y, 0.0)
+	return null
+
+
+## What is at a point of a pane (in the world), in words (for the checks): where it is on the pane, and the piece of
+## glass it is on, if any.
+static func why(mi: MeshInstance3D, p: Vector3) -> String:
+	var st := _state(mi)
+	if st == null:
+		return "the pane is whole"
+	var q := _plane(st, mi, p)
+	var on := _piece_at(st, q)
+	var it := on if on else _piece_at(st, q, null, 0.004)
+	if it == null:
+		return "(%.3f, %.3f) is in a hole" % [q.x, q.y]
+	return "(%.3f, %.3f) of a %.2f by %.2f pane, %d lights, is %s a piece of %.4f sq m, %d corners, %.3f m of it held, over %s" % [q.x, q.y,
+			st.half.x * 2.0, st.half.y * 2.0, st.lights.size(), "on" if on else "within 4 mm of", it.area, it.poly.size(), it.held, str(it.box)]
+
+
 # ------------------------------------------------------------------ car glass, mending
 
-## A block of glass (a car's) hit at `hit`, facing `normal`: a dark hole with light cracks, stuck on it.
+## A block of glass (a car's) hit at `hit`, facing `normal`: a dark hole with light cracks, stuck on it and cut to
+## the face it was hit on (a hole by the edge, or a crack running off it, stops where that glass stops).
 static func crack(mi: MeshInstance3D, hit: Vector3, normal: Vector3, rng: RandomNumberGenerator) -> void:
 	var marks := 0
 	for child in mi.get_children():
@@ -924,6 +1158,10 @@ static func crack(mi: MeshInstance3D, hit: Vector3, normal: Vector3, rng: Random
 			marks += 1
 	if marks >= 6:
 		return
+	var z := normal.normalized()
+	var x := z.cross(Vector3.UP if absf(z.y) < 0.9 else Vector3.RIGHT).normalized()
+	var at := Transform3D(Basis(x, z.cross(x), z), hit + z * 0.004)
+	var face := _face(mi, at)
 	var r := rng.randf_range(0.08, 0.13)
 	var n := 9
 	var ring := PackedVector2Array()
@@ -936,14 +1174,12 @@ static func crack(mi: MeshInstance3D, hit: Vector3, normal: Vector3, rng: Random
 	for i in n:                                     # the ink, a little bigger than the hole, under it
 		var a0 := ring[i] * (1.0 + BAND / r * 1.6)
 		var a1 := ring[(i + 1) % n] * (1.0 + BAND / r * 1.6)
-		for v: Vector2 in [Vector2.ZERO, a0, a1]:
-			st.add_vertex(Vector3(v.x, v.y, 0.0))
+		_clipped(st, PackedVector2Array([Vector2.ZERO, a0, a1]), face, 0.0)
 	_commit(st, mesh, _mat(INK))
 	st = SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	for i in n:
-		for v: Vector2 in [Vector2.ZERO, ring[i], ring[(i + 1) % n]]:
-			st.add_vertex(Vector3(v.x, v.y, 0.0015))
+		_clipped(st, PackedVector2Array([Vector2.ZERO, ring[i], ring[(i + 1) % n]]), face, 0.0015)
 	_commit(st, mesh, _mat(VOID))
 	st = SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -954,17 +1190,47 @@ static func crack(mi: MeshInstance3D, hit: Vector3, normal: Vector3, rng: Random
 			way = way.rotated(rng.randf_range(-0.5, 0.5))
 			var to := from + way * rng.randf_range(0.05, 0.12)
 			var side := (to - from).normalized().orthogonal() * CRACK_W * 0.5
-			for v: Vector2 in [from - side, to - side, to + side, from - side, to + side, from + side]:
-				st.add_vertex(Vector3(v.x, v.y, 0.001))
+			_clipped(st, PackedVector2Array([from - side, to - side, to + side, from + side]), face, 0.001)
 			from = to
 	_commit(st, mesh, _mat(CRACK))
 	var node := MeshInstance3D.new()
 	node.set_meta("combat_fx", true)
 	node.mesh = mesh
 	mi.add_child(node)
-	var z := normal.normalized()
-	var x := z.cross(Vector3.UP if absf(z.y) < 0.9 else Vector3.RIGHT).normalized()
-	node.global_transform = Transform3D(Basis(x, z.cross(x), z), hit + z * 0.004)
+	node.global_transform = at
+
+
+## The triangles of a block of glass that lie in the face a mark placed at `at` sits on (its z out of that face,
+## 4 mm off it), in the mark's own x/y. None found (a curved face): the mark is left whole.
+static func _face(mi: MeshInstance3D, at: Transform3D) -> Array:
+	var out: Array = []
+	var to_mark := at.affine_inverse() * mi.global_transform
+	var tris := mi.mesh.get_faces()
+	for i in range(0, tris.size() - 2, 3):
+		var a := to_mark * tris[i]
+		var b := to_mark * tris[i + 1]
+		var c := to_mark * tris[i + 2]
+		var n := (b - a).cross(c - a)
+		if n.length_squared() < 1e-12 or absf(n.normalized().z) < 0.97:
+			continue
+		if absf(a.z + 0.004) > 0.01 or absf(b.z + 0.004) > 0.01 or absf(c.z + 0.004) > 0.01:
+			continue
+		out.append(PackedVector2Array([Vector2(a.x, a.y), Vector2(b.x, b.y), Vector2(c.x, c.y)]))
+	return out
+
+
+## Add `poly` (in a mark's x/y) at height `z`, cut to the `face` it lies on (all of it, if there is no face).
+static func _clipped(st: SurfaceTool, poly: PackedVector2Array, face: Array, z: float) -> void:
+	var parts: Array = [poly]
+	if not face.is_empty():
+		parts = []
+		for tri: PackedVector2Array in face:
+			parts.append_array(Geometry2D.intersect_polygons(poly, tri))
+	for part: PackedVector2Array in parts:
+		for t: Array in triangles(part):
+			var outline: PackedVector2Array = t[0]
+			for k: int in (t[1] as PackedInt32Array):
+				st.add_vertex(Vector3(outline[k].x, outline[k].y, z))
 
 
 ## Add what `st` holds to `mesh` as a surface of its own in `mat` (nothing, if it holds nothing).
@@ -995,9 +1261,10 @@ static func mend(mi: MeshInstance3D) -> void:
 			st.panes.erase(mi)
 		mi.remove_meta("broken")
 		mi.visible = true
-		for extra in was.get("extras", []):
-			if is_instance_valid(extra):
-				(extra as Node3D).visible = true
+		for key: String in ["extras", "paint"]:
+			for extra in was.get(key, []):
+				if is_instance_valid(extra):
+					(extra as Node3D).visible = true
 	for child in mi.get_children():
 		if child.has_meta("combat_fx"):
 			child.queue_free()

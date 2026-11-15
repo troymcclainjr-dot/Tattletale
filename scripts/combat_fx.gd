@@ -4,7 +4,8 @@ extends Node3D
 ## a muzzle flash (a paper star for a frame or two, with a quick warm light), now and then a tracer (a bright
 ## streak from the muzzle to where the round ended, gone in a few frames), spent cases thrown from the port that
 ## bounce and lie on the floor, a puff and a mark where a shot hits a wall, a spark on metal, the pieces a pane
-## breaks into and crumbs of glass, drops of blood and the pool that spreads under someone who is down.
+## breaks into and crumbs of glass, drops of blood and the pool that spreads under someone who is down. What lies
+## about (cases, glass, marks) takes the place's light, as everything else does; a flash or a tracer glows.
 ##
 ## What falls lands on whatever is really under it where it comes down (`world`, the place's combat_world.gd:
 ## a floor, a step, a porch roof, a car's bonnet, the pavement outside a window), bounces off walls, and lies
@@ -12,6 +13,8 @@ extends Node3D
 ##
 ## Capped: at most SHELLS cases, MARKS marks, SHARDS crumbs and PIECES pieces of glass lie about; past that the
 ## oldest is taken up and used again. Nothing is made while shooting but the marks' first round and the pieces.
+
+const Glass := preload("res://scripts/combat_glass.gd")
 
 const SHELLS := 40
 const MARKS := 60
@@ -77,6 +80,7 @@ var frozen := false             # a picture: nothing moves
 var world: RefCounted           # the place's combat_world.gd: what falling things land on (null: at their `ground`)
 var node_for := Callable()      # where something that has landed at a point goes (its room), so it hides with it
 var _mat: StandardMaterial3D
+var _shaded: StandardMaterial3D # what lies about (cases, glass, marks) takes the place's light, as everything else does
 var _meshes := {}               # kind: Array of meshes (a few of each, told apart by rng)
 var _bits := {}                 # kind: Array of Bit, at most CAPS[kind]
 var _next := {}                 # kind: which Bit to take when all are in use
@@ -93,6 +97,11 @@ func _init() -> void:
 	_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_mat.vertex_color_use_as_albedo = true
 	_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	_shaded = StandardMaterial3D.new()
+	_shaded.vertex_color_use_as_albedo = true
+	_shaded.cull_mode = BaseMaterial3D.CULL_DISABLED
+	_shaded.roughness = 1.0
+	_shaded.metallic_specular = 0.0
 	for kind: int in CAPS:
 		_bits[kind] = []
 		_next[kind] = 0
@@ -123,12 +132,14 @@ func _init() -> void:
 func _begin() -> SurfaceTool:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	st.set_normal(Vector3(0.0, 0.0, 1.0))
 	return st
 
 
-func _end(st: SurfaceTool) -> ArrayMesh:
+## `shaded`: lit by the place's lights (what lies about) rather than glowing (a flash, a tracer).
+func _end(st: SurfaceTool, shaded := false) -> ArrayMesh:
 	var mesh := st.commit()
-	mesh.surface_set_material(0, _mat)
+	mesh.surface_set_material(0, _shaded if shaded else _mat)
 	return mesh
 
 
@@ -136,9 +147,19 @@ func _end(st: SurfaceTool) -> ArrayMesh:
 func _fan(st: SurfaceTool, ring: PackedVector2Array, color: Color, z: float, at := Vector2.ZERO) -> void:
 	st.set_color(color)
 	for i in ring.size():
-		st.add_vertex(Vector3(at.x, at.y, z))
-		st.add_vertex(Vector3(ring[i].x, ring[i].y, z))
-		st.add_vertex(Vector3(ring[(i + 1) % ring.size()].x, ring[(i + 1) % ring.size()].y, z))
+		_tri(st, at, ring[i], ring[(i + 1) % ring.size()], z)
+
+
+## A triangle in layer z, facing +z (`face` 1) or -z (-1): wound as a front face from that side, so it is lit
+## from that side.
+func _tri(st: SurfaceTool, a: Vector2, b: Vector2, c: Vector2, z: float, face := 1.0) -> void:
+	if ((b - a).cross(c - a) > 0.0) == (face > 0.0):      # seen from its face a front face winds clockwise
+		var t := b
+		b = c
+		c = t
+	st.set_normal(Vector3(0.0, 0.0, face))
+	for v: Vector2 in [a, b, c]:
+		st.add_vertex(Vector3(v.x, v.y, z))
 
 
 ## The same ring pushed out by w all round: its ink.
@@ -230,7 +251,7 @@ func _shell_mesh() -> ArrayMesh:
 	_fan(st, mouth, BRASS_DARK, 0.008, Vector2(0.4, 0.0))
 	var shine := PackedVector2Array([Vector2(0.2, 0.12), Vector2(-0.38, 0.12), Vector2(-0.38, 0.05), Vector2(0.2, 0.05)])
 	_fan(st, shine, Color(1.0, 0.88, 0.55), 0.012, Vector2(-0.09, 0.085))
-	return _end(st)
+	return _end(st, true)
 
 
 func _shard_mesh(salt: int) -> ArrayMesh:
@@ -244,7 +265,7 @@ func _shard_mesh(salt: int) -> ArrayMesh:
 	var st := _begin()
 	_fan(st, _grow(ring, 0.22, mid), INK, 0.0, mid)
 	_fan(st, ring, SHARD_LOOK, 0.004, mid)
-	return _end(st)
+	return _end(st, true)
 
 
 ## A bullet hole: a dark hole in a pale chipped ring (on metal: a grey dent). Lies on its +z face.
@@ -263,7 +284,7 @@ func _mark_mesh(salt: int, metal: bool) -> ArrayMesh:
 	_fan(st, chip, Color(0.56, 0.58, 0.62) if metal else Color(0.86, 0.82, 0.74), 0.0)
 	_fan(st, _grow(hole, 0.22), INK, 0.002)
 	_fan(st, hole, Color(0.2, 0.2, 0.23) if metal else Color(0.06, 0.04, 0.05), 0.004)
-	return _end(st)
+	return _end(st, true)
 
 
 ## The pool under someone who is down: a dark red lake with a lighter middle, inked round. 1 across.
@@ -321,22 +342,18 @@ func _piece_mesh(poly: PackedVector2Array, size: float) -> ArrayMesh:
 	var st := _begin()
 	_flat(st, ink, INK, 0.0)
 	_flat(st, poly, SHARD_LOOK, 0.0015)
-	_flat(st, poly, SHARD_LOOK, -0.0015)
-	return _end(st)
+	_flat(st, poly, SHARD_LOOK, -0.0015, -1.0)
+	return _end(st, true)
 
 
-## A filled outline (any shape) in layer z.
-func _flat(st: SurfaceTool, poly: PackedVector2Array, color: Color, z: float) -> void:
+## A filled outline (any shape) in layer z, facing +z (`face` 1) or -z.
+func _flat(st: SurfaceTool, poly: PackedVector2Array, color: Color, z: float, face := 1.0) -> void:
 	st.set_color(color)
-	var tris := Geometry2D.triangulate_polygon(poly)
-	if tris.is_empty():
-		var mid := Vector2.ZERO
-		for p: Vector2 in poly:
-			mid += p
-		_fan(st, poly, color, z, mid / float(maxi(poly.size(), 1)))
-		return
-	for i in tris:
-		st.add_vertex(Vector3(poly[i].x, poly[i].y, z))
+	for part: Array in Glass.triangles(poly):
+		var outline: PackedVector2Array = part[0]
+		var tris: PackedInt32Array = part[1]
+		for t in range(0, tris.size(), 3):
+			_tri(st, outline[tris[t]], outline[tris[t + 1]], outline[tris[t + 2]], z, face)
 
 
 static func _area2(poly: PackedVector2Array) -> float:
@@ -383,7 +400,10 @@ func _take(kind: int, parent: Node3D) -> Bit:
 
 ## Pointed away from us the gun is out of sight in front of him (paper_actor.gd HOLDS "elbows"), so the flash is
 ## this many times the size: its points show round his outline, which is all that says he fired.
-const AWAY_FLASH := 2.3
+const AWAY_FLASH := 1.5
+## Pointed at us the flash is seen end-on, round: this many times the size, so it is a burst at the muzzle and
+## not a star over his chest and face.
+const TOWARD_FLASH := 0.6
 
 
 ## The flash at the muzzle. `gun` is paper_actor.gd's gun_points(); `length` how long the flash is, metres.
@@ -403,7 +423,7 @@ func flash(gun: Dictionary, length: float, parent: Node3D) -> void:
 	else:
 		bit.node.mesh = (_meshes[FLASH + 100] as Array)[_rng.randi() % 2]
 		bit.ang = _rng.randf() * TAU
-		length *= 1.0 if art == "toward" else AWAY_FLASH
+		length *= TOWARD_FLASH if art == "toward" else AWAY_FLASH
 		# Pointed at the camera it is in front of everything; pointed away, behind him: a glow round his outline.
 		at += to_eye * (0.1 if art == "toward" else -0.22)
 	bit.pos = at
@@ -436,7 +456,7 @@ func impact(at: Vector3, normal: Vector3, on: MeshInstance3D, metal: bool, paren
 		mark.node.mesh = (_meshes[MARK + 100 if metal else MARK] as Array)[_rng.randi() % (2 if metal else 3)]
 		var z := normal.normalized()
 		var x := z.cross(Vector3.UP if absf(z.y) < 0.9 else Vector3.RIGHT).normalized().rotated(z, _rng.randf() * TAU)
-		var s := 0.018 if metal else 0.022
+		var s := 0.024 if metal else 0.03
 		mark.node.global_transform = Transform3D(Basis(x * s, z.cross(x) * s, z), at + z * 0.003)     # its layers stay mm apart
 		mark.life = 99999.0
 		mark.resting = true
@@ -674,6 +694,16 @@ func lying(kind: int) -> Array:
 	for bit: Bit in _bits[kind]:
 		if bit.alive and bit.resting:
 			out.append(bit.pos)
+	return out
+
+
+## Each of a kind still in the air (for the checks): where it is, how it is going, how long it has been falling,
+## how often it has tipped off something.
+func falling(kind: int) -> Array:
+	var out: Array = []
+	for bit: Bit in _bits[kind]:
+		if bit.alive and not bit.resting:
+			out.append([bit.pos, bit.vel, bit.t, bit.tips])
 	return out
 
 
