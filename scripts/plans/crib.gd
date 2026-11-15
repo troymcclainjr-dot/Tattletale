@@ -241,6 +241,7 @@ static func _upstairs(p: Node3D, h1: int, h2: int, h3: int) -> void:
 	p.use_point(h1, "SLEEP", UP + 2.95, 12.4, "sleep")          # the day ends here: the next one begins (main.gd's _use_point)
 	var chest := Props.dresser(p, h1, UP + 0.36, 14.0, 90.0, 1.6)
 	Props.boombox(chest, Vector3(0, 0.9, 0))
+	p.use_point(h1, "STASH", UP + 1.1, 14.0, "stash")          # his weapons kept in the dresser (combat_foes.gd), so he can go to court without them
 	Props.desk(p, h1, UP + 3.5, 15.32, 180.0, Props.WOOD, 2, true, 1.6)
 	Props.rug(p, h1, UP + 2.2, 13.6, 2.0, 1.6, Color(0.2, 0.25, 0.4))
 	Props.poster(p, h1, UP + 0.08, 12.2, 90.0, 0.7, 0.95, Color(0.15, 0.3, 0.7), "TATTLETALE")

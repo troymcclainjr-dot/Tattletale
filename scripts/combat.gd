@@ -63,6 +63,7 @@ func _ready() -> void:
 	people.fx = fx
 	people.world_of = world_for
 	main._state.changed.connect(_on_state)
+	add_child(preload("res://scripts/combat_foes.gd").new())      # people who shoot back: combat_foes.gd (CombatFoes)
 
 
 func _exit_tree() -> void:
@@ -402,6 +403,8 @@ func step(bits: PackedStringArray) -> void:
 			fx.frozen = true
 		"combatcheck":
 			await _check()
+		"foe", "foecheck":  # combat_foes.gd's (see the top of main.gd)
+			await get_node("CombatFoes").step(bits)
 		_:
 			print("[shot] unknown step: %s" % ":".join(bits))
 
