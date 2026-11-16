@@ -592,7 +592,7 @@ func _arrest(why: String) -> void:
 func _say(text: String) -> void:
 	said = text
 	said_t = 2.2
-	print("[fight] ", text)
+	print("[shot] fight: " if main._scripted else "[fight] ", text)
 
 
 # ------------------------------------------------------------ everyone else

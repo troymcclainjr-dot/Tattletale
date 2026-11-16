@@ -579,7 +579,9 @@ func _target_of(who: String) -> Variant:
 				var look: Dictionary = w.trace(cam.global_position, c + (c - cam.global_position).normalized() * 0.05)
 				var panes: Array = look["panes"]
 				var seen: bool = (look["block"] and look["mi"] == mi) if who == "car" else (not panes.is_empty() and panes[0]["entry"].mi == mi)
-				var from: Variant = _muzzle_toward(c) if seen else null      # the round leaves the muzzle, not his chest
+				var from: Variant = null
+				if seen:      # a car's glass is judged from where the muzzle will be (a post or a pillar beside it takes the round); a window from his chest, as before
+					from = _muzzle_toward(c) if who == "car" else lead.global_position + Vector3(0.0, lead.height * 0.62, 0.0)
 				if from == null or not _reaches(w, from, c, mi, who == "car") or not people.along(from, c).is_empty():
 					continue          # not seen, or seen but not to be shot from where he stands (bars, a frame, a railing post, someone in the way)
 				var away := c.distance_to(lead.global_position)

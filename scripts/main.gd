@@ -135,6 +135,7 @@ const FaceCheck := preload("res://scripts/face_check.gd")     # --check-faces: n
 const AimSweep := preload("res://scripts/aim_sweep.gd")       # --do=aimsweep: no flicker between side-on and his back
 const Combat := preload("res://scripts/combat.gd")
 const Melee := preload("res://scripts/melee.gd")           # hands: fights, wind, who squares up (and street.gd: respect, heat, trust)
+const Dealing := preload("res://scripts/dealing.gd")       # selling hand to hand: packs on the front, customers, the pack on the ground
 const Prison := preload("res://scripts/prison_rules.gd")      # arrested, held at the jail, let out
 const Deeds := preload("res://scripts/deeds.gd")              # bars: the deeds ledger's rules (assets/data/deeds.json)
 const BarsSteps := preload("res://scripts/bars_steps.gd")     # bars: --do steps bars:... (the ledger, the bar cards)
@@ -270,6 +271,7 @@ var _shot_lineup := ""         # screenshot mode: --lineup's weapon:rig:poses
 var _shot_strip := ""          # screenshot mode: --strip's weapons:rigs:views:frames
 var _combat: Node             # shooting, and the health, cash and rounds in the bottom-left corner (combat.gd)
 var _melee: Node              # hands (melee.gd), and the top-right corner: his standing (street_hud.gd)
+var _dealing: Node            # selling on the street (dealing.gd)
 var _conductor: Node          # the beat clock: the beat playing and where in it the music is (conductor.gd)
 
 
@@ -364,6 +366,8 @@ func _ready() -> void:
 	add_child(_combat)
 	_melee = Melee.new()
 	add_child(_melee)
+	_dealing = Dealing.new()
+	add_child(_dealing)
 	_conductor = Conductor.new()
 	add_child(_conductor)
 	_conductor.set_volume(float(_read(SETTINGS).get("music", _conductor.volume)))
@@ -830,6 +834,7 @@ func _teleport(to: Vector3, instant := false) -> void:
 ## He is arrested (`why` is shown): what he carries is taken off him and he is taken to booking at the
 ## county jail, in the orange jumpsuit, and held there till he is let out (prison_rules.gd).
 func _arrest(why: String) -> void:
+	_dealing.on_arrest(why)      # what is on him is taken; how much sets the charge (dealing.gd)
 	Prison.lock_up(self, why)
 
 
@@ -1673,6 +1678,8 @@ func _take_shot() -> void:
 				for i in int(float(bits[3]) * 60.0):
 					_fry.walk(_floor_dir(way), way, 1.0 / 60.0)
 				print("[shot] fry walked to %.2f, %.2f" % [_fry.position.x, _fry.position.z])
+			"deal":         # dealing.gd: deal:give, deal:front, deal:post, deal:until, deal:serve, deal:down, deal:state ...
+				await _dealing.step(bits)
 			"fight":        # melee.gd: fight:guard, fight:at:WHO, fight:jab, fight:hook, fight:slip, fight:auto, fight:state ...
 				await _melee.step(bits)
 			"arrest":       # arrest:why: _arrest (to booking at the jail, in the jumpsuit, held: prison_rules.gd)

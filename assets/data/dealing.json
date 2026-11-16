@@ -1,0 +1,26 @@
+{
+	"about": "Selling on the street (scripts/dealing.gd): the first rung, hand to hand. `products`: what a unit is called, what one sells for, what the street counts a sale as (assets/data/standing.json), how keen people are (`want`, a weight), and `legal` for his own tapes. `front`: who hands him a pack on credit (the person at `place` whose conversation file is `talk`), what is in each pack and what he owes for it, due after `days`; the next pack in `order` is offered once the one before has been paid for. `tapes`: who dubs his tapes. `customers`: people this near (metres) who are doing nothing else walk up, one at a time, `every` so many seconds; one waits `patience` seconds to be served; someone who has bought before asks to pay tomorrow that share of the time (`credit`). `never`: who never buys product (anyone but an officer buys a tape). `charges`: carrying more than `intent` units when he is arrested is the heavier charge. `decline`: bought this many units of ready or dope, a neighbour looks it. Words on screen are placeholders; every number is a placeholder, written on 2026-11-15, not the owners'. No real brand, crew or person is named.",
+	"products": {
+		"tapes": {"name": "TAPES", "unit": "TAPE", "price": 5, "event": "tape_sold", "legal": true, "want": 0.5},
+		"weed": {"name": "TREES", "unit": "BAG", "price": 10, "event": "sale", "want": 1.0},
+		"ready": {"name": "READY", "unit": "VIAL", "price": 10, "event": "sale_ready", "want": 0.8},
+		"dope": {"name": "DOPE", "unit": "BAG", "price": 10, "event": "sale_ready", "want": 0.5},
+		"powder": {"name": "SOFT", "unit": "GRAM", "price": 60, "event": "sale", "want": 0.2}
+	},
+	"front": {
+		"place": "alley",
+		"talk": "talk_alley_stash.json",
+		"days": 1,
+		"order": ["weed", "ready", "dope"],
+		"packs": {
+			"weed": {"units": 20, "owe": 120},
+			"ready": {"units": 30, "owe": 180},
+			"dope": {"units": 30, "owe": 200}
+		}
+	},
+	"tapes": {"place": "studio", "talk": "talk_fry.json", "units": 10, "cost": 10},
+	"customers": {"reach": 16.0, "every": [3.0, 7.0], "patience": 9.0, "credit": 0.2, "beside": 1.1, "step_off": 3.0},
+	"never": ["cop", "bea", "doc"],
+	"charges": {"intent": 5},
+	"decline": {"using": 3, "strung_out": 8}
+}

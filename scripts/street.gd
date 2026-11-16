@@ -108,7 +108,7 @@ static func note(main: Node, what: String, at: Variant = null, but: Array = []) 
 			changes[kind] = by
 			add(main._state, kind, by)
 	last = {"what": what, "saw": int(saw["people"]), "police": int(saw["police"]), "names": saw["names"], "changes": changes}
-	print("[street] %s: seen by %d and %d police%s; %s; now respect %d, heat %d, trust %d" % [what, saw["people"], saw["police"],
+	print(("[shot] street: " if main._scripted else "[street] ") + "%s: seen by %d and %d police%s; %s; now respect %d, heat %d, trust %d" % [what, saw["people"], saw["police"],
 		"" if (saw["names"] as Array).is_empty() else " (%s)" % ", ".join(saw["names"]),
 		"nothing changed" if changes.is_empty() else ", ".join(changes.keys().map(func(k: String) -> String: return "%s %+d" % [k, changes[k]])),
 		value(main._state, "respect"), value(main._state, "heat"), value(main._state, "trust")])
