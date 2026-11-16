@@ -13,7 +13,7 @@ You need **Godot 4.7 or newer**, the standard build (not .NET), from https://god
 Get this folder (on GitHub: Code, then Download ZIP, and unzip it; or `git clone`), then either:
 
 - **In Godot:** open Godot, choose **Import**, pick `project.godot` in this folder, wait for the art to finish importing (well under a minute), and press **F5**.
-- **On Windows:** double-click **PLAY.cmd**. It finds Godot if `godot` is on the PATH, if you put the Godot .exe in this folder, or if you write its full path in a file named `godot_path.txt` in this folder. It brings in the art first, then opens the game. The game opens maximized.
+- **On Windows:** unzip the folder first (a ZIP opened by double-clicking is not unzipped), then double-click **PLAY.cmd**. It finds Godot if `godot` is on the PATH, if you put the Godot .exe in this folder, or if you write its full path in a file named `godot_path.txt` in this folder. If there is no Godot, or the one on the PATH is older than 4.7, it offers to download Godot 4.7.2 (about 86 MB, from Godot's official GitHub page) into this folder; nothing is installed. It brings in the art first (a minute or two the first time, with nothing on screen), then opens the game. The game opens maximized.
 - **From a terminal, any system:** in this folder run `godot --headless --path . --import`, then `godot --path .`.
 
 The art must be imported once before the game can show it. Opening the project in the editor does that, and so do PLAY.cmd and the `--import` command.

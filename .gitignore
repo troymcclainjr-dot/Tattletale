@@ -11,3 +11,5 @@ __pycache__/
 .DS_Store
 Thumbs.db
 desktop.ini
+# Fetched by PLAY.cmd when there is no Godot, and removed once unpacked
+/godot_download.zip
