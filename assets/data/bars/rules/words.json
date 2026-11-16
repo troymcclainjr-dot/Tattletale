@@ -1,0 +1,46 @@
+{
+	"about": "The lists a bar card's slot draws from (its \"slot\": {\"line\", \"from\"}). Each entry: what is sung (\"text\"), its syllables with their stresses (0 weak, 1 medium, 2 strong; the last strong one is pinned where the card's own word had its strong one), and what gives it to him: a deed done (\"deed\") or a weapon he owns or keeps in his stash (\"weapon\"). A card's line ends in one of its list's entries: that one is its default. PLACEHOLDER words, like the cards.",
+	"lists": {
+		"places": {"about": "places he has been", "entries": [
+			{"id": "studio", "text": "the back room", "syl": [["the", 0], ["back", 1], ["room", 2]], "deed": "visited_studio"},
+			{"id": "police", "text": "the precinct", "syl": [["the", 0], ["pre", 2], ["cinct", 0]], "deed": "visited_police"},
+			{"id": "court", "text": "the courthouse", "syl": [["the", 0], ["court", 2], ["house", 1]], "deed": "visited_court"},
+			{"id": "crib", "text": "the crib", "syl": [["the", 0], ["crib", 2]], "deed": "visited_crib"},
+			{"id": "store", "text": "the corner store", "syl": [["the", 0], ["cor", 1], ["ner", 0], ["store", 2]], "deed": "visited_store"},
+			{"id": "liquor", "text": "the liquor store", "syl": [["the", 0], ["li", 1], ["quor", 0], ["store", 2]], "deed": "visited_liquor"},
+			{"id": "fry", "text": "Fry's place", "syl": [["Fry's", 1], ["place", 2]], "deed": "visited_fry"},
+			{"id": "hospital", "text": "the E.R.", "syl": [["the", 0], ["E", 1], ["R", 2]], "deed": "visited_hospital"},
+			{"id": "park", "text": "the park", "syl": [["the", 0], ["park", 2]], "deed": "visited_park"},
+			{"id": "park2", "text": "the square", "syl": [["the", 0], ["square", 2]], "deed": "visited_park2"},
+			{"id": "street", "text": "the block", "syl": [["the", 0], ["block", 2]], "deed": "visited_street"},
+			{"id": "bea", "text": "Miss Bea's", "syl": [["Miss", 1], ["Bea's", 2]], "deed": "visited_bea"},
+			{"id": "clothes", "text": "the clothing store", "syl": [["the", 0], ["clo", 1], ["thing", 0], ["store", 2]], "deed": "visited_clothes"},
+			{"id": "club", "text": "the Lowdown", "syl": [["the", 0], ["Low", 2], ["down", 1]], "deed": "visited_club"},
+			{"id": "alley", "text": "the back lot", "syl": [["the", 0], ["back", 1], ["lot", 2]], "deed": "visited_alley"},
+			{"id": "gunstore", "text": "the gun store", "syl": [["the", 0], ["gun", 1], ["store", 2]], "deed": "visited_gunstore"},
+			{"id": "prison", "text": "the county jail", "syl": [["the", 0], ["coun", 1], ["ty", 0], ["jail", 2]], "deed": "visited_prison"},
+			{"id": "backs", "text": "the backs", "syl": [["the", 0], ["backs", 2]], "deed": "visited_backs"},
+			{"id": "service", "text": "the strip", "syl": [["the", 0], ["strip", 2]], "deed": "visited_service"}
+		]},
+		"people": {"about": "people he has talked to (and Miss Bea, whose house he has been to)", "entries": [
+			{"id": "fry", "text": "Large Fry", "syl": [["Large", 1], ["Fry", 2]], "deed": "met_fry"},
+			{"id": "tre", "text": "Tre", "syl": [["Tre", 2]], "deed": "met_tre"},
+			{"id": "lil", "text": "Lil", "syl": [["Lil", 2]], "deed": "met_lil"},
+			{"id": "ronnie", "text": "Ronnie", "syl": [["Ron", 2], ["nie", 0]], "deed": "met_ronnie"},
+			{"id": "kesha", "text": "Kesha", "syl": [["Ke", 2], ["sha", 0]], "deed": "met_kesha"},
+			{"id": "nia", "text": "Nia", "syl": [["Ni", 2], ["a", 0]], "deed": "met_nia"},
+			{"id": "dee", "text": "Big Dee", "syl": [["Big", 1], ["Dee", 2]], "deed": "met_dee"},
+			{"id": "rell", "text": "Rell", "syl": [["Rell", 2]], "deed": "met_rell"},
+			{"id": "vic", "text": "Vic", "syl": [["Vic", 2]], "deed": "met_vic"},
+			{"id": "cop", "text": "the C.O.", "syl": [["the", 0], ["C", 1], ["O", 2]], "deed": "met_cop"},
+			{"id": "bea", "text": "Miss Bea", "syl": [["Miss", 1], ["Bea", 2]], "deed": "visited_bea"}
+		]},
+		"weapons": {"about": "weapons he owns, or keeps in the stash at home", "entries": [
+			{"id": "nine", "text": "the nine", "syl": [["the", 0], ["nine", 2]], "weapon": "pistol"},
+			{"id": "strap", "text": "the strap", "syl": [["the", 0], ["strap", 2]], "weapon": "pistol"},
+			{"id": "spray", "text": "the spray", "syl": [["the", 0], ["spray", 2]], "weapon": "uzi"},
+			{"id": "chopper", "text": "the chopper", "syl": [["the", 0], ["chop", 2], ["per", 0]], "weapon": "ak"},
+			{"id": "ak", "text": "the AK", "syl": [["the", 0], ["A", 1], ["K", 2]], "weapon": "ak"}
+		]}
+	}
+}

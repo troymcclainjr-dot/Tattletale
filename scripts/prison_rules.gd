@@ -34,6 +34,7 @@ static func lock_up(main: Node, why: String) -> void:
 	main._state.disarm()
 	var flags: Dictionary = main._state.flags
 	flags["arrests"] = int(flags.get("arrests", 0)) + 1
+	main._state.deed("arrested")      # bars: a deed (deeds.json)
 	if not held(main):          # (arrested again inside, he keeps what he came in wearing)
 		flags["kept_look"] = (main._look as Dictionary).duplicate(true)
 		flags["kept_picks"] = (main._picks as Dictionary).duplicate(true)
@@ -97,6 +98,7 @@ static func use(main: Node, id: String) -> void:
 		main._day += 1
 		main._dress_for_day()
 		print("[use] day %d" % main._day)
+		if held(main): main._state.deed("jail_night")      # bars: a deed (deeds.json)
 		release(main))
 
 

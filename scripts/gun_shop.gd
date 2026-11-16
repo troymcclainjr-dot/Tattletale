@@ -116,8 +116,10 @@ func buy(id: String) -> String:
 		var weapon := String(row["weapon"])
 		if id.begins_with("rounds:"):
 			state.spare[weapon] = int(state.spare.get(weapon, 0)) + int(ROUNDS[weapon]["box"])
+			state.deed("rounds_bought")      # bars: a deed (deeds.json)
 			state.touch()
 			return "%d %s BOUGHT" % [int(ROUNDS[weapon]["box"]), row["name"]]
+		state.deed("weapon_bought")      # bars: a deed (deeds.json)
 		state.own(weapon)
 		return "%s BOUGHT. Q TO HOLD IT" % row["name"]
 	return "NOT FOR SALE"
@@ -175,6 +177,7 @@ func _on_shot(shot: Dictionary) -> void:
 		Gun.mark_hole(lane["image"], px)
 		(lane["tex"] as ImageTexture).update(lane["image"])
 		var points := Gun.score_at(px)
+		if points == 10: main._state.deed("bullseye")      # bars: a deed (deeds.json)
 		lane["hits"] = int(lane["hits"]) + 1
 		lane["score"] = int(lane["score"]) + points
 		var said := "BULL'S-EYE" if points == 10 else ("%d POINTS" % points if points > 0 else "ON THE PAPER")

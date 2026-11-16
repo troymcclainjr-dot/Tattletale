@@ -1,0 +1,22 @@
+{
+	"about": "The rhyme families a bar card may name (its \"rhyme\"). A line ends in a family when its last word (its letters, lower case: E.R. is er) is in \"words\", or ends in one of \"endings\" and is not in \"not\". English spelling is no guide to sound, so \"not\" holds the words that end right and sound wrong. Checked by tools/validate_bars.py and scripts/bars.gd.",
+	"families": {
+		"ight": {"endings": ["ight", "ite", "yte"], "words": [], "not": ["granite", "favorite", "favourite", "opposite", "definite", "infinite"]},
+		"ock": {"endings": ["ock"], "words": [], "not": []},
+		"ay": {"endings": ["ay", "eigh"], "words": ["they", "hey", "grey", "obey", "prey", "ak", "dj", "tre"], "not": ["always", "sunday", "monday", "friday", "holiday"]},
+		"ee": {"endings": ["ee"], "words": ["me", "be", "he", "she", "we", "key", "plea", "sea", "tea", "mc", "cd", "tv", "bea", "g", "p", "t", "v"], "not": ["committee", "coffee", "toffee"]},
+		"oh": {"endings": ["ow", "oe", "o", "ough"], "words": [], "not": ["now", "how", "cow", "wow", "allow", "brow", "vow", "plow", "chow", "do", "to", "two", "who", "into", "undo", "through", "tough", "rough", "enough", "cough", "bough", "shoe", "canoe"]},
+		"ain": {"endings": ["ain", "ane", "eign"], "words": ["vein", "rein", "reins", "veins"],"not": ["again", "captain", "mountain", "certain", "curtain", "bargain", "villain", "fountain"]},
+		"ound": {"endings": ["ound"], "words": [], "not": ["wound"]},
+		"ore": {"endings": ["ore", "oor", "our", "oar"], "words": ["war", "for", "or", "nor"], "not": ["hour", "our", "flour", "sour", "devour", "poor"]},
+		"eat": {"endings": ["eat", "eet", "ete", "eit"], "words": [], "not": ["great", "sweat", "threat", "athlete"]},
+		"ack": {"endings": ["ack"], "words": [], "not": []},
+		"ame": {"endings": ["ame", "aim", "aime"], "words": [], "not": ["sesame"]},
+		"ash": {"endings": ["ash"], "words": [], "not": ["wash", "squash"]},
+		"old": {"endings": ["old", "olled", "oled", "owled"], "words": [], "not": []},
+		"eal": {"endings": ["eal", "eel", "ele"], "words": [], "not": ["ideal"]},
+		"ail": {"endings": ["ail", "ale"], "words": [], "not": ["female", "finale", "tamale"]},
+		"un": {"endings": ["un"], "words": ["one", "done", "none", "someone", "everyone", "anyone", "son", "won", "ton", "undone"], "not": []},
+		"een": {"endings": ["een", "ean", "ene"], "words": ["machine", "routine", "magazine", "gasoline", "limousine"], "not": ["ocean"]}
+	}
+}

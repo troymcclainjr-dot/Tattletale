@@ -29,6 +29,7 @@ extends Node
 const DATA := "res://assets/data/foes.json"
 const Glass := preload("res://scripts/combat_glass.gd")
 const FONT := preload("res://assets/fonts/Bungee-Regular.ttf")
+const Deeds := preload("res://scripts/deeds.gd")      # bars: the deeds ledger's rules (assets/data/deeds.json)
 const RANGE := 60.0             # metres a shot carries (combat.gd's RANGE)
 const CONE := 0.7               # radians: drawn only from the front, he walks no further than this from straight at the camera (combat_people.gd's FLEE_CONE)
 const TOWARD := 0.25            # the lead within this much (across against towards) of straight at the camera from a foe: pointed at the camera (else side-on, which reads better)
@@ -394,6 +395,7 @@ func _engage(f: Foe, why: String, shout := true) -> void:
 	elif a.face:
 		a.face.set_expression(FACES[f.kind])
 	_tally["draws"] += 1
+	Deeds.drawn_on()      # bars: walked_away is counted if he leaves without firing (deeds.gd)
 	_note("%s draws a %s (%s)" % [f.called, f.weapon, why])
 
 
@@ -620,6 +622,7 @@ func _carries() -> bool:
 func _on_tripped(red: bool) -> void:
 	var owned: Array = main._state.owned
 	_tally["red" if red else "green"] += 1
+	if not red: Deeds.once(main, "court_clean")      # bars: a deed (deeds.json): once a visit
 	_note("detector: %s (he has %s)" % ["RED" if red else "green", ", ".join(owned) if not owned.is_empty() else "nothing on him"])
 	if red and _awake() and _search.is_empty() and not _down and main._actor.weapon == "":
 		_start_search()
@@ -757,6 +760,7 @@ func _pat(f: Foe) -> void:
 	(f.brain as FoeBrain).goal = Vector2.INF
 	s["state"] = "pat"
 	s["t"] = 0.0
+	main._state.deed("searched")      # bars: a deed (deeds.json)
 	_face(f, main._actor.position)
 	var owned: Array = main._state.owned
 	if not owned.is_empty():          # what he found, in his hand (carried, not pointed)
@@ -1014,6 +1018,7 @@ func _fire(f: Foe, gp: Dictionary, sure := false) -> String:
 		fx.tracer(muzzle, at, room)
 	a.recoil = 1.0
 	f.shots += 1
+	if f.shots == 1: main._state.deed("shot_at_by_police" if f.kind == "police" else "shot_at_by_gang")      # bars: a deed (deeds.json)
 	_tally["police_shots" if f.kind == "police" else "gang_shots"] += 1
 	match what:
 		"him":
@@ -1079,6 +1084,7 @@ func _hit_him(f: Foe, at: Vector3, dir: Vector3) -> void:
 	_note("%s hits him: health %d -> %d" % [f.called, before, maxi(before - damage, 0)])
 	if before <= 0:
 		return
+	main._state.deed("wounded")      # bars: a deed (deeds.json)
 	combat.hurt(damage)
 	if int(main._state.health) <= 0 or main._building != _building:
 		_note("he is down")
@@ -1182,6 +1188,7 @@ func _on_stash(_id: String = "", _by: Node3D = null) -> void:
 			if not w in kept:
 				kept.append(w)
 		state.flags["stash"] = kept
+		state.deed("guns_stashed")      # bars: a deed (deeds.json)
 		main._actor.weapon = ""
 		main._actor.aiming = false
 		main._aim_off()
