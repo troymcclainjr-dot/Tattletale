@@ -55,6 +55,7 @@ static func result(data: Dictionary, picks: Dictionary, take: Dictionary, spent:
 	var pay: Dictionary = data["payout"]
 	var prod := production(data["rows"], picks)
 	var swagger := clampi(roundi(float(take.get("swagger", 0))), 0, 100)
+	swagger = preload("res://scripts/song_video.gd").cap(swagger)      # notebook: a written song's total caps its video's swagger (song_video.gd)
 	var polish := clampf(float(take.get("polish", 100)), 0.0, 100.0)
 	var chaos := clampi(roundi(float(take.get("chaos", 0))), 0, 100)
 	var looks := roundi(minf(float(prod), float(swagger)) * polish / 100.0)

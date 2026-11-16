@@ -91,6 +91,8 @@ extends Node3D
 ##   bars_steps.gd's, the deeds ledger and the bar cards: bars:ledger, bars:deed:name[:n], bars:unlocked, bars:follows:card,
 ##   bars:slot:card, bars:card:card, bars:check, bars:portal:label (E at the stairs, ladder or trapdoor so labelled),
 ##   bars:mark, bars:since, bars:expect:name=n+name=n, bars:save, bars:same.
+##   song_steps.gd's (notebook), a song written and sung: song:new, song:hook:name, song:fill:seed, song:save, song:sheet,
+##   song:score, song:open, song:mic, song:auto:skill, song:until:bar, song:end, song:steps, song:timing, song:render ...
 
 const Building := preload("res://scripts/building.gd")
 const Place := preload("res://scripts/place.gd")
@@ -151,6 +153,8 @@ const WEAPONS := ["", "pistol", "uzi", "ak"]      # Q goes round these
 const Crosshair := preload("res://scripts/crosshair.gd")
 const PlayerState := preload("res://scripts/player_state.gd")
 const VideoShoot := preload("res://scripts/video_shoot.gd")
+const Songs := preload("res://scripts/songs.gd")              # notebook: the notebook at the studio and a written song at the mic
+const SongSteps := preload("res://scripts/song_steps.gd")     # notebook: --do steps song:... (song_steps.gd)
 const AIM_SIDE := 0.96      # radians: the cross this far above or below level (55 degrees) is still "to the side"
 const AIM_AWAY := true      # turn his back to aim at a cross well above him (paper_actor.gd HOLDS back_point: his elbows out at his
                             # sides, the gun unseen in front of him); false: he stays side-on and tips it up as far as AIM_TIP
@@ -265,6 +269,7 @@ var _picks := {}               # which colour of WARDROBE each of those is: piec
 var _day := 0                  # days since the game began; he sleeps in his own bed to end one
 var _state := PlayerState.new()     # his cash, health, rounds, songs and videos (player_state.gd): kept in the save
 var _video: Node               # the music video: the camcorder in the studio, the shoot, the premiere (video_shoot.gd)
+var _songs: Node               # notebook: the notebook (E at the pad) and a written song sung at the mic (songs.gd)
 var _shot_lineup := ""         # screenshot mode: --lineup's weapon:rig:poses
 var _shot_strip := ""          # screenshot mode: --strip's weapons:rigs:views:frames
 var _combat: Node             # shooting, and the health, cash and rounds in the bottom-left corner (combat.gd)
@@ -410,6 +415,9 @@ func _ready() -> void:
 	_video = VideoShoot.new()
 	add_child(_video)
 	_video.setup(self)
+	_songs = Songs.new()      # notebook: the notebook and the written song at the mic
+	add_child(_songs)
+	_songs.setup(self)
 
 	var curtain := CanvasLayer.new()
 	curtain.layer = 20
@@ -1261,7 +1269,8 @@ func _start_perform(spot: Vector3) -> void:
 			_actor.face.set_expression(MOODS[0])
 			_actor.face.talking = true
 		_building.show_room(PERFORM_ROOM)
-		_conductor.booth(true)
+		if not _songs.take_mic():      # notebook: a written song waiting is sung instead (songs.gd)
+			_conductor.booth(true)
 		_perform_cam(0.0)
 	if _scripted:
 		begin.call()
@@ -1308,7 +1317,7 @@ func _perform_cam(delta: float) -> void:
 	_camera.fov = 42.0
 	_camera.look_at_from_position(_cam_at, _cam_look)
 	_face_cards()
-	if _actor.face:
+	if _actor.face and not _songs.face_is_mine():      # notebook: while a written song is sung, its take sets his face
 		var mood: String = MOODS[int(_perform_time / (8.0 * _conductor.spb)) % MOODS.size()]
 		if _actor.face.expression != mood:
 			_actor.face.set_expression(mood)
@@ -1683,6 +1692,8 @@ func _take_shot() -> void:
 				await PeopleSteps.step(self, bits)
 			"bars":         # bars_steps.gd: the deeds ledger and the bar cards (bars:ledger, bars:deed:name ...)
 				await BarsSteps.step(self, bits)
+			"song":         # notebook: song_steps.gd: write a song and sing it at the mic (song:new, song:fill, song:mic ...)
+				await SongSteps.step(self, bits)
 			_:              # fire, reload, hurt, shoot, aimon, hud, freeze, combatcheck
 				await _combat.step(bits)
 	if _shot_talk > 0.0 and _actor.face:

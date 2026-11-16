@@ -247,6 +247,9 @@ func _process(delta: float) -> void:
 ## worth of beats it is a song recorded.
 func _watch_the_mic() -> void:
 	var at_mic: bool = main._performing and main._actor.performing
+	if at_mic and main._songs and main._songs.at_mic():      # notebook: a written song is being sung (song_take.gd has its own REC and records it)
+		_rec_box.visible = false
+		return
 	_rec_box.visible = at_mic
 	if not at_mic:
 		_counted = false
@@ -265,7 +268,7 @@ func _watch_the_mic() -> void:
 
 
 func record_song() -> void:
-	main._state.record_song(String(main._conductor.id))
+	main._state.record_song(String(main._conductor.id), main._songs.freestyle_sheet() if main._songs else {})      # notebook: a freestyle's sheet (songs.gd)
 	toast(_word("recorded").replace("{title}", String(data["song"].get("title", "TRACK {n}")).replace("{n}", str(main._state.songs))))
 	main._save_game()
 

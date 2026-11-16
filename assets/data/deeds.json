@@ -37,6 +37,8 @@
 		"video_went_big": {"family": "music", "counted": "each video that premiered at four stars or more", "where": "player_state.gd add_video() -> deeds.gd video()"},
 		"mishap_handled": {"family": "music", "counted": "each mishap on a shoot he dealt with in time", "where": "player_state.gd add_video() -> deeds.gd video()"},
 		"mishap_missed": {"family": "music", "counted": "each mishap on a shoot he let go wrong", "where": "player_state.gd add_video() -> deeds.gd video()"},
+		"song_written": {"family": "music", "counted": "each song written in the notebook and saved (SAVE THE SONG)", "where": "song_notebook.gd save()"},
+		"cap_used": {"family": "music", "counted": "each cap card (one he has not earned) in a song recorded at the booth mic", "where": "song_take.gd _finish()"},
 		"talked": {"family": "everyday", "counted": "each conversation he starts", "where": "main.gd _start_talk() -> deeds.gd talked()"},
 		"roof": {"family": "everyday", "counted": "each trip up onto a roof (Large Fry's, the studio's)", "where": "main.gd _teleport() -> deeds.gd landed()"},
 		"cellar": {"family": "everyday", "counted": "each trip down into the corner store's cellar", "where": "main.gd _teleport() -> deeds.gd landed()"},
