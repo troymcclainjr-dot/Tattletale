@@ -304,7 +304,7 @@ static func describe(sheet: Dictionary) -> PackedStringArray:
 		out.append("an empty sheet (a song from before the notebook)")
 		return out
 	if bool(sheet.get("freestyle", false)):
-		out.append("a freestyle on %s, day %d; score %s" % [String(sheet.get("beat", "")), int(sheet.get("day", 0)), _score_line(sheet.get("score", {}))])
+		out.append("a freestyle on %s, day %d; score %s" % [String(sheet.get("beat", "")) if String(sheet.get("beat", "")) != "" else "no beat", int(sheet.get("day", 0)), _score_line(sheet.get("score", {}))])
 		return out
 	out.append("'%s' on %s, day %d, %s%s; %d of 10 cards; score %s" % [String(sheet.get("title", "")), String(sheet.get("beat", "")), int(sheet.get("day", 0)),
 		"written" if bool(sheet.get("written", false)) else "a draft", (", recorded day %d" % int(sheet["recorded"])) if sheet.has("recorded") else "",

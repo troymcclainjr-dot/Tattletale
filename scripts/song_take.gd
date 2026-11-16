@@ -66,6 +66,7 @@ var _panel: PanelContainer
 var _score_rows := {}         # part: [bar back, bar, value]
 var _score_title: Label
 var _total: Label
+var _caps: Label
 var _helped: Label
 var _helped_why: Label
 var _hurt: Label
@@ -198,8 +199,14 @@ func setup(main_node: Node) -> void:
 		value.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		line.add_child(value)
 		_score_rows[part] = [meter, bar, value]
+	var total_line := HBoxContainer.new()
+	total_line.add_theme_constant_override("separation", 30)
+	pc.add_child(total_line)
 	_total = _label(40, TICKET)
-	pc.add_child(_total)
+	total_line.add_child(_total)
+	_caps = _label(18, PAPER)          # what the total means: how far its music video's swagger can go (song_video.gd)
+	_caps.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	total_line.add_child(_caps)
 	_helped = _label(18, PAPER)
 	_helped.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	pc.add_child(_helped)
@@ -243,6 +250,7 @@ func start(song: Dictionary) -> bool:
 	start_bar = count_bar + 1
 	if not c.play(beat, count_bar):
 		return false
+	_lyrics.lead = float(c.spb)        # each big word's mark fills over the beat before it is due
 	_rng.seed = seed_value
 	_quarter = -1
 	plan = []
@@ -521,6 +529,7 @@ func _show_score() -> void:
 		(row[1] as ColorRect).color = SHORT if v < int(Score.data("score").get("levels", {}).get("low", 40)) else TICKET
 		(row[1] as ColorRect).set_meta("value", v)
 	_total.text = "%s  %d" % [_w("total"), int(result.get("total", 0))]
+	_caps.text = _w("caps").replace("{cap}", str(mini(100, preload("res://scripts/song_video.gd").cap_of(int(result.get("total", 0))))))
 	var why: Dictionary = _words.get("why", {})
 	var helped: Dictionary = result.get("helped", {})
 	var hurt: Dictionary = result.get("hurt", {})

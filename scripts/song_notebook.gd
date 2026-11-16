@@ -54,6 +54,10 @@ var _title: Label
 var _sub: Label
 var _waiting: Label
 var _rows_box: VBoxContainer
+var _rows_scroll: ScrollContainer      # the sheet scrolls when the window is short
+var _rows_wait := 0                    # frames until the picked row is brought into view
+var _prev_rhyme := ""                  # the slot's bar before: its rhyme family (a card that rhymes on says so)
+var _near_themes: Array = []           # ...its themes and the hook's (a card that shares one says so)
 var _row_panels: Array = []
 var _list_head: Label
 var _list_sub: Label
@@ -123,10 +127,14 @@ func setup(main_node: Node) -> void:
 	body.add_theme_constant_override("separation", 20)
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	column.add_child(body)
+	_rows_scroll = ScrollContainer.new()
+	_rows_scroll.custom_minimum_size = Vector2(772, 0)
+	_rows_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	body.add_child(_rows_scroll)
 	_rows_box = VBoxContainer.new()
-	_rows_box.custom_minimum_size = Vector2(760, 0)
+	_rows_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_rows_box.add_theme_constant_override("separation", 5)
-	body.add_child(_rows_box)
+	_rows_scroll.add_child(_rows_box)
 	for k in ROWS.size():
 		var p := PanelContainer.new()
 		p.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -180,7 +188,7 @@ func setup(main_node: Node) -> void:
 		bar.color = TICKET
 		back.add_child(bar)
 		_meters[part] = [back, bar, value]
-	_detail = _label(15, FAINT)
+	_detail = _label(16, PAPER.darkened(0.25))
 	_detail.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_detail.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -417,12 +425,18 @@ func _build_list() -> void:
 		"card":
 			var before := _before(String(r["row"]), int(r["i"]))
 			var follows: Array = Bars.follows(before) if before != "" else []
+			_prev_rhyme = String(Bars.card(before).get("rhyme", "")) if before != "" else ""
+			_near_themes = Score.themes(before) if before != "" else []
+			for e: Variant in sheet.get("hook", []):
+				if typeof(e) == TYPE_DICTIONARY:
+					_near_themes.append_array(Score.themes(String(e.get("id", ""))))
 			var all := Sheet.verse_cards()
 			var first: Array = all.filter(func(cid: String) -> bool: return cid in follows)
 			var rest: Array = all.filter(func(cid: String) -> bool: return not cid in follows)
-			var order := func(a: String, b: String) -> bool:
-				var ra := _rank(state, a)
-				var rb := _rank(state, b)
+			var used := _used_elsewhere(String(r["row"]), int(r["i"]))
+			var order := func(a: String, b: String) -> bool:        # (a card already in another slot goes after the rest of its group)
+				var ra := _rank(state, a) + (3 if a in used else 0)
+				var rb := _rank(state, b) + (3 if b in used else 0)
 				return ra < rb if ra != rb else all.find(a) < all.find(b)
 			first.sort_custom(order)
 			rest.sort_custom(order)
@@ -444,6 +458,19 @@ func _before(r: String, i: int) -> String:
 	if i <= 0:
 		return ""
 	return String(Sheet.at(sheet, r, i - 1).get("id", ""))
+
+
+## The cards in the song's other verse slots.
+func _used_elsewhere(r: String, i: int) -> Array:
+	var out: Array = []
+	for vr: String in ["verse1", "verse2"]:
+		for n in 4:
+			if vr == r and n == i:
+				continue
+			var cid := String(Sheet.at(sheet, vr, n).get("id", ""))
+			if cid != "":
+				out.append(cid)
+	return out
 
 
 ## His own first: earned, then starter, then cap.
@@ -540,6 +567,28 @@ func _build_tiles() -> void:
 				col.add_child(_chips(String(it["id"]), String(it.get("group", ""))))
 		_list_box.add_child(tile)
 		_tiles.append(tile)
+	if String(ROWS[row]["kind"]) == "save":
+		_read_through()
+
+
+## On SAVE: the song as it will be sung (verse 1, the hook, verse 2, the hook), to read before saving. Not a list.
+func _read_through() -> void:
+	for part: String in Sheet.ORDER:
+		var head := _label(16, TICKET)
+		head.text = _w(part)
+		_list_box.add_child(head)
+		for i in int(Sheet.SIZE[part]):
+			var e := Sheet.at(sheet, part, i)
+			if e.is_empty():
+				var empty := _label(14, FAINT)
+				empty.text = _w("pick_card")
+				_list_box.add_child(empty)
+				continue
+			for l: Dictionary in e.get("lines", []):
+				var said := _label(14, PAPER)
+				said.text = String(l["text"]).to_upper()
+				said.clip_text = true
+				_list_box.add_child(said)
 
 
 ## The card as it would go in: on its slot row, with the word already in that slot; else its own word.
@@ -570,12 +619,19 @@ func _chips(cid: String, group: String) -> HFlowContainer:
 			flow.add_child(_chip("%s  %s" % [_w("earned"), deed], GREEN, PAPER))
 		"cap":
 			flow.add_child(_chip("%s  %s" % [_w("cap"), _w("needs").replace("{deed}", deed)], SHORT, PAPER))
-	if bool(c.get("true", false)):
+	if bool(c.get("true", false)) and stand == "earned":      # a true bar: a claim he lived (a cap's claim is only CAP)
 		flow.add_child(_chip(_w("true"), INK, TICKET))
-	flow.add_child(_chip("%s %s" % [_w("rhyme"), String(c.get("rhyme", "")).to_upper()], Color(0.25, 0.3, 0.45), PAPER))
+	var verse := group != ""                                  # (on a verse slot's list, said against the bar before and the hook)
+	var rhyme := String(c.get("rhyme", "")).to_upper()
+	if verse and _prev_rhyme != "" and String(c.get("rhyme", "")) == _prev_rhyme:
+		flow.add_child(_chip(_w("rhymes_on").replace("{r}", rhyme), Color(0.36, 0.45, 0.75), PAPER))
+	else:
+		flow.add_child(_chip(_w("rhyme").replace("{r}", rhyme), Color(0.25, 0.3, 0.45), PAPER))
 	var themes := Score.themes(cid)
 	if not themes.is_empty():
-		flow.add_child(_chip(" ".join(PackedStringArray(themes.map(func(t: String) -> String: return t.to_upper()))), Color(0.33, 0.27, 0.42), PAPER))
+		var shared := verse and themes.any(func(t: String) -> bool: return t in _near_themes)
+		flow.add_child(_chip("%s %s" % [_w("same_theme") if shared else _w("theme"), " ".join(PackedStringArray(themes.map(func(t: String) -> String: return t.to_upper())))],
+			Color(0.5, 0.36, 0.68) if shared else Color(0.33, 0.27, 0.42), PAPER))
 	for t: String in c.get("tags", []):
 		if t in Bars.FLOWS:
 			flow.add_child(_chip(String(_words.get("flows", {}).get(t, t.to_upper())), Color(0.2, 0.36, 0.4), PAPER))
@@ -584,6 +640,10 @@ func _chips(cid: String, group: String) -> HFlowContainer:
 	if _in_song(cid):
 		flow.add_child(_chip(_w("in_song"), Color(0.45, 0.45, 0.5), PAPER))
 	var hear_chip := _chip(_w("hear"), Color(0.1, 0.1, 0.13), TICKET)
+	var button_look: StyleBoxFlat = hear_chip.get_theme_stylebox("panel")      # a button, not a label: a ticket-yellow edge
+	button_look.set_border_width_all(2)
+	button_look.border_color = TICKET
+	button_look.set_corner_radius_all(9)
 	hear_chip.mouse_filter = Control.MOUSE_FILTER_STOP
 	hear_chip.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	hear_chip.gui_input.connect(func(event: InputEvent) -> void:
@@ -629,6 +689,7 @@ func _refresh() -> void:
 	_waiting.text = _w("waiting").replace("{n}", str(waiting)) if waiting > 0 else ""
 	for k in ROWS.size():
 		_fill_row(k)
+	_rows_wait = 2
 	var r: Dictionary = ROWS[row]
 	match String(r["kind"]):
 		"beat":
@@ -662,9 +723,10 @@ func _refresh() -> void:
 	for part: String in _meters:
 		var m: Array = _meters[part]
 		var v := int(read.get(part, 0))
-		(m[2] as Label).text = str(v) if Sheet.filled(sheet) > 0 else "-"
+		var known := Sheet.filled(sheet) > 0 and (part != "coherence" or int(read.get("joins", 0)) > 0)      # (coherence once two cards stand together)
+		(m[2] as Label).text = str(v) if known else "-"
 		(m[1] as ColorRect).color = TICKET if v >= int(Score.data("score").get("levels", {}).get("low", 40)) else SHORT
-		(m[1] as ColorRect).set_meta("value", v if Sheet.filled(sheet) > 0 else 0)
+		(m[1] as ColorRect).set_meta("value", v if known else 0)
 	var stand: Dictionary = read.get("standing", {})
 	_detail.text = _w("detail").replace("{r}", str(int(read.get("rhymed", 0)))).replace("{j}", str(int(read.get("joins", 0)))).replace("{t}", str(int(read.get("themed", 0)))).replace("{n}", str(int(read.get("verse_cards", 0)))).replace("{f}", str(int(read.get("flows", 0)))).replace("{cap}", str(int(stand.get("cap", 0)) + int(stand.get("cap_true", 0)))).replace("{true}", str(int(stand.get("earned_true", 0))))
 	_keys.text = _w("keys_cards") if focus == "list" else _w("keys_sheet")
@@ -684,12 +746,12 @@ func _fill_row(k: int) -> void:
 	line.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	p.add_child(line)
 	var left := VBoxContainer.new()
-	left.custom_minimum_size = Vector2(112, 0)
+	left.custom_minimum_size = Vector2(158, 0)
 	left.add_theme_constant_override("separation", 3)
 	left.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	left.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	line.add_child(left)
-	var tag := _label(15, TICKET if on else FAINT)
+	var tag := _label(13, TICKET if on else FAINT)
 	left.add_child(tag)
 	var col := VBoxContainer.new()
 	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -721,7 +783,7 @@ func _fill_row(k: int) -> void:
 					col.add_child(_text(String(e["lines"][0]["text"]).to_upper(), 15, PAPER))
 				stand = _worst(hook)
 		"card":
-			tag.text = "%s  %d" % [_w(String(r["row"])), int(r["i"]) + 1]
+			tag.text = Sheet.where(String(r["row"]), int(r["i"]), _words)      # (the same name the list and the score use)
 			var e := Sheet.at(sheet, String(r["row"]), int(r["i"]))
 			if e.is_empty():
 				col.add_child(_text(_w("pick_card"), 16, FAINT))
@@ -729,7 +791,7 @@ func _fill_row(k: int) -> void:
 				for l: Dictionary in e.get("lines", []):
 					col.add_child(_text(String(l["text"]).to_upper(), 15, PAPER))
 				stand = String(e.get("standing", ""))
-				if String(e.get("slot", "")) != "" and Sheet.words_for(main._state, sheet, String(r["row"]), int(r["i"])).size() > 1:
+				if on and String(e.get("slot", "")) != "" and Sheet.words_for(main._state, sheet, String(r["row"]), int(r["i"])).size() > 1:      # (the word is in the lines; picked, it shows it can change)
 					var word := _text("<  %s  >" % _slot_text(e) if on else _slot_text(e), 14, TICKET)
 					word.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 					col.add_child(word)
@@ -803,6 +865,10 @@ func _process(delta: float) -> void:
 		(m[1] as ColorRect).size = Vector2(back.size.x * int((m[1] as ColorRect).get_meta("value", 0)) / 100.0, back.size.y)
 	if not _hear_rows.is_empty():
 		_show_hearing()
+	if _rows_wait > 0:
+		_rows_wait -= 1
+		if _rows_wait == 0:
+			_rows_scroll.ensure_control_visible(_row_panels[row])
 	if _scroll_to != null:
 		_scroll_wait -= 1
 		if _scroll_wait <= 0:

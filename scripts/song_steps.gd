@@ -21,7 +21,8 @@ extends RefCounted
 ##   the notebook on screen:
 ##   song:open, song:row:<n> (0 beat, 1 hook, 2-5 verse 1, 6-9 verse 2, 10 title, 11 save), song:list (Enter
 ##   on the row), song:point:<k> (the list's kth), song:pick:<k> (put it in), song:left, song:right, song:hear,
-##   song:del, song:esc (as Esc), song:close
+##   song:del, song:esc (as Esc), song:close; the mouse: song:wheel:<sheet|list>:<n> (notches down, - up),
+##   song:click:<row|tile>:<k> (a left click on that sheet row or list card)
 ##   at the mic:
 ##   song:auto:<skill>[:<seed>]          the player of the next take (and of one running): 0 .. 1, as video:auto
 ##   song:mic                            he steps up to the booth mic (to the studio first): the song waiting is sung
@@ -39,6 +40,8 @@ extends RefCounted
 ##   song:render[:<bars>[:<skill>]]      what a player hears (Master), count-in and that many bars (12: verse 1 and
 ##                                       the hook) live, to song_<title>.wav beside the --shot file
 ##   song:video                          what the next music video gets from its song: the cap on swagger, the comments
+##   song:cards                          every card and hook half as the mic would sing it, on every beat: silent
+##                                       syllables, syllables that do not spell the line, steps off the bar
 
 const BeatsSteps := preload("res://scripts/beats_steps.gd")
 const Sheet := preload("res://scripts/song_sheet.gd")
@@ -132,6 +135,31 @@ static func step(main: Node, bits: PackedStringArray) -> void:
 			await _frames(main, 2)
 		"del":
 			nb.take_out()
+		"wheel":        # song:wheel:<sheet|list>:<n>: the mouse wheel turned n notches down (up if negative) over it
+			var box: ScrollContainer = nb._rows_scroll if bits[2] == "sheet" else nb._scroll
+			var was: int = box.scroll_vertical
+			for i in absi(int(bits[3])):
+				for down: bool in [true, false]:
+					var ev := InputEventMouseButton.new()
+					ev.button_index = MOUSE_BUTTON_WHEEL_DOWN if int(bits[3]) > 0 else MOUSE_BUTTON_WHEEL_UP
+					ev.pressed = down
+					ev.position = box.get_global_rect().get_center()
+					ev.global_position = ev.position
+					main.get_viewport().push_input(ev, true)
+				await _frames(main, 1)
+			await _frames(main, 2)
+			_said(main, "wheel over the %s: scrolled %d -> %d (of %d)" % [bits[2], was, box.scroll_vertical, int(box.get_v_scroll_bar().max_value - box.get_v_scroll_bar().page)])
+		"click":        # song:click:<row|tile>:<k>: a left click in the middle of that sheet row or list card
+			var target: Control = nb._row_panels[int(bits[3])] if bits[2] == "row" else nb._tiles[int(bits[3])]
+			for down: bool in [true, false]:
+				var ev := InputEventMouseButton.new()
+				ev.button_index = MOUSE_BUTTON_LEFT
+				ev.pressed = down
+				ev.position = target.get_global_rect().get_center()
+				ev.global_position = ev.position
+				main.get_viewport().push_input(ev, true)
+			await _frames(main, 3)
+			_said(main, "clicked %s %s: row %d, focus %s, pick %d, %d of 10 cards" % [bits[2], bits[3], nb.row, nb.focus, nb.pick, Sheet.filled(nb.sheet)])
 		"hear":
 			nb.hear()
 			_said(main, "hearing from bar %d (%d lines; the beat %s at %.3f s)" % [int(main._conductor.bar) + 1, nb._hear_rows.size(), "playing" if main._conductor.playing else "stopped", main._conductor.time])
@@ -209,12 +237,59 @@ static func step(main: Node, bits: PackedStringArray) -> void:
 			else:
 				_said(main, "the next video is for '%s' (total %d): swagger capped at %d; tags %s; comments %s" % [sheet["title"], int(sheet["score"]["total"]),
 					SongVideo.cap_of(int(sheet["score"]["total"])), SongVideo.tags(sheet), SongVideo.comments(sheet).map(func(c: Dictionary) -> String: return "@%s: %s" % [c["who"], c["text"]])])
+		"cards":
+			_cards(main)
 		_:
 			_said(main, "no step %s" % what)
 	if nb.is_open() and what in ["new", "beat", "hook", "verse", "card", "word", "out", "title", "fill"]:
 		nb.sheet = _draft(main)          # the notebook on screen shows the page as the step left it
 		nb._changed()
 		await _frames(main, 2)
+
+
+## Every card and hook half as the mic would sing it, on every beat: syllables the voice has no sound for
+## (silent), lines whose syllables do not spell the line (the lighting slips), steps off the bar (0 .. 15).
+static func _cards(main: Node) -> void:
+	var c: Node = main._conductor
+	var voice: Node = c.voice
+	var data: Dictionary = voice._data
+	var chars: Dictionary = data.get("characters", {})
+	var who := String(Score.data("song").get("who", "e"))
+	var register := String(chars.get(who, chars.get("default", {})).get("register", "mid"))
+	var samples: Dictionary = data.get("samples", {})
+	var ids: Array = Sheet.verse_cards()
+	for h: String in Sheet.hooks():
+		ids.append_array(["hook_%s_a" % h, "hook_%s_b" % h])
+	var lines_n := 0
+	var bad := 0
+	for cid: String in ids:
+		for line: Dictionary in Bars.card(cid).get("lines", []):
+			lines_n += 1
+			var syl: Array = line.get("syl", [])
+			var notes: Array = []
+			var silent := {}
+			for b: String in c.beats():
+				var spb := 60.0 / float(c.sheet_of(b).get("bpm", 92))
+				for i in syl.size():
+					var text := String(syl[i][1])
+					var steps := (float(syl[i + 1][0]) - float(syl[i][0])) if i + 1 < syl.size() else 8.0
+					var file := "%s_%s_%s_%s" % [register, voice.vowel_of(text), voice.onset_of(text), "l" if steps * spb / 4.0 >= 0.3 else "s"]
+					if not samples.has(file):
+						silent[text] = true
+			if not silent.is_empty():
+				notes.append("silent on some beat: %s" % ", ".join(PackedStringArray(silent.keys())))
+			var spelt := ""
+			for s: Array in syl:
+				spelt += Bars.letters(String(s[1]))
+			if spelt.to_lower() != Bars.letters(String(line.get("text", ""))).to_lower():
+				notes.append("syllables spell '%s', the line '%s'" % [spelt, Bars.letters(String(line.get("text", "")))])
+			for s: Array in syl:
+				if float(s[0]) < 0.0 or float(s[0]) > 15.0:
+					notes.append("step %s off the bar" % str(s[0]))
+			if not notes.is_empty():
+				bad += 1
+				_said(main, "  %-12s '%s': %s" % [cid, line.get("text", ""), "; ".join(PackedStringArray(notes))])
+	_said(main, "cards: %d cards and hook halves, %d lines, on %d beats: %d lines read badly" % [ids.size(), lines_n, c.beats().size(), bad])
 
 
 static func _said(_main: Node, text: String) -> void:
@@ -245,7 +320,7 @@ static func _to_mic(main: Node) -> void:
 
 static func _print_sheets(main: Node) -> void:
 	var state: RefCounted = main._state
-	_said(main, "the page: " + "\n[shot] song:   ".join(Sheet.describe(state.song_draft)))
+	_said(main, "the page: " + ("nothing being written" if (state.song_draft as Dictionary).is_empty() else "\n[shot] song:   ".join(Sheet.describe(state.song_draft))))
 	var waiting: Array = state.song_written
 	_said(main, "%d waiting at the mic" % waiting.size())
 	for s: Dictionary in waiting:

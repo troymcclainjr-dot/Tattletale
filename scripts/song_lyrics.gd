@@ -18,6 +18,8 @@ var now := -INF             # the clock's time
 var centred := true
 var gap := 6.0              # between rows
 var marks := true           # the strong syllables' marks
+var lead := 0.0             # > 0 (the mic): a strong syllable's mark fills, gold from the left, over this many seconds
+                            # before it is due, full on the step (when to press Space)
 
 
 ## A row for one line {"text", "syl"} sung on `at_bar` (times from the clock), `size` its font size; dim: the
@@ -113,6 +115,9 @@ func _draw() -> void:
 				var top := base + 6.0
 				draw_rect(Rect2(x - 1.0, top - 1.0, letters_w + 2.0, MARK_H + 2.0), Color(0, 0, 0, 0.7 if not dim else 0.4))
 				draw_rect(Rect2(x, top, letters_w, MARK_H), c)
+				var due := float(times[k]) if k < times.size() else INF
+				if lead > 0.0 and not dim and mark == "" and now < due and now >= due - lead:
+					draw_rect(Rect2(x, top, letters_w * (1.0 - (due - now) / lead), MARK_H), TICKET)
 			x += w
 		y += _row_h(fs) + gap
 
