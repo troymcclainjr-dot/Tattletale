@@ -23,8 +23,8 @@ const TACK := 0.35               # seconds: drawn only from the front, he keeps 
 const TURN := 0.22               # seconds: someone with a drawing for each way stands turning this long (a paper flip)
 const LIFT := 0.14               # crouched, his feet come up his drawing this much of its height, at most (and he comes down)
 const SQUASH := 0.22             # ...and he is squashed down by this much of his height, as a cartoon cowers
-const HANDS_UP := 2.5            # radians: hands up, each arm turned this far up from hanging (placeholder)
-const HANDS_CURL := 0.35         # ...and bowed this much at the elbow
+const HANDS_UP := 1.25           # radians: hands up, each upper arm turned this far out from hanging (a little above level)
+const HANDS_CURL := 0.95         # ...and the arm bowed this much further up by the hand, so the hand is over the elbow
 const STUCK := 0.6               # seconds of getting nowhere before he gives up on his way
 const DODGE := 0.15              # seconds: drawn from the front only, crossing the screen, held up this long by something on his way,
                                  # he goes round it by the other side of the way across, for this long
@@ -257,11 +257,18 @@ func _after(a: Node3D, p: RefCounted) -> void:
 		elif a._pivot.scale != Vector3.ONE:
 			a._pivot.scale = Vector3.ONE
 	if p.hands > 0.0 and legs and a._arms.has("l") and a._arms.has("r") and a.weapon == "":
-		var h := float(p.hands)
-		a._put("arm_l_angle", -HANDS_UP * h)
-		a._put("arm_r_angle", HANDS_UP * h)
-		a._put("arm_l_curl", HANDS_CURL * h)
-		a._put("arm_r_curl", -HANDS_CURL * h)
+		raise_hands(a, float(p.hands))
+
+
+## His hands up, `h` of the way (0 .. 1), seen square on: the upper arm goes out from the shoulder and the arm
+## bows on up from there, so the elbow is the widest point and the open hand ends up above it, beside his head.
+## (It was the other way about: the arm went up steeply and bowed outwards, so the elbows were tucked in and the
+## hands splayed, which read as arms bent the wrong way.)
+static func raise_hands(a: Node3D, h: float) -> void:
+	a._put("arm_l_angle", -HANDS_UP * h)
+	a._put("arm_r_angle", HANDS_UP * h)
+	a._put("arm_l_curl", -HANDS_CURL * h)
+	a._put("arm_r_curl", HANDS_CURL * h)
 
 
 ## How tall someone is crouched as far as he goes, of his standing height.

@@ -104,7 +104,9 @@ func node_of(b: int) -> Node3D:
 
 ## The pavement, kerb and road in front: band 0. u0..u1 is how far along the
 ## street he may walk.
-func street(u0: float, u1: float, pave := 2.5) -> int:
+## `drops`: [[from, to], ...] along it, where the kerb is dropped for wheels (a driveway, an ambulance bay): the
+## pavement's edge slopes down to a kerb 3 cm over the road, flared out at each side.
+func street(u0: float, u1: float, pave := 2.5, drops: Array = []) -> int:
 	var b := band()
 	room("street", b, u0, depth, u1, depth + pave, null, {"street": true})
 	var n := node_of(b)
@@ -115,13 +117,86 @@ func street(u0: float, u1: float, pave := 2.5) -> int:
 	var outdoor = load("res://scripts/outdoor.gd")
 	var walk: Variant = outdoor.pavement() if outdoor else Kit.tex("sidewalk", 2.4, Color(0.66, 0.64, 0.6))
 	var tar: Variant = outdoor.road() if outdoor else Kit.tex("asphalt", 3.0, Color(0.2, 0.22, 0.27))
-	Kit.box(n, Vector3(long, 0.3, pave), pt(mid, depth + pave * 0.5, -0.15), walk)
-	Kit.box(n, Vector3(long, 0.32, 0.2), pt(mid, depth + pave + 0.1, -0.14), Color(0.84, 0.82, 0.77))
+	var kerb_look := Color(0.84, 0.82, 0.77)
+	if drops.is_empty():
+		Kit.box(n, Vector3(long, 0.3, pave), pt(mid, depth + pave * 0.5, -0.15), walk)
+		Kit.box(n, Vector3(long, 0.32, 0.2), pt(mid, depth + pave + 0.1, -0.14), kerb_look)
+	else:
+		# The pavement's back all in one; its edge and the kerb in pieces between the drops.
+		Kit.box(n, Vector3(long, 0.3, pave - DROP_RUN), pt(mid, depth + (pave - DROP_RUN) * 0.5, -0.15), walk)
+		var spans: Array = drops.duplicate(true)
+		spans.sort_custom(func(x: Array, y: Array) -> bool: return float(x[0]) < float(y[0]))
+		var at := mid - long * 0.5
+		for d: Array in spans + [[mid + long * 0.5 + DROP_FLARE, 0.0]]:
+			var to := float(d[0]) - DROP_FLARE
+			if to - at > 0.01:
+				Kit.box(n, Vector3(to - at, 0.3, DROP_RUN), pt((at + to) * 0.5, depth + pave - DROP_RUN * 0.5, -0.15), walk)
+				Kit.box(n, Vector3(to - at, 0.32, 0.2), pt((at + to) * 0.5, depth + pave + 0.1, -0.14), kerb_look)
+			at = float(d[1]) + DROP_FLARE
+		for d: Array in spans:
+			_dropped_kerb(n, float(d[0]), float(d[1]), depth + pave, walk, kerb_look)
 	Kit.box(n, Vector3(long, 0.3, 7.0), pt(mid, depth + pave + 3.7, -0.29), tar)
 	Kit.box(n, Vector3(long - 0.02, 0.012, 0.36), pt(mid, depth + pave + 0.38, -0.136), Color(0.42, 0.43, 0.46))
 	for i in int(long / 3.4):
 		Kit.box(n, Vector3(1.4, 0.01, 0.12), pt(mid - long * 0.5 + 1.5 + i * 3.4, depth + pave + 3.4, -0.135), Color(0.85, 0.8, 0.55))
 	return b
+
+
+const DROP_RUN := 0.45       # a dropped kerb: the pavement's last this many metres slope down to it (he cannot stand further out than the first 8 cm of that)
+const DROP_FLARE := 0.7      # ...and the slope turns up to the full kerb over this many metres at each side
+const DROP_TOP := -0.11      # ...the dropped kerb's top: 3 cm over the road
+
+## The sloped edge of the pavement and the low kerb, from u = d0 to d1, the kerb's back at v = vk: one mesh for
+## the concrete and one for the kerb stones, flat shaded.
+func _dropped_kerb(n: Node3D, d0: float, d1: float, vk: float, walk: Variant, kerb_look: Color) -> void:
+	var vb := vk - DROP_RUN          # where the slope starts
+	var vf := vk + 0.2               # the kerb's face
+	var hi := 0.0
+	var top := 0.02                  # the full kerb's top
+	var lo := DROP_TOP
+	var f0 := d0 - DROP_FLARE
+	var f1 := d1 + DROP_FLARE
+	var concrete := SurfaceTool.new()
+	concrete.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var stone := SurfaceTool.new()
+	stone.begin(Mesh.PRIMITIVE_TRIANGLES)
+	# The slope, and a flare at each side of it.
+	_quad(concrete, pt(d0, vb, hi), pt(d1, vb, hi), pt(d1, vk, lo), pt(d0, vk, lo))
+	_tri(concrete, pt(f0, vb, hi), pt(d0, vb, hi), pt(d0, vk, lo))
+	_tri(concrete, pt(f0, vb, hi), pt(d0, vk, lo), pt(f0, vk, hi))
+	_tri(concrete, pt(d1, vb, hi), pt(f1, vb, hi), pt(d1, vk, lo))
+	_tri(concrete, pt(f1, vb, hi), pt(f1, vk, hi), pt(d1, vk, lo))
+	# The kerb: low across the drop, rising to its full height along each flare; its top, then its face.
+	_quad(stone, pt(d0, vk, lo), pt(d1, vk, lo), pt(d1, vf, lo), pt(d0, vf, lo))
+	_quad(stone, pt(f0, vk, top), pt(d0, vk, lo), pt(d0, vf, lo), pt(f0, vf, top))
+	_quad(stone, pt(d1, vk, lo), pt(f1, vk, top), pt(f1, vf, top), pt(d1, vf, lo))
+	_quad(stone, pt(f0, vf, top), pt(d0, vf, lo), pt(d0, vf, -0.3), pt(f0, vf, -0.3))
+	_quad(stone, pt(d0, vf, lo), pt(d1, vf, lo), pt(d1, vf, -0.3), pt(d0, vf, -0.3))
+	_quad(stone, pt(d1, vf, lo), pt(f1, vf, top), pt(f1, vf, -0.3), pt(d1, vf, -0.3))
+	# The step from the pavement's edge up to the full kerb's top, along each flare (2 cm at its outer end).
+	_tri(stone, pt(f0, vk, hi), pt(f0, vk, top), pt(d0, vk, lo))
+	_tri(stone, pt(f1, vk, top), pt(f1, vk, hi), pt(d1, vk, lo))
+	# The slope a shade darker than the slabs (poured later, and driven over); the kerb painted yellow, worn:
+	# nobody parks across it.
+	var poured: Variant = Kit.tex("out_paving", 4.8, Color(0.6, 0.59, 0.57), true, Color(0.84, 0.84, 0.86)) if walk is StandardMaterial3D and walk.albedo_texture != null else walk
+	for made: Array in [[concrete, poured], [stone, kerb_look.lerp(Color(0.93, 0.74, 0.16), 0.8)]]:
+		var tool: SurfaceTool = made[0]
+		tool.generate_normals()
+		var mi := MeshInstance3D.new()
+		mi.mesh = tool.commit()
+		mi.material_override = Kit._mat(made[1])
+		n.add_child(mi)
+
+
+## A flat four-cornered piece, corners given going round as seen from above (or from its front), in two triangles.
+static func _quad(tool: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3) -> void:
+	_tri(tool, a, b, c)
+	_tri(tool, a, c, d)
+
+
+static func _tri(tool: SurfaceTool, a: Vector3, b: Vector3, c: Vector3) -> void:
+	for v: Vector3 in [a, b, c]:
+		tool.add_vertex(v)
 
 
 ## A room: its floor, and where it is on the plan. opts: "areas" (a list of

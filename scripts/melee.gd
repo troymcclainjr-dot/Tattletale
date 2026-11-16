@@ -22,7 +22,11 @@ extends Node
 
 const Street := preload("res://scripts/street.gd")
 const Hud := preload("res://scripts/street_hud.gd")
+const Pose := preload("res://scripts/fight_pose.gd")      # how a fighter is drawn
+const StripActor := preload("res://scripts/paper_actor.gd")      # for fight:strip
+const StripSteps := preload("res://scripts/people_steps.gd")
 const DATA := "res://assets/data/melee.json"
+const BEHIND := 0.06              # metres further from the viewer than the lead the other man stands
 const FALL := 0.4                 # seconds to go down, or get up
 const WATCH := 9.0                # metres: people this near a fight turn to watch it
 
@@ -39,6 +43,8 @@ class Fighter:
 	var landed := false
 	var next := 1.0               # seconds till his next punch
 	var hurt_t := 0.0
+	var rock := 0.0              # 1 the moment a punch lands on him .. 0 over it (fight_pose.gd rocks him back)
+	var rock_hard := 1.0         # ...and how hard that one was, 0 .. 1
 	var swung := false            # he has thrown at the lead (it was a fight, not a beating)
 	var fair := true              # the lead has not hit him while he was not fighting
 
@@ -61,7 +67,7 @@ class MeleeBrain:
 		var gap := Vector2(lead.position.x - a.position.x, lead.position.z - a.position.z)
 		var across: float = main._screen_dir(gap).x
 		var side := -1.0 if across > 0.0 else 1.0                 # the side of the lead he is on, on screen
-		var spot: Vector2 = Vector2(lead.position.x, lead.position.z) + main._floor_dir(Vector2(side * melee.num("stand", 0.95), 0.0))
+		var spot: Vector2 = Vector2(lead.position.x, lead.position.z) + main._floor_dir(Vector2(side * melee.num("stand", 0.95), -BEHIND))      # a little further off than the lead: drawn behind him, so each one's fist shows on the other
 		var to := spot - Vector2(a.position.x, a.position.z)
 		close = to.length() <= 0.14
 		if close:
@@ -95,6 +101,10 @@ var _rng := RandomNumberGenerator.new()
 var _script_guard := false        # a --do step put his hands up
 var _face_was := ""               # the lead's face before the fight
 var _hurt_t := 0.0                # seconds of his hurt face left
+var _rock := 0.0                  # the lead rocked back by a punch: 1 as it lands .. 0
+var _rock_hard := 1.0
+var _clock := 0.0                 # seconds, for the bounce of everyone with his hands up
+const ROCK_TIME := 0.32           # seconds someone is rocked back by a punch
 var _guard_was := false
 
 
@@ -118,6 +128,7 @@ func _exit_tree() -> void:
 		f.p = null
 	foes.clear()
 	_watchers.clear()
+	Pose.release_all()
 
 
 func num(key: String, fallback: float) -> float:
@@ -187,6 +198,8 @@ func _process(delta: float) -> void:
 		said = "CLICK  JAB      HOLD  HOOK      CTRL  SLIP"
 		said_t = 3.0
 	_guard_was = guard
+	_clock += dt
+	_rock = maxf(_rock - dt / ROCK_TIME, 0.0)
 	_gun_out(lead)
 	_tick_lead(dt, lead)
 	lead.flinch = move_toward(lead.flinch, 0.0, dt * 1.4)
@@ -326,11 +339,13 @@ func _land(lead: Node3D, kind: String) -> void:
 		f = _meet(p, kind)
 		if f == null:
 			return                            # he ran, or went straight down
-	a.flinch = -0.22 * signf(across)
 	if a.face:
 		a.face.set_expression("hurt", true)
 	f.wind -= hurts
 	f.hurt_t = 0.5
+	f.rock = 1.0
+	f.rock_hard = 0.25 if not open else (1.0 if kind == "hook" else 0.6)
+	_burst(lead, a, f.rock_hard)
 	last["his_wind"] = f.wind
 	if f.wind <= 0.0:
 		_drop(f)
@@ -465,6 +480,7 @@ func _tick_foe(f: Fighter, dt: float) -> void:
 		if f.hurt_t <= 0.0 and a.face and f.act != "down":
 			a.face.set_expression("angry", true)
 	a.flinch = move_toward(a.flinch, 0.0, dt * 1.4)
+	f.rock = maxf(f.rock - dt / ROCK_TIME, 0.0)
 	f.t += dt
 	match f.act:
 		"down":
@@ -518,10 +534,12 @@ func _his_lands(f: Fighter, lead: Node3D) -> void:
 	last["his"] = f.act
 	wind -= _of(f.act, "hurts", 12.0)
 	wind_wait = num("wind_wait", 0.7)
-	lead.flinch = -0.22 * signf(s.x)
 	if lead.face:
 		lead.face.set_expression("hurt", true)
 	_hurt_t = 0.5
+	_rock = 1.0
+	_rock_hard = 1.0 if f.act == "hook" else 0.6
+	_burst(a, lead, _rock_hard)
 	if act in ["jab", "hook"] and not landed:
 		act = ""                              # caught mid-punch: his own does not land
 	if wind <= 0.0:
@@ -559,6 +577,7 @@ func _forget(f: Fighter, got_up: bool) -> void:
 	p.foe = false
 	p.actor.fallen = 0.0
 	p.actor.flinch = 0.0
+	Pose.release(p.actor)
 	people._let_go(p)
 	if got_up and String(Street.person(main._state, f.who).get("feels", "")) in ["fear", "grudge"]:
 		people._frighten(p, main._actor.global_position)
@@ -621,83 +640,76 @@ func _watch(lead: Node3D) -> void:
 
 # ------------------------------------------------------------ how it looks
 
-const GUARD := [1.9, 1.1]            # hands up: the near arm turned this far from hanging, and bowed this much
-const DRAWN := [-0.5, 1.6]            # a punch drawn back
-const OUT := [1.55, 0.0]             # a punch at full reach: the arm straight out in front
-const LEAN_IN := 0.16                # radians he leans into a punch
-const LEAN_OUT := 0.3                # ...and away in a slip
-const DUCK := 0.1                    # metres he drops in a slip
-var pose_test := []                  # a --do step's [angle, curl, lean] for the lead, or empty
+var pose_test := []                  # a --do step's [kind, how far through 0 .. 1] for the lead, or empty
 
 
+## Everyone in the fight drawn for this frame (fight_pose.gd): his hands up, a punch part-way out, a slip, and
+## rocked back by what has just landed on him. Whoever is no longer fighting has his fists taken off.
 func _pose_all(lead: Node3D) -> void:
 	var f0 := foe()
-	var to := 0.0
+	var to := 1.0
 	if f0 != null:
 		to = main._screen_dir(Vector2(f0.p.actor.position.x - lead.position.x, f0.p.actor.position.z - lead.position.z)).x
+	var mine := {}
 	if not pose_test.is_empty():
-		_arm(lead, [float(pose_test[0]), float(pose_test[1]), float(pose_test[2]), 0.0], 0.0, to)
+		mine = _test_pose(String(pose_test[0]), float(pose_test[1]))
 	elif act in ["jab", "hook"]:
-		_arm(lead, _punch(act, act_t, 0.0, _of(act, "lands", 0.1), _of(act, "time", 0.3)), 0.0, to)
+		mine = Pose.punch(act, act_t, 0.0, _of(act, "lands", 0.1), _of(act, "time", 0.3))
 	elif act == "slip":
-		var k := sin(clampf(act_t / _of("slip", "time", 0.45), 0.0, 1.0) * PI)
-		_arm(lead, [GUARD[0], GUARD[1], -LEAN_OUT * k, 0.0], DUCK * k, to)
-	elif hold_t >= _of("hook", "hold", 0.25):
-		_arm(lead, [DRAWN[0], DRAWN[1], -0.1, 0.0], 0.0, to)
+		mine = Pose.slip(sin(clampf(act_t / _of("slip", "time", 0.45), 0.0, 1.0) * PI))
+	elif guard and hold_t >= _of("hook", "hold", 0.25):
+		mine = Pose.drawn()
 	elif guard:
-		_arm(lead, [GUARD[0], GUARD[1], 0.03, 0.0], 0.0, to)
+		mine = Pose.guard()
+	if mine.is_empty() or lead.weapon != "":
+		Pose.release(lead)
+	else:
+		Pose.apply(lead, Pose.rock(mine, _rock, _rock_hard), to, _clock, _gap(lead, f0.p.actor if f0 != null else null))
 	for f: Fighter in foes:
 		var a: Node3D = f.p.actor
 		var his: float = main._screen_dir(Vector2(lead.position.x - a.position.x, lead.position.z - a.position.z)).x
+		var pose := {}
 		if f.act in ["jab", "hook"]:
 			var tell := _of("his", f.act + "_tell", 0.32)
-			_arm(a, _punch(f.act, f.t, tell * 0.75, tell, tell + _of("his", "after", 0.25)), 0.0, his)
+			pose = Pose.punch(f.act, f.t, tell * 0.6, tell, tell + _of("his", "after", 0.25))
 		elif f.act == "":
-			_arm(a, [GUARD[0], GUARD[1], 0.03, 0.0], 0.0, his)
+			pose = Pose.guard()
+		if pose.is_empty():
+			Pose.release(a)
+		else:
+			Pose.apply(a, Pose.rock(pose, f.rock, f.rock_hard), his, _clock, _gap(a, lead))
 
 
-## A punch at `t` seconds in: drawn back until `back`, out by `lands`, home by `over`.
-## [angle, curl, lean, how far out it is 0 .. 1 (below zero: drawn back)].
-func _punch(kind: String, t: float, back: float, lands: float, over: float) -> Array:
-	var heavy := 1.0 if kind == "hook" else 0.5
-	if t < back:
-		var k := t / maxf(back, 0.001)
-		return [lerpf(GUARD[0], DRAWN[0], k * heavy), lerpf(GUARD[1], DRAWN[1], k), -0.12 * k * heavy, -k * heavy]
-	if t < lands:
-		var k := (t - back) / maxf(lands - back, 0.001)
-		var from: Array = [lerpf(GUARD[0], DRAWN[0], heavy), DRAWN[1]] if back > 0.0 else GUARD
-		return [lerpf(float(from[0]), OUT[0], k), lerpf(float(from[1]), OUT[1], k), lerpf(-0.12 * heavy if back > 0.0 else 0.0, LEAN_IN * (0.6 + heavy), k), k]
-	var k := clampf((t - lands) / maxf(over - lands, 0.001), 0.0, 1.0)
-	return [lerpf(OUT[0], GUARD[0], k), lerpf(OUT[1], GUARD[1], k), LEAN_IN * (0.6 + heavy) * (1.0 - k), 1.0 - k]
+## Metres between two fighters, for where a punch ends (the other man is rocked back by it, so his face is
+## taken to be where it was: over his feet).
+func _gap(a: Node3D, b: Node3D) -> float:
+	if b == null:
+		return num("stand", 1.2)
+	return clampf(Vector2(a.position.x - b.position.x, a.position.z - b.position.z).length(), 0.8, 1.6)
 
 
-## Put someone's arms where a fighter's are. `pose` is _punch()'s: how far the punching arm is turned up from
-## hanging (forward, the way he faces), how much it bows, how far he tips forward (below zero: back), and how
-## far out the punch is. Side-on it is his near arm. Square to the camera (someone with no side drawing) both
-## fists come up a little and the arm on the other man's side (`toward`, across the screen) goes out to him.
-func _arm(a: Node3D, pose: Array, duck: float, toward: float) -> void:
-	if a.fallen > 0.0 or a.weapon != "":
-		return
-	if a.view == "side":
-		a._put("arm_l_angle", a._arm_rest + float(pose[0]) * ARM_SIGN)
-		a._put("arm_l_curl", float(pose[1]) * CURL_SIGN)
-		a._card.rotation.z = -float(pose[2])
-	elif a._arms.has("l") and a._arms.has("r"):
-		var out := clampf(float(pose[3]), 0.0, 1.0)
-		var back := clampf(-float(pose[3]), 0.0, 1.0)
-		var throwing := FRONT_UP + (FRONT_OUT - FRONT_UP) * out - 0.25 * back
-		a._put("arm_l_angle", -(throwing if toward < 0.0 else FRONT_UP))
-		a._put("arm_r_angle", throwing if toward >= 0.0 else FRONT_UP)
-		a._put("arm_l_curl", FRONT_CURL * ((1.0 - out) if toward < 0.0 else 1.0))
-		a._put("arm_r_curl", -FRONT_CURL * ((1.0 - out) if toward >= 0.0 else 1.0))
-		a._card.rotation.z = -signf(toward) * float(pose[2]) * 0.6
-	a._card.position.y -= duck
+## A pose by name, `k` of the way through it: for looking at (fight:pose, fight:strip).
+func _test_pose(kind: String, k: float) -> Dictionary:
+	match kind:
+		"jab", "hook":
+			return Pose.punch(kind, k * _of(kind, "time", 0.3), 0.0, _of(kind, "lands", 0.1), _of(kind, "time", 0.3))
+		"his_jab", "his_hook":
+			var what := kind.trim_prefix("his_")
+			var tell := _of("his", what + "_tell", 0.32)
+			return Pose.punch(what, k * (tell + _of("his", "after", 0.25)), tell * 0.6, tell, tell + _of("his", "after", 0.25))
+		"drawn":
+			return Pose.drawn()
+		"slip":
+			return Pose.slip(sin(k * PI))
+		"rock":
+			return Pose.rock(Pose.guard(), 1.0 - k, 1.0)
+	return Pose.guard()
 
-const ARM_SIGN := 1.0                # which way "forward and up" turns the near arm in a side drawing
-const CURL_SIGN := 1.0
-const FRONT_UP := 0.45               # square to the camera: each arm turned this far out from hanging, fists up
-const FRONT_OUT := 1.45              # ...and the punching arm this far, straight out to the side
-const FRONT_CURL := 1.1
+
+## The burst where `by`'s punch has landed on `on`: between the two of them, at the height of his chin.
+func _burst(by: Node3D, on: Node3D, hard: float) -> void:
+	var at: Vector3 = on.global_position.lerp(by.global_position, 0.28) + Vector3(0.0, on.height * 0.62, 0.0)
+	Pose.burst(main, at, main._camera.global_basis, hard)
 
 
 # ------------------------------------------------------------ --do steps
@@ -777,9 +789,12 @@ func step(bits: PackedStringArray) -> void:
 				await _frames(1)
 				n += 1
 			print("[shot] fight: auto %.2f for %.1f s: %s" % [skill, n / 60.0, _state_line()])
-		"pose":
-			pose_test = [float(bits[2]), float(bits[3]) if bits.size() > 3 else 0.0, float(bits[4]) if bits.size() > 4 else 0.0] if bits.size() > 2 else []
+		"pose":       # fight:pose:jab:0.4 holds the lead 0.4 of the way through a jab (guard, jab, hook, his_jab, his_hook, drawn, slip, rock)
+			pose_test = [bits[2], float(bits[3]) if bits.size() > 3 else 0.0] if bits.size() > 2 else []
+			_script_guard = true
 			await _frames(2)
+		"strip":      # fight:strip:name[:rig]: one character in a row of poses on a plain backdrop, facing right (name.png)
+			await _strip(bits[2] if bits.size() > 2 else "strip", bits[3] if bits.size() > 3 else "e")
 		"wind":
 			wind = float(bits[2]) if bits.size() > 2 else 100.0
 		"feels":
@@ -789,6 +804,51 @@ func step(bits: PackedStringArray) -> void:
 			print("[shot] fight: %s remembers %s" % [who, Street.person(main._state, who)])
 		_:
 			print("[shot] fight: %s" % _state_line())
+
+
+## One character in a row of poses, to judge them: his hands up, a jab drawn back, half out, landed; a hook drawn
+## back, coming round, landed; a slip; rocked by a punch.
+func _strip(name: String, rig: String) -> void:
+	var origin := Vector3(0, 700, 0)
+	var grey := StandardMaterial3D.new()
+	grey.albedo_color = Color(0.56, 0.6, 0.66)
+	grey.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var floor_look := grey.duplicate() as StandardMaterial3D
+	floor_look.albedo_color = Color(0.44, 0.47, 0.52)
+	Kit.box(main, Vector3(60, 30, 0.1), origin + Vector3(0, 0, -1.2), grey)
+	Kit.box(main, Vector3(60, 0.1, 2.0), origin + Vector3(0, -0.05, 0), floor_look)
+	var poses := [["guard", 0.0], ["jab", 0.06], ["jab", 0.2], ["jab", 0.4], ["drawn", 0.0], ["hook", 0.28], ["hook", 0.45], ["slip", 0.5], ["rock", 0.0]]
+	var made: Array = []
+	for i in poses.size():
+		var who: Node3D = StripActor.new()
+		main.add_child(who)
+		if not who.set_rig(main._rig_dir(rig)):
+			who.queue_free()
+			continue
+		who.position = origin + Vector3((float(i) - (poses.size() - 1) * 0.5) * 1.75, 0.0, 0.0)
+		who.areas = [Rect2(-999, -999, 1998, 1998)]
+		who.face_side(1.0)
+		if who.face:
+			who.face.hold = true
+			who.face.set_expression("hurt" if poses[i][0] == "rock" else "angry", true)
+		made.append(who)
+	for n in 40:           # the paper flip to side-on takes a moment
+		for who: Node3D in made:
+			who.walk(Vector2.ZERO, Vector2.ZERO, 1.0 / 60.0)
+		await get_tree().process_frame
+	for i in made.size():
+		var who: Node3D = made[i]
+		who.walk(Vector2.ZERO, Vector2.ZERO, 1.0 / 60.0)
+		Pose.apply(who, _test_pose(String(poses[i][0]), float(poses[i][1])), 1.0, 0.0)
+	main._tag.visible = false
+	main._hint.visible = false
+	for half in 2:         # two pictures, near enough to see an arm: name_a.png, name_b.png
+		var mid := origin + Vector3((-3.6 if half == 0 else 3.4), 0.85, 0.0)
+		await StripSteps._picture(main, "%s_%s" % [name, "a" if half == 0 else "b"], mid + Vector3(0.0, 0.0, 7.6), mid, 36.0)
+	for who: Node3D in made:
+		Pose.release(who)
+		who.queue_free()
+	print("[shot] fight: strip of %s: %d poses" % [rig, made.size()])
 
 
 func _frames(n: int) -> void:

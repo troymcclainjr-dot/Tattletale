@@ -479,7 +479,7 @@ static func _back_rooms(p: Node3D, b: int, sun_paint: Variant) -> void:
 	Bea.preserves(p, b, 6.3, 0.075 + 0.2, 0.0, 2.2)
 	Bea.wringer(p, b, 5.5, 2.35)
 	Bea.mops(p, b, 8.65, 0.4)
-	Props.boxes(p, b, 8.4, 1.55, 2)
+	Props.boxes(p, b, 6.75, 2.5, 2)       # against the front wall, clear of both doors (between them they hemmed in whoever came in at the back)
 	Bea.stripes(p, n, false, 5.0, 0.075, 2.925, 1.0, 0.0, 2.86, pantry_groove(), 0.12, 0.012, [], 0.0)
 	Bea.stripes(p, n, false, 9.0, 0.075, 2.925, -1.0, 0.0, 2.86, pantry_groove(), 0.12, 0.012, [], 0.0)
 	Bea.stripes(p, n, true, 0.0, 5.075, 8.925, 1.0, 0.0, 2.86, pantry_groove(), 0.12, 0.012, Bea.holes([PANTRY_WINDOW, {"a": 7.75, "b": 8.6, "head": 2.1}]), 0.0)

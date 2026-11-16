@@ -8,6 +8,7 @@ extends RefCounted
 ##                             camera that follows him
 ##   place:id                  go to that place at once (as the travel list does, with no fade)
 ##   at:x:z                    stand him there, without walking
+##   walkmap:u0:v0:u1:v1[:step]  print where he can stand between those two plan points, and the props there
 ##   room:NAME                 stand him in the middle of the room of that name (BAR, BACK_ROOM)
 ##   beat:n                    everyone here who is dancing holds the dance at beat n (a beat is a step)
 ##   stats                     print what drawing the picture costs: draw calls, objects, milliseconds a frame
@@ -35,6 +36,8 @@ static func step(main: Node, bits: PackedStringArray) -> void:
 			print("[shot] place: %s, at %.2f, %.2f" % [main._place, main._actor.position.x, main._actor.position.z])
 		"at":
 			_stand(main, Vector3(float(bits[1]), 0.0, float(bits[2])))
+		"walkmap":
+			_walkmap(main, float(bits[1]), float(bits[2]), float(bits[3]), float(bits[4]), float(bits[5]) if bits.size() > 5 else 0.2)
 		"room":
 			_stand(main, main._spot_in_room(bits[1]))
 		"beat":
@@ -75,6 +78,32 @@ static func step(main: Node, bits: PackedStringArray) -> void:
 					print("[shot] faces: ", line)
 			print("[shot] faces: %d overlapping pairs" % seen.size())
 			main._building.show_room(main._room)
+
+
+## Where he can stand, drawn in letters: from plan point (u0, v0) to (u1, v1), a letter every `step` metres, a row
+## for each v. "." he can stand there, "#" a prop (or the room it leaves round it) is in the way, " " no floor.
+## For finding what he is caught on.
+static func _walkmap(main: Node, u0: float, v0: float, u1: float, v1: float, step: float) -> void:
+	var a: Node3D = main._actor
+	var site: Node3D = main._building
+	var v := v0
+	while v <= v1 + 0.001:
+		var row := ""
+		var u := u0
+		while u <= u1 + 0.001:
+			var at: Vector3 = site.pt(u, v)
+			var p := Vector2(at.x, at.z)
+			row += "." if a.can_stand(p) else ("#" if a._on_floor(p) else " ")
+			u += step
+		print("[shot] walkmap v %6.2f |%s|" % [v, row])
+		v += step
+	var o: Vector3 = site.pt(u0, v0)
+	print("[shot] walkmap: plan %.2f, %.2f is at %.2f, %.2f; %d obstacles here" % [u0, v0, o.x, o.z, a.obstacles.size()])
+	for prop: Rect2 in a.obstacles:
+		var lo: Vector3 = site.pt(u0, v0)
+		var hi: Vector3 = site.pt(u1, v1)
+		if prop.intersects(Rect2(Vector2(minf(lo.x, hi.x), minf(lo.z, hi.z)), Vector2(absf(hi.x - lo.x), absf(hi.z - lo.z))).grow(0.5)):
+			print("[shot] walkmap: obstacle x %.2f .. %.2f, z %.2f .. %.2f" % [prop.position.x, prop.end.x, prop.position.y, prop.end.y])
 
 
 static func _stand(main: Node, at: Vector3) -> void:

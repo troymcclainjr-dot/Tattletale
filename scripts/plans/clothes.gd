@@ -291,5 +291,5 @@ static func _back(p: Node3D, b: int) -> void:
 	Service.steel_door(Kit.group(p.node_of(b), p.pt(7.525, 0.084), Vector3.ZERO, "BackDoor"))
 	p.use_point(b, "SERVICE ALLEY", 7.525, 0.7, "goto:service", 1.0, 2.0)
 	Wear.shoe_boxes(p, b, 9.62, 2.2, 270.0, 6, 7)
-	Props.boxes(p, b, 8.4, 1.0, 3)
+	Props.boxes(p, b, 9.2, 3.3, 3)        # in the front corner, clear of the back door (beside it they penned in whoever came through)
 	Props.clock(p, b, 6.55, 0.08, 0.0, 2.45)

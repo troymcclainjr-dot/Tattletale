@@ -138,6 +138,7 @@ const AimSweep := preload("res://scripts/aim_sweep.gd")       # --do=aimsweep: n
 const Combat := preload("res://scripts/combat.gd")
 const Melee := preload("res://scripts/melee.gd")           # hands: fights, wind, who squares up (and street.gd: respect, heat, trust)
 const Dealing := preload("res://scripts/dealing.gd")       # selling hand to hand: packs on the front, customers, the pack on the ground
+const ExitMarker := preload("res://scripts/exit_marker.gd")      # the E and the marching arrow over a way out with no door
 const Prison := preload("res://scripts/prison_rules.gd")      # arrested, held at the jail, let out
 const Deeds := preload("res://scripts/deeds.gd")              # bars: the deeds ledger's rules (assets/data/deeds.json)
 const BarsSteps := preload("res://scripts/bars_steps.gd")     # bars: --do steps bars:... (the ledger, the bar cards)
@@ -598,6 +599,7 @@ func _open_place(id: String) -> void:
 			_actor.position = point.global_position      # through a door between two places: out of the door back
 	_came_from = ""
 	_actor.areas = _building.walk_areas()
+	ExitMarker.mark_all(_usables, _actor.areas, _actor)      # "TO THE ...": an arrow and the E over each way he can walk on from here
 	_room = _building.room_at_pos(_actor.position, 0)
 	_building.show_room(_room)
 	Deeds.arrived(self)      # bars: a deed (deeds.json): visited_<place>; walked_away, guns_left_home on leaving
@@ -716,6 +718,36 @@ func _check_walk() -> void:
 		if verdict != "ok":
 			bad += 1
 		print("[shot] walk: %-18s %5.1f of %5.1f sq m  %s" % [room["name"], got * step * step, can * step * step, verdict])
+	# Two walkable areas of one room that only touch: each is drawn in from its edges, so there is a strip between
+	# them he cannot cross, with nothing to see there unless a fence or a wall was put on it (Rose Hill Terrace's
+	# corner had one). Listed, not counted: some are meant.
+	for room: Dictionary in _building.rooms:
+		var parts: Array = room.get("areas", [])
+		for i in parts.size():
+			for j in range(i + 1, parts.size()):
+				var one: Rect2 = parts[i]
+				var two: Rect2 = parts[j]
+				if one.intersects(two) or not one.grow(0.36).intersects(two.grow(0.36)):
+					continue
+				var strip: Rect2 = one.grow(0.36).intersection(two.grow(0.36))
+				print("[shot] walk: %s: two areas only touch, leaving a strip he cannot cross at x %.2f .. %.2f, z %.2f .. %.2f (plan %s)" % [
+					room["name"], strip.position.x, strip.end.x, strip.position.y, strip.end.y, _building.plan_of(Vector3(strip.get_center().x, 0, strip.get_center().y)) if _building.has_method("plan_of") else "?"])
+	# A door to another place: he arrives standing on its use point, so that spot must be clear, with clear floor
+	# beside it that joins the rest (the clothing store's back door had a stack of cartons beside it: he came
+	# in from the alley and could not take a step).
+	for point: Node3D in _building.use_points if "use_points" in _building else []:
+		if not String(point.id).begins_with("goto:"):
+			continue
+		var at := Vector2(point.global_position.x, point.global_position.z)
+		var clear := 0
+		for k in 8:
+			var beside := at + Vector2.from_angle(TAU * k / 8.0) * 0.3
+			if _actor.can_stand(beside) and reached.has(Vector2i(roundi(beside.x / step), roundi(beside.y / step))):
+				clear += 1
+		if not _actor.can_stand(at) or clear < 1:      # a wall behind him and a prop at each side is fine: one way out is enough
+			bad += 1
+			print("[shot] walk: the door %s (%s) at %.2f, %.2f: he arrives %s" % [point.label, point.id, at.x, at.y,
+				"IN A WALL OR A PROP" if not _actor.can_stand(at) else "HEMMED IN (%d of 8 ways clear)" % clear])
 	print("[shot] walk: %d rooms, %d doors, %d with a problem" % [_building.rooms.size(), _building.doors.size(), bad])
 	# Is anyone standing in a wall or a prop?
 	var misplaced := 0
@@ -1344,6 +1376,8 @@ func _show_bars(delta: float) -> void:
 
 
 func _process(delta: float) -> void:
+	ExitMarker.hidden = _mode != "play" or _performing or _talk.is_open() or _travel.is_open()
+	ExitMarker.still = _scripted
 	if _mode == "choose":            # the choice runs itself; the places are hidden
 		return
 	var dir := Vector2.ZERO
@@ -1698,11 +1732,11 @@ func _take_shot() -> void:
 				Prison.release(self)
 			"music":        # beats_steps.gd: the beat clock, the beats, the gibberish voice (music:state, music:timing ...)
 				await BeatsSteps.step(self, bits)
-			"snap", "eye", "place", "at", "room", "beat", "stats", "check":     # shot_steps.gd: many pictures in one run, from anywhere
+			"snap", "eye", "place", "at", "walkmap", "room", "beat", "stats", "check":     # shot_steps.gd: many pictures in one run, from anywhere
 				await ShotSteps.step(self, bits)
 			"shop", "list":     # shop_steps.gd: the gun store's counter and range; the travel list filled with made-up rows
 				await ShopSteps.step(self, bits)
-			"hidecheck", "runcover", "hidden", "gunpoint", "deadrow", "deadcheck":     # people_steps.gd: the dead, the frightened, the held up
+			"hidecheck", "runcover", "hidden", "gunpoint", "deadrow", "handsrow", "deadcheck":     # people_steps.gd: the dead, the frightened, the held up
 				await PeopleSteps.step(self, bits)
 			"bars":         # bars_steps.gd: the deeds ledger and the bar cards (bars:ledger, bars:deed:name ...)
 				await BarsSteps.step(self, bits)

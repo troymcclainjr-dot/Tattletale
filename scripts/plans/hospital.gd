@@ -33,7 +33,7 @@ static func build(p: Node3D) -> void:
 	var frame := Color(0.5, 0.54, 0.56)
 	var ward_door := Color(0.6, 0.7, 0.72)
 
-	var st: int = p.street(-4.0, 22.0)
+	var st: int = p.street(-4.0, 22.0, 2.5, [[19.6, 25.0]])      # the kerb dropped across the ambulance bay's mouth
 	var b1: int = p.band()
 	var b2: int = p.band()
 	var b3: int = p.band()

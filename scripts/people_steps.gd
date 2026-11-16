@@ -24,6 +24,7 @@ extends RefCounted
 const PaperActor := preload("res://scripts/paper_actor.gd")
 const PaperFace := preload("res://scripts/paper_face.gd")
 const Cover := preload("res://scripts/people_cover.gd")
+const PeopleFlee := preload("res://scripts/people_flee.gd")
 const SETTLE := 10.0             # seconds hidecheck waits for everyone to hide
 const PARAMS := ["arm_l_angle", "arm_r_angle", "arm_l_curl", "arm_r_curl", "lift_l", "lift_r", "swing_l", "swing_r"]
 
@@ -41,6 +42,8 @@ static func step(main: Node, bits: PackedStringArray) -> void:
 			await _gunpoint(main, name)
 		"deadrow":
 			await _deadrow(main, name)
+		"handsrow":
+			await _handsrow(main, name)
 		"deadcheck":
 			await _deadcheck(main, bits[1] if bits.size() > 1 else "")
 
@@ -430,6 +433,45 @@ static func _deadrow(main: Node, name: String) -> void:
 	for who: Node3D in made:
 		who.queue_free()
 	print("[shot] deadrow: %d characters" % made.size())
+
+
+## Every character on three shelves with their hands up, square on, as someone held at gunpoint stands.
+static func _handsrow(main: Node, name: String) -> void:
+	var origin := Vector3(0, 700, 0)
+	var grey := StandardMaterial3D.new()
+	grey.albedo_color = Color(0.56, 0.6, 0.66)
+	grey.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var floor_look := StandardMaterial3D.new()
+	floor_look.albedo_color = Color(0.44, 0.47, 0.52)
+	floor_look.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var made: Array = []
+	Kit.box(main, Vector3(60, 30, 0.1), origin + Vector3(0, 0, -1.2), grey)
+	for row in 3:
+		Kit.box(main, Vector3(60, 0.1, 2.0), origin + Vector3(0, row * 2.1 - 0.05, 0), floor_look)
+	var rigs := _rigs(main)
+	for i in rigs.size():
+		var who: Node3D = PaperActor.new()
+		main.add_child(who)
+		if not who.set_rig(main._rig_dir(rigs[i])) or who.face == null:
+			who.queue_free()
+			continue
+		var row := 2 - i / 6
+		who.position = origin + Vector3((float(i % 6) - 2.5) * 1.5, row * 2.1, 0.0)
+		who.areas = [Rect2(-999, -999, 1998, 1998)]
+		who.face.hold = true
+		who.face.set_expression("scared", true)
+		who.walk(Vector2.ZERO, Vector2.ZERO, 1.0 / 60.0)
+		if who._arms.has("l") and who._arms.has("r"):
+			PeopleFlee.raise_hands(who, 1.0)
+		made.append(who)
+	main._tag.visible = false
+	main._hint.visible = false
+	for row in 3:              # a picture for each shelf, near enough to see a hand
+		var mid := origin + Vector3(0.0, row * 2.1 + 0.95, 0.0)
+		await _picture(main, "%s_%d" % [name, 2 - row], mid + Vector3(0.0, 0.0, 9.5), mid, 30.0)
+	for who: Node3D in made:
+		who.queue_free()
+	print("[shot] handsrow: %d characters" % made.size())
 
 
 ## Every character folder with a rig and loose face parts.

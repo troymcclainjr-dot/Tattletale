@@ -116,9 +116,12 @@ static func build(p: Node3D) -> void:
 	var right := OY1 + 1.0                                  # a step onto Old York's far pavement
 	# The camera stands back and low enough to see the cornices over him from
 	# the pavement; the parked cars it looks across fade while they are in the way.
+	# (Each area is drawn in a little from its edges, as if walled, so two that only touch leave a strip between
+	# them that cannot be walked: 532's front strip runs a metre past his corner, onto Old York's pavement, or
+	# the corner had an unseen wall 2 m out from it.)
 	var street: int = p.room(NAME, st, WEST, 2.0, right, FAR, null, {
 		"street": true,
-		"areas": [[ROW_END, STRIP, right, FAR], [WEST, PAVE, ROW_END + 2.0, FAR], [51.68, D, CORNER, PAVE], [CORNER, 2.0, right, PAVE], [CORNER, -7.5, OY0 - 0.15, 3.0]],
+		"areas": [[ROW_END, STRIP, right, FAR], [WEST, PAVE, ROW_END + 2.0, FAR], [51.68, D, CORNER + 1.0, PAVE], [CORNER, 2.0, right, PAVE], [CORNER, -7.5, OY0 - 0.15, 3.0]],
 		"cam_near": 1.9, "cam_y": 3.4, "look_y": 3.0})
 	p.rooms[street]["cam_max_x"] = p.pt(EAST - 2.6, 0.0).x  # never up against the houses across Old York Road
 	Walk.begin()                    # the ground's thousands of pieces, gathered into a few meshes
