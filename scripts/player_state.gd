@@ -26,6 +26,9 @@ var videos: Array = []      # each music video he has shot: a Dictionary of how 
 var flags := {}             # anything else worth keeping: name to a value JSON can hold
 var deeds := {}             # what he has done, name to how many times ("shot_fired", "arrested" ...): what his bars may be about
 var street := {}            # his standing and what people remember (street.gd), what he carries and owes (dealing.gd)
+var song_sheets: Array = []  # notebook: the sheet of each song recorded, in step with `songs` (song_sheet.gd; {} for one from an older save)
+var song_written: Array = [] # notebook: songs written in the notebook and saved, not yet performed at the mic, oldest first
+var song_draft := {}         # notebook: the notebook's page as he left it ({} for none)
 
 
 func _init() -> void:
@@ -45,6 +48,9 @@ func reset() -> void:
 	flags = {}
 	deeds = {}
 	street = {}
+	song_sheets = []
+	song_written = []
+	song_draft = {}
 	changed.emit()
 
 
@@ -96,12 +102,16 @@ func heal(amount: int) -> void:
 	changed.emit()
 
 
-## A song recorded at the booth microphone (video_shoot.gd), on that beat.
-func record_song(beat_id := "") -> void:
+## A song recorded at the booth microphone (video_shoot.gd), on that beat; `sheet` is its song sheet
+## (song_sheet.gd: the song written in the notebook with its score, or a freestyle's).
+func record_song(beat_id := "", sheet := {}) -> void:
 	songs += 1
 	while song_beats.size() < songs - 1:     # songs from a save older than song_beats: no beat known
 		song_beats.append("")
 	song_beats.append(beat_id)
+	while song_sheets.size() < songs - 1:    # notebook: songs from a save older than song_sheets: an empty sheet
+		song_sheets.append({})
+	song_sheets.append(sheet)
 	deed("song_recorded")      # bars: a deed (deeds.json)
 	changed.emit()
 
@@ -119,7 +129,8 @@ func touch() -> void:
 
 
 func to_save() -> Dictionary:
-	return {"cash": cash, "health": health, "loaded": loaded, "spare": spare, "owned": owned, "songs": songs, "song_beats": song_beats, "videos": videos, "flags": flags, "deeds": deeds, "street": street}
+	return {"cash": cash, "health": health, "loaded": loaded, "spare": spare, "owned": owned, "songs": songs, "song_beats": song_beats, "videos": videos, "flags": flags, "deeds": deeds,
+		"song_sheets": song_sheets, "song_written": song_written, "song_draft": song_draft, "street": street}
 
 
 ## From a save. Anything the save does not have keeps its new-game value, so an older save still loads.
@@ -139,6 +150,14 @@ func from_save(data: Dictionary) -> void:
 	flags = _dict(data.get("flags"))
 	deeds = _dict(data.get("deeds"))
 	street = _dict(data.get("street"))
+	if typeof(data.get("song_sheets")) == TYPE_ARRAY:      # notebook: an older save has none: each of its songs gets an empty sheet
+		song_sheets = (data["song_sheets"] as Array).map(func(s: Variant) -> Dictionary: return _dict(s))
+	song_sheets = song_sheets.slice(0, songs)
+	while song_sheets.size() < songs:
+		song_sheets.append({})
+	if typeof(data.get("song_written")) == TYPE_ARRAY:
+		song_written = (data["song_written"] as Array).filter(func(s: Variant) -> bool: return typeof(s) == TYPE_DICTIONARY)
+	song_draft = _dict(data.get("song_draft"))
 	changed.emit()
 
 

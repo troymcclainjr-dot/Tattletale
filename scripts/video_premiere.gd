@@ -171,6 +171,7 @@ func is_open() -> bool:
 ## `result` is video_score.gd's result (and "title", "where"); `moments` each
 ## {"caption", "image" (an Image)}.
 func open(result: Dictionary, moments: Array, words: Dictionary, title: String) -> void:
+	result = preload("res://scripts/song_video.gd").premiere(result)      # notebook: up to two comments about its song first (song_video.gd)
 	_result = result
 	_moments = moments
 	_words = words
