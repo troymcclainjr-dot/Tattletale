@@ -533,19 +533,30 @@ func _clear(at: Vector3) -> bool:
 	var cam: Camera3D = main._camera
 	if not cam.is_position_in_frustum(at):
 		return false
-	var lead: Node3D = main._actor
 	var w := world_for(main._building)
-	var chest := lead.global_position + Vector3(0.0, lead.height * 0.62, 0.0)
-	var from := chest
-	var gp: Dictionary = lead.gun_points()
-	if gp.has("muzzle"):
-		var m: Vector3 = gp["muzzle"]
-		var flat := Vector3(at.x - chest.x, 0.0, at.z - chest.z).normalized()
-		from = Vector3(chest.x, m.y, chest.z) + flat * Vector2(m.x - chest.x, m.z - chest.z).length()
-		if bool(w.trace(chest, from)["hit"]):
-			return false
+	var from: Variant = _muzzle_toward(at)
+	if from == null:
+		return false
 	return not bool(w.trace(cam.global_position, at)["hit"]) and not bool(w.trace(from, at)["hit"])
 
+
+## Where his muzzle will be when he points at `at`: as far from his chest and as high as it is now, turned that
+## way (his chest if he holds nothing). Null if something solid is between his chest and that spot.
+func _muzzle_toward(at: Vector3) -> Variant:
+	var lead: Node3D = main._actor
+	var chest := lead.global_position + Vector3(0.0, lead.height * 0.62, 0.0)
+	var gp: Dictionary = lead.gun_points()
+	if not gp.has("muzzle"):
+		return chest
+	var m: Vector3 = gp["muzzle"]
+	var flat := Vector3(at.x - chest.x, 0.0, at.z - chest.z).normalized()
+	var from := Vector3(chest.x, m.y, chest.z) + flat * Vector2(m.x - chest.x, m.z - chest.z).length()
+	if bool(world_for(main._building).trace(chest, from)["hit"]):
+		return null
+	return from
+
+
+const CAR_AIM_FAR := 18.0      # metres: _target_of("car") looks no further (a check's target, not a rule of play)
 
 ## Something to aim at: someone (by name, or "someone": the nearest), "window" (a point on the nearest pane in
 ## sight that is not broken yet; the pane is kept in _spot_pane) or "car" (the nearest car glass in sight).
@@ -558,7 +569,6 @@ func _target_of(who: String) -> Variant:
 		var near := INF
 		var cam: Camera3D = main._camera
 		var w := world_for(main._building)
-		var chest := lead.global_position + Vector3(0.0, lead.height * 0.62, 0.0)
 		for e: RefCounted in w.glass():
 			var mi: MeshInstance3D = e.mi
 			if e.thin != (who != "car") or mi.has_meta("broken") or not mi.is_visible_in_tree():
@@ -569,9 +579,12 @@ func _target_of(who: String) -> Variant:
 				var look: Dictionary = w.trace(cam.global_position, c + (c - cam.global_position).normalized() * 0.05)
 				var panes: Array = look["panes"]
 				var seen: bool = (look["block"] and look["mi"] == mi) if who == "car" else (not panes.is_empty() and panes[0]["entry"].mi == mi)
-				if not seen or not _reaches(w, chest, c, mi, who == "car"):
-					continue          # not seen, or seen but not to be shot from where he stands (bars, a frame)
+				var from: Variant = _muzzle_toward(c) if seen else null      # the round leaves the muzzle, not his chest
+				if from == null or not _reaches(w, from, c, mi, who == "car") or not people.along(from, c).is_empty():
+					continue          # not seen, or seen but not to be shot from where he stands (bars, a frame, a railing post, someone in the way)
 				var away := c.distance_to(lead.global_position)
+				if who == "car" and away > CAR_AIM_FAR:
+					continue          # too far for where his muzzle will be to be known well enough: a pillar beside the glass takes the round
 				if away < near:
 					near = away
 					best = c
