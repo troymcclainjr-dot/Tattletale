@@ -1,0 +1,14 @@
+{
+	"about": "HUFF DADDY, waiting outside the locked public convenience in Linden Square (plans/park2_corners.gd). Placeholder lines written on 2026-11-15 by the civic worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "Is it open?", "face": "neutral", "next": "open"},
+			{"say": "Who's got the key?", "face": "neutral", "next": "key"},
+			{"say": "Why wait, then?", "face": "smug", "next": "wait"}
+		]},
+		"open": {"speaker": "npc", "face": "bored", "line": "Locked since I don't know when. The padlocks are newer than the doors.", "next": ""},
+		"key": {"speaker": "npc", "face": "neutral", "line": "Parks man. Comes Tuesdays. Some Tuesdays.", "next": ""},
+		"wait": {"speaker": "npc", "face": "sad", "line": "Habit. Nowhere else to be.", "next": ""}
+	}
+}

@@ -20,6 +20,7 @@ extends RefCounted
 
 const Props := preload("res://scripts/props.gd")
 const In := preload("res://scripts/props_in.gd")
+const Service := preload("res://scripts/props_service.gd")       # its steel back door, drawn from inside
 
 
 static func build(p: Node3D) -> void:
@@ -83,7 +84,7 @@ static func build(p: Node3D) -> void:
 			{"a": 9.6, "b": 10.5, "hinge": "a", "swing": 1, "colour": steel_door, "name": "CAGE"},
 		],
 		"back3": [{"a": 7.6, "b": 8.5, "colour": steel_door}],
-		"port": [{"a": 12.7, "b": 15.3, "kind": "window", "sill": 0.0, "head": 2.7, "pane": Color(0, 0, 0, 0), "frame": Props.IRON}],
+		"port": [{"a": 13.36, "b": 15.66, "kind": "window", "sill": 0.0, "head": 2.7, "pane": Color(0, 0, 0, 0), "frame": Props.IRON}],
 		"turn": [{"a": 3.4, "b": 4.3, "hinge": "a", "swing": 1, "colour": steel_door}],
 	}
 	# The front is two floors: the station's offices upstairs are not ours to visit.
@@ -174,8 +175,8 @@ static func _walls(p: Node3D, b1: int, b2: int, b3: int, b4: int, ops: Dictionar
 	for i in 4:
 		In.sconce(p, b4, i * 3.0 + 0.55, 0.08, 0.0, "cage", 2.5)      # up over the bars' top rail, well clear of the cell's number
 	In.sconce(p, b4, 0.08, 4.62, 90.0, "cage", 2.2)
-	In.sconce(p, b4, 12.33, 0.08, 0.0, "cage", 2.3)
-	In.sconce(p, b4, 15.67, 0.08, 0.0, "cage", 2.3)
+	In.sconce(p, b4, 12.62, 0.08, 0.0, "cage", 2.45)      # over the back door to the yard
+	In.sconce(p, b4, 15.92, 1.2, 270.0, "cage", 2.3)      # (on the side wall: the roll-up is where it was)
 
 
 static func _street(p: Node3D, st: int, front: Node3D) -> void:
@@ -247,6 +248,13 @@ static func _street(p: Node3D, st: int, front: Node3D) -> void:
 	Props.street_lamp(p, st, -1.4, 24.25)
 	Props.hydrant(p, st, 9.6, 24.2)
 	Props.car(p, st, 12.6, 25.95, 90.0, "cruiser", false)
+	# The pavement's right end goes on along the civic row, past the bail
+	# bondsman, to the courthouse (main.gd's "goto:"; plans/court.gd's TO THE
+	# POLICE STATION comes back). (Placeholder: the label.)
+	p.use_point(st, "TO THE COURTHOUSE", 19.25, 23.2, "goto:court", 1.2, 1.9)
+	# Its left end, past the empty shop, goes on to the county jail (plans/prison.gd's
+	# TO THE POLICE STATION comes back). (Placeholder: the label.)
+	p.use_point(st, "TO THE COUNTY JAIL", -3.25, 23.2, "goto:prison", 1.2, 1.9)
 
 
 static func _lobby(p: Node3D, b: int) -> void:
@@ -363,20 +371,34 @@ static func _cells(p: Node3D, b: int) -> void:
 	Kit.cyl(p.node_of(b), 0.09, 0.006, p.pt(10.6, 1.4, 0.003), Color(0.2, 0.2, 0.22), Vector3.ZERO, 10)        # the drain
 	Props.desk(p, b, 10.9, 4.45, 0.0, Props.OFFICE.darkened(0.2), 1, false, 1.4, 0.6)
 	Props.chair(p, b, 9.75, 4.45, 90.0)
-	Props.board(p, b, 0.08, 3.8, 90.0, 1.2, "notices")
+	Props.board(p, b, 0.08, 4.3, 90.0, 0.8, "notices", 1.0, 1.45)        # (narrower and lower than it was: beside the tunnel door, under the lamp)
+	# The steel door in the left wall, down to the prisoner tunnel under the
+	# street (plans/tunnel.gd: E goes down there; its POLICE STATION door comes
+	# back up here). Civic worker, 15 Nov; placeholder: the label.
+	var down := Kit.group(p.node_of(b), p.pt(0.084, 3.2), Vector3(0, 90, 0), "TunnelDoor")
+	Service.steel_door(down)
+	down.scale = Vector3(0.86, 1.0, 1.0)          # (0.95 wide: between the bars and the notices)
+	p.use_point(b, "PRISONER TUNNEL", 0.62, 3.2, "goto:tunnel", 1.0, 2.0)
 	p.person(b, "cop", 6.0, 3.9, {"face": "bored"})            # the turnkey
-	p.person(b, "cop", 13.3, 3.0)                             # waiting on the van
+	p.person(b, "cop", 14.5, 2.4)                             # waiting on the van, at its nose (out of the line from the camera to the back door, and far enough off it that his head does not fill a corner of the picture there)
 	# The sally port: the roll-up door is up and the prisoner van stands half
 	# in, half out on the back lot. (A whole van indoors hid him from the camera.)
-	Props.car(p, b, 14.0, -0.55, 0.0, "van")
+	# Beside it, the steel back door out to the police yard (plans/yard.gd: E
+	# goes out there, and its POLICE STATION door comes back in); the roll-up,
+	# the van and the drums stand 0.66 m to the right of where they were, to make
+	# room for it. (Civic worker, 15 Nov; placeholder: the label.)
+	Props.car(p, b, 14.51, -0.55, 0.0, "van")
 	var n: Node3D = p.node_of(b)
 	Kit.box(n, Vector3(9.0, 0.3, 5.0), p.pt(14.0, -2.5, -0.16), Kit.tex("asphalt", 3.0, Color(0.2, 0.22, 0.27)))
-	p.slab(n, true, 0.0, 12.72, 15.28, 2.7, 2.86, 0.22, Color(0.45, 0.47, 0.5))      # the door, rolled up
+	p.slab(n, true, 0.0, 13.38, 15.64, 2.7, 2.86, 0.22, Color(0.45, 0.47, 0.5))      # the door, rolled up
 	var hazard := Kit.tex("in_hazard", 0.8, Color(0.9, 0.75, 0.2))
-	for run: Array in [[12.47, 12.645], [15.355, 15.53]]:      # striped jambs either side of the door
+	for run: Array in [[13.13, 13.305], [15.715, 15.89]]:      # striped jambs either side of the door
 		p.slab(n, true, 0.075 + 0.006, run[0], run[1], 0.465, 2.6, 0.012, hazard)       # standing on the dado rail
-	for u in [12.42, 15.58]:      # oil drums fill the corners beside the van
-		var drum: Node3D = p.prop(b, u, 0.75, 0.0, 0.62, 1.25)
-		for k in 2:
-			Kit.cyl(drum, 0.28, 0.85, Vector3(0, 0.425, -0.3 + k * 0.6), Color(0.2, 0.36, 0.5) if k == 0 else Color(0.6, 0.3, 0.12), Vector3.ZERO, 10)
+	var drum: Node3D = p.prop(b, 15.58, 2.3, 0.0, 0.62, 1.25)      # oil drums by the van's nose
+	for k in 2:
+		Kit.cyl(drum, 0.28, 0.85, Vector3(0, 0.425, -0.3 + k * 0.6), Color(0.2, 0.36, 0.5) if k == 0 else Color(0.6, 0.3, 0.12), Vector3.ZERO, 10)
+	var back := Kit.group(n, p.pt(12.62, 0.084), Vector3.ZERO, "BackDoor")
+	Service.steel_door(back)
+	back.scale = Vector3(0.86, 1.0, 1.0)          # (0.95 wide: between the cell block's wall and the roll-up's jamb)
+	p.use_point(b, "POLICE YARD", 12.62, 0.7, "goto:yard", 1.0, 2.0)
 	Props.words(n, "NO PRISONER LEFT UNATTENDED", p.pt(15.91, 3.2, 2.2), 0.1, Color(0.75, 0.15, 0.12), 270.0)

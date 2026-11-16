@@ -1,0 +1,14 @@
+{
+	"about": "The officer filling his cruiser at the pump in the police yard behind the station (plans/yard.gd). Placeholder lines written on 2026-11-15 by the civic worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "Busy night?", "face": "happy", "next": "busy"},
+			{"say": "Whose cars are in the cage?", "face": "suspicious", "next": "cage"},
+			{"say": "Can I cut through to the alley?", "face": "smug", "next": "gate"}
+		]},
+		"busy": {"speaker": "npc", "face": "neutral", "line": "Busy enough. The pump's slow and the radio won't shut up.", "next": ""},
+		"cage": {"speaker": "npc", "face": "neutral", "line": "Cars nobody came back for. Some of them have been here a long time.", "next": ""},
+		"gate": {"speaker": "npc", "face": "focused", "line": "Gate's chained. Back inside the way you came.", "next": ""}
+	}
+}

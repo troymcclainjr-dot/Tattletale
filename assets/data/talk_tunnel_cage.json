@@ -1,0 +1,14 @@
+{
+	"about": "RELL, in the holding cage in the prisoner tunnel, waiting to go up to court (plans/tunnel.gd). Placeholder lines written on 2026-11-15 by the civic worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "What are you in for?", "face": "suspicious", "next": "what"},
+			{"say": "How long have you been down here?", "face": "neutral", "next": "long"},
+			{"say": "Need anything?", "face": "happy", "next": "need"}
+		]},
+		"what": {"speaker": "npc", "face": "nervous", "line": "Ask the judge. Nobody's told me yet.", "next": ""},
+		"long": {"speaker": "npc", "face": "sad", "line": "Since breakfast. They said ten minutes.", "next": ""},
+		"need": {"speaker": "npc", "face": "nervous", "line": "A lawyer that shows up.", "next": ""}
+	}
+}

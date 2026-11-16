@@ -1,0 +1,14 @@
+{
+	"about": "NIA, at the folding table in the hospital's basement laundry (plans/hospital_basement.gd). Placeholder lines written on 2026-11-15 by the civic worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "What comes down that chute?", "face": "neutral", "next": "chute"},
+			{"say": "Got a clean shirt?", "face": "smug", "next": "shirt"},
+			{"say": "Hot down here.", "face": "neutral", "next": "hot"}
+		]},
+		"chute": {"speaker": "npc", "face": "bored", "line": "Everything. Sheets, gowns, a shoe once. Don't ask what's in the pockets.", "next": ""},
+		"shirt": {"speaker": "npc", "face": "smug", "line": "Scrubs, if you're not fussy. Nobody upstairs counts them.", "next": ""},
+		"hot": {"speaker": "npc", "face": "content", "line": "Two driers and no window. You get used to it.", "next": ""}
+	}
+}

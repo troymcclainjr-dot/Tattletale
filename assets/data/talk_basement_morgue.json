@@ -1,0 +1,14 @@
+{
+	"about": "The ATTENDANT, who keeps the morgue in the hospital's basement (plans/hospital_basement.gd). Placeholder lines written on 2026-11-15 by the civic worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "Who works down here?", "face": "neutral", "next": "who"},
+			{"say": "Who's in the drawers?", "face": "nervous", "next": "drawers"},
+			{"say": "Cold in here.", "face": "neutral", "next": "cold"}
+		]},
+		"who": {"speaker": "npc", "face": "bored", "line": "Me, the boiler, and whoever's in the drawers. Sign the book or go back up.", "next": ""},
+		"drawers": {"speaker": "npc", "face": "neutral", "line": "Names are on the cards. Don't read them.", "next": ""},
+		"cold": {"speaker": "npc", "face": "content", "line": "Keeps them quiet. Keeps me awake.", "next": ""}
+	}
+}

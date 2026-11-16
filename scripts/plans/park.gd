@@ -85,6 +85,9 @@ static func build(p: Node3D) -> void:
 	# Rose Hill's backs (plans/backs.gd: its TO THE PARK is on the other side).
 	# (Placeholder: the label.)
 	p.use_point(st, "TO THE ALLEY", (CUT[0] + CUT[1]) * 0.5, FENCE_V + 0.75, "goto:backs", 1.0, 1.9)
+	# Across the road from the kerb, Linden Square (plans/park2.gd: its TO PEN
+	# LUCY PARK comes back). (Civic worker, 15 Nov; placeholder: the label.)
+	p.use_point(st, "TO LINDEN SQUARE", 9.5, 27.0, "goto:park2", 1.1, 1.9)
 	# Night: the floodlights lay pools on the court, the alley lights and the
 	# windows do the rest; a cool moon (_sky) stands in for main.gd's warm sun.
 	p.ambient = 0.11

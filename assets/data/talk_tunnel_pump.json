@@ -1,0 +1,14 @@
+{
+	"about": "SNOOZY, who keeps the pumps going in the pump room behind the prisoner tunnel (plans/tunnel.gd). Placeholder lines written on 2026-11-15 by the civic worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "What are you fixing?", "face": "neutral", "next": "fix"},
+			{"say": "Where do these pipes go?", "face": "suspicious", "next": "pipes"},
+			{"say": "Is there another way out?", "face": "smug", "next": "out"}
+		]},
+		"fix": {"speaker": "npc", "face": "content", "line": "Same leak as last year. It moves, I follow it.", "next": ""},
+		"pipes": {"speaker": "npc", "face": "neutral", "line": "Heat for the court, water for the cells. Nobody comes back here but me.", "next": ""},
+		"out": {"speaker": "npc", "face": "bored", "line": "Through the post, if the officer's in a good mood.", "next": ""}
+	}
+}

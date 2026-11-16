@@ -1,0 +1,14 @@
+{
+	"about": "VIC, keeping out of sight behind the boiler in the hospital's basement (plans/hospital_basement.gd). Placeholder lines written on 2026-11-15 by the civic worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "What are you doing back here?", "face": "suspicious", "next": "doing"},
+			{"say": "Anybody come down here?", "face": "neutral", "next": "who"},
+			{"say": "Got anything for sale?", "face": "smug", "next": "sale"}
+		]},
+		"doing": {"speaker": "npc", "face": "smug", "line": "Watching the boiler. It's a big job.", "next": ""},
+		"who": {"speaker": "npc", "face": "neutral", "line": "Porters. The one from the morgue. Nobody who asks questions.", "next": ""},
+		"sale": {"speaker": "npc", "face": "nervous", "line": "Not with you standing in the light. Come back later.", "next": ""}
+	}
+}

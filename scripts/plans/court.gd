@@ -323,6 +323,25 @@ static func _street(p: Node3D, st: int, front: Node3D) -> void:
 	Props.bin(p, st, 7.6, 22.95)
 	Props.street_lamp(p, st, -1.6, 24.75)
 	Props.hydrant(p, st, 12.5, 24.7)
+	# The civic row (main.gd's "goto:"): the pavement's left end goes on to the
+	# police station, its right end to the hospital; and across the road from
+	# the doors is Linden Square (plans/park2.gd), over a zebra crossing.
+	# (Placeholders: the labels.)
+	p.use_point(st, "TO THE POLICE STATION", -3.25, 23.7, "goto:police", 1.2, 1.9)
+	p.use_point(st, "TO THE HOSPITAL", 21.25, 23.7, "goto:hospital", 1.2, 1.9)
+	p.use_point(st, "TO LINDEN SQUARE", 10.6, 24.55, "goto:park2", 1.1, 1.9)
+	zebra(p, st, 10.6)
+
+
+## A zebra crossing on the stock road in front of the pavement (place.gd's
+## street(): its kerb on depth + 2.5, 7 m of road beyond), centred on u. The
+## stripes stand a few millimetres over the road's centre line, which they
+## break. (plans/park2.gd paints its end of the same crossing with this.)
+static func zebra(p: Node3D, st: int, u: float) -> void:
+	var n: Node3D = p.node_of(st)
+	var kerb: float = p.depth + 2.5
+	for k in 7:
+		Kit.box(n, Vector3(2.4, 0.01, 0.45), p.pt(u, kerb + 0.9 + k * 0.9, -0.127), Color(0.84, 0.83, 0.78))
 
 
 static func _lobby(p: Node3D, b: int) -> void:
@@ -411,12 +430,26 @@ static func _court(p: Node3D, b: int) -> void:
 	Props.clock(p, b, 14.92, 11.6, 270.0)
 	for v: float in [10.1, 11.9]:          # judges who sat here before
 		In.picture(p, b, 3.085, v, 90.0, 0.52, 0.66, "face", GILT, 1.75)
-	# The lockup: a deputy's desk, and the holding cell behind bars.
-	Props.desk(p, b, 0.6, 5.5, 90.0, Props.OFFICE.darkened(0.2), 1, false, 1.2, 0.6)
-	Props.chair(p, b, 1.35, 5.5, 270.0)
+	# The lockup: a deputy's desk, and the holding cell behind bars. (The desk
+	# and its chair stood 1.1 m further back, in front of the prisoner door: the
+	# civic worker moved them along the wall to clear it, 15 Nov.)
+	Props.desk(p, b, 0.6, 6.6, 90.0, Props.OFFICE.darkened(0.2), 1, false, 1.2, 0.6)
+	Props.chair(p, b, 1.35, 6.6, 270.0)
 	Props.bench(p, b, 0.36, 11.2, 90.0, 3.4, Props.IRON)
 	Props.cell_toilet(p, b, 2.6, 13.05, 180.0)
 	p.slab(n, false, 0.09, 4.9, 5.8, 0.0, 2.05, 0.04, Color(0.36, 0.4, 0.44))       # the prisoner door, shut
+	# It goes down to the prisoner tunnel (plans/tunnel.gd: E goes down; its
+	# COURTHOUSE door comes back up here): its frame, kick plate, wired window
+	# and pull. Civic worker, 15 Nov; placeholder: the label.
+	var frame := Color(0.2, 0.21, 0.23)
+	for run: Array in [[4.85, 4.9, 0.0, 2.05], [5.8, 5.85, 0.0, 2.05], [4.85, 5.85, 2.05, 2.1]]:
+		p.slab(n, false, 0.1, run[0], run[1], run[2], run[3], 0.05, frame)
+	p.slab(n, false, 0.112, 4.95, 5.75, 0.05, 0.3, 0.004, Color(0.48, 0.52, 0.56))
+	p.slab(n, false, 0.112, 5.18, 5.52, 1.38, 1.72, 0.004, Color(0.16, 0.2, 0.24))
+	for k in 3:
+		p.slab(n, false, 0.115, 5.18 + 0.085 * (k + 1), 5.18 + 0.085 * (k + 1) + 0.01, 1.38, 1.72, 0.003, Props.STEEL)
+	p.slab(n, false, 0.13, 5.66, 5.69, 0.92, 1.18, 0.03, Props.STEEL)
+	p.use_point(b, "PRISONER TUNNEL", 0.62, 5.35, "goto:tunnel", 1.0, 2.0)
 	Props.words(n, "HOLDING", p.pt(1.5, 8.64, 2.55), 0.18, Color(0.9, 0.9, 0.85))
 	# The jury room.
 	Props.table(p, b, 16.6, 9.0, 90.0, 3.2, 1.1, Props.WOOD)

@@ -1,0 +1,14 @@
+{
+	"about": "TRE, behind the bandstand in Linden Square with CHUY (plans/park2_corners.gd). Placeholder lines written on 2026-11-15 by the civic worker, not the owners' wording. Format: see scripts/talk_box.gd.",
+	"start": "hello",
+	"nodes": {
+		"hello": {"choices": [
+			{"say": "What's back here?", "face": "neutral", "next": "here"},
+			{"say": "Band ever play?", "face": "happy", "next": "band"},
+			{"say": "Seen anybody come through?", "face": "suspicious", "next": "who"}
+		]},
+		"here": {"speaker": "npc", "face": "smug", "line": "Nothing. That's why we like it.", "next": ""},
+		"band": {"speaker": "npc", "face": "bored", "line": "Fourth of July. Rest of the year it's ours.", "next": ""},
+		"who": {"speaker": "npc", "face": "neutral", "line": "Couple guys, through the railing round the side. Didn't stop.", "next": ""}
+	}
+}
