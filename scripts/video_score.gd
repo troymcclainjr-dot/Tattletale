@@ -51,12 +51,24 @@ static func production(rows: Array, picks: Dictionary) -> int:
 ## The whole result. `take` is what the take kept: "swagger", "polish",
 ## "chaos" and "mishaps" (each {"id", "handled"}). `luck_seed` makes the luck
 ## the same each time for the same video.
+##
+## HARD (take "style" is "hard"): what was bought counts for less; production
+## starts from "hard"'s "production_floor" of the way up (a cheap street video
+## can still look right), so the take (timing, holds, variety, staying in the
+## lens: video_take.gd's swagger and polish) decides more of it.
 static func result(data: Dictionary, picks: Dictionary, take: Dictionary, spent: int, luck_seed: int) -> Dictionary:
 	var pay: Dictionary = data["payout"]
 	var prod := production(data["rows"], picks)
+	if String(take.get("style", "clean")) == "hard":
+		prod = roundi(prod + float(data.get("hard", {}).get("production_floor", 0.0)) * (100 - prod))
 	var swagger := clampi(roundi(float(take.get("swagger", 0))), 0, 100)
 	var polish := clampf(float(take.get("polish", 100)), 0.0, 100.0)
 	var chaos := clampi(roundi(float(take.get("chaos", 0))), 0, 100)
+	# ---- SONG SCORE HOOK (for the notebook worker) ---------------------------
+	# A song's own score goes in here: one compact step on `prod`, `swagger` or
+	# `chaos`, after the take's numbers and before LOOKS and buzz below. Nothing
+	# here yet (the hard video's only change is the production floor above).
+	# --------------------------------------------------------------------------
 	var looks := roundi(minf(float(prod), float(swagger)) * polish / 100.0)
 	var weight: Dictionary = pay["buzz"]
 	var buzz := clampf(looks * float(weight["looks"]) + swagger * float(weight["swagger"]) + chaos * float(weight["chaos"]), 0.0, 100.0)

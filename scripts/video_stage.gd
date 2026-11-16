@@ -16,8 +16,14 @@ extends Node3D
 ## him it pulls up) and "setup" (where the camera starts, behind Large Fry: how
 ## far back, how far to his left, how high). What is left out is taken from
 ## DEFAULT (and video.json's "take").
+##
+## Hard (`style`, set before build): the entourage is not the "crew" row in
+## matching clothes with happy faces: video_crew.gd places them in depth bands
+## from the location's floor, dresses each in their own dark clothes (video.json
+## "hard"'s "wear") and gives each a watchful face and a way of standing.
 
 const PaperActor := preload("res://scripts/paper_actor.gd")
+const Crew := preload("res://scripts/video_crew.gd")
 const Props := preload("res://scripts/video_props.gd")
 const Street := preload("res://scripts/props_street.gd")
 const PROP_SHADER := preload("res://shaders/paper_prop.gdshader")
@@ -49,6 +55,11 @@ var smoke := false
 var smoke_level := 0.0           # 0 the low smoke round his feet .. 1 it has got out of hand
 var smoke_want := 0.0
 var chain_on := true             # the chain is round his neck
+var style := "clean"             # "clean" or "hard" (set before build)
+var seed_value := 0              # the take's seed (set before build): where the hard crew stand
+var hard_crew: RefCounted        # hard: video_crew.gd, how each of the entourage stands
+var hard_wear := {}              # hard: video.json "hard"'s "wear" (set before build)
+var drift := 2.4                 # how far Large Fry pans each way (video.json "take"'s "drift"): nobody stands on that line
 
 var _police: Node3D
 var _police_bar: Array = []
@@ -142,14 +153,16 @@ func build(main_node: Node3D, got: Dictionary) -> void:
 		npc.name = String(who[i]).capitalize()
 		add_child(npc)
 		npc.set_rig(main._rig_dir(String(who[i])))
-		if npc.has_wardrobe() and not outfit.is_empty():
+		if style == "hard":
+			Crew.dress(main, npc, String(who[i]), hard_wear)
+		elif npc.has_wardrobe() and not outfit.is_empty():
 			npc.wear(main._outfit_of(outfit))
 		npc.speed = 1.5
 		npc.areas = floor_for_cars       # the road is closed for the shoot: they may walk out into it
 		npc.obstacles = obstacles
 		npc.position = _clear_spot(npc, mark + Vector3(float(places[i][0]), 0.0, float(places[i][1])))
-		npc.performing = true
-		if npc.face:
+		npc.performing = style != "hard"
+		if npc.face and style != "hard":
 			npc.face.set_expression("happy", true)
 		crew.append(npc)
 		spots.append(npc.position)
@@ -163,6 +176,12 @@ func build(main_node: Node3D, got: Dictionary) -> void:
 	lead.others = crew + [op]
 	lead.position = _clear_spot(lead, mark)
 	mark = lead.position
+
+	# Hard: the entourage in depth bands round him, each standing their own way.
+	if style == "hard" and not crew.is_empty():
+		hard_crew = Crew.new()
+		hard_crew.place(self, crew, seed_value, drift)
+		spots = crew.map(func(npc: Node3D) -> Vector3: return npc.position)
 
 	# A light on the set, by the camera, so the cars and props are seen at night.
 	_light = Kit.omni(self, Vector3(lens.x - 0.6, 2.6, lens.z - 0.4), Color(1.0, 0.94, 0.86), 1.4, 14.0)
@@ -461,12 +480,13 @@ func kick(i: int) -> void:
 		cars[i]["wobble"] = 1.0
 
 
-## A slipper comes flying in from off the left of the picture at his head.
-func slipper_throw(from: Vector3) -> void:
+## A slipper comes flying in from off the left of the picture at his head (or,
+## `short`, lands at his feet).
+func slipper_throw(from: Vector3, short := false) -> void:
 	if _slipper == null:
 		_slipper = Props.slipper(self)
 	_slipper_from = from
-	_slipper_to = lead.position + Vector3(0.0, lead.height * 0.86, 0.0)
+	_slipper_to = lead.position + (Vector3(-0.5, 0.05, 0.35) if short else Vector3(0.0, lead.height * 0.86, 0.0))
 	_slipper.position = from
 	_slipper.visible = true
 	_slipper_t = 0.0

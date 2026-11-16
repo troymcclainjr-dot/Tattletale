@@ -5,9 +5,12 @@ extends CanvasLayer
 ## Down (W / S) picks the row, Left / Right (A / D) the card in it; a click
 ## picks a card too. Below: his cash, the total, the production it adds up to,
 ## and SHOOT IT (Enter, or a click), which can only be pressed while he can pay.
-## Esc puts the board away and nothing is spent.
+## Esc puts the board away and nothing is spent. The first row is the style
+## (video.json's "style": HARD or CLEAN), which costs nothing and adds nothing:
+## its pick is picks["style"] like the others', but it is not one of "rows", so
+## the price and the production never see it.
 ##
-##   board.open(data, cash, title)      shoot(picks) / cancelled
+##   board.open(data, cash, title, style)      shoot(picks) / cancelled
 
 signal shoot(picks: Dictionary)
 signal cancelled
@@ -132,15 +135,18 @@ func is_open() -> bool:
 
 
 ## Put the board up with the rows of `data` and nothing picked but the first
-## (free) card of each row. `cash` is what he has.
-func open(data: Dictionary, cash: int, title: String) -> void:
+## (free) card of each row, and the style `style` ("hard", "clean"). `cash` is what he has.
+func open(data: Dictionary, cash: int, title: String, style := "") -> void:
 	_data = data
 	_words = data.get("words", {})
 	_cash = cash
 	row = 0
 	picks = {}
-	for r: Dictionary in data["rows"]:
+	for r: Dictionary in _rows():
 		picks[r["id"]] = 0
+	if data.has("style"):
+		pick_named("style", style)
+		row = 0
 	_title.text = "%s   %s" % [_words.get("board", "SHOOT A VIDEO"), title]
 	_tip.text = String(_words.get("board_tip", ""))
 	_keys.text = String(_words.get("board_keys", ""))
@@ -154,10 +160,24 @@ func close() -> void:
 	visible = false
 
 
+## The board's rows: the style first (if video.json has one), then "rows".
+func _rows() -> Array:
+	return ([_data["style"]] if _data.has("style") else []) + (_data["rows"] as Array)
+
+
+## The style picked: "hard" or "clean" ("clean" if video.json has no style row).
+func style() -> String:
+	if not _data.has("style"):
+		return "clean"
+	var choices: Array = _data["style"]["choices"]
+	return String(choices[clampi(int(picks.get("style", 0)), 0, choices.size() - 1)]["id"])
+
+
 ## Pick card `choice` in the row with id `row_id` (a --do step and the mouse use this too).
 func pick(row_id: String, choice: int) -> void:
-	for i in _data["rows"].size():
-		var r: Dictionary = _data["rows"][i]
+	var rows := _rows()
+	for i in rows.size():
+		var r: Dictionary = rows[i]
 		if r["id"] == row_id:
 			picks[row_id] = clampi(choice, 0, r["choices"].size() - 1)
 			row = i
@@ -166,7 +186,7 @@ func pick(row_id: String, choice: int) -> void:
 
 ## Pick by the choice's id: pick_named("location", "court"). False if there is none.
 func pick_named(row_id: String, choice_id: String) -> bool:
-	for r: Dictionary in _data["rows"]:
+	for r: Dictionary in _rows():
 		if r["id"] != row_id:
 			continue
 		for i in r["choices"].size():
@@ -205,8 +225,9 @@ func _build_rows() -> void:
 		child.queue_free()
 	_cards = []
 	_labels = []
-	for i in _data["rows"].size():
-		var r: Dictionary = _data["rows"][i]
+	var rows := _rows()
+	for i in rows.size():
+		var r: Dictionary = rows[i]
 		var line := HBoxContainer.new()
 		line.add_theme_constant_override("separation", 12)
 		_rows_box.add_child(line)
@@ -222,6 +243,9 @@ func _build_rows() -> void:
 		var wide := (1480.0 - 68.0 - 196.0 - 12.0 * choices.size()) / maxf(6.0, float(choices.size()))
 		for k in choices.size():
 			var card := _card(choices[k], wide, i, k)
+			if r["id"] == "style":       # no price: a lower card, so the board still fits the screen
+				card.custom_minimum_size.y = 58
+				card.get_child(0).get_node("Price").visible = false
 			line.add_child(card)
 			cards.append(card)
 		_cards.append(cards)
@@ -269,8 +293,9 @@ func _card(choice: Dictionary, wide: float, i: int, k: int) -> PanelContainer:
 func _refresh() -> void:
 	if _data.is_empty():
 		return
+	var rows := _rows()
 	for i in _cards.size():
-		var r: Dictionary = _data["rows"][i]
+		var r: Dictionary = rows[i]
 		(_labels[i] as Label).add_theme_color_override("font_color", TICKET if i == row else PAPER)
 		for k in _cards[i].size():
 			var card: PanelContainer = _cards[i][k]
@@ -326,7 +351,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if not visible or not event.pressed or event.echo:
 		return
 	get_viewport().set_input_as_handled()        # while the board is up, no key reaches the game
-	var rows: Array = _data["rows"]
+	var rows: Array = _rows()
 	match event.physical_keycode:
 		KEY_ESCAPE:
 			cancel()
@@ -348,7 +373,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 func _on_card_input(event: InputEvent, i: int, k: int) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		get_viewport().set_input_as_handled()
-		pick(String(_data["rows"][i]["id"]), k)
+		pick(String(_rows()[i]["id"]), k)
 
 
 func _on_go_input(event: InputEvent) -> void:

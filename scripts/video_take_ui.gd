@@ -92,6 +92,16 @@ func _init() -> void:
 	_keys.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	add_child(_keys)
 	for i in POOL:
+		var tail := Panel.new()         # hard: a hold prompt's tail, as long as the hold, behind its box
+		var tail_look := StyleBoxFlat.new()
+		tail_look.bg_color = Color(PAPER, 0.75)
+		tail_look.set_corner_radius_all(12)
+		tail_look.set_border_width_all(3)
+		tail_look.border_color = INK
+		tail.add_theme_stylebox_override("panel", tail_look)
+		tail.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		tail.visible = false
+		add_child(tail)
 		var box := Panel.new()
 		box.size = Vector2(68, 68)
 		var look := StyleBoxFlat.new()
@@ -117,7 +127,7 @@ func _init() -> void:
 		name_label.position = Vector2(-66, 72)
 		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		box.add_child(name_label)
-		_prompts.append({"box": box, "key": key, "name": name_label, "look": look})
+		_prompts.append({"box": box, "key": key, "name": name_label, "look": look, "tail": tail, "tail_look": tail_look})
 	_judge = _label(30, TICKET)
 	_judge.size = Vector2(300, 40)
 	add_child(_judge)
@@ -197,6 +207,7 @@ func open(said: Dictionary, title: String) -> void:
 	_judge_t = 9.0
 	for p: Dictionary in _prompts:
 		(p["box"] as Panel).visible = false
+		(p["tail"] as Panel).visible = false
 	visible = true
 
 
@@ -237,9 +248,10 @@ func lane(prompts: Array, now: float) -> void:
 	var bottom := get_viewport().get_visible_rect().size.y - LANE_Y
 	for p: Dictionary in prompts:
 		var ahead: float = float(p["beat"]) - now
-		if ahead > 4.6 or ahead < -0.7 or used >= _prompts.size():
+		var holding := bool(p.get("holding", false))      # hard: being held now: pinned at the ring
+		if (ahead > 4.6 or ahead < -0.7 or used >= _prompts.size()) and not (holding and used < _prompts.size()):
 			continue
-		if p["state"] == "hit" and ahead < -0.25:
+		if p["state"] == "hit" and ahead < -0.25 and not holding:
 			continue
 		var slot: Dictionary = _prompts[used]
 		used += 1
@@ -248,7 +260,17 @@ func lane(prompts: Array, now: float) -> void:
 		var pop := 1.0 + (0.25 * (1.0 - clampf(-ahead / 0.25, 0.0, 1.0)) if p["state"] == "hit" else 0.0)
 		box.scale = Vector2(pop, pop)
 		box.pivot_offset = Vector2(34, 34)
-		box.position = Vector2(HIT_X + ahead * PER_BEAT - 34.0, bottom - 34.0)
+		var x := HIT_X + (0.0 if holding else ahead) * PER_BEAT
+		box.position = Vector2(x - 34.0, bottom - 34.0)
+		var tail: Panel = slot["tail"]
+		var hold := float(p.get("hold", 0.0))
+		tail.visible = hold > 0.0 and (p["state"] == "due" or holding)
+		if tail.visible:
+			var left := hold - maxf(-ahead, 0.0) if holding else hold
+			tail.position = Vector2(x, bottom - 13.0)
+			tail.size = Vector2(maxf(left * PER_BEAT, 4.0), 26.0)
+			(slot["tail_look"] as StyleBoxFlat).bg_color = TICKET if holding else Color(PAPER, 0.75)
+			tail.modulate.a = 0.72 if p["state"] == "due" and float(p["beat"]) > next else 1.0
 		(slot["key"] as Label).text = String(p["key"])
 		(slot["name"] as Label).text = String(p["name"])
 		var look: StyleBoxFlat = slot["look"]
@@ -256,6 +278,7 @@ func lane(prompts: Array, now: float) -> void:
 		box.modulate.a = 0.6 if p["state"] == "miss" else (0.72 if p["state"] == "due" and float(p["beat"]) > next else 1.0)
 	for i in range(used, _prompts.size()):
 		(_prompts[i]["box"] as Panel).visible = false
+		(_prompts[i]["tail"] as Panel).visible = false
 
 
 ## The mishap card: {"name", "say" (the key's line), "or" (what not pressing it

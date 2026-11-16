@@ -22,6 +22,7 @@ var owned: Array = []      # the weapons he has (Q goes round these): he starts 
 var songs := 0              # songs recorded at the booth microphone
 var song_beats: Array = []  # the beat each song was recorded on (assets/beats ids; "" if none was playing), in order
 var videos: Array = []      # each music video he has shot: a Dictionary of how it went
+var video_style := "hard"   # how his music videos are shot: "hard" or "clean" (video.json "style"; the board's first row)
 var flags := {}             # anything else worth keeping: name to a value JSON can hold
 var deeds := {}             # what he has done, name to how many times ("shot_fired", "arrested" ...): what his bars may be about
 
@@ -40,9 +41,17 @@ func reset() -> void:
 	songs = 0
 	song_beats = []
 	videos = []
+	video_style = "hard"
 	flags = {}
 	deeds = {}
 	changed.emit()
+
+
+## How his music videos are shot from now on: "hard" or "clean" (the one call the path he is on will make).
+func set_video_style(style: String) -> void:
+	if style in ["hard", "clean"] and style != video_style:
+		video_style = style
+		changed.emit()
 
 
 func earn(amount: int) -> void:
@@ -114,7 +123,7 @@ func touch() -> void:
 
 
 func to_save() -> Dictionary:
-	return {"cash": cash, "health": health, "loaded": loaded, "spare": spare, "owned": owned, "songs": songs, "song_beats": song_beats, "videos": videos, "flags": flags, "deeds": deeds}
+	return {"cash": cash, "health": health, "loaded": loaded, "spare": spare, "owned": owned, "songs": songs, "song_beats": song_beats, "videos": videos, "video_style": video_style, "flags": flags, "deeds": deeds}
 
 
 ## From a save. Anything the save does not have keeps its new-game value, so an older save still loads.
@@ -131,6 +140,8 @@ func from_save(data: Dictionary) -> void:
 		song_beats = (data["song_beats"] as Array).map(func(b: Variant) -> String: return String(b) if typeof(b) == TYPE_STRING else "")
 	if typeof(data.get("videos")) == TYPE_ARRAY:
 		videos = data["videos"]
+	if String(data.get("video_style", "")) in ["hard", "clean"]:
+		video_style = String(data["video_style"])
 	flags = _dict(data.get("flags"))
 	deeds = _dict(data.get("deeds"))
 	changed.emit()
