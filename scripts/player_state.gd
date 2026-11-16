@@ -9,6 +9,7 @@ extends RefCounted
 
 signal changed
 
+const Deeds := preload("res://scripts/deeds.gd")      # bars: the deeds ledger's rules (assets/data/deeds.json)
 const START_CASH := 2500
 const MAX_HEALTH := 100
 const CLIP := {"pistol": 12, "uzi": 32, "ak": 30}            # rounds a full magazine holds
@@ -94,12 +95,14 @@ func heal(amount: int) -> void:
 ## A song recorded at the booth microphone (video_shoot.gd).
 func record_song() -> void:
 	songs += 1
+	deed("song_recorded")      # bars: a deed (deeds.json)
 	changed.emit()
 
 
 ## A music video shot: how it went (video_shoot.gd's record).
 func add_video(video: Dictionary) -> void:
 	videos.append(video)
+	Deeds.video(self, video)      # bars: a deed (deeds.json): video_shot, flopped or went big, each mishap
 	changed.emit()
 
 

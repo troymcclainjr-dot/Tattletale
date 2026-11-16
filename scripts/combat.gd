@@ -17,6 +17,7 @@ const People := preload("res://scripts/combat_people.gd")
 const Hud := preload("res://scripts/combat_hud.gd")
 const PlayerState := preload("res://scripts/player_state.gd")
 const FxSteps := preload("res://scripts/combat_fx_steps.gd")     # the tracer and glass --do steps
+const Deeds := preload("res://scripts/deeds.gd")      # bars: the deeds ledger's rules (assets/data/deeds.json)
 
 ## Placeholder numbers. every: seconds between shots; auto: it fires while the button is held; damage: of a
 ## person's 100; spread: radians either side of the cross; reload: seconds; flash and shell: metres long (the
@@ -178,6 +179,7 @@ func fire() -> bool:
 		last = {"what": "click"}
 		return false
 	state.loaded[w] = int(state.loaded[w]) - 1
+	state.deed("shot_fired")      # bars: a deed (deeds.json)
 	state.touch()
 	_cooldown = float(GUNS[w]["every"])
 	_shoot(w)
@@ -285,6 +287,7 @@ func _trace(muzzle: Vector3, dir: Vector3, damage: int, chest: Vector3, power :=
 		if float(pane["t"]) >= stop:
 			break
 		var did := _break(pane["entry"].mi, pane["pos"], dir, power)
+		if did and Glass.hits(pane["entry"].mi) == 1: main._state.deed("window_broken")      # bars: a deed (deeds.json): a whole pane broken
 		through.append([pane["entry"].mi, pane["pos"], did])
 		if did:
 			broke += 1
@@ -294,6 +297,7 @@ func _trace(muzzle: Vector3, dir: Vector3, damage: int, chest: Vector3, power :=
 		out["what"] = "person"
 		out["who"] = String(p.actor.display_name) if p.actor.display_name != "" else String(p.actor.name)
 		out["result"] = people.hit(p, who["point"], dir, damage)
+		Deeds.shot(main, String(out["result"]), int(p.health) + damage >= People.HEALTH)      # bars: a deed (deeds.json): person_shot, person_killed
 		out["at"] = who["point"]
 	elif hit["hit"]:
 		var at: Vector3 = hit["pos"]
@@ -422,6 +426,7 @@ func _to_hospital() -> void:
 		main._travel_to("hospital", true)
 		main._teleport(main._spot_in_room(HOSPITAL_ROOM), true)
 		main._actor.show_face()
+		if int(main._state.health) <= 0: main._state.deed("hospitalized")      # bars: a deed (deeds.json)
 		main._state.heal(PlayerState.MAX_HEALTH)
 		main._state.spend(bill)
 		hud.caption("HOSPITAL BILL  %s" % Hud.dollars(-bill))

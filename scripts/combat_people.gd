@@ -590,6 +590,7 @@ func _aimed_at(p: Person) -> bool:
 
 func _hold_up(p: Person) -> void:
 	_take_over(p)
+	main._state.deed("held_up")      # bars: a deed (deeds.json)
 	p.state = "held"
 	p.off_t = 0.0
 	p.flee.go(PackedVector2Array(), [])
@@ -888,6 +889,7 @@ func tick(delta: float) -> void:
 			"held":
 				p.off_t = 0.0 if pointing and _held_up(p) else p.off_t + delta
 				if p.off_t >= RELEASE:
+					if p.health >= HEALTH: main._state.deed("let_go")      # bars: a deed (deeds.json): he lowered it, they ran unhurt
 					_run(p)
 			"fleeing":
 				if p.search == null and p.flee.stuck:
