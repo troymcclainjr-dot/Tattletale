@@ -261,6 +261,6 @@ static func _laundry(p: Node3D, b: int) -> void:
 
 static func _people(p: Node3D, cor: int, rms: int) -> void:
 	p.person(rms, "nurse", BU + 11.45, 4.05, {"name": "ATTENDANT", "face": "bored", "talk": "talk_basement_morgue.json"})
-	p.person(rms, "nia", BU + 19.3, 2.35, {"name": "NIA", "face": "content", "talk": "talk_basement_laundry.json"})
+	p.person(rms, "nia", BU + 20.98, 3.45, {"name": "NIA", "face": "content", "talk": "talk_basement_laundry.json"})     # at the folding table's end (behind it, the stacks were over his face as they talked)
 	p.person(rms, "vic", BU + 5.2, 1.15, {"name": "VIC", "face": "smug", "talk": "talk_basement_boiler.json"})      # behind the boiler
 	p.person(cor, "kesha", BU + 11.85, 7.55, {"face": "bored"})          # by her mop

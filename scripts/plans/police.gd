@@ -380,7 +380,7 @@ static func _cells(p: Node3D, b: int) -> void:
 	down.scale = Vector3(0.86, 1.0, 1.0)          # (0.95 wide: between the bars and the notices)
 	p.use_point(b, "PRISONER TUNNEL", 0.62, 3.2, "goto:tunnel", 1.0, 2.0)
 	p.person(b, "cop", 6.0, 3.9, {"face": "bored"})            # the turnkey
-	p.person(b, "cop", 15.0, 4.0)                             # waiting on the van (by its nose: out of the line from the camera to the back door)
+	p.person(b, "cop", 14.5, 2.4)                             # waiting on the van, at its nose (out of the line from the camera to the back door, and far enough off it that his head does not fill a corner of the picture there)
 	# The sally port: the roll-up door is up and the prisoner van stands half
 	# in, half out on the back lot. (A whole van indoors hid him from the camera.)
 	# Beside it, the steel back door out to the police yard (plans/yard.gd: E

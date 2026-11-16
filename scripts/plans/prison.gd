@@ -363,6 +363,13 @@ static func _street(p: Node3D, st: int) -> void:
 	# and the trip is refused anyway (prison_rules.gd's may_go). (Placeholder: the
 	# label; the civic worker's.)
 	p.use_point(st, "TO THE POLICE STATION", 37.25, 45.25, "goto:police", 1.2, 1.9)
+	# He comes in at that end, and from there the camera looked out past the
+	# right-hand lawn onto nothing: ground on out past it and down the
+	# building's side (a few mm under the lawn's, so no face is shared).
+	var rough := Outdoor.tex("out_dead_grass", 2.4, Color(0.36, 0.34, 0.22), Color(0.72, 0.7, 0.6))
+	Kit.box(n, Vector3(29.99, 0.3, 11.0), p.pt(55.005, 38.5, -0.162), grass)          # u 40.01 .. 70, v 33 .. 44
+	Kit.box(n, Vector3(37.92, 0.3, 22.98), p.pt(51.04, 21.5, -0.162), rough)          # u 32.08 .. 70, v 10.01 .. 32.99
+	Kit.box(n, Vector3(43.99, 0.3, 49.99), p.pt(68.005, -15.005, -0.162), rough)      # u 46.01 .. 90, v -40 .. 9.99 (past the yard's)
 
 
 ## The building's front: concrete block on a plinth under a coping, the double

@@ -72,5 +72,5 @@ static func _bandstand(p: Node3D, st: int) -> void:
 static func _people(p: Node3D, st: int) -> void:
 	p.person(st, "tre", 17.95, 6.85, {"name": "TRE", "face": "smug", "talk": "talk_square_bandstand.json"})
 	p.person(st, "chuy", 16.45, 7.15, {"name": "CHUY", "face": "content"})
-	p.person(st, "lil", 29.95, 4.0, {"name": "LIL", "face": "focused", "talk": "talk_square_gap.json"})
+	p.person(st, "lil", 30.45, 2.9, {"name": "LIL", "face": "focused", "talk": "talk_square_gap.json"})      # by the hedge's end, in front of the tree: from the side pavement his feet show through the gap (nearer it, they stood on the railing's top rail)
 	p.person(st, "huff", 27.55, 3.15, {"name": "HUFF DADDY", "face": "bored", "talk": "talk_square_toilets.json"})

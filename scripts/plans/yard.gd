@@ -234,13 +234,26 @@ static func _pump(p: Node3D, st: int, fade) -> void:
 
 ## The impound pen in the far corner: chain link across its front and down its
 ## side, the gate swung back inside, IMPOUND wired to it; inside, a car under a
-## tarp and a stripped one with a gap between them, tyres.
+## tarp and a stripped one with a gap between them, tyres. The front (its gate
+## and sign with it) is in a group of its own with a knee-high stub of it in
+## another, as the lot's front is (_fences): with him in the pen and the camera
+## out past it, the chain link was a screen over him.
 static func _pen(p: Node3D, st: int, fade) -> void:
 	var n: Node3D = p.node_of(st)
-	p.fence(st, true, PEN[1], PEN[0], RIGHT, [PEN_GATE], 2.4, "chain")
+	var front := Kit.group(n, Vector3.ZERO, Vector3.ZERO, "PenFront")
+	var stub := Kit.group(n, Vector3.ZERO, Vector3.ZERO, "PenFrontStub")
+	for g: Node3D in [front, stub]:
+		var first := n.get_child_count()
+		var kept: int = p.obstacles.size()
+		p.fence(st, true, PEN[1], PEN[0], RIGHT, [PEN_GATE], 2.4 if g == front else 0.5, "chain")
+		for c: Node in n.get_children().slice(first):
+			c.reparent(g)
+		if g == stub:
+			p.obstacles.resize(kept)                      # (the stub's: where it stands is blocked already)
 	p.fence(st, false, PEN[0], 0.1, PEN[1], [], 2.4, "chain")
-	Prison.open_leaf(p, n, PEN[1], PEN_GATE[0], 2.0, 2.3)
-	Yard.fence_sign(p, n, 27.75, PEN[1], "IMPOUND")
+	Prison.open_leaf(p, front, PEN[1], PEN_GATE[0], 2.0, 2.3)
+	Yard.fence_sign(p, front, 27.75, PEN[1], "IMPOUND")
+	Alley.cutaway(p, st, front, stub, PEN[1])
 	fade.add(Backs.tarp_car(p, st, 28.0, 3.0, 0.0))
 	fade.add(Alley.stripped_car(p, st, 31.3, 3.3, 180.0, Color(0.5, 0.2, 0.16)))
 	Alley.tyres(p, st, 27.0, 6.45, 3, true)
