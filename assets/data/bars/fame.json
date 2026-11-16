@@ -1,0 +1,77 @@
+{
+	"about": "Songs, videos and fame: unlocked by recording at the booth, shooting a music video, how it premiered, and the mishaps on the shoot. PLACEHOLDER words.",
+	"cards": [
+		{"id": "tape_01",
+		 "lines": [
+			{"text": "First song done, played it back all night", "syl": [[0, "First", 2], [2, "song", 1], [4, "done", 2], [6, "played", 0], [7, "it", 0], [8, "back", 2], [10, "all", 0], [12, "night", 2]]},
+			{"text": "Fry turned it up and said, kid, you alright", "syl": [[0, "Fry", 2], [2, "turned", 1], [3, "it", 0], [4, "up", 2], [6, "and", 0], [7, "said", 0], [8, "kid", 2], [10, "you", 0], [11, "al", 0], [12, "right", 2]]}],
+		 "rhyme": "ight", "tags": ["fame", "on_beat"], "true": true,
+		 "unlock": {"deed": "song_recorded", "count": 1}},
+		{"id": "tape_02",
+		 "lines": [
+			{"text": "Five songs on a tape and it's playing on the block", "syl": [[1, "Five", 2], [2, "songs", 1], [3, "on", 0], [4, "a", 0], [5, "tape", 2], [6, "and", 0], [7, "it's", 0], [9, "play", 2], [10, "ing", 0], [11, "on", 0], [12, "the", 0], [13, "block", 2]]},
+			{"text": "Kids dubbing copies off the copies round the clock", "syl": [[1, "Kids", 2], [2, "dub", 1], [3, "bing", 0], [5, "cop", 2], [6, "ies", 0], [7, "off", 0], [8, "the", 0], [9, "cop", 2], [10, "ies", 0], [11, "round", 0], [12, "the", 0], [13, "clock", 2]]}],
+		 "rhyme": "ock", "tags": ["fame", "behind"], "true": true,
+		 "unlock": {"deed": "song_recorded", "count": 5}},
+		{"id": "video_01",
+		 "lines": [
+			{"text": "Shot a little video, my face in the frame", "syl": [[0, "Shot", 2], [1, "a", 0], [2, "lit", 1], [3, "tle", 0], [4, "vid", 2], [5, "e", 0], [6, "o", 0], [7, "my", 0], [8, "face", 2], [10, "in", 0], [11, "the", 0], [12, "frame", 2]]},
+			{"text": "Whole block came out, now the block know my name", "syl": [[0, "Whole", 2], [1, "block", 1], [2, "came", 0], [4, "out", 2], [6, "now", 0], [7, "the", 0], [8, "block", 2], [10, "know", 1], [11, "my", 0], [12, "name", 2]]}],
+		 "rhyme": "ame", "tags": ["fame", "on_beat"], "true": true,
+		 "unlock": {"deed": "video_shot", "count": 1}},
+		{"id": "flop_01",
+		 "lines": [
+			{"text": "Video flopped and the phone line cold", "syl": [[0, "Vid", 2], [1, "e", 0], [2, "o", 0], [4, "flopped", 2], [6, "and", 0], [7, "the", 0], [8, "phone", 2], [10, "line", 1], [12, "cold", 2]]},
+			{"text": "Spent it all, and the shoes getting old", "syl": [[0, "Spent", 2], [1, "it", 0], [2, "all", 1], [7, "and", 0], [8, "the", 0], [9, "shoes", 2], [10, "get", 1], [11, "ting", 0], [12, "old", 2]]}],
+		 "rhyme": "old", "tags": ["fame", "rests"], "true": true,
+		 "unlock": {"deed": "video_flopped", "count": 1}},
+		{"id": "big_01",
+		 "lines": [
+			{"text": "Video went big, now the cameras flash", "syl": [[0, "Vid", 2], [1, "e", 0], [2, "o", 0], [3, "went", 0], [4, "big", 2], [6, "now", 0], [7, "the", 0], [8, "cam", 2], [9, "er", 0], [10, "as", 0], [12, "flash", 2]]},
+			{"text": "For the kid from Rose Hill with his first real cash", "syl": [[0, "For", 0], [1, "the", 0], [2, "kid", 1], [3, "from", 0], [4, "Rose", 2], [5, "Hill", 1], [6, "with", 0], [7, "his", 0], [8, "first", 2], [10, "real", 1], [12, "cash", 2]]}],
+		 "rhyme": "ash", "tags": ["fame", "on_beat"], "true": true,
+		 "unlock": {"deed": "video_went_big", "count": 1}},
+		{"id": "big_02",
+		 "lines": [
+			{"text": "Autograph a napkin, autograph a CD", "syl": [[0, "Au", 2], [1, "to", 0], [2, "graph", 0], [3, "a", 0], [4, "nap", 2], [5, "kin", 0], [6, "au", 1], [7, "to", 0], [8, "graph", 0], [9, "a", 0], [10, "C", 1], [11, "D", 2]]},
+			{"text": "Little kids on the block pretending that they me", "syl": [[0, "Lit", 1], [1, "tle", 0], [2, "kids", 1], [3, "on", 0], [4, "the", 0], [5, "block", 2], [6, "pre", 0], [7, "tend", 2], [8, "ing", 0], [9, "that", 0], [10, "they", 0], [11, "me", 2]]}],
+		 "rhyme": "ee", "tags": ["fame", "double"], "true": true,
+		 "unlock": {"deed": "video_went_big", "count": 2}},
+		{"id": "mishap_01",
+		 "lines": [
+			{"text": "Car alarm screaming in the middle of the show", "syl": [[0, "Car", 2], [1, "a", 0], [2, "larm", 1], [4, "scream", 2], [5, "ing", 0], [6, "in", 0], [7, "the", 0], [8, "mid", 2], [9, "dle", 0], [10, "of", 0], [11, "the", 0], [12, "show", 2]]},
+			{"text": "Didn't miss a single word, kept it in the flow", "syl": [[0, "Did", 0], [1, "n't", 0], [2, "miss", 1], [3, "a", 0], [4, "sin", 2], [5, "gle", 0], [6, "word", 1], [8, "kept", 2], [9, "it", 0], [10, "in", 0], [11, "the", 0], [12, "flow", 2]]}],
+		 "rhyme": "oh", "tags": ["fame", "on_beat"], "true": true,
+		 "unlock": {"deed": "mishap_handled", "count": 1}},
+		{"id": "mishap_02",
+		 "lines": [
+			{"text": "Smoke machine choked me, couldn't find a word to say", "syl": [[1, "Smoke", 2], [2, "ma", 0], [3, "chine", 1], [5, "choked", 2], [6, "me", 0], [7, "could", 0], [8, "n't", 0], [9, "find", 2], [10, "a", 0], [11, "word", 1], [12, "to", 0], [13, "say", 2]]},
+			{"text": "Crew laughing so hard that the camera sway", "syl": [[1, "Crew", 2], [2, "laugh", 1], [3, "ing", 0], [4, "so", 0], [5, "hard", 2], [7, "that", 0], [8, "the", 0], [9, "cam", 2], [10, "er", 0], [11, "a", 0], [13, "sway", 2]]}],
+		 "rhyme": "ay", "tags": ["fame", "behind"], "true": true,
+		 "unlock": {"deed": "mishap_missed", "count": 1}},
+		{"id": "hook_tape_a",
+		 "lines": [
+			{"text": "Put it on tape, put it on tape, how I feel", "syl": [[0, "Put", 2], [1, "it", 0], [2, "on", 0], [4, "tape", 2], [5, "put", 1], [6, "it", 0], [7, "on", 0], [8, "tape", 2], [10, "how", 0], [11, "I", 0], [12, "feel", 2]]},
+			{"text": "Back room, red light, and the wheels on the reel", "syl": [[0, "Back", 2], [1, "room", 1], [4, "red", 2], [5, "light", 1], [6, "and", 0], [7, "the", 0], [8, "wheels", 2], [10, "on", 0], [11, "the", 0], [12, "reel", 2]]}],
+		 "rhyme": "eal", "tags": ["fame", "hook", "on_beat"], "true": true,
+		 "unlock": {"deed": "song_recorded", "count": 1}},
+		{"id": "hook_tape_b",
+		 "lines": [
+			{"text": "Put it on tape, let the city know the deal", "syl": [[0, "Put", 2], [1, "it", 0], [2, "on", 0], [4, "tape", 2], [6, "let", 0], [7, "the", 0], [8, "ci", 2], [9, "ty", 0], [10, "know", 1], [11, "the", 0], [12, "deal", 2]]},
+			{"text": "Rose Hill Terrace, every word of it real", "syl": [[0, "Rose", 2], [2, "Hill", 1], [4, "Ter", 2], [5, "race", 0], [6, "ev", 1], [7, "ery", 0], [8, "word", 2], [10, "of", 0], [11, "it", 0], [12, "real", 2]]}],
+		 "rhyme": "eal", "tags": ["fame", "hook", "on_beat"], "true": true,
+		 "unlock": {"deed": "song_recorded", "count": 1}},
+		{"id": "hook_screen_a",
+		 "lines": [
+			{"text": "Turn on the TV, look, Mama, that's me", "syl": [[0, "Turn", 2], [1, "on", 0], [2, "the", 0], [3, "T", 1], [4, "V", 2], [6, "look", 1], [8, "Ma", 2], [9, "ma", 0], [10, "that's", 1], [12, "me", 2]]},
+			{"text": "Same kid from the stoop that you used to see", "syl": [[0, "Same", 2], [1, "kid", 1], [2, "from", 0], [3, "the", 0], [4, "stoop", 2], [6, "that", 0], [7, "you", 0], [8, "used", 2], [10, "to", 0], [12, "see", 2]]}],
+		 "rhyme": "ee", "tags": ["fame", "hook", "on_beat"], "true": true,
+		 "unlock": {"deed": "video_went_big", "count": 1}},
+		{"id": "hook_screen_b",
+		 "lines": [
+			{"text": "Turn on the TV, it's on channel three", "syl": [[0, "Turn", 2], [1, "on", 0], [2, "the", 0], [3, "T", 1], [4, "V", 2], [6, "it's", 0], [7, "on", 0], [8, "chan", 2], [9, "nel", 0], [12, "three", 2]]},
+			{"text": "Rose Hill Terrace, every window lit for me", "syl": [[0, "Rose", 2], [2, "Hill", 1], [4, "Ter", 2], [5, "race", 0], [6, "ev", 1], [7, "ery", 0], [8, "win", 2], [9, "dow", 0], [10, "lit", 1], [11, "for", 0], [12, "me", 2]]}],
+		 "rhyme": "ee", "tags": ["fame", "hook", "on_beat"], "true": true,
+		 "unlock": {"deed": "video_went_big", "count": 1}}
+	]
+}

@@ -1,0 +1,71 @@
+{
+	"about": "The angel's bars: unlocked by walking away from a drawn gun, leaving the guns at home, going into the courthouse clean, letting someone he held up go; and one each for the side picked at the start. PLACEHOLDER words.",
+	"cards": [
+		{"id": "walk_01",
+		 "lines": [
+			{"text": "He pulled it on me and I just walked away", "syl": [[0, "He", 0], [1, "pulled", 1], [2, "it", 0], [3, "on", 0], [4, "me", 2], [6, "and", 0], [7, "I", 0], [8, "just", 1], [9, "walked", 2], [10, "a", 0], [12, "way", 2]]},
+			{"text": "Ain't scared I just wanted to see another day", "syl": [[0, "Ain't", 0], [1, "scared", 2], [2, "I", 0], [3, "just", 0], [4, "want", 2], [5, "ed", 0], [6, "to", 0], [7, "see", 1], [8, "an", 0], [9, "oth", 2], [10, "er", 0], [12, "day", 2]]}],
+		 "rhyme": "ay", "tags": ["angel", "on_beat"], "true": true,
+		 "unlock": {"deed": "walked_away", "count": 1}},
+		{"id": "walk_02",
+		 "lines": [
+			{"text": "Three times they drew, three times I turned around", "syl": [[1, "Three", 2], [2, "times", 0], [3, "they", 0], [5, "drew", 2], [6, "three", 1], [7, "times", 0], [8, "I", 0], [9, "turned", 2], [12, "a", 0], [13, "round", 2]]},
+			{"text": "Nobody gon' chalk out my shape on the ground", "syl": [[1, "No", 2], [2, "bo", 0], [3, "dy", 0], [4, "gon'", 0], [5, "chalk", 2], [6, "out", 0], [7, "my", 0], [9, "shape", 2], [11, "on", 0], [12, "the", 0], [13, "ground", 2]]}],
+		 "rhyme": "ound", "tags": ["angel", "behind"], "true": true,
+		 "unlock": {"deed": "walked_away", "count": 3}},
+		{"id": "clean_01",
+		 "lines": [
+			{"text": "Left it in the dresser, walked out clean", "syl": [[0, "Left", 2], [1, "it", 0], [2, "in", 0], [3, "the", 0], [4, "dress", 2], [5, "er", 0], [8, "walked", 2], [10, "out", 1], [12, "clean", 2]]},
+			{"text": "Lightest that I felt since I was fifteen", "syl": [[0, "Light", 2], [1, "est", 0], [2, "that", 0], [3, "I", 0], [4, "felt", 2], [6, "since", 0], [7, "I", 0], [8, "was", 0], [10, "fif", 1], [12, "teen", 2]]}],
+		 "rhyme": "een", "tags": ["angel", "on_beat"], "true": true,
+		 "unlock": {"deed": "guns_left_home", "count": 1}},
+		{"id": "clean_02",
+		 "lines": [
+			{"text": "Nothing on my waist but a rhyme and a beat", "syl": [[0, "Noth", 2], [1, "ing", 0], [2, "on", 0], [3, "my", 0], [4, "waist", 2], [6, "but", 0], [7, "a", 0], [8, "rhyme", 2], [10, "and", 0], [11, "a", 0], [12, "beat", 2]]},
+			{"text": "Same block, same corner, but I'm lighter on my feet", "syl": [[0, "Same", 2], [1, "block", 1], [2, "same", 1], [4, "cor", 2], [5, "ner", 0], [6, "but", 0], [7, "I'm", 0], [8, "light", 2], [9, "er", 0], [10, "on", 0], [11, "my", 0], [12, "feet", 2]]}],
+		 "rhyme": "eat", "tags": ["angel", "on_beat"], "true": true,
+		 "unlock": {"deed": "guns_left_home", "count": 3}},
+		{"id": "court_01",
+		 "lines": [
+			{"text": "Walked through the detector and the light went green", "syl": [[1, "Walked", 2], [2, "through", 0], [3, "the", 0], [4, "de", 0], [5, "tec", 2], [6, "tor", 0], [7, "and", 0], [8, "the", 0], [9, "light", 2], [11, "went", 0], [13, "green", 2]]},
+			{"text": "Officer looked twice, he was hoping for a scene", "syl": [[1, "Of", 2], [2, "fi", 0], [3, "cer", 0], [4, "looked", 1], [5, "twice", 2], [6, "he", 0], [7, "was", 0], [9, "hop", 2], [10, "ing", 0], [11, "for", 0], [12, "a", 0], [13, "scene", 2]]}],
+		 "rhyme": "een", "tags": ["angel", "behind"], "true": true,
+		 "unlock": {"deed": "court_clean", "count": 1}},
+		{"id": "court_02",
+		 "lines": [
+			{"text": "Judge looked over his glasses, face all mean", "syl": [[0, "Judge", 2], [1, "looked", 1], [2, "o", 0], [3, "ver", 0], [4, "his", 0], [5, "glass", 2], [6, "es", 0], [8, "face", 2], [10, "all", 0], [12, "mean", 2]]},
+			{"text": "Mama in the back row, proud of what she's seen", "syl": [[0, "Ma", 2], [1, "ma", 0], [2, "in", 0], [3, "the", 0], [4, "back", 2], [5, "row", 1], [8, "proud", 2], [9, "of", 0], [10, "what", 0], [11, "she's", 0], [12, "seen", 2]]}],
+		 "rhyme": "een", "tags": ["angel", "on_beat"], "true": true,
+		 "unlock": {"deed": "court_clean", "count": 2}},
+		{"id": "letgo_01",
+		 "lines": [
+			{"text": "Had him dead to rights, and I let him go free", "syl": [[0, "Had", 2], [1, "him", 0], [2, "dead", 1], [3, "to", 0], [4, "rights", 2], [6, "and", 0], [7, "I", 0], [8, "let", 2], [9, "him", 0], [10, "go", 1], [12, "free", 2]]},
+			{"text": "Not for him, I did it for me", "syl": [[0, "Not", 2], [2, "for", 0], [4, "him", 2], [7, "I", 0], [8, "did", 2], [9, "it", 0], [10, "for", 0], [12, "me", 2]]}],
+		 "rhyme": "ee", "tags": ["angel", "on_beat"], "true": true,
+		 "unlock": {"deed": "let_go", "count": 1}},
+		{"id": "angel_01",
+		 "lines": [
+			{"text": "Angel on my shoulder telling me to go slow", "syl": [[1, "An", 2], [2, "gel", 0], [3, "on", 0], [4, "my", 0], [5, "shoul", 2], [6, "der", 0], [7, "tell", 1], [8, "ing", 0], [9, "me", 0], [10, "to", 0], [11, "go", 1], [13, "slow", 2]]},
+			{"text": "When I wanna run, she the one saying no", "syl": [[1, "When", 1], [2, "I", 0], [3, "wan", 0], [4, "na", 0], [5, "run", 2], [6, "she", 0], [7, "the", 0], [9, "one", 2], [10, "say", 1], [11, "ing", 0], [13, "no", 2]]}],
+		 "rhyme": "oh", "tags": ["angel", "behind"], "true": false,
+		 "unlock": {"deed": "chose_angel", "count": 1}},
+		{"id": "devil_01",
+		 "lines": [
+			{"text": "Devil on my shoulder whispering every night", "syl": [[0, "Dev", 2], [1, "il", 0], [2, "on", 0], [3, "my", 0], [4, "shoul", 2], [5, "der", 0], [6, "whis", 1], [7, "per", 0], [8, "ing", 0], [9, "ev", 1], [10, "ery", 0], [12, "night", 2]]},
+			{"text": "Make the wrong thing easy, make the easy thing right", "syl": [[0, "Make", 0], [1, "the", 0], [3, "wrong", 2], [4, "thing", 0], [5, "ea", 2], [6, "sy", 0], [7, "make", 0], [8, "the", 0], [9, "ea", 2], [10, "sy", 0], [11, "thing", 0], [12, "right", 2]]}],
+		 "rhyme": "ight", "tags": ["devil", "on_beat"], "true": false,
+		 "unlock": {"deed": "chose_devil", "count": 1}},
+		{"id": "hook_walk_a",
+		 "lines": [
+			{"text": "I could've, I could've, but I walked away", "syl": [[0, "I", 0], [1, "could", 2], [2, "'ve", 0], [4, "I", 0], [5, "could", 2], [6, "'ve", 0], [7, "but", 0], [8, "I", 0], [9, "walked", 2], [11, "a", 0], [13, "way", 2]]},
+			{"text": "Somebody's son still breathing today", "syl": [[1, "Some", 2], [2, "bo", 0], [3, "dy's", 0], [5, "son", 2], [6, "still", 1], [9, "breath", 2], [10, "ing", 0], [11, "to", 0], [13, "day", 2]]}],
+		 "rhyme": "ay", "tags": ["angel", "hook", "behind"], "true": true,
+		 "unlock": {"deed": "walked_away", "count": 1}},
+		{"id": "hook_walk_b",
+		 "lines": [
+			{"text": "I could've, I could've, wasn't nothing in my way", "syl": [[0, "I", 0], [1, "could", 2], [2, "'ve", 0], [4, "I", 0], [5, "could", 2], [6, "'ve", 0], [7, "was", 0], [8, "n't", 0], [9, "noth", 2], [10, "ing", 0], [11, "in", 0], [12, "my", 0], [13, "way", 2]]},
+			{"text": "Hardest thing I ever did was walk away", "syl": [[1, "Hard", 2], [2, "est", 0], [3, "thing", 0], [4, "I", 0], [5, "ev", 2], [6, "er", 0], [7, "did", 0], [8, "was", 0], [9, "walk", 2], [11, "a", 0], [13, "way", 2]]}],
+		 "rhyme": "ay", "tags": ["angel", "hook", "behind"], "true": true,
+		 "unlock": {"deed": "walked_away", "count": 1}}
+	]
+}

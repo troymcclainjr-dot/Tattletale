@@ -1,0 +1,111 @@
+{
+	"about": "The starter pack: usable from the first day, no deed needed. The block, the come-up, the studio, money he does not have yet. PLACEHOLDER words.",
+	"cards": [
+		{"id": "block_01",
+		 "lines": [
+			{"text": "Rose Hill Terrace, I was raised on the block", "syl": [[0, "Rose", 2], [2, "Hill", 1], [4, "Ter", 2], [5, "race", 0], [6, "I", 0], [7, "was", 0], [8, "raised", 2], [10, "on", 0], [11, "the", 0], [12, "block", 2]]},
+			{"text": "Where the corners tell the time, we never had a clock", "syl": [[0, "Where", 0], [1, "the", 0], [2, "cor", 1], [3, "ners", 0], [4, "tell", 2], [5, "the", 0], [6, "time", 1], [7, "we", 0], [8, "nev", 2], [9, "er", 0], [10, "had", 0], [11, "a", 0], [12, "clock", 2]]}],
+		 "rhyme": "ock", "tags": ["block", "on_beat"], "true": false},
+		{"id": "block_02",
+		 "lines": [
+			{"text": "Mama on a double, I'm awake all night", "syl": [[1, "Ma", 2], [2, "ma", 0], [3, "on", 0], [4, "a", 0], [5, "dou", 2], [6, "ble", 0], [7, "I'm", 0], [8, "a", 0], [9, "wake", 2], [11, "all", 0], [13, "night", 2]]},
+			{"text": "Writing in the kitchen by the open fridge light", "syl": [[1, "Wri", 2], [2, "ting", 0], [3, "in", 0], [4, "the", 0], [5, "kit", 2], [6, "chen", 0], [7, "by", 0], [8, "the", 0], [9, "o", 2], [10, "pen", 0], [11, "fridge", 1], [13, "light", 2]]}],
+		 "rhyme": "ight", "tags": ["block", "behind"], "true": false},
+		{"id": "block_03",
+		 "lines": [
+			{"text": "Sneakers on the wire hanging over the street", "syl": [[0, "Snea", 2], [1, "kers", 0], [2, "on", 0], [3, "the", 0], [4, "wire", 2], [6, "hang", 1], [7, "ing", 0], [8, "o", 1], [9, "ver", 0], [10, "the", 0], [12, "street", 2]]},
+			{"text": "Every crack in the concrete got a story to repeat", "syl": [[0, "Ev", 2], [1, "ery", 0], [2, "crack", 1], [3, "in", 0], [4, "the", 0], [5, "con", 2], [6, "crete", 0], [7, "got", 0], [8, "a", 0], [9, "sto", 2], [10, "ry", 0], [11, "to", 0], [12, "re", 0], [13, "peat", 2]]}],
+		 "rhyme": "eat", "tags": ["block", "double"], "true": false},
+		{"id": "block_04",
+		 "lines": [
+			{"text": "Little homies on the stoop copy my flow", "syl": [[0, "Lit", 2], [1, "tle", 0], [2, "ho", 1], [3, "mies", 0], [4, "on", 0], [5, "the", 0], [7, "stoop", 2], [8, "co", 2], [9, "py", 0], [10, "my", 0], [12, "flow", 2]]},
+			{"text": "Ain't nobody yet, but watch me go", "syl": [[0, "Ain't", 0], [1, "no", 2], [2, "bo", 0], [3, "dy", 0], [4, "yet", 2], [5, "but", 0], [6, "watch", 0], [7, "me", 0], [8, "go", 2]]}],
+		 "rhyme": "oh", "tags": ["block", "rests"], "true": false},
+		{"id": "comeup_01",
+		 "lines": [
+			{"text": "Nobody on the corner even know my name", "syl": [[0, "No", 2], [1, "bo", 0], [2, "dy", 0], [3, "on", 0], [4, "the", 0], [5, "cor", 2], [6, "ner", 0], [8, "e", 2], [9, "ven", 0], [10, "know", 1], [11, "my", 0], [12, "name", 2]]},
+			{"text": "Give it one summer, it won't ever be the same", "syl": [[0, "Give", 0], [1, "it", 0], [2, "one", 1], [4, "sum", 2], [5, "mer", 0], [6, "it", 0], [7, "won't", 1], [8, "e", 2], [9, "ver", 0], [10, "be", 0], [11, "the", 0], [12, "same", 2]]}],
+		 "rhyme": "ame", "tags": ["comeup", "on_beat"], "true": false},
+		{"id": "comeup_02",
+		 "lines": [
+			{"text": "Rhymes on a napkin, rhymes on a lunch tray", "syl": [[0, "Rhymes", 2], [1, "on", 0], [2, "a", 0], [4, "nap", 2], [5, "kin", 0], [8, "rhymes", 2], [9, "on", 0], [10, "a", 0], [11, "lunch", 1], [12, "tray", 2]]},
+			{"text": "Teacher took the notebook, but she can't take what I say", "syl": [[0, "Teach", 2], [1, "er", 0], [2, "took", 1], [3, "the", 0], [4, "note", 2], [5, "book", 0], [6, "but", 0], [7, "she", 0], [8, "can't", 2], [9, "take", 0], [10, "what", 0], [11, "I", 0], [12, "say", 2]]}],
+		 "rhyme": "ay", "tags": ["comeup", "on_beat"], "true": false},
+		{"id": "comeup_03",
+		 "lines": [
+			{"text": "Back in the lunchroom banging on the tables for sound", "syl": [[0, "Back", 2], [1, "in", 0], [2, "the", 0], [3, "lunch", 2], [4, "room", 0], [5, "bang", 2], [6, "ing", 0], [7, "on", 0], [8, "the", 0], [9, "ta", 2], [10, "bles", 0], [11, "for", 0], [12, "sound", 2]]},
+			{"text": "Now the cafeteria rocking when I come around", "syl": [[0, "Now", 0], [1, "the", 0], [2, "ca", 1], [3, "fe", 0], [4, "te", 2], [5, "ri", 0], [6, "a", 0], [7, "rock", 2], [8, "ing", 0], [9, "when", 0], [10, "I", 0], [11, "come", 1], [12, "a", 0], [13, "round", 2]]}],
+		 "rhyme": "ound", "tags": ["comeup", "double"], "true": false},
+		{"id": "comeup_04",
+		 "lines": [
+			{"text": "Rhyming on the bus with my head on the pane", "syl": [[1, "Rhy", 2], [2, "ming", 0], [3, "on", 0], [4, "the", 0], [5, "bus", 2], [6, "with", 0], [7, "my", 0], [9, "head", 2], [10, "on", 0], [11, "the", 0], [13, "pane", 2]]},
+			{"text": "Watching all the corners sliding by in the rain", "syl": [[1, "Watch", 2], [2, "ing", 0], [3, "all", 0], [4, "the", 0], [5, "cor", 2], [6, "ners", 0], [7, "slid", 1], [8, "ing", 0], [9, "by", 2], [11, "in", 0], [12, "the", 0], [13, "rain", 2]]}],
+		 "rhyme": "ain", "tags": ["comeup", "behind"], "true": false},
+		{"id": "studio_01",
+		 "lines": [
+			{"text": "Egg crates on the wall in the room in the back", "syl": [[0, "Egg", 2], [1, "crates", 1], [2, "on", 0], [3, "the", 0], [4, "wall", 2], [6, "in", 0], [7, "the", 0], [8, "room", 2], [10, "in", 0], [11, "the", 0], [12, "back", 2]]},
+			{"text": "Fry nodding at the board, he could feel it in the track", "syl": [[0, "Fry", 2], [1, "nod", 1], [2, "ding", 0], [3, "at", 0], [4, "the", 0], [5, "board", 2], [6, "he", 0], [7, "could", 0], [8, "feel", 2], [9, "it", 0], [10, "in", 0], [11, "the", 0], [12, "track", 2]]}],
+		 "rhyme": "ack", "tags": ["studio", "on_beat"], "true": false},
+		{"id": "studio_02",
+		 "lines": [
+			{"text": "Red light on, and the booth is tight", "syl": [[0, "Red", 2], [2, "light", 1], [4, "on", 2], [6, "and", 0], [7, "the", 0], [8, "booth", 2], [10, "is", 0], [12, "tight", 2]]},
+			{"text": "One take, two takes, till I get it right", "syl": [[0, "One", 2], [2, "take", 0], [4, "two", 2], [6, "takes", 0], [8, "till", 0], [9, "I", 0], [10, "get", 1], [11, "it", 0], [12, "right", 2]]}],
+		 "rhyme": "ight", "tags": ["studio", "on_beat"], "true": false},
+		{"id": "studio_03",
+		 "lines": [
+			{"text": "Headphones taped, and the mic stand old", "syl": [[2, "Head", 1], [3, "phones", 0], [4, "taped", 2], [6, "and", 0], [7, "the", 0], [8, "mic", 2], [9, "stand", 0], [12, "old", 2]]},
+			{"text": "But soon as it's on, I forget I'm cold", "syl": [[4, "But", 0], [5, "soon", 1], [6, "as", 0], [7, "it's", 0], [8, "on", 2], [9, "I", 0], [10, "for", 0], [11, "get", 2], [12, "I'm", 0], [13, "cold", 2]]}],
+		 "rhyme": "old", "tags": ["studio", "rests"], "true": false},
+		{"id": "studio_04",
+		 "lines": [
+			{"text": "Fry said spit it like you mean it, make the people feel", "syl": [[0, "Fry", 2], [1, "said", 0], [3, "spit", 2], [4, "it", 0], [5, "like", 0], [6, "you", 0], [7, "mean", 2], [8, "it", 0], [9, "make", 0], [10, "the", 0], [11, "peo", 2], [12, "ple", 0], [13, "feel", 2]]},
+			{"text": "Every word I put on tape gotta cut like steel", "syl": [[0, "Ev", 2], [1, "ery", 0], [3, "word", 2], [4, "I", 0], [5, "put", 0], [6, "on", 0], [7, "tape", 2], [8, "got", 1], [9, "ta", 0], [10, "cut", 1], [11, "like", 0], [12, "steel", 2]]}],
+		 "rhyme": "eal", "tags": ["studio", "double"], "true": false},
+		{"id": "studio_05",
+		 "lines": [
+			{"text": "Fry got a sampler and a drum machine", "syl": [[0, "Fry", 2], [2, "got", 0], [3, "a", 0], [4, "sam", 2], [5, "pler", 0], [6, "and", 0], [7, "a", 0], [8, "drum", 2], [10, "ma", 0], [12, "chine", 2]]},
+			{"text": "Bought it all used, but the sweetest thing I've seen", "syl": [[0, "Bought", 2], [1, "it", 0], [2, "all", 1], [4, "used", 2], [6, "but", 0], [7, "the", 0], [8, "sweet", 2], [9, "est", 0], [10, "thing", 1], [11, "I've", 0], [12, "seen", 2]]}],
+		 "rhyme": "een", "tags": ["studio", "on_beat"], "true": false},
+		{"id": "money_01",
+		 "lines": [
+			{"text": "Pockets full of lint and a dream about cash", "syl": [[0, "Pock", 2], [1, "ets", 0], [2, "full", 1], [3, "of", 0], [4, "lint", 2], [6, "and", 0], [7, "a", 0], [8, "dream", 2], [10, "a", 0], [11, "bout", 0], [12, "cash", 2]]},
+			{"text": "Every dollar that I find goes straight in the stash", "syl": [[0, "Ev", 2], [1, "ery", 0], [2, "dol", 1], [3, "lar", 0], [4, "that", 0], [5, "I", 0], [6, "find", 1], [7, "goes", 0], [8, "straight", 2], [10, "in", 0], [11, "the", 0], [12, "stash", 2]]}],
+		 "rhyme": "ash", "tags": ["money", "on_beat"], "true": false},
+		{"id": "money_02",
+		 "lines": [
+			{"text": "First of the month, and the check gone by four", "syl": [[0, "First", 2], [1, "of", 0], [2, "the", 0], [4, "month", 2], [6, "and", 0], [7, "the", 0], [8, "check", 2], [10, "gone", 0], [11, "by", 0], [12, "four", 2]]},
+			{"text": "Still owe the man at the corner store", "syl": [[0, "Still", 2], [2, "owe", 1], [3, "the", 0], [4, "man", 2], [6, "at", 0], [8, "the", 0], [9, "cor", 1], [10, "ner", 0], [12, "store", 2]]}],
+		 "rhyme": "ore", "tags": ["money", "on_beat"], "true": false,
+		 "slot": {"line": 1, "from": "places"}},
+		{"id": "money_03",
+		 "lines": [
+			{"text": "Everybody talking money, I ain't seen none", "syl": [[0, "Ev", 2], [1, "ery", 0], [2, "bo", 0], [3, "dy", 0], [4, "talk", 2], [5, "ing", 0], [6, "mo", 1], [7, "ney", 0], [8, "I", 0], [9, "ain't", 1], [10, "seen", 1], [12, "none", 2]]},
+			{"text": "Dollar short, but I'm working on one", "syl": [[4, "Dol", 2], [5, "lar", 0], [6, "short", 1], [7, "but", 0], [8, "I'm", 0], [9, "work", 2], [10, "ing", 0], [11, "on", 0], [12, "one", 2]]}],
+		 "rhyme": "un", "tags": ["money", "rests"], "true": false},
+		{"id": "money_04",
+		 "lines": [
+			{"text": "Landlord at the door, Mama told me to stay", "syl": [[1, "Land", 2], [2, "lord", 0], [3, "at", 0], [4, "the", 0], [5, "door", 2], [6, "Ma", 1], [7, "ma", 0], [9, "told", 2], [10, "me", 0], [11, "to", 0], [13, "stay", 2]]},
+			{"text": "Quiet in the back room till he went away", "syl": [[1, "Qui", 2], [2, "et", 0], [3, "in", 0], [4, "the", 0], [5, "back", 2], [6, "room", 1], [7, "till", 0], [8, "he", 0], [9, "went", 2], [11, "a", 0], [13, "way", 2]]}],
+		 "rhyme": "ay", "tags": ["money", "behind"], "true": false},
+		{"id": "hook_block_a",
+		 "lines": [
+			{"text": "This is for the block, this is for the block", "syl": [[0, "This", 2], [1, "is", 0], [2, "for", 0], [3, "the", 0], [4, "block", 2], [8, "this", 2], [9, "is", 0], [10, "for", 0], [11, "the", 0], [12, "block", 2]]},
+			{"text": "The ones on the stoop and the ones on the clock", "syl": [[0, "The", 0], [1, "ones", 2], [2, "on", 0], [3, "the", 0], [4, "stoop", 2], [6, "and", 0], [7, "the", 0], [8, "ones", 2], [10, "on", 0], [11, "the", 0], [12, "clock", 2]]}],
+		 "rhyme": "ock", "tags": ["block", "hook", "on_beat"], "true": false},
+		{"id": "hook_block_b",
+		 "lines": [
+			{"text": "This is for the block, let it knock, let it knock", "syl": [[0, "This", 2], [1, "is", 0], [2, "for", 0], [3, "the", 0], [4, "block", 2], [6, "let", 0], [7, "it", 0], [8, "knock", 2], [10, "let", 0], [11, "it", 0], [12, "knock", 2]]},
+			{"text": "Rose Hill Terrace, turn it up, let it rock", "syl": [[0, "Rose", 2], [2, "Hill", 1], [4, "Ter", 2], [5, "race", 0], [6, "turn", 0], [7, "it", 0], [8, "up", 2], [10, "let", 0], [11, "it", 0], [12, "rock", 2]]}],
+		 "rhyme": "ock", "tags": ["block", "hook", "on_beat"], "true": false},
+		{"id": "hook_up_a",
+		 "lines": [
+			{"text": "Still on the come-up, still moving slow", "syl": [[1, "Still", 2], [2, "on", 0], [3, "the", 0], [5, "come", 2], [6, "up", 0], [8, "still", 1], [9, "mov", 2], [10, "ing", 0], [13, "slow", 2]]},
+			{"text": "Whole lot of heart and a little bit of dough", "syl": [[1, "Whole", 2], [2, "lot", 0], [3, "of", 0], [5, "heart", 2], [6, "and", 0], [7, "a", 0], [9, "lit", 2], [10, "tle", 0], [11, "bit", 0], [12, "of", 0], [13, "dough", 2]]}],
+		 "rhyme": "oh", "tags": ["comeup", "hook", "behind"], "true": false},
+		{"id": "hook_up_b",
+		 "lines": [
+			{"text": "Still on the come-up, and the whole block know", "syl": [[1, "Still", 2], [2, "on", 0], [3, "the", 0], [5, "come", 2], [6, "up", 0], [7, "and", 0], [8, "the", 0], [9, "whole", 2], [11, "block", 1], [13, "know", 2]]},
+			{"text": "Pen Lucy on my back everywhere I go", "syl": [[0, "Pen", 1], [1, "Lu", 2], [2, "cy", 0], [3, "on", 0], [4, "my", 0], [5, "back", 2], [9, "ev", 2], [10, "ery", 0], [11, "where", 0], [12, "I", 0], [13, "go", 2]]}],
+		 "rhyme": "oh", "tags": ["comeup", "hook", "behind"], "true": false}
+	]
+}

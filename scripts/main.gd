@@ -85,6 +85,9 @@ extends Node3D
 ##   hidecheck:here fires where he stands), runcover, hidden, gunpoint (each a picture, :name: someone running for
 ##   cover, someone hidden, someone held up), deadrow (every character with the dead face, standing and lying),
 ##   deadcheck (everyone here put down at once: does anything about them move?).
+##   bars_steps.gd's, the deeds ledger and the bar cards: bars:ledger, bars:deed:name[:n], bars:unlocked, bars:follows:card,
+##   bars:slot:card, bars:card:card, bars:check, bars:portal:label (E at the stairs, ladder or trapdoor so labelled),
+##   bars:mark, bars:since, bars:expect:name=n+name=n, bars:save, bars:same.
 
 const Building := preload("res://scripts/building.gd")
 const Place := preload("res://scripts/place.gd")
@@ -125,6 +128,8 @@ const FaceCheck := preload("res://scripts/face_check.gd")     # --check-faces: n
 const AimSweep := preload("res://scripts/aim_sweep.gd")       # --do=aimsweep: no flicker between side-on and his back
 const Combat := preload("res://scripts/combat.gd")
 const Prison := preload("res://scripts/prison_rules.gd")      # arrested, held at the jail, let out
+const Deeds := preload("res://scripts/deeds.gd")              # bars: the deeds ledger's rules (assets/data/deeds.json)
+const BarsSteps := preload("res://scripts/bars_steps.gd")     # bars: --do steps bars:... (the ledger, the bar cards)
 
 ## The follow camera keeps this far from him, off to the right. It may not go
 ## past the right wall of the room he is in (each room says how far) or rise to
@@ -564,6 +569,7 @@ func _open_place(id: String) -> void:
 	_actor.areas = _building.walk_areas()
 	_room = _building.room_at_pos(_actor.position, 0)
 	_building.show_room(_room)
+	Deeds.arrived(self)      # bars: a deed (deeds.json): visited_<place>; walked_away, guns_left_home on leaving
 
 
 ## Make the people a place's plan asks for (place.gd's `people`). Each is a
@@ -789,6 +795,7 @@ func _teleport(to: Vector3, instant := false) -> void:
 		_actor.areas = _building.walk_areas()
 		_room = _building.room_at_pos(to, _room)
 		_building.show_room(_room)
+		Deeds.landed(self)      # bars: a deed (deeds.json): up onto a roof, down into a cellar
 		if _cam_name == "follow":
 			_follow(0.0, true)
 	if instant:
@@ -924,6 +931,7 @@ func _start_talk(_by: Node3D, npc: Node3D, file: String) -> void:
 	_actor.face_side(across)
 	npc.face_side(-across)
 	_talk.start(data, _actor, npc)
+	Deeds.talked(self, npc)      # bars: a deed (deeds.json): talked, met_<who>
 
 
 func _end_talk() -> void:
@@ -962,6 +970,7 @@ func _use_point(id: String, _by: Node3D) -> void:
 	elif id == "sleep":
 		_cut_to(func() -> void:
 			_day += 1
+			_state.deed("slept_home")      # bars: a deed (deeds.json)
 			_dress_for_day()
 			_save_game()
 			print("[use] day %d" % _day))
@@ -1164,6 +1173,7 @@ func _begin_game(side: String) -> void:
 		_side = side
 		_day = 0
 		_state.reset()
+		if side in ["angel", "devil"]: _state.deed("chose_" + side)      # bars: a deed (deeds.json)
 		_picks = {}
 		_dress_lead()
 		_dress_for_day()
@@ -1639,6 +1649,8 @@ func _take_shot() -> void:
 				await ShopSteps.step(self, bits)
 			"hidecheck", "runcover", "hidden", "gunpoint", "deadrow", "deadcheck":     # people_steps.gd: the dead, the frightened, the held up
 				await PeopleSteps.step(self, bits)
+			"bars":         # bars_steps.gd: the deeds ledger and the bar cards (bars:ledger, bars:deed:name ...)
+				await BarsSteps.step(self, bits)
 			_:              # fire, reload, hurt, shoot, aimon, hud, freeze, combatcheck
 				await _combat.step(bits)
 	if _shot_talk > 0.0 and _actor.face:

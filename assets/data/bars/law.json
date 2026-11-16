@@ -1,0 +1,71 @@
+{
+	"about": "The police and the jail: unlocked by being arrested, sleeping a night in the county jail, being searched at the courthouse, being shot at by the police. PLACEHOLDER words.",
+	"cards": [
+		{"id": "cuffs_01",
+		 "lines": [
+			{"text": "Cuffs on my wrists, they was squeezing too tight", "syl": [[0, "Cuffs", 2], [2, "on", 0], [3, "my", 0], [4, "wrists", 2], [6, "they", 0], [7, "was", 0], [8, "squeez", 2], [9, "ing", 0], [10, "too", 0], [12, "tight", 2]]},
+			{"text": "Back of the car with the red and blue light", "syl": [[0, "Back", 2], [1, "of", 0], [2, "the", 0], [4, "car", 2], [6, "with", 0], [7, "the", 0], [8, "red", 2], [9, "and", 0], [10, "blue", 1], [12, "light", 2]]}],
+		 "rhyme": "ight", "tags": ["law", "on_beat"], "true": true,
+		 "unlock": {"deed": "arrested", "count": 1}},
+		{"id": "cuffs_02",
+		 "lines": [
+			{"text": "Third time booked, they don't ask my name", "syl": [[1, "Third", 2], [3, "time", 1], [5, "booked", 2], [7, "they", 0], [8, "don't", 1], [9, "ask", 2], [11, "my", 0], [13, "name", 2]]},
+			{"text": "Same old desk sergeant, same old frame", "syl": [[1, "Same", 2], [3, "old", 0], [5, "desk", 2], [6, "ser", 1], [7, "geant", 0], [9, "same", 2], [11, "old", 0], [13, "frame", 2]]}],
+		 "rhyme": "ame", "tags": ["law", "behind"], "true": true,
+		 "unlock": {"deed": "arrested", "count": 3}},
+		{"id": "cell_01",
+		 "lines": [
+			{"text": "First night in the county, staring at the lock", "syl": [[0, "First", 2], [1, "night", 1], [2, "in", 0], [3, "the", 0], [4, "coun", 2], [5, "ty", 0], [8, "star", 2], [9, "ing", 0], [10, "at", 0], [11, "the", 0], [12, "lock", 2]]},
+			{"text": "Every cough, every tick of the clock", "syl": [[4, "Ev", 2], [5, "ery", 0], [6, "cough", 1], [8, "ev", 2], [9, "ery", 0], [10, "tick", 1], [11, "of", 0], [12, "the", 0], [13, "clock", 2]]}],
+		 "rhyme": "ock", "tags": ["jail", "rests"], "true": true,
+		 "unlock": {"deed": "jail_night", "count": 1}},
+		{"id": "cell_02",
+		 "lines": [
+			{"text": "Bologna on a tray and they call it a meal", "syl": [[0, "Bo", 0], [1, "lo", 2], [2, "gna", 0], [3, "on", 0], [4, "a", 0], [5, "tray", 2], [6, "and", 0], [7, "they", 0], [8, "call", 2], [10, "it", 0], [11, "a", 0], [12, "meal", 2]]},
+			{"text": "Public defender talking 'bout a deal", "syl": [[0, "Pub", 2], [1, "lic", 0], [2, "de", 0], [4, "fend", 2], [5, "er", 0], [8, "talk", 2], [9, "ing", 0], [10, "'bout", 0], [11, "a", 0], [12, "deal", 2]]}],
+		 "rhyme": "eal", "tags": ["jail", "on_beat"], "true": true,
+		 "unlock": {"deed": "jail_night", "count": 3}},
+		{"id": "search_01",
+		 "lines": [
+			{"text": "Officer patting me down at the door", "syl": [[0, "Of", 2], [1, "fi", 0], [2, "cer", 0], [4, "pat", 2], [5, "ting", 0], [6, "me", 0], [8, "down", 2], [10, "at", 0], [11, "the", 0], [12, "door", 2]]},
+			{"text": "Found nothing on me, so he patted some more", "syl": [[0, "Found", 2], [1, "noth", 1], [2, "ing", 0], [3, "on", 0], [4, "me", 2], [6, "so", 0], [7, "he", 0], [8, "pat", 2], [9, "ted", 0], [10, "some", 0], [12, "more", 2]]}],
+		 "rhyme": "ore", "tags": ["law", "on_beat"], "true": true,
+		 "unlock": {"deed": "searched", "count": 1}},
+		{"id": "police_01",
+		 "lines": [
+			{"text": "Cop let off two, and I'm kissing the ground", "syl": [[0, "Cop", 2], [2, "let", 1], [3, "off", 0], [4, "two", 2], [6, "and", 0], [7, "I'm", 0], [8, "kiss", 2], [9, "ing", 0], [10, "the", 0], [12, "ground", 2]]},
+			{"text": "Face in the gravel, I can hear my heart pound", "syl": [[0, "Face", 2], [1, "in", 0], [2, "the", 0], [4, "grav", 2], [5, "el", 0], [6, "I", 0], [7, "can", 0], [8, "hear", 2], [9, "my", 0], [10, "heart", 1], [12, "pound", 2]]}],
+		 "rhyme": "ound", "tags": ["law", "on_beat"], "true": true,
+		 "unlock": {"deed": "shot_at_by_police", "count": 1}},
+		{"id": "police_02",
+		 "lines": [
+			{"text": "Blue and white creeping down the middle of the street", "syl": [[0, "Blue", 2], [1, "and", 0], [2, "white", 1], [3, "creep", 2], [4, "ing", 0], [5, "down", 0], [6, "the", 0], [7, "mid", 2], [8, "dle", 0], [9, "of", 0], [10, "the", 0], [11, "street", 2]]},
+			{"text": "Little homies scatter like pigeons off the concrete", "syl": [[0, "Lit", 1], [1, "tle", 0], [2, "ho", 1], [3, "mies", 0], [4, "scat", 2], [5, "ter", 0], [6, "like", 0], [7, "pi", 2], [8, "geons", 0], [9, "off", 0], [10, "the", 0], [11, "con", 1], [12, "crete", 2]]}],
+		 "rhyme": "eat", "tags": ["law", "double"], "true": false,
+		 "unlock": {"deed": "visited_police", "count": 1}},
+		{"id": "bail_01",
+		 "lines": [
+			{"text": "Ain't nobody coming with the money for bail", "syl": [[0, "Ain't", 0], [1, "no", 2], [2, "bo", 0], [3, "dy", 0], [5, "com", 2], [6, "ing", 0], [7, "with", 0], [8, "the", 0], [9, "mon", 2], [10, "ey", 0], [11, "for", 0], [13, "bail", 2]]},
+			{"text": "Writing my verses on the back of the mail", "syl": [[1, "Writ", 2], [2, "ing", 0], [3, "my", 0], [5, "vers", 2], [6, "es", 0], [7, "on", 0], [8, "the", 0], [9, "back", 2], [11, "of", 0], [12, "the", 0], [13, "mail", 2]]}],
+		 "rhyme": "ail", "tags": ["jail", "behind"], "true": true,
+		 "unlock": {"deed": "arrested", "count": 1}},
+		{"id": "jail_02",
+		 "lines": [
+			{"text": "Slept with my shoes on in the county jail", "syl": [[0, "Slept", 2], [2, "with", 0], [3, "my", 0], [4, "shoes", 2], [6, "on", 0], [7, "in", 0], [8, "the", 0], [9, "coun", 1], [10, "ty", 0], [12, "jail", 2]]},
+			{"text": "Morning count, they calling names down the rail", "syl": [[0, "Morn", 2], [1, "ing", 0], [4, "count", 2], [5, "they", 0], [6, "call", 1], [7, "ing", 0], [8, "names", 2], [10, "down", 0], [11, "the", 0], [12, "rail", 2]]}],
+		 "rhyme": "ail", "tags": ["jail", "on_beat"], "true": true,
+		 "unlock": {"deed": "jail_night", "count": 1}},
+		{"id": "hook_county_a",
+		 "lines": [
+			{"text": "County blues, everybody waiting on bail", "syl": [[0, "Coun", 2], [1, "ty", 0], [2, "blues", 1], [4, "ev", 2], [5, "ery", 0], [6, "bo", 1], [7, "dy", 0], [8, "wait", 2], [9, "ing", 0], [10, "on", 0], [12, "bail", 2]]},
+			{"text": "Mama on the phone and her voice sound frail", "syl": [[0, "Ma", 2], [1, "ma", 0], [2, "on", 0], [3, "the", 0], [4, "phone", 2], [6, "and", 0], [7, "her", 0], [8, "voice", 2], [10, "sound", 0], [12, "frail", 2]]}],
+		 "rhyme": "ail", "tags": ["jail", "hook", "on_beat"], "true": true,
+		 "unlock": {"deed": "arrested", "count": 1}},
+		{"id": "hook_county_b",
+		 "lines": [
+			{"text": "County blues, every man in here got a tale", "syl": [[0, "Coun", 2], [1, "ty", 0], [2, "blues", 1], [4, "ev", 2], [5, "ery", 0], [6, "man", 0], [7, "in", 0], [8, "here", 2], [10, "got", 0], [11, "a", 0], [12, "tale", 2]]},
+			{"text": "Cold cell, hot tray, and the bread gone stale", "syl": [[0, "Cold", 2], [2, "cell", 1], [4, "hot", 2], [5, "tray", 1], [6, "and", 0], [7, "the", 0], [8, "bread", 2], [10, "gone", 1], [12, "stale", 2]]}],
+		 "rhyme": "ail", "tags": ["jail", "hook", "on_beat"], "true": true,
+		 "unlock": {"deed": "arrested", "count": 1}}
+	]
+}

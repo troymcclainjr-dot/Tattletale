@@ -1,0 +1,48 @@
+{
+	"about": "The gun store, its range and the stash at home: unlocked by buying a weapon or rounds, a bull's-eye at the range, leaving his guns in the stash. PLACEHOLDER words.",
+	"cards": [
+		{"id": "buy_01",
+		 "lines": [
+			{"text": "Saved up all summer, spent it all in one day", "syl": [[0, "Saved", 2], [1, "up", 0], [2, "all", 1], [4, "sum", 2], [5, "mer", 0], [6, "spent", 0], [7, "it", 0], [8, "all", 2], [10, "in", 0], [11, "one", 0], [12, "day", 2]]},
+			{"text": "Walked out the gun store with the AK", "syl": [[0, "Walked", 2], [2, "out", 0], [3, "the", 0], [4, "gun", 2], [6, "store", 1], [7, "with", 0], [8, "the", 0], [10, "A", 1], [12, "K", 2]]}],
+		 "rhyme": "ay", "tags": ["gunstore", "on_beat"], "true": true,
+		 "unlock": {"deed": "weapon_bought", "count": 1},
+		 "slot": {"line": 1, "from": "weapons"}},
+		{"id": "buy_02",
+		 "lines": [
+			{"text": "Two pieces now, and I'm learning the game", "syl": [[0, "Two", 2], [2, "piec", 1], [3, "es", 0], [4, "now", 2], [6, "and", 0], [7, "I'm", 0], [8, "learn", 2], [9, "ing", 0], [10, "the", 0], [12, "game", 2]]},
+			{"text": "Each piece got a weight, and the weight got a name", "syl": [[0, "Each", 1], [1, "piece", 2], [2, "got", 0], [3, "a", 0], [4, "weight", 2], [6, "and", 0], [7, "the", 0], [8, "weight", 2], [10, "got", 0], [11, "a", 0], [12, "name", 2]]}],
+		 "rhyme": "ame", "tags": ["gunstore", "on_beat"], "true": true,
+		 "unlock": {"deed": "weapon_bought", "count": 2}},
+		{"id": "rounds_01",
+		 "lines": [
+			{"text": "Box of rounds in a brown paper sack", "syl": [[0, "Box", 2], [2, "of", 0], [4, "rounds", 2], [6, "in", 0], [7, "a", 0], [8, "brown", 2], [9, "pa", 1], [10, "per", 0], [12, "sack", 2]]},
+			{"text": "Man behind the counter didn't even look back", "syl": [[0, "Man", 2], [1, "be", 0], [2, "hind", 0], [3, "the", 0], [4, "count", 2], [5, "er", 0], [6, "did", 0], [7, "n't", 0], [8, "e", 2], [9, "ven", 0], [10, "look", 1], [12, "back", 2]]}],
+		 "rhyme": "ack", "tags": ["gunstore", "on_beat"], "true": true,
+		 "unlock": {"deed": "rounds_bought", "count": 1}},
+		{"id": "rounds_02",
+		 "lines": [
+			{"text": "Third box this week, and I ain't keeping score", "syl": [[1, "Third", 2], [2, "box", 1], [3, "this", 0], [5, "week", 2], [6, "and", 0], [7, "I", 0], [8, "ain't", 0], [9, "keep", 2], [10, "ing", 0], [13, "score", 2]]},
+			{"text": "Man at the counter asking what it's for", "syl": [[1, "Man", 2], [2, "at", 0], [3, "the", 0], [5, "count", 2], [6, "er", 0], [7, "ask", 1], [8, "ing", 0], [9, "what", 2], [11, "it's", 0], [13, "for", 2]]}],
+		 "rhyme": "ore", "tags": ["gunstore", "behind"], "true": true,
+		 "unlock": {"deed": "rounds_bought", "count": 3}},
+		{"id": "range_01",
+		 "lines": [
+			{"text": "Reeled the paper in, one hole, dead center, neat", "syl": [[0, "Reeled", 2], [1, "the", 0], [2, "pa", 1], [3, "per", 0], [4, "in", 2], [6, "one", 0], [7, "hole", 0], [8, "dead", 2], [9, "cen", 1], [10, "ter", 0], [12, "neat", 2]]},
+			{"text": "Range man nodded, said that's a hard one to beat", "syl": [[0, "Range", 2], [1, "man", 0], [2, "nod", 1], [3, "ded", 0], [4, "said", 0], [6, "that's", 1], [7, "a", 0], [8, "hard", 2], [10, "one", 0], [11, "to", 0], [12, "beat", 2]]}],
+		 "rhyme": "eat", "tags": ["gunstore", "on_beat"], "true": true,
+		 "unlock": {"deed": "bullseye", "count": 1}},
+		{"id": "range_02",
+		 "lines": [
+			{"text": "Five in the ten ring stacking 'em tight", "syl": [[0, "Five", 2], [1, "in", 0], [2, "the", 0], [4, "ten", 2], [5, "ring", 1], [8, "stack", 2], [9, "ing", 0], [10, "'em", 0], [12, "tight", 2]]},
+			{"text": "Paper don't shoot back, so it ain't a real fight", "syl": [[0, "Pa", 2], [1, "per", 0], [2, "don't", 0], [3, "shoot", 2], [4, "back", 2], [5, "so", 0], [6, "it", 0], [7, "ain't", 1], [8, "a", 0], [9, "real", 1], [12, "fight", 2]]}],
+		 "rhyme": "ight", "tags": ["gunstore", "double"], "true": true,
+		 "unlock": {"deed": "bullseye", "count": 5}},
+		{"id": "stash_01",
+		 "lines": [
+			{"text": "Folded up the strap in a shirt in the stash", "syl": [[0, "Fold", 2], [1, "ed", 0], [2, "up", 0], [3, "the", 0], [4, "strap", 2], [6, "in", 0], [7, "a", 0], [8, "shirt", 2], [10, "in", 0], [11, "the", 0], [12, "stash", 2]]},
+			{"text": "Nothing on me but cash", "syl": [[4, "Noth", 2], [5, "ing", 0], [6, "on", 0], [8, "me", 1], [10, "but", 0], [12, "cash", 2]]}],
+		 "rhyme": "ash", "tags": ["gunstore", "rests"], "true": true,
+		 "unlock": {"deed": "guns_stashed", "count": 1}}
+	]
+}

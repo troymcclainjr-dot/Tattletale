@@ -1,0 +1,79 @@
+{
+	"about": "The homes and Miss Bea: unlocked by going to Miss Bea's, Large Fry's place, his crib, the roofs and the cellar, sleeping at home, talking to people. PLACEHOLDER words.",
+	"cards": [
+		{"id": "bea_01",
+		 "lines": [
+			{"text": "Miss Bea on the porch with her glasses and her tea", "syl": [[0, "Miss", 1], [1, "Bea", 2], [2, "on", 0], [3, "the", 0], [4, "porch", 2], [6, "with", 0], [7, "her", 0], [8, "glass", 2], [9, "es", 0], [10, "and", 0], [11, "her", 0], [12, "tea", 2]]},
+			{"text": "Said she knew my grandmama before there was me", "syl": [[0, "Said", 0], [1, "she", 0], [2, "knew", 1], [3, "my", 0], [4, "grand", 2], [5, "ma", 0], [6, "ma", 0], [7, "be", 0], [8, "fore", 2], [9, "there", 0], [10, "was", 0], [12, "me", 2]]}],
+		 "rhyme": "ee", "tags": ["homes", "bea", "on_beat"], "true": false,
+		 "unlock": {"deed": "visited_bea", "count": 1}},
+		{"id": "bea_02",
+		 "lines": [
+			{"text": "Miss Bea said, baby, don't you run no more", "syl": [[0, "Miss", 1], [1, "Bea", 2], [3, "said", 0], [5, "ba", 2], [6, "by", 0], [7, "don't", 0], [8, "you", 0], [9, "run", 2], [11, "no", 0], [13, "more", 2]]},
+			{"text": "Gave me a peppermint and walked me to the door", "syl": [[1, "Gave", 2], [2, "me", 0], [3, "a", 0], [5, "pep", 2], [6, "per", 0], [7, "mint", 0], [8, "and", 0], [9, "walked", 2], [10, "me", 0], [11, "to", 0], [12, "the", 0], [13, "door", 2]]}],
+		 "rhyme": "ore", "tags": ["homes", "bea", "behind"], "true": false,
+		 "unlock": {"deed": "visited_bea", "count": 1}},
+		{"id": "fry_01",
+		 "lines": [
+			{"text": "Up at Fry's place, everybody kicking back", "syl": [[0, "Up", 2], [1, "at", 0], [2, "Fry's", 1], [3, "place", 1], [4, "ev", 2], [5, "ery", 0], [6, "bo", 1], [7, "dy", 0], [8, "kick", 2], [9, "ing", 0], [12, "back", 2]]},
+			{"text": "Sofa got a hole and the TV got a crack", "syl": [[0, "So", 2], [1, "fa", 0], [2, "got", 0], [3, "a", 0], [4, "hole", 2], [5, "and", 0], [6, "the", 0], [7, "T", 1], [8, "V", 2], [10, "got", 0], [11, "a", 0], [12, "crack", 2]]}],
+		 "rhyme": "ack", "tags": ["homes", "on_beat"], "true": false,
+		 "unlock": {"deed": "visited_fry", "count": 1}},
+		{"id": "crib_01",
+		 "lines": [
+			{"text": "Slept in my own bed and I ain't hear a sound", "syl": [[1, "Slept", 2], [2, "in", 0], [3, "my", 0], [4, "own", 1], [5, "bed", 2], [6, "and", 0], [7, "I", 0], [8, "ain't", 1], [9, "hear", 2], [11, "a", 0], [13, "sound", 2]]},
+			{"text": "First good sleep since the summer came around", "syl": [[1, "First", 2], [3, "good", 1], [5, "sleep", 2], [7, "since", 0], [8, "the", 0], [9, "sum", 2], [10, "mer", 0], [11, "came", 0], [12, "a", 0], [13, "round", 2]]}],
+		 "rhyme": "ound", "tags": ["homes", "behind"], "true": true,
+		 "unlock": {"deed": "slept_home", "count": 1}},
+		{"id": "crib_02",
+		 "lines": [
+			{"text": "Home is a mattress and a window with a stain", "syl": [[0, "Home", 2], [1, "is", 0], [2, "a", 0], [4, "mat", 2], [5, "tress", 0], [6, "and", 0], [7, "a", 0], [8, "win", 2], [9, "dow", 0], [10, "with", 0], [11, "a", 0], [12, "stain", 2]]},
+			{"text": "But it's mine, and it's keeping out the rain", "syl": [[2, "But", 0], [3, "it's", 0], [4, "mine", 2], [6, "and", 0], [7, "it's", 0], [8, "keep", 2], [9, "ing", 0], [10, "out", 1], [11, "the", 0], [12, "rain", 2]]}],
+		 "rhyme": "ain", "tags": ["homes", "on_beat"], "true": false,
+		 "unlock": {"deed": "visited_crib", "count": 1}},
+		{"id": "roof_01",
+		 "lines": [
+			{"text": "Top of the building where the city look sweet", "syl": [[0, "Top", 2], [1, "of", 0], [2, "the", 0], [4, "build", 2], [5, "ing", 0], [6, "where", 0], [7, "the", 0], [8, "ci", 2], [9, "ty", 0], [10, "look", 1], [12, "sweet", 2]]},
+			{"text": "Lights way out, and the noise down in the street", "syl": [[4, "Lights", 2], [5, "way", 1], [6, "out", 0], [7, "and", 0], [8, "the", 0], [9, "noise", 2], [10, "down", 0], [11, "in", 0], [12, "the", 0], [13, "street", 2]]}],
+		 "rhyme": "eat", "tags": ["homes", "rests"], "true": true,
+		 "unlock": {"deed": "roof", "count": 1}},
+		{"id": "cellar_01",
+		 "lines": [
+			{"text": "Down in the cellar where it's damp and it's cold", "syl": [[1, "Down", 2], [2, "in", 0], [3, "the", 0], [5, "cel", 2], [6, "lar", 0], [7, "where", 0], [8, "it's", 0], [9, "damp", 2], [10, "and", 0], [11, "it's", 0], [13, "cold", 2]]},
+			{"text": "Trapdoor in the floor, and I ain't never told", "syl": [[1, "Trap", 2], [2, "door", 0], [3, "in", 0], [4, "the", 0], [5, "floor", 2], [6, "and", 0], [7, "I", 0], [8, "ain't", 1], [9, "nev", 2], [10, "er", 0], [13, "told", 2]]}],
+		 "rhyme": "old", "tags": ["homes", "behind"], "true": true,
+		 "unlock": {"deed": "cellar", "count": 1}},
+		{"id": "talk_01",
+		 "lines": [
+			{"text": "Talk to all the old heads, that's the way that you grow", "syl": [[0, "Talk", 2], [1, "to", 0], [2, "all", 0], [3, "the", 0], [4, "old", 2], [5, "heads", 1], [6, "that's", 0], [7, "the", 0], [8, "way", 2], [10, "that", 0], [11, "you", 0], [12, "grow", 2]]},
+			{"text": "They been on that stoop, seen more than you know", "syl": [[0, "They", 0], [1, "been", 1], [2, "on", 0], [3, "that", 0], [4, "stoop", 2], [6, "seen", 0], [8, "more", 2], [10, "than", 0], [11, "you", 0], [12, "know", 2]]}],
+		 "rhyme": "oh", "tags": ["homes", "on_beat"], "true": false,
+		 "unlock": {"deed": "talked", "count": 10}},
+		{"id": "people_01",
+		 "lines": [
+			{"text": "People that I trust, I can count to three", "syl": [[0, "Peo", 2], [1, "ple", 0], [2, "that", 0], [3, "I", 0], [4, "trust", 2], [6, "I", 0], [7, "can", 0], [8, "count", 2], [10, "to", 0], [12, "three", 2]]},
+			{"text": "Me, my mama, and my man Big Dee", "syl": [[0, "Me", 2], [2, "my", 0], [4, "ma", 2], [5, "ma", 0], [6, "and", 0], [7, "my", 0], [8, "man", 2], [10, "Big", 1], [12, "Dee", 2]]}],
+		 "rhyme": "ee", "tags": ["homes", "on_beat"], "true": false,
+		 "unlock": {"deed": "met_dee", "count": 1},
+		 "slot": {"line": 1, "from": "people"}},
+		{"id": "places_01",
+		 "lines": [
+			{"text": "Pen Lucy raised me, every stoop, every door", "syl": [[0, "Pen", 1], [1, "Lu", 2], [2, "cy", 0], [4, "raised", 2], [5, "me", 0], [6, "ev", 1], [7, "ery", 0], [8, "stoop", 2], [10, "ev", 1], [11, "ery", 0], [12, "door", 2]]},
+			{"text": "I know every auntie at the corner store", "syl": [[0, "I", 0], [1, "know", 1], [2, "ev", 1], [3, "ery", 0], [4, "aunt", 2], [5, "ie", 0], [6, "at", 0], [7, "the", 0], [8, "cor", 2], [9, "ner", 0], [12, "store", 2]]}],
+		 "rhyme": "ore", "tags": ["homes", "on_beat"], "true": false,
+		 "unlock": {"deed": "visited_store", "count": 1},
+		 "slot": {"line": 1, "from": "places"}},
+		{"id": "hook_home_a",
+		 "lines": [
+			{"text": "Home is where the stairs creak and the walls got your back", "syl": [[0, "Home", 2], [1, "is", 0], [2, "where", 0], [3, "the", 0], [4, "stairs", 2], [5, "creak", 1], [6, "and", 0], [7, "the", 0], [8, "walls", 2], [10, "got", 0], [11, "your", 0], [12, "back", 2]]},
+			{"text": "Plate in the oven for you, sitting on the rack", "syl": [[0, "Plate", 2], [1, "in", 0], [2, "the", 0], [4, "o", 2], [5, "ven", 0], [6, "for", 0], [7, "you", 0], [8, "sit", 2], [9, "ting", 0], [10, "on", 0], [11, "the", 0], [12, "rack", 2]]}],
+		 "rhyme": "ack", "tags": ["homes", "hook", "on_beat"], "true": false,
+		 "unlock": {"deed": "slept_home", "count": 1}},
+		{"id": "hook_home_b",
+		 "lines": [
+			{"text": "Home is where they love you when you're way off track", "syl": [[0, "Home", 2], [1, "is", 0], [2, "where", 0], [3, "they", 0], [4, "love", 2], [5, "you", 0], [6, "when", 0], [7, "you're", 0], [8, "way", 2], [10, "off", 0], [12, "track", 2]]},
+			{"text": "Rose Hill, no matter where I go, I'm coming back", "syl": [[0, "Rose", 2], [1, "Hill", 1], [2, "no", 0], [4, "mat", 2], [5, "ter", 0], [6, "where", 0], [7, "I", 0], [8, "go", 2], [9, "I'm", 0], [10, "com", 1], [11, "ing", 0], [12, "back", 2]]}],
+		 "rhyme": "ack", "tags": ["homes", "hook", "on_beat"], "true": false,
+		 "unlock": {"deed": "slept_home", "count": 1}}
+	]
+}
