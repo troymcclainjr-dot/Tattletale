@@ -134,6 +134,7 @@ const RunStrip := preload("res://scripts/run_strip.gd")       # --strip: frames 
 const FaceCheck := preload("res://scripts/face_check.gd")     # --check-faces: nobody rests with eyes that cannot blink
 const AimSweep := preload("res://scripts/aim_sweep.gd")       # --do=aimsweep: no flicker between side-on and his back
 const Combat := preload("res://scripts/combat.gd")
+const Melee := preload("res://scripts/melee.gd")           # hands: fights, wind, who squares up (and street.gd: respect, heat, trust)
 const Prison := preload("res://scripts/prison_rules.gd")      # arrested, held at the jail, let out
 const Deeds := preload("res://scripts/deeds.gd")              # bars: the deeds ledger's rules (assets/data/deeds.json)
 const BarsSteps := preload("res://scripts/bars_steps.gd")     # bars: --do steps bars:... (the ledger, the bar cards)
@@ -268,6 +269,7 @@ var _video: Node               # the music video: the camcorder in the studio, t
 var _shot_lineup := ""         # screenshot mode: --lineup's weapon:rig:poses
 var _shot_strip := ""          # screenshot mode: --strip's weapons:rigs:views:frames
 var _combat: Node             # shooting, and the health, cash and rounds in the bottom-left corner (combat.gd)
+var _melee: Node              # hands (melee.gd), and the top-right corner: his standing (street_hud.gd)
 var _conductor: Node          # the beat clock: the beat playing and where in it the music is (conductor.gd)
 
 
@@ -360,6 +362,8 @@ func _ready() -> void:
 	layer.add_child(_hint)
 	_combat = Combat.new()
 	add_child(_combat)
+	_melee = Melee.new()
+	add_child(_melee)
 	_conductor = Conductor.new()
 	add_child(_conductor)
 	_conductor.set_volume(float(_read(SETTINGS).get("music", _conductor.volume)))
@@ -1669,6 +1673,8 @@ func _take_shot() -> void:
 				for i in int(float(bits[3]) * 60.0):
 					_fry.walk(_floor_dir(way), way, 1.0 / 60.0)
 				print("[shot] fry walked to %.2f, %.2f" % [_fry.position.x, _fry.position.z])
+			"fight":        # melee.gd: fight:guard, fight:at:WHO, fight:jab, fight:hook, fight:slip, fight:auto, fight:state ...
+				await _melee.step(bits)
 			"arrest":       # arrest:why: _arrest (to booking at the jail, in the jumpsuit, held: prison_rules.gd)
 				_arrest(bits[1] if bits.size() > 1 else "TEST")
 			"release":      # let him out of the jail at once, in his own clothes, at the front gate

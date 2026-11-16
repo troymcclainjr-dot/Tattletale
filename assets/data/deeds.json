@@ -10,7 +10,7 @@
 		"people": "the first conversation with each person",
 		"everyday": "talking, roofs, cellars, sleeping at home",
 		"angel": "the good side's deeds: walking away, going out clean",
-		"side": "the side picked at the start"
+		"side": "the side picked at the start", "hands": "fights with his hands (melee.gd)", "dealing": "selling on the street (dealing.gd)"
 	},
 	"deeds": {
 		"shot_fired": {"family": "violence", "counted": "each round he fires", "where": "combat.gd fire()"},
@@ -73,6 +73,15 @@
 		"met_dee": {"family": "people", "counted": "the first conversation with BIG DEE", "where": "main.gd _start_talk() -> deeds.gd talked()"},
 		"met_rell": {"family": "people", "counted": "the first conversation with RELL", "where": "main.gd _start_talk() -> deeds.gd talked()"},
 		"met_vic": {"family": "people", "counted": "the first conversation with VIC", "where": "main.gd _start_talk() -> deeds.gd talked()"},
-		"met_cop": {"family": "people", "counted": "the first conversation with an officer at the county jail", "where": "main.gd _start_talk() -> deeds.gd talked()"}
+		"met_cop": {"family": "people", "counted": "the first conversation with an officer at the county jail", "where": "main.gd _start_talk() -> deeds.gd talked()"},
+		"fight_won": {"family": "hands", "counted": "each man who squared up to him and went down to his hands", "where": "melee.gd _drop()"},
+		"fight_lost": {"family": "hands", "counted": "each time he is put on the floor in a fight", "where": "melee.gd _his_lands()"},
+		"stole_on_him": {"family": "hands", "counted": "each man he puts down who was not fighting him", "where": "melee.gd _drop()"},
+		"pack_sold": {"family": "dealing", "counted": "each bag, vial or tape he sells hand to hand", "where": "dealing.gd _serve()"},
+		"tape_sold": {"family": "dealing", "counted": "each of his own tapes he sells", "where": "dealing.gd _serve()"},
+		"pack_fronted": {"family": "dealing", "counted": "each pack he takes on credit", "where": "dealing.gd front()"},
+		"front_paid": {"family": "dealing", "counted": "each front he pays back", "where": "dealing.gd pay()"},
+		"credit_given": {"family": "dealing", "counted": "each time he lets a customer pay later", "where": "dealing.gd _serve()"},
+		"caught_holding": {"family": "dealing", "counted": "each time the police find product on him", "where": "dealing.gd _searched()"}
 	}
 }

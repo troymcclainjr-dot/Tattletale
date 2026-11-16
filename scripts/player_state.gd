@@ -25,6 +25,7 @@ var song_beats: Array = []  # the beat each song was recorded on (assets/beats i
 var videos: Array = []      # each music video he has shot: a Dictionary of how it went
 var flags := {}             # anything else worth keeping: name to a value JSON can hold
 var deeds := {}             # what he has done, name to how many times ("shot_fired", "arrested" ...): what his bars may be about
+var street := {}            # his standing and what people remember (street.gd), what he carries and owes (dealing.gd)
 
 
 func _init() -> void:
@@ -43,6 +44,7 @@ func reset() -> void:
 	videos = []
 	flags = {}
 	deeds = {}
+	street = {}
 	changed.emit()
 
 
@@ -117,7 +119,7 @@ func touch() -> void:
 
 
 func to_save() -> Dictionary:
-	return {"cash": cash, "health": health, "loaded": loaded, "spare": spare, "owned": owned, "songs": songs, "song_beats": song_beats, "videos": videos, "flags": flags, "deeds": deeds}
+	return {"cash": cash, "health": health, "loaded": loaded, "spare": spare, "owned": owned, "songs": songs, "song_beats": song_beats, "videos": videos, "flags": flags, "deeds": deeds, "street": street}
 
 
 ## From a save. Anything the save does not have keeps its new-game value, so an older save still loads.
@@ -136,6 +138,7 @@ func from_save(data: Dictionary) -> void:
 		videos = data["videos"]
 	flags = _dict(data.get("flags"))
 	deeds = _dict(data.get("deeds"))
+	street = _dict(data.get("street"))
 	changed.emit()
 
 
