@@ -31,11 +31,12 @@ extends Node
 ##   video:seed:n         the next take's luck
 ##   video:shoot          SHOOT IT on the board
 ##   video:auto:skill     the take plays itself from here at that skill, 0 .. 1
-##   video:key:W          a key pressed in the take; video:walk:-1 / 1 / 0 holds left, right or nothing
+##   video:key:W          a key pressed in the take (video:key:due: the key of the move nearest now); video:walk:-1 / 1 / 0
+##                        holds left, right or nothing
 ##   video:hold:W:0.4     that key held down that long as from the keyboard, the take running as in play (Left,
 ##                        Right, E ...; due: the key the next move wants); prints the hits and how far he walked
 ##   video:until:beat     run the take to that beat and hold it (count-in 0..4, ACTION at 4); video:until:end
-##   video:prompt         run it until the next move is just reaching the ring
+##   video:prompt         run it until the next move is just reaching the ring (video:prompt:hold: the next hold prompt)
 ##   video:at:id          run it until that mishap is asking for E
 ##   video:for:beats      run it on that many beats from where it is
 ##   video:live:seconds   let it run as it does in play for that long (in real time, the keyboard's keys; key:W presses one)
@@ -44,6 +45,18 @@ extends Node
 ##   video:esc            Esc at whatever is up
 ##   video:snap:name      save the picture as it is now beside the --shot file, as name.png
 ##   video:state          print his cash, songs and videos
+## The style (video.json "style"; video_take.gd's header says what HARD changes):
+##   video:style:hard     the next videos are HARD (or video:style:clean); picks it on the board too if it is up
+##   video:cut:low        hard: hold that camera set-up whatever the bar (master, low, face, shoulder, high;
+##                        video:cut: back to the plan of cuts)
+##   video:eye:front      the next snap from a wide view of the set from in front (video:eye:above from high
+##                        up behind the camera; add :alone to leave him out of it; video:eye: back to the take's)
+##   video:ui:0           the take's screen hidden (video:ui:1 back)
+##   video:move:chin_up   he does that move now, as if it had been pressed off the beat (no score)
+##   video:up:W           that key let go (the end of a hold)
+##   video:let            the auto player leaves the next move alone: it is missed, or yours to press (video:key:due)
+##   video:strip:name:6:8 six snaps over the next eight beats (name_1.png ..), printing what each of the
+##                        entourage is doing at each
 
 const DATA := "res://assets/data/video.json"
 const Props := preload("res://scripts/video_props.gd")
@@ -101,6 +114,8 @@ var _was := {}                   # how he was before the shoot
 var _snap: SubViewport
 var _snap_cam: Camera3D
 var _live := false               # a --do step letting the take run as it does in play (video:live)
+var _eye := ""                   # a --do step's view for the next snaps (video:eye): "", "front", "above"
+var _alone := false              # ...without him in it
 
 
 func setup(main_node: Node3D) -> void:
@@ -294,7 +309,7 @@ func open_plan() -> void:
 	main._set_mode("video")
 	main._tag.visible = false
 	main._hint.visible = false
-	_plan.open(data, int(main._state.cash), song_title())
+	_plan.open(data, int(main._state.cash), song_title(), main._state.video_style)
 
 
 func _on_plan_cancel() -> void:
@@ -332,14 +347,20 @@ func _begin_shoot() -> void:
 			npc.visible = false
 			_hidden.append(npc)
 	main._building.show_room(0)
+	_seed = seed_override if seed_override >= 0 else 1000 + 7919 * (main._state.videos as Array).size() + int(main._state.songs)
+	seed_override = -1
+	var style: String = _plan.style()
+	main._state.set_video_style(style)
 	_stage = Stage.new()
 	_stage.name = "VideoSet"
+	_stage.style = style
+	_stage.seed_value = _seed
+	_stage.hard_wear = data.get("hard", {}).get("wear", {})
+	_stage.drift = float(data["take"]["drift"]["metres"])
 	main.add_child(_stage)
 	_stage.build(main, got)
 	main._room = main._building.room_at_pos(lead.position, 0)
 	main._building.show_room(main._room)
-	_seed = seed_override if seed_override >= 0 else 1000 + 7919 * (main._state.videos as Array).size() + int(main._state.songs)
-	seed_override = -1
 	_moments = []
 	_pending = []
 	_toast_t = 99.0
@@ -347,6 +368,7 @@ func _begin_shoot() -> void:
 	_ui.open(data["words"], "%s   %s   %s" % [song_title(), main._conductor.name_of(beat), got["location"]["name"]])
 	_take = Take.new()
 	_take.name = "Take"
+	_take.style = style
 	add_child(_take)
 	_take.setup(main, _stage, _ui, data, got, _seed, forced)
 	_take.use_clock(main._conductor, beat)
@@ -356,13 +378,17 @@ func _begin_shoot() -> void:
 	var when := PackedStringArray()
 	for m: Dictionary in _take.mishaps:
 		when.append("%s at beat %.1f" % [m["m"]["id"], m["open"]])
-	print("[shot] video: shooting %s at %s for %s (seed %d): %d moves, mishaps %s; on %s at %d BPM" % [song_title(), got["location"]["name"], _money(_total), _seed, _take.prompts.size(), ", ".join(when),
-		beat, roundi(60.0 / _take.BEAT)])
+	print("[shot] video: shooting %s at %s for %s (seed %d): %d moves, mishaps %s; on %s at %d BPM; style %s" % [song_title(), got["location"]["name"], _money(_total), _seed, _take.prompts.size(), ", ".join(when),
+		beat, roundi(60.0 / _take.BEAT), style])
 
 
 ## Keys during the take: a move's key or E goes to the take; Esc walks off the set.
+## A key let go goes to the take too (the end of a hold, hard).
 func _unhandled_key_input(event: InputEvent) -> void:
-	if stage_name != "shoot" or _take == null or not event.pressed or event.echo:
+	if stage_name != "shoot" or _take == null or event.echo:
+		return
+	if not event.pressed:
+		_take.release(OS.get_keycode_string(event.physical_keycode))
 		return
 	get_viewport().set_input_as_handled()
 	if event.physical_keycode == KEY_ESCAPE:
@@ -470,7 +496,7 @@ func _on_wrapped() -> void:
 	_record = {"song": (main._state.videos as Array).size() + 1, "title": song_title(), "where": String(got["location"]["name"]),
 		"day": int(main._day) + 1, "picks": chosen_ids, "spent": _total, "looks": _result["looks"], "chaos": _result["chaos"],
 		"swagger": _result["swagger"], "views": _result["views"], "paid": _result["paid"], "stars": _result["stars"],
-		"mishaps": kept.get("mishaps", [])}
+		"mishaps": kept.get("mishaps", []), "style": String(kept.get("style", "clean"))}
 	print("[shot] video: wrapped. cash %d - %d = %d; moves %d hit (%d perfect), %d missed, %d off beat; looks %d, swagger %d, polish %d, chaos %d; buzz %d: %s views, pays %s, %d stars; mishaps %s" % [
 		before, _total, main._state.cash, kept["hits"], kept["perfect"], kept["missed"], kept["flubs"], _result["looks"], _result["swagger"],
 		_result["polish"], _result["chaos"], _result["buzz"], _result["views"], _money(int(_result["paid"])), _result["stars"], kept["mishaps"]])
@@ -491,12 +517,16 @@ func _begin_premiere() -> void:
 ## Up to four moments for the premiere, in the order they happened: the
 ## opening, the mishaps, the best moves, the close.
 func _pick_moments(where: String) -> Array:
+	var hard: bool = String(_record.get("style", "clean")) == "hard"
+	var captions: Dictionary = data["captions"].duplicate()
+	if hard:                         # "hard"'s "captions" in place of those they name
+		captions.merge(data.get("hard", {}).get("captions", {}), true)
 	var rank := func(key: String) -> int:
 		if key == "open":
 			return 0
 		if key.contains(":handled") or key.contains(":missed"):
 			return 1
-		if key in ["move:cash", "move:aim", "move:chain"]:
+		if key in ["move:cash", "move:aim", "move:chain"] or (hard and key in ["move:chain_lift", "move:lens", "move:chin_up"]):
 			return 2
 		if key.begins_with("move:"):
 			return 3
@@ -512,7 +542,7 @@ func _pick_moments(where: String) -> Array:
 	rng.seed = _seed + 3
 	var out: Array = []
 	for m: Dictionary in keep:
-		var lines: Array = data["captions"].get(String(m["key"]), [])
+		var lines: Array = captions.get(String(m["key"]), [])
 		var caption := String(lines[rng.randi() % lines.size()]) if not lines.is_empty() else ""
 		out.append({"image": m["image"], "caption": caption.replace("{place}", where), "key": m["key"]})
 	return out
@@ -630,6 +660,12 @@ func shot_step(bits: PackedStringArray) -> void:
 			if _take:
 				_take.auto = auto_skill
 		"key":
+			if _take and arg == "due":       # the key of the move nearest now
+				var best := INF
+				for p: Dictionary in _take.prompts:
+					if p["state"] == "due" and absf(float(p["beat"]) - _take.beat()) < best:
+						best = absf(float(p["beat"]) - _take.beat())
+						arg = String(p["key"])
 			if _take:
 				_take.press(arg)
 		"walk":
@@ -642,7 +678,13 @@ func shot_step(bits: PackedStringArray) -> void:
 			if _take:
 				await run_to(_take.end_beat() + 1.0 if arg == "end" else float(arg))
 		"prompt":
-			if _take:
+			if _take and arg == "hold":      # hard: the next hold prompt
+				for p: Dictionary in _take.prompts:
+					if p["state"] == "due" and p.has("hold") and float(p["beat"]) > _take.beat():
+						await run_to(float(p["beat"]) - 0.12)
+						print("[shot] video: a hold prompt, %s (%s), at beat %.1f" % [p["name"], p["key"], p["beat"]])
+						break
+			elif _take:
 				var next: float = _take.next_prompt()
 				if next > 0.0:
 					await run_to(next - 0.12)
@@ -680,13 +722,50 @@ func shot_step(bits: PackedStringArray) -> void:
 			await main._wait(0.15)
 		"state":
 			pass
+		"style":
+			main._state.set_video_style(arg)
+			if _plan.is_open():
+				_plan.pick_named("style", arg)
+			print("[shot] video: style %s" % main._state.video_style)
+		"cut":
+			if _take and _take.cuts:
+				_take.cuts.force = arg
+				_take._camera(0.0)
+			print("[shot] video: camera set-up %s" % (arg if arg != "" else "as planned"))
+		"eye":
+			_eye = arg
+			_alone = bits.size() > 3 and bits[3] == "alone"
+		"ui":
+			_ui.visible = arg != "0"
+		"move":
+			if _take and _take._moves.has(arg):
+				_take._start_move(arg)
+			else:
+				print("[shot] video: no move %s" % arg)
+		"up":
+			if _take:
+				_take.release(arg)
+		"let":
+			if _take:                        # the auto player leaves the next move alone (a miss, or a key:due of your own)
+				var next: Dictionary = {}
+				for p: Dictionary in _take.prompts:
+					if p["state"] == "due" and float(p["beat"]) > _take.beat() - 0.3 and (next.is_empty() or float(p["beat"]) < float(next["beat"])):
+						next = p
+				if not next.is_empty():
+					next["auto"] = {"press": false, "at": 0.0}
+					print("[shot] video: the auto player lets %s (%s) at beat %.1f go" % [next["name"], next["key"], next["beat"]])
+		"strip":
+			if _take:
+				var n := int(bits[3]) if bits.size() > 3 else 6
+				var span := float(bits[4]) if bits.size() > 4 else 8.0
+				var from: float = _take.beat()
+				for k in n:
+					await run_to(from + span * k / maxf(n - 1, 1))
+					await _save_snap("%s_%d" % [arg, k + 1])
+					print("[shot] video: strip %d at beat %.2f (%s): the entourage %s" % [k + 1, _take.beat(), _take.setup_now, _take.crew_doing])
+			return
 		"snap":
-			for i in 3:
-				await get_tree().process_frame
-			await RenderingServer.frame_post_draw
-			var path: String = main._shot_path.get_base_dir().path_join(arg + ".png")
-			var err := get_viewport().get_texture().get_image().save_png(path)
-			print("[shot] video: %s %s" % ["saved" if err == OK else "FAILED", path])
+			await _save_snap(arg)
 			return
 		_:
 			print("[shot] video: no step %s" % what)
@@ -696,6 +775,51 @@ func shot_step(bits: PackedStringArray) -> void:
 	elif what == "state" or what in ["next", "results", "done", "esc"]:
 		print("[shot] video: stage '%s'; cash %d; songs %d (on %s); videos %d%s" % [stage_name, main._state.cash, main._state.songs, main._state.song_beats, (main._state.videos as Array).size(),
 			"; last: %s" % (main._state.videos as Array)[-1] if not (main._state.videos as Array).is_empty() else ""])
+
+
+## Save the picture as it is now beside the --shot file, as `name`.png (from
+## video:eye's view, if one is set, put back after).
+func _save_snap(name: String) -> void:
+	var cam: Camera3D = main._camera
+	var was := cam.global_transform
+	var was_fov := cam.fov
+	if _eye != "" and _stage:
+		_look_from(cam, _eye)
+		_stage.show_op(false)        # Large Fry stands where the front view looks from
+		if _alone:
+			main._actor.visible = false
+	for i in 3:
+		if _eye != "" and _stage:
+			_look_from(cam, _eye)
+		await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	var path: String = main._shot_path.get_base_dir().path_join(name + ".png")
+	var err := get_viewport().get_texture().get_image().save_png(path)
+	print("[shot] video: %s %s" % ["saved" if err == OK else "FAILED", path])
+	if _eye != "":
+		cam.global_transform = was
+		cam.fov = was_fov
+		main._actor.visible = true
+		if _stage:
+			_stage.face_cards(cam)
+			main._face_cards()
+
+
+## A view of the whole set for a --do picture: "front" (from in front, wide,
+## a little higher than the lens) or "above" (from high up behind the camera).
+func _look_from(cam: Camera3D, eye: String) -> void:
+	var mark: Vector3 = _stage.mark
+	var lens := Vector3(_stage.lens.x, 0.0, _stage.lens.z)
+	var deep := Vector3(mark.x, 0.0, mark.z) - lens
+	deep = deep.normalized()
+	if eye == "above":
+		cam.fov = 50.0
+		cam.look_at_from_position(lens - deep * 2.5 + Vector3(0.0, 8.5, 0.0), mark + deep * 0.6)
+	else:
+		cam.fov = 60.0
+		cam.look_at_from_position(lens + Vector3(0.0, 1.9, 0.0), mark + deep * 0.6 + Vector3(0.0, 0.7, 0.0))
+	_stage.face_cards(cam)
+	main._face_cards()
 
 
 ## For main.gd's last step before a picture: the camera is the shoot's own.

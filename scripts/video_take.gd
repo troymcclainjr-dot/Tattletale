@@ -34,10 +34,30 @@ extends Node
 ## At the end `kept` has what the premiere needs: swagger, polish, chaos, the
 ## mishaps and how each went, and the moments to show (each a still and a
 ## caption from video.json's "captions").
+##
+## The style (`style`, set before setup: video.json's "style", the board's first
+## row). "clean" is all of the above. "hard" (video.json's "hard") changes, and
+## only it changes: the moves are "hard"'s "moves" (a chin dip, a chin lift held,
+## a hand thrown up at the lens and held, a chop on the bar, a palm up, a chest tap, a thumb
+## to the crew, a step at the lens, a shoulder rock, the chain lifted); a move
+## with "hold" asks for its key to be held down, and him to stay still, for that
+## many beats (HELD adds "hold_bonus"; let go early or walk and it is TOO SOON);
+## a hold prompt is only asked for where the next move is far enough off. Between
+## moves he works it with one hand at his chest and a small dip on the beat,
+## faces from "moods", never a smile. A miss is a late hand (the move, half way,
+## late) and a glance away from the lens. The entourage do not copy him: each
+## stands and moves on their own loop (video_crew.gd), together only on the hook.
+## The camera cuts between set-ups on the bar lines (video_cuts.gd); whether he
+## is in shot is judged from Large Fry's lens as in clean, whatever set-up is on.
+## Swagger counts the holds and the variety of moves landed; a press off the beat
+## costs "hard"'s "flub". The mishaps' faces are hard, and "hard"'s "mishaps"
+## replaces some of their lines.
 
 signal wrapped
 
 const PaperActor := preload("res://scripts/paper_actor.gd")
+const Crew := preload("res://scripts/video_crew.gd")
+const Cuts := preload("res://scripts/video_cuts.gd")
 var BEAT: float = PaperActor.BEAT   # seconds a beat: the song's beat's (use_clock), else the microphone's
 const MOODS := ["focused", "smug", "shout", "sly"]
 const BASE_MOVES := ["point", "wide", "lean", "sign"]      # always to hand: what a move he can no longer do becomes
@@ -64,6 +84,20 @@ var done := false
 var clock: Node                  # the beat clock (conductor.gd), once use_clock has given it
 var beat_id := ""                # the song's beat, playing on it
 var fast := false                # run on by a --do step: its own time, not the clock's
+var style := "clean"             # "clean" or "hard" (set before setup)
+var hard := false
+var cuts: RefCounted             # hard: the camera's set-ups (video_cuts.gd)
+var setup_now := ""              # hard: the set-up on now
+var crew_doing: Array = []       # hard: what each of the entourage is doing now ("" still)
+
+var _hard := {}                  # video.json's "hard"
+var _base: Array = BASE_MOVES
+var _holding := {}               # hard: the hold under way: {"p", "key", "from", "release"}
+var _possible := 0.0             # hard: what the moves judged so far could have scored
+var _asked := {}                 # hard: the move ids judged so far
+var _landed := {}                # ...and those landed
+var _stepped := 0.0              # hard: metres he has stepped towards the lens
+var _judge: Camera3D             # hard: Large Fry's lens, for "in shot"
 
 var _t0 := 0.0                   # the clock's time when this take's was 0
 var _own := true                 # the last tick counted its own time
@@ -122,24 +156,45 @@ func setup(main_node: Node3D, stage_node: Node3D, ui_node: CanvasLayer, video: D
 	_fov = float(_take.get("fov", 40.0))
 	_throws = int(got["rain"].get("throws", 0))
 	_weapon = String(main._actor.weapon)
-	for m: Dictionary in data["moves"]:
+	hard = style == "hard" and data.has("hard")
+	_hard = data.get("hard", {}) if hard else {}
+	if hard:
+		_base = _hard.get("base", BASE_MOVES)
+	for m: Dictionary in (_hard["moves"] if hard else data["moves"]):
 		_moves[m["id"]] = m
 		if not _keys.has(String(m["key"])):
 			_keys[String(m["key"])] = []
 		(_keys[String(m["key"])] as Array).append(String(m["id"]))
 	var beat := _count_in
+	var beats: Array = []
 	for section: Dictionary in _take["sections"]:
 		var pattern := String(section["pattern"])
 		for i in pattern.length():
 			if pattern[i] == "x":
-				var move := _pick_move()
-				prompts.append({"beat": beat + i, "move": move, "key": String(_moves[move]["key"]), "name": String(_moves[move]["name"]), "state": "due", "grade": ""})
+				beats.append(beat + i)
 		beat += pattern.length()
+	for j in beats.size():
+		var move := _pick_move("", float(beats[j + 1]) - float(beats[j]) if j + 1 < beats.size() else 99.0)
+		var p := {"beat": beats[j], "move": move, "key": String(_moves[move]["key"]), "name": String(_moves[move]["name"]), "state": "due", "grade": ""}
+		if hard and _moves[move].has("hold"):
+			p["hold"] = float(_moves[move]["hold"])
+			p["name"] = "%s  %s" % [p["name"], _hard.get("words", {}).get("hold", "HOLD")]
+		prompts.append(p)
 	_song_end = beat
 	_end = beat + float(_take.get("outro", 4))
 	_pick_mishaps(forced)
 	for _i in stage.crew.size():
 		_crew.append({"move": {}, "start": 0.0, "lost": -99.0, "goal": null, "exit": false, "gone": false, "wave": false, "stuck": 0.0})
+		crew_doing.append("")
+	if hard:
+		_judge = Camera3D.new()
+		add_child(_judge)
+		cuts = Cuts.new()
+		var holds: Array = []
+		for p: Dictionary in prompts:
+			if p.has("hold"):
+				holds.append(float(p["beat"]))
+		cuts.plan(stage, _take["sections"], _count_in, holds, mishaps, seed_value)
 	# The camera starts behind Large Fry and a little to one side, and pushes in to his camcorder at ACTION.
 	var toward: Vector3 = stage.mark - stage.lens
 	toward.y = 0.0
@@ -159,7 +214,18 @@ func setup(main_node: Node3D, stage_node: Node3D, ui_node: CanvasLayer, video: D
 	lead.show_face()
 	if lead.face:
 		lead.face.set_expression("focused")
+	if hard:
+		_say_cuts()
 	_camera(0.0)
+
+
+## Print the set-up of each bar (hard).
+func _say_cuts() -> void:
+	var out := PackedStringArray()
+	var bars := int(ceil((_song_end - _count_in) / 4.0))
+	for n in bars:
+		out.append(cuts.setup_for(n))
+	print("[shot] video: hard cuts, a bar each: %s" % " ".join(out))
 
 
 ## The song's beat, on the beat clock, from QUIET ON SET: its tempo is the
@@ -191,14 +257,15 @@ func _advance(delta: float) -> void:
 
 
 ## A move for a prompt: any he can do now, not the same one twice running;
-## the cash only while there is some left to throw.
-func _pick_move(avoid := "") -> String:
+## the cash only while there is some left to throw. Hard: a move held for
+## longer than `gap` beats less one is left out.
+func _pick_move(avoid := "", gap := 99.0) -> String:
 	var can: Array = []
 	for id: String in _moves:
-		if _can_do(id) and id != avoid:
+		if _can_do(id) and id != avoid and not (hard and float(_moves[id].get("hold", 0.0)) > gap - 1.0):
 			can.append(id)
 	if can.is_empty():
-		return BASE_MOVES[0]
+		return _base[0]
 	var last := String(prompts[-1]["move"]) if not prompts.is_empty() else ""
 	var pick := String(can[_rng.randi() % can.size()])
 	if pick == last and can.size() > 1:
@@ -215,6 +282,8 @@ func _can_do(id: String) -> bool:
 			return _throws > 0
 		"weapon":
 			return String(main._actor.weapon) != ""
+		"entourage":
+			return not stage.crew.is_empty()
 	return true
 
 
@@ -322,6 +391,8 @@ func press(key: String) -> void:
 		return
 	if not _keys.has(key) or b < _count_in - 0.5 or b > _song_end + 0.5:
 		return
+	if hard and not _holding.is_empty():       # another key while holding: he moved
+		_end_hold(false)
 	var best: Dictionary = {}
 	var gap := INF
 	for p: Dictionary in prompts:
@@ -345,9 +416,20 @@ func press(key: String) -> void:
 		_judged += 1
 		ui.judge(String(words.get("perfect" if perfect else "good", "")), PERFECT if perfect else GOOD)
 		_start_move(id)
-		for i in _crew.size():
-			_crew[i]["move"] = _moves[id]
-			_crew[i]["start"] = b + 0.12 * (i + 1)
+		if hard:                 # the crew do not copy him; a hold starts
+			best["timing"] = best["grade"]
+			_count_hard(best, true)
+			if best.has("hold"):
+				_holding = {"p": best, "key": key, "from": b, "value": value}
+				best["holding"] = true
+				_pose["length"] = float(best["hold"]) + 0.35
+				if auto >= 0.0:
+					var s := clampf(auto, 0.0, 1.0)
+					_holding["release"] = b + float(best["hold"]) + 0.2 if _rng.randf() < pow(s, 0.5) else b + float(best["hold"]) * _rng.randf_range(0.3, 0.8)
+		else:
+			for i in _crew.size():
+				_crew[i]["move"] = _moves[id]
+				_crew[i]["start"] = b + 0.12 * (i + 1)
 		if perfect and not _wished.has("move:" + id) and _count_wished("move:") < 3:
 			_wish("move:" + id, b + 0.45)
 	else:
@@ -355,6 +437,37 @@ func press(key: String) -> void:
 		_chaos += float(_take.get("flub_chaos", 1.0))
 		ui.judge(String(words.get("flub", "OFF BEAT")), MISS)
 		_start_move(id)
+
+
+## A key let go (hard: the end of a hold).
+func release(key: String) -> void:
+	if hard and not _holding.is_empty() and String(_holding["key"]) == key:
+		_end_hold(beat() >= float(_holding["from"]) + float(_holding["p"]["hold"]) - 0.25)
+
+
+## The hold under way is over: held all the way (`kept`) or let go too soon.
+func _end_hold(kept_it: bool) -> void:
+	var p: Dictionary = _holding["p"]
+	p["holding"] = false
+	var bonus := float(_hard.get("hold_bonus", 0.5))
+	if kept_it:
+		_points += bonus * (float(_holding["value"]) if in_shot else 0.5)
+		p["grade"] = "held"
+		ui.judge(String(_hard.get("words", {}).get("held", "HELD")), PERFECT)
+	else:
+		p["grade"] = "early"
+		ui.judge(String(_hard.get("words", {}).get("early", "TOO SOON")), MISS)
+		if not _pose.is_empty():
+			_pose["length"] = minf(float(_pose.get("length", 1.0)), beat() - float(_pose["start"]) + 0.25)
+	_holding = {}
+
+
+## Hard: what a judged prompt could have scored, and which moves were asked for and landed.
+func _count_hard(p: Dictionary, landed: bool) -> void:
+	_possible += 1.0 + (float(_hard.get("hold_bonus", 0.5)) if p.has("hold") else 0.0)
+	_asked[String(p["move"])] = true
+	if landed:
+		_landed[String(p["move"])] = true
 
 
 ## What a key does pressed off the beat: its move that needs nothing (else the first of its moves he can do now).
@@ -388,7 +501,7 @@ func _start_move(id: String) -> void:
 func _retire(id: String) -> void:
 	for p: Dictionary in prompts:
 		if p["state"] == "due" and p["move"] == id and float(p["beat"]) > beat() + 0.5:
-			var other: String = BASE_MOVES[_rng.randi() % BASE_MOVES.size()]
+			var other: String = _base[_rng.randi() % _base.size()]
 			p["move"] = other
 			p["key"] = String(_moves[other]["key"])
 			p["name"] = String(_moves[other]["name"])
@@ -408,6 +521,14 @@ func tick(delta: float) -> void:
 		if b >= float(later["beat"]):
 			_later.erase(later)
 			(later["do"] as Callable).call()
+	if hard and not _holding.is_empty():
+		var held_for := b - float(_holding["from"])
+		if absf(hold_dir.x) > 0.3 and held_for > 0.1:         # he walked: not still
+			_end_hold(false)
+		elif _holding.has("release") and b >= float(_holding["release"]):
+			release(String(_holding["key"]))
+		elif held_for >= float(_holding["p"]["hold"]):
+			_end_hold(true)
 	_lead(b, delta)
 	for p: Dictionary in prompts:
 		if p["state"] == "due" and time > float(p["beat"]) * BEAT + _good:
@@ -415,8 +536,12 @@ func tick(delta: float) -> void:
 			_judged += 1
 			_chaos += float(_take.get("miss_chaos", 0.5))
 			ui.judge(String(data["words"].get("miss", "MISS")), MISS)
-			for c: Dictionary in _crew:
-				c["lost"] = b
+			if hard:
+				_count_hard(p, false)
+				_late_hand(p, b)
+			else:
+				for c: Dictionary in _crew:
+					c["lost"] = b
 	_run_mishaps(b)
 	_entourage(b, delta)
 	stage.tick(delta)
@@ -430,6 +555,19 @@ func tick(delta: float) -> void:
 		_music_off(2.0)
 	if b >= _end:
 		_finish()
+
+
+## Hard: a move missed is a late hand and a glance away: the move comes, half
+## way and late, while his eyes leave the lens for a moment.
+func _late_hand(p: Dictionary, b: float) -> void:
+	var lead: Node3D = main._actor
+	if _pose.is_empty() and _moves.has(String(p["move"])) and String(p["move"]) != "aim":
+		_pose = {"move": _moves[String(p["move"])], "start": b + 0.1, "amount": 0.45}
+	if lead.face:
+		lead.face.look(-1.0 if int(p["beat"]) % 2 == 0 else 1.0)
+		_later.append({"beat": b + 0.9, "do": func() -> void:
+			if lead.face:
+				lead.face.look(0.0)})
 
 
 ## Fade the song's beat out over that many beats (if it is still the one playing).
@@ -469,6 +607,13 @@ func _camera(_delta: float) -> void:
 	var cam: Camera3D = main._camera
 	cam.fov = lerpf(44.0, _fov, k)
 	cam.look_at_from_position(at, look)
+	if hard:                         # Large Fry's lens judges him; the picture cuts between set-ups on the bars
+		_judge.fov = cam.fov
+		_judge.look_at_from_position(at, look)
+		setup_now = ""
+		if b >= _count_in and b < _song_end + 1.0:
+			setup_now = cuts.setup_for(int((b - _count_in) / 4.0))
+			cuts.place(cam, setup_now, fposmod(b - _count_in, 4.0) / 4.0, stage, main._actor, aim, int((b - _count_in) / 4.0), Vector3(stage.mark.x + _pan_to, 1.0, stage.mark.z))
 	stage.show_op(k < 0.55)          # once the camera is on his shoulder, he and his camcorder are out of the picture
 	stage.face_cards(cam)
 	main._face_cards()
@@ -527,9 +672,9 @@ func _mishap_near(b: float) -> bool:
 	return false
 
 
-## Is he inside the brackets?
+## Is he inside the brackets? (Hard: of Large Fry's lens, whatever set-up the picture is on.)
 func _framed() -> bool:
-	var cam: Camera3D = main._camera
+	var cam: Camera3D = _judge if hard else main._camera
 	var lead: Node3D = main._actor
 	var chest := lead.global_position + Vector3(0.0, lead.height * 0.55, 0.0)
 	if cam.is_position_behind(chest):
@@ -549,29 +694,41 @@ func _lead(b: float, delta: float) -> void:
 	var stopped := b < _stopped
 	var moving := dir.length() > 0.01 and not stopped and not _gun_out and b < _song_end + 1.0
 	var aiming_now := (not _pose.is_empty() and String(_pose["move"]["id"]) == "aim") or _gun_out
-	lead.performing = not moving and not stopped and not aiming_now and b < _song_end + 0.5
+	lead.performing = not moving and not stopped and not aiming_now and b < _song_end + 0.5 and _holding.is_empty()
 	lead.aiming = aiming_now
 	lead.aim_way = "toward" if aiming_now else ""
 	if lead.performing:
 		lead._beat = maxf(b - delta / PaperActor.BEAT, 0.0)      # (walk adds delta / its own BEAT)
-	if moving:
+	var step := not moving and not stopped and _stepping(b)
+	if moving and hard:
+		lead.walk(dir, main._screen_dir(dir), delta)      # the set-up's camera need not look along -z
+	elif moving:
 		lead.walk(dir, dir, delta)       # the camera looks along -z: right on the screen is +x
+	elif step:                       # hard: one step at Large Fry's lens, facing it
+		var cam: Vector3 = stage.lens - lead.global_position
+		var at := lead.position
+		var way := Vector2(cam.x, cam.z).normalized()
+		lead.walk(way, main._screen_dir(way), delta)
+		_stepped += lead.position.distance_to(at)
 	else:
 		lead.walk(Vector2.ZERO, Vector2.ZERO, delta)
+	if hard and lead.performing:
+		_hard_idle(lead, b)
 	if lead.face:
-		lead.face.talking = b >= _count_in and b < _song_end and not stopped
+		lead.face.talking = b >= _count_in and b < _song_end and not stopped and not (hard and not _pose.is_empty() and float(_pose.get("amount", 1.0)) >= 1.0)      # hard: a move lands with his mouth shut
 	# The move he is doing, laid over the groove.
 	if not _pose.is_empty():
 		var move: Dictionary = _pose["move"]
 		var t := b - float(_pose["start"])
-		var length := float(move.get("beats", 0.8))
+		var length := float(_pose.get("length", move.get("beats", 0.8)))
 		if t > length:
 			_pose = {}
 			_mood = ""
-		elif not moving and String(move["id"]) != "aim":
-			_lay_move(lead, move, t, length)
+		elif not moving and not step and String(move["id"]) != "aim":
+			_lay_move(lead, move, t, length, float(_pose.get("amount", 1.0)))
+	var moods: Array = _hard.get("moods", MOODS) if hard else MOODS
 	if _pose.is_empty() and lead.face and not stopped and not _gun_out:
-		var mood: String = MOODS[int(maxf(b - _count_in, 0.0) / 8.0) % MOODS.size()]
+		var mood: String = moods[int(maxf(b - _count_in, 0.0) / 8.0) % moods.size()]
 		if mood != _mood:
 			_mood = mood
 			lead.face.set_expression(mood)
@@ -580,18 +737,59 @@ func _lead(b: float, delta: float) -> void:
 		lead.face_way("front")
 
 
+## Hard: is this the moment of a STEP UP's step (its first half beat, and he has not stepped far yet)?
+func _stepping(b: float) -> bool:
+	if not hard or _pose.is_empty() or not (_pose["move"] as Dictionary).has("step") or float(_pose.get("amount", 1.0)) < 1.0:
+		return false
+	var t := b - float(_pose["start"])
+	return t >= 0.0 and t < 0.45 and _stepped < float(_pose["move"]["step"])
+
+
+## Hard, between moves: he works it with one hand at his chest, the other low,
+## a small dip of the knees on the beat and a slight rock (no arms in the air).
+## Each eight beats the hands change over.
+func _hard_idle(lead: Node3D, b: float) -> void:
+	var k: float = lead._groove
+	var hit := pow(0.5 + 0.5 * cos(TAU * b), 2.0)
+	var dip := 0.016 * hit * k
+	lead._put("lift_l", dip)
+	lead._put("lift_r", dip)
+	lead._card.position.y = -dip * float(lead.height)
+	lead._card.rotation.z = 0.018 * sin(PI * b) * k
+	var work := 0.42 + 0.16 * hit
+	var left := int(b / 8.0) % 2 == 0          # the hand on the left of the picture works
+	lead._put("arm_l_angle", (work if left else 0.1) * k)
+	lead._put("arm_l_curl", (1.05 if left else 0.08) * k)
+	lead._put("arm_r_angle", (-0.1 if left else -work) * k)
+	lead._put("arm_r_curl", (-0.08 if left else -1.05) * k)
+
+
 ## Lay a move's arms and lean over whatever pose he is in, easing in and out.
-func _lay_move(who: Node3D, move: Dictionary, t: float, length: float) -> void:
+## Hard moves may also have "from" (the arms start there and end at "arms"),
+## "rock" (a sway from foot to foot, radians) and "dip" (his knees give, of his
+## height); `amount` below 1 is a late hand, part of the way.
+func _lay_move(who: Node3D, move: Dictionary, t: float, length: float, amount := 1.0) -> void:
 	var arms: Array = move.get("arms", [])
 	if arms.size() < 4:
 		return
-	var k := smoothstep(0.0, 0.12, t) * (1.0 - smoothstep(length - 0.22, length, t))
+	var k := smoothstep(0.0, 0.12, t) * (1.0 - smoothstep(length - 0.22, length, t)) * amount
 	var mat: ShaderMaterial = who._mat
 	var names := ["arm_l_angle", "arm_r_angle", "arm_l_curl", "arm_r_curl"]
+	var from: Array = move.get("from", [])
 	for i in 4:
 		var was := float(mat.get_shader_parameter(names[i]))
-		who._put(names[i], lerpf(was, float(arms[i]), k))
+		var want := float(arms[i])
+		if from.size() == 4:
+			want = lerpf(float(from[i]), want, smoothstep(0.1, 0.45, t / maxf(length, 0.01)))
+		who._put(names[i], lerpf(was, want, k))
 	who._card.rotation.z = lerpf(who._card.rotation.z, float(move.get("lean", 0.0)), k)
+	if move.has("rock"):
+		who._card.rotation.z += float(move["rock"]) * sin(PI * t) * k
+	if move.has("dip"):
+		var d := float(move["dip"]) * sin(PI * clampf(t / maxf(length, 0.01), 0.0, 1.0)) * amount
+		who._put("lift_l", d)
+		who._put("lift_r", d)
+		who._card.position.y = -d * float(who.height)
 
 
 func _entourage(b: float, delta: float) -> void:
@@ -602,6 +800,9 @@ func _entourage(b: float, delta: float) -> void:
 			continue
 		if c["goal"] != null:          # walking: in front of the lens, or out of the picture
 			npc.performing = false
+			if hard:
+				Crew.unpose(npc)
+				crew_doing[i] = "walk"
 			var goal: Vector3 = c["goal"]
 			var gap := Vector2(goal.x - npc.position.x, goal.z - npc.position.z)
 			var then: Array = c.get("then", [])
@@ -621,6 +822,22 @@ func _entourage(b: float, delta: float) -> void:
 				if float(c["stuck"]) > 1.0 and c["exit"]:
 					c["gone"] = true
 					npc.visible = false
+			continue
+		if hard:                       # each on his own loop (video_crew.gd); together, small, on the hook
+			npc.performing = false
+			npc.walk(Vector2.ZERO, Vector2.ZERO, delta)
+			if c.get("stare", false):      # in the lens and staying there, arms folded, looking into it
+				crew_doing[i] = "stare"
+				for k in 4:
+					npc._put(["arm_l_angle", "arm_r_angle", "arm_l_curl", "arm_r_curl"][k], float(Crew.FOLDED[k]))
+				if npc.face and npc.face.expression != "suspicious":
+					npc.face.set_expression("suspicious")
+					npc.face.look(0.0)
+				continue
+			if stage.hard_crew and i < stage.hard_crew.people.size():
+				crew_doing[i] = stage.hard_crew.pose(i, npc, b)
+				if _section == "HOOK" and b < _song_end:
+					Crew.hook_dip(npc, b - _count_in)
 			continue
 		var lost := b - float(c["lost"]) < 1.2
 		npc.performing = not lost and b < _song_end + 0.5 and not c["wave"]
@@ -703,6 +920,7 @@ func _begin(m: Dictionary) -> void:
 						_crew[k]["goal"] = way[0]
 						_crew[k]["then"] = way.slice(1)
 						_crew[k]["side"] = side
+						_crew[k]["stare"] = hard       # hard: once there he stands in the lens, looking into it
 			if not m.has("who"):
 				m["who"] = -1
 				print("[shot] video: nobody in the entourage has a clear way to the lens")
@@ -727,13 +945,20 @@ func _begin(m: Dictionary) -> void:
 		"chain_drop":
 			stage.chain_fall()
 			if lead.face:
-				lead.face.set_expression("shocked")
+				lead.face.set_expression("angry" if hard else "shocked")
+
+
+## Hard: the face for a moment of a mishap, in place of the clean one (no grin, no tears, no whistling).
+func _face(clean: String, hard_face: String) -> String:
+	return hard_face if hard else clean
 
 
 ## Answered (E in time) or not.
 func _end_mishap(m: Dictionary, handled: bool) -> void:
 	var row: Dictionary = m["m"]
-	var outcome: Dictionary = row["answer"] if handled else row["miss"]
+	var outcome: Dictionary = (row["answer"] if handled else row["miss"]).duplicate()
+	if hard:                         # "hard"'s "mishaps" replace what they name (a line said, say)
+		outcome.merge(_hard.get("mishaps", {}).get(String(row["id"]), {}).get("answer" if handled else "miss", {}), true)
 	m["state"] = "done"
 	m["handled"] = handled
 	_polish += float(outcome.get("polish", 0))
@@ -754,6 +979,7 @@ func _end_mishap(m: Dictionary, handled: bool) -> void:
 			stage.say(npc, line, BEAT * 1.6)
 			var leave := func() -> void:
 				c["wave"] = false
+				c["stare"] = false
 				c["exit"] = true
 				c["then"] = []
 				var side := float(c.get("side", 1.0))
@@ -762,10 +988,10 @@ func _end_mishap(m: Dictionary, handled: bool) -> void:
 				_pose = {"move": {"id": "shove", "arms": [-1.2, 0.2, 0.0, 0.0] if c.get("side", 1.0) < 0.0 else [-0.2, 1.2, 0.0, 0.0], "lean": 0.0, "beats": 0.7}, "start": b}
 				npc._card.rotation.z = -0.25 * float(c.get("side", 1.0))
 				_later.append({"beat": b + 0.4, "do": leave})
-			else:                # he waves at the lens a while first
+			else:                # he waves at the lens a while first (hard: he stands in it, looking into it)
 				c["goal"] = null
 				c["then"] = []
-				c["wave"] = true
+				c["wave"] = not hard
 				_later.append({"beat": b + 1.8, "do": leave})
 		"car_alarm":
 			var i: int = m.get("car", 0)
@@ -785,18 +1011,19 @@ func _end_mishap(m: Dictionary, handled: bool) -> void:
 				_turned = true
 				lead.face_side(-1.0)
 				if lead.face:
-					lead.face.set_expression("guilty")
+					lead.face.set_expression(_face("guilty", "neutral"))
 				stage.say(lead, line, BEAT * 1.6)
 				_later.append({"beat": b + 1.4, "do": func() -> void: ui.voice("", "")})
-			else:                # she has had enough: the slipper
+			else:                # she has had enough: the slipper (hard: it lands at his feet and he does not flinch)
 				ui.voice(String(row.get("who", "")), String(lines[1]) if lines.size() > 1 else "")
 				var cam: Camera3D = main._camera
 				var left := -cam.global_transform.basis.x
 				left.y = 0.0
-				stage.slipper_throw(lead.position + left.normalized() * 4.5 + Vector3(0.0, 1.6, 0.6))
+				stage.slipper_throw(lead.position + left.normalized() * 4.5 + Vector3(0.0, 1.6, 0.6), hard)
 				var ow := func() -> void:
-					stage.say(lead, line, BEAT * 1.4, Color("#e8392b"))
-					if lead.face:
+					if line != "":
+						stage.say(lead, line, BEAT * 1.4, Color("#e8392b"))
+					if lead.face and not hard:
 						lead.face.set_expression("hurt")
 				_later.append({"beat": b + 0.85, "do": ow})
 				_later.append({"beat": b + 2.0, "do": func() -> void: ui.voice("", "")})
@@ -807,11 +1034,11 @@ func _end_mishap(m: Dictionary, handled: bool) -> void:
 				main._actor.weapon = ""
 				_retire("aim")
 				if lead.face:
-					lead.face.set_expression("innocent")
-			elif handled:          # ACT NATURAL
+					lead.face.set_expression(_face("innocent", "neutral"))
+			elif handled:          # ACT NATURAL (hard: still, watching it go by)
 				_stopped = b + 1.6
 				if lead.face:
-					lead.face.set_expression("innocent")
+					lead.face.set_expression(_face("innocent", "side_eye"))
 			else:
 				if car:
 					stage.say(car, line, BEAT * 1.8)
@@ -824,19 +1051,20 @@ func _end_mishap(m: Dictionary, handled: bool) -> void:
 			else:
 				stage.say(lead, line, BEAT * 1.5)
 				if lead.face:
-					lead.face.set_expression("disgusted")
+					lead.face.set_expression(_face("disgusted", "bored"))
 				_later.append({"beat": b + 1.6, "do": func() -> void: stage.set_smoke(0.0)})
 		"chain_drop":
 			if handled:
 				stage.chain_catch()
 				if lead.face:
-					lead.face.set_expression("grin")
+					lead.face.set_expression(_face("grin", "focused"))
 			else:
 				stage.chain_drop()
 				_retire("chain")
+				_retire("chain_lift")
 				stage.say(lead, line, BEAT * 1.6)
 				if lead.face:
-					lead.face.set_expression("crying")
+					lead.face.set_expression(_face("crying", "angry"))
 
 
 # --------------------------------------------------------------- auto player
@@ -882,6 +1110,8 @@ func _auto_play(b: float) -> void:
 		hold_dir = Vector2(signf(off), 0.0)
 	else:
 		hold_dir = Vector2.ZERO
+	if hard and not _holding.is_empty() and s >= 0.5:       # a good player stands still through a hold
+		hold_dir = Vector2.ZERO
 
 
 # ---------------------------------------------------------------- the screen
@@ -925,6 +1155,10 @@ func _show(b: float) -> void:
 func swagger() -> float:
 	if _judged == 0:
 		return 0.0 if _flubs > 0 else 50.0
+	if hard:                 # out of what the moves could have scored (holds count more), times how many kinds he landed
+		var kinds := float(_landed.size()) / maxf(float(_asked.size()), 1.0)
+		var v := float(_hard.get("variety", 0.15))
+		return clampf(100.0 * _points / maxf(_possible, 1.0) * (1.0 - v + v * kinds) - float(_hard.get("flub", 3.0)) * _flubs, 0.0, 100.0)
 	return clampf(100.0 * _points / _judged - float(_take.get("flub", 2.0)) * _flubs, 0.0, 100.0)
 
 
@@ -965,12 +1199,15 @@ func _finish() -> void:
 	for p: Dictionary in prompts:
 		if p["state"] == "hit":
 			hits += 1
-			if p["grade"] == "perfect":
+			if p.get("timing", p["grade"]) == "perfect":
 				perfect += 1
 		elif p["state"] == "miss":
 			missed += 1
 	kept = {"swagger": roundi(swagger()), "polish": clampf(_polish, 0.0, 100.0), "chaos": clampf(_chaos, 0.0, 100.0),
 		"mishaps": outcome, "hits": hits, "perfect": perfect, "missed": missed, "flubs": _flubs, "moves": prompts.size()}
+	if hard:
+		var held := prompts.filter(func(p: Dictionary) -> bool: return p.get("grade", "") == "held").size()
+		kept.merge({"style": "hard", "holds": prompts.filter(func(p: Dictionary) -> bool: return p.has("hold")).size(), "held": held, "kinds": _landed.size()})
 	main._actor.weapon = _weapon
 	_music_off(1.0)
 	wrapped.emit()

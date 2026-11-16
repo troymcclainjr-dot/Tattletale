@@ -1207,6 +1207,7 @@ func _begin_game(side: String) -> void:
 		_day = 0
 		_state.reset()
 		if side in ["angel", "devil"]: _state.deed("chose_" + side)      # bars: a deed (deeds.json)
+_state.set_video_style("clean" if side == "angel" else "hard")      # his videos start in his side's style (the board's STYLE row still changes it)
 		_picks = {}
 		_dress_lead()
 		_dress_for_day()
